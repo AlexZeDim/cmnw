@@ -3,12 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/getToken.js"
   },
   "dependencies": {
+    "axios": "^0.19.2",
+    "battlenet-api-wrapper": "^1.0.3",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
-    "morgan": "~1.9.1"
+    "mongoose": "^5.8.11",
+    "morgan": "~1.9.1",
+    "node-schedule": "^1.3.2",
+    "passport": "^0.4.1",
+    "passport-bnet": "^2.0.0"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
   }
 }

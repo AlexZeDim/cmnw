@@ -7,7 +7,7 @@ async function myReadfile (path) {
         let obj = JSON.parse(str);
         let guild_array = [];
         for (let i = 0; i < obj.length; i++) {
-            guild_array.push({slug: obj[i].name.toLowerCase().replace(" ","-"), realm: `gordunni`});
+            guild_array.push({_id: `${obj[i].name.toLowerCase().replace(/\s/g,"-")}@gordunni`, slug: obj[i].name.toLowerCase().replace(/\s/g,"-"), realm: `gordunni`});
         }
         guild_db.insertMany(guild_array)
     }

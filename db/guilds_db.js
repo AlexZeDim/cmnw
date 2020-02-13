@@ -23,6 +23,9 @@ let schema = new mongoose.Schema({
     name: {
         type: String
     },
+    slug: {
+        type: String
+    },
     realm: {
         type: String
     },

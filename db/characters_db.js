@@ -27,10 +27,17 @@ let schema = new mongoose.Schema({
         type: String
     },
     guild_rank: {
-        type: String
+        type: Number
+    },
+    guild_history: {
+        type: Array
     },
     realm: {
         type: String
+    },
+    ilvl: {
+        eq: Number,
+        avg: Number,
     },
     checksum: {
         pets: String,
@@ -41,6 +48,9 @@ let schema = new mongoose.Schema({
         type: String
     },
     class: {
+        type: String
+    },
+    spec: {
         type: String
     },
     gender: {
@@ -57,10 +67,11 @@ let schema = new mongoose.Schema({
     },
     source: {
       type: String
+    },
+    isWatched: {
+        type: Boolean
     }
-    //TODO is watched
     //TODO guildHistory
-    //TODO source code
 },{
     timestamps: true
 });

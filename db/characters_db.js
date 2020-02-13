@@ -26,6 +26,9 @@ let schema = new mongoose.Schema({
     guild: {
         type: String
     },
+    guild_rank: {
+        type: String
+    },
     realm: {
         type: String
     },
@@ -51,9 +54,13 @@ let schema = new mongoose.Schema({
     },
     lastModified: {
         type: Number
+    },
+    source: {
+      type: String
     }
     //TODO is watched
     //TODO guildHistory
+    //TODO source code
 },{
     timestamps: true
 });

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node voluspa/getGuild.js"
+    "start": "node voluspa/fromRoster.js"
   },
   "dependencies": {
     "battlenet-api-wrapper": "latest",

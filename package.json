@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/getToken.js"
+    "start": "node voluspa/fromRoster.js"
   },
   "dependencies": {
     "axios": "^0.19.2",

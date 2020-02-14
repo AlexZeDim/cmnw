@@ -21,7 +21,7 @@ async function fromRoster () {
                     source: 'VOLUSPA-roster'
                 });
             }
-            //TODO message log
+            //TODO message log and fix errors
             characters_db.insertMany(bulkCharacters, {ordered: false});
         }
     } catch (e) {

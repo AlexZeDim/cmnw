@@ -35,6 +35,9 @@ let schema = new mongoose.Schema({
     realm: {
         type: String
     },
+    realm_slug: {
+        type: String
+    },
     ilvl: {
         eq: Number,
         avg: Number,

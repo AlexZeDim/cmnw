@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node voluspa/indexing/indexCharacters.js"
+    "start": "node voluspa/indexing/indexCharacters.js",
+    "test": "node voluspa/fromLogs.js"
   },
   "dependencies": {
     "battlenet-api-wrapper": "latest",
@@ -12,10 +13,12 @@
     "express": "~4.16.1",
     "mongoose": "^5.8.11",
     "morgan": "~1.9.1",
-    "axios": "latest"
+    "axios": "latest",
+    "x-ray": "latest"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
-    "fast-crc32c": "^2.0.0"
+    "fast-crc32c": "^2.0.0",
+    "tabletojson": "^1.2.0"
   }
 }

@@ -71,7 +71,6 @@ let schema = new mongoose.Schema({
     isWatched: {
         type: Boolean
     }
-    //TODO guildHistory
 },{
     timestamps: true
 });

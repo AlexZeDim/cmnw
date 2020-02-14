@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node voluspa/fromRoster.js"
+    "start": "node voluspa/indexing/indexCharacters.js"
   },
   "dependencies": {
     "battlenet-api-wrapper": "latest",
@@ -14,6 +14,7 @@
     "morgan": "~1.9.1"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "fast-crc32c": "^2.0.0"
   }
 }

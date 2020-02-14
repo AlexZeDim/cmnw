@@ -1,5 +1,5 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
-const crypto = require('crypto');
+const crc32 = require('fast-crc32c');
 
 //TODO fix via keys
 const clientId = '530992311c714425a0de2c21fcf61c7d';
@@ -7,6 +7,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 async function getCharacter (realmSlug, characterName) {
     try {
+        console.time(`${getCharacter.name}`);
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, 'eu', 'en_GB');
         let pets_checksum, mounts_checksum;
@@ -30,7 +31,7 @@ async function getCharacter (realmSlug, characterName) {
         result.checksum = {};
         if (guild) {
             result.guild = guild.name;
-            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase());
+            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
             const {rank} = members.find( ({ character }) => character.name === name );
             result.guild_rank = rank;
         }
@@ -46,8 +47,7 @@ async function getCharacter (realmSlug, characterName) {
                     pets_string += pets[i].name
                 }
             }
-            const hash = crypto.createHash('sha1');
-            pets_checksum = hash.update(pets_string).digest('hex');
+            pets_checksum = crc32.calculate(pets_string).toString(16);
             result.checksum.petSlots = petSlots;
             result.checksum.pets = pets_checksum;
         }
@@ -56,10 +56,10 @@ async function getCharacter (realmSlug, characterName) {
             for (let i = 0; i < mounts.length; i++) {
                 mount_array.push(mounts[i].mount.id)
             }
-            const hash = crypto.createHash('sha1');
-            mounts_checksum = hash.update(Buffer.from(mount_array)).digest('hex');
+            mounts_checksum = crc32.calculate(Buffer.from(mount_array)).toString(16);
             result.checksum.mounts = mounts_checksum;
         }
+        console.timeEnd(getCharacter.name);
         return result;
     } catch (e) {
         if (typeof e.code != 'undefined' && e.code  === 'ECONNRESET') {
@@ -68,6 +68,10 @@ async function getCharacter (realmSlug, characterName) {
         if (typeof e.response != 'undefined' && e.response.status === 404) {
             console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
         }
+        if (typeof e.response != 'undefined' && e.response.status === 403) {
+            console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
+        }
+        console.timeEnd(getCharacter.name);
         return {name: characterName, realm: realmSlug}
     }
 }

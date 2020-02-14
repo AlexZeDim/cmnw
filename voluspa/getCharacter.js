@@ -5,7 +5,7 @@ const crc32 = require('fast-crc32c');
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
-async function getCharacter (realmSlug, characterName) {
+async function getCharacter (realmSlug, characterName, rank = 'no') {
     try {
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, 'eu', 'en_GB');
@@ -35,10 +35,11 @@ async function getCharacter (realmSlug, characterName) {
         };
         if (guild) {
             result.guild = guild.name;
-            /*
-            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
-            const {rank} = members.find( ({ character }) => character.name === name );
-            result.guild_rank = rank;*/
+            if (rank === 'rank') {
+                const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
+                const {rank} = members.find( ({ character }) => character.name === name );
+                result.guild_rank = rank;
+            }
         }
         if (pets) {
             let pets_string = '';
@@ -65,11 +66,11 @@ async function getCharacter (realmSlug, characterName) {
             result.checksum.mounts = mounts_checksum;
         }
         return result;
-    } catch (e) {
-        if (e.response.status === 404 || e.response.status === 403) {
+    } catch (error) {
+        if (error.response.status === 404 || error.response.status === 403) {
             console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
         }
-        return {name: characterName, realm: realmSlug}
+        return { _id: `${characterName}@${realmSlug}`, name: characterName, realm: realmSlug }
     }
 }
 

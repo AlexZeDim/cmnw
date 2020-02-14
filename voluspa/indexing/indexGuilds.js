@@ -1,4 +1,22 @@
-const crc32 = require('fast-crc32c');
+const { PerformanceObserver, performance } = require('perf_hooks');
+const delay = time => new Promise(res => setTimeout(res, time))
+async function doSomeLongRunningProcess() {
+    await delay(1000);
+}
+const obs = new PerformanceObserver((items) => {
+    console.log('PerformanceObserver A to B',items.getEntries()[0].duration);
+    performance.clearMarks();
+});
+obs.observe({ entryTypes: ['measure'] });
 
-let result = crc32.calculate(Buffer.from([1,2,3])).toString(16).toUpperCase();
-console.log(result);
+performance.mark('A');
+
+(async function main(){
+    try{
+        await performance.timerify(doSomeLongRunningProcess)();
+        performance.mark('B');
+        performance.measure('A to B', 'A', 'B');
+    }catch(e){
+        console.log('main() error',e);
+    }
+})();

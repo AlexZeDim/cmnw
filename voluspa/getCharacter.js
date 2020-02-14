@@ -7,16 +7,16 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 async function getCharacter (realmSlug, characterName) {
     try {
-        console.time(`${getCharacter.name}`);
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, 'eu', 'en_GB');
         let pets_checksum, mounts_checksum;
         let petSlots = [];
         let result = {};
-        //TODO rxJS or axios?
-        const {id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level} = await bnw.WowProfileData.getCharacterSummary(realmSlug, characterName);
-        const {pets} = await bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName);
-        const {mounts} = await bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName);
+        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
+            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
+        ]);
         result._id = `${name.toLowerCase()}@${realm.slug}`;
         result.id = id;
         result.name = name;
@@ -29,11 +29,16 @@ async function getCharacter (realmSlug, characterName) {
         result.level = level;
         result.lastModified = last_login_timestamp;
         result.checksum = {};
+        result.ilvl = {
+            eq: average_item_level,
+            avg: equipped_item_level
+        };
         if (guild) {
             result.guild = guild.name;
+            /*
             const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
             const {rank} = members.find( ({ character }) => character.name === name );
-            result.guild_rank = rank;
+            result.guild_rank = rank;*/
         }
         if (pets) {
             let pets_string = '';
@@ -59,19 +64,11 @@ async function getCharacter (realmSlug, characterName) {
             mounts_checksum = crc32.calculate(Buffer.from(mount_array)).toString(16);
             result.checksum.mounts = mounts_checksum;
         }
-        console.timeEnd(getCharacter.name);
         return result;
     } catch (e) {
-        if (typeof e.code != 'undefined' && e.code  === 'ECONNRESET') {
+        if (e.response.status === 404 || e.response.status === 403) {
             console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
         }
-        if (typeof e.response != 'undefined' && e.response.status === 404) {
-            console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
-        }
-        if (typeof e.response != 'undefined' && e.response.status === 403) {
-            console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
-        }
-        console.timeEnd(getCharacter.name);
         return {name: characterName, realm: realmSlug}
     }
 }

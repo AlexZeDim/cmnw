@@ -1,14 +1,22 @@
 const characters_db = require("../../db/characters_db");
-const guilds_db = require("../../db/guilds_db");
 const getCharacter = require('../getCharacter');
 
 async function indexCharacters () {
     try {
-        const allPlayers = [];
-        const cursor = guilds_db.find({}).lean().cursor({batchSize: 50});
-        cursor.on('data', (characterData) => {
-            allPlayers.push(characterData);
-            console.log(allPlayers.length);
+        const bulkCharacters = [];
+        const cursor = characters_db.find({}).lean().cursor({batchSize: 10});
+        cursor.on('data', async (characterData) => {
+            bulkCharacters.push(characterData);
+            if (bulkCharacters.length === 10) {
+                cursor.pause();
+                let test = await Promise.all(bulkCharacters.map(async (req) => {
+                    return getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase());
+                }));
+                console.log(test);
+                console.log('stop')
+            }
+            console.log(bulkCharacters.length);
+            //console.log(characterData)
         });
         cursor.on('error', error => {
             console.error(error);

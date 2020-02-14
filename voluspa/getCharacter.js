@@ -26,6 +26,7 @@ async function getCharacter (realmSlug, characterName, rank = 'no') {
         result.class = character_class.name;
         result.spec = active_spec.name;
         result.realm = realm.name;
+        result.realm_slug = realm.slug;
         result.level = level;
         result.lastModified = last_login_timestamp;
         result.checksum = {};

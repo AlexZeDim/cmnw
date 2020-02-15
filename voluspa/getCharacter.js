@@ -5,10 +5,10 @@ const crc32 = require('fast-crc32c');
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
-async function getCharacter (realmSlug, characterName, rank = 'no') {
+async function getCharacter (realmSlug, characterName, token= 'EUSt4ksvE7wFucgn3kEGcWKPrEJFDZaKsi', rank = 'no') {
     try {
         const bnw = new battleNetWrapper();
-        await bnw.init(clientId, clientSecret, 'eu', 'en_GB');
+        await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let pets_checksum, mounts_checksum;
         let petSlots = [];
         let result = {};
@@ -68,13 +68,9 @@ async function getCharacter (realmSlug, characterName, rank = 'no') {
         }
         return result;
     } catch (error) {
-        if (error.response.status === 404 || error.response.status === 403) {
-            console.error(`${getCharacter.name},${characterName}@${realmSlug}`);
-        }
+        console.log(error);
         return { _id: `${characterName}@${realmSlug}`, name: characterName, realm: realmSlug }
     }
 }
-
-getCharacter('gorduuni','вудду');
 
 module.exports = getCharacter;

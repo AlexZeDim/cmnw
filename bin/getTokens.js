@@ -3,10 +3,10 @@ const schedule = require('node-schedule');
 const axios = require('axios');
 
 schedule.scheduleJob(`*/1 * * *`, function() {
-    getToken();
+    getTokens();
 });
 
-async function getToken () {
+async function getTokens () {
     try {
         const cursor = await keys_db.find({}).cursor();
         for (let auth = await cursor.next(); auth != null; auth = await cursor.next()) {
@@ -14,7 +14,7 @@ async function getToken () {
                 return res.data;
             });
             await keys_db.updateOne({_id: auth._id},{token: access_token, expired_in: expires_in});
-            console.log(`${getToken.name},U,${auth._id},${expires_in}`);
+            console.info(`${getTokens.name},U,${auth._id},${expires_in}`);
         }
     } catch (e) {
         console.log(e);

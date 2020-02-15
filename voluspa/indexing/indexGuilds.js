@@ -1,6 +1,4 @@
-function getReportCode(input) {
-    const match = input.trim().match(/^(.*reports\/)?([a-zA-Z0-9]{16})\/?(#.*)?$/);
-    console.log(match);
-}
-
-getReportCode('https://wowanalyzer.com/report/ZBkN67Yj19RJnTAp');
+console.assert(true, 'does nothing');
+// OK
+console.assert(false, 'Whoops %s work', 'didn\'t');
+// Assertion failed: Whoops didn't work

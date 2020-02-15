@@ -1,11 +1,10 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
 const crc32 = require('fast-crc32c');
 
-//TODO fix via keys
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
-async function getCharacter (realmSlug, characterName, token= 'EUSt4ksvE7wFucgn3kEGcWKPrEJFDZaKsi', rank = 'no') {
+async function getCharacter (realmSlug, characterName, token= '', guildRank = false) {
     try {
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
@@ -17,6 +16,7 @@ async function getCharacter (realmSlug, characterName, token= 'EUSt4ksvE7wFucgn3
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
         ]);
+        //TODO this is probably wrong
         result._id = `${name.toLowerCase()}@${realm.slug}`;
         result.id = id;
         result.name = name;
@@ -36,7 +36,7 @@ async function getCharacter (realmSlug, characterName, token= 'EUSt4ksvE7wFucgn3
         };
         if (guild) {
             result.guild = guild.name;
-            if (rank === 'rank') {
+            if (guildRank) {
                 const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
                 const {rank} = members.find( ({ character }) => character.name === name );
                 result.guild_rank = rank;

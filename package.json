@@ -3,17 +3,20 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "tokens": "node bin/getTokens.js",
+    "VOLUSPA-indexCharacters": "node voluspa/indexing/indexCharacters.js",
     "start": "node voluspa/indexing/indexCharacters.js",
-    "test": "node voluspa/fromLogs.js"
+    "test": "node voluspa/indexing/indexLogs.js"
   },
   "dependencies": {
+    "axios": "latest",
     "battlenet-api-wrapper": "latest",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "mongoose": "^5.8.11",
     "morgan": "~1.9.1",
-    "axios": "latest",
+    "node-schedule": "^1.3.2",
     "x-ray": "latest"
   },
   "devDependencies": {

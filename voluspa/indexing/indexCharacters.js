@@ -3,24 +3,39 @@ const getCharacter = require('../getCharacter');
 
 async function indexCharacters () {
     try {
-        const bulkCharacters = [];
+        let documentBulk = [];
         const cursor = characters_db.find({}).lean().cursor({batchSize: 10});
-        cursor.on('data', async (characterData) => {
-            bulkCharacters.push(characterData);
-            if (bulkCharacters.length === 10) {
+        cursor.on('data', async (documentData) => {
+            documentBulk.push(documentData);
+            if (documentBulk.length === 10) {
                 cursor.pause();
-                let test = await Promise.all(bulkCharacters.map(async (req) => {
+                const promises = documentBulk.map(async (req) => {
                     try {
-                        let x = await getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase());
-                        console.log(x);
+                        let char = await getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase());
+                        char.source = `VOLUSPA-${indexCharacters.name}`;
+                        let {_id} = char;
+                        return await characters_db.findByIdAndUpdate(
+                            {
+                                _id: _id
+                            },
+                            char,
+                            {
+                                upsert : true,
+                                new: true,
+                                setDefaultsOnInsert: true,
+                                lean: true
+                            }
+                        ).exec();
                     } catch (e) {
                         console.log(e)
                     }
-                }));
-                console.log(typeof test, test.length);
+                });
+                await Promise.all(promises);
+                documentBulk = [];
                 console.log('stop')
+                cursor.resume();
             }
-            console.log(bulkCharacters.length);
+            console.log(documentBulk.length); //1-2-3+
             //console.log(characterData)
         });
         cursor.on('error', error => {
@@ -37,33 +52,3 @@ async function indexCharacters () {
 }
 
 indexCharacters();
-
-//let myCursor = characters_db.find({}).lean().cursor({batchSize:50});
-
-/*
-myCursor.eachAsync( async (player) => {
-    try {
-        let character = await getCharacter(player.realm, player.name.toLowerCase(), void 0);
-        let { _id } = character;
-        if (character.hasOwnProperty('guild')) {
-            //TODO we are not sure
-            character.guild_history = { _id: character.guild }
-        }
-        character.source = 'VOLUSPA-index';
-        await characters_db.findByIdAndUpdate(
-            {
-                _id: _id
-            },
-            character,
-            {
-                upsert : true,
-                new: true,
-                setDefaultsOnInsert: true,
-                lean: true
-            }
-        ).exec();
-        console.log(character)
-    } catch (e) {
-        console.log(e)
-    }
-});*/

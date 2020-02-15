@@ -10,23 +10,14 @@ async function indexCharacters () {
             if (bulkCharacters.length === 10) {
                 cursor.pause();
                 let test = await Promise.all(bulkCharacters.map(async (req) => {
-                    return getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase());
+                    try {
+                        let x = await getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase());
+                        console.log(x);
+                    } catch (e) {
+                        console.log(e)
+                    }
                 }));
-                /*
-                let tested = await Promise.all([
-                    getCharacter((bulkCharacters[0].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[0].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[1].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[1].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[2].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[2].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[3].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[3].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[4].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[4].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[5].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[5].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[6].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[6].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[7].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[7].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[8].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[8].name).toLowerCase(), void 0),
-                    getCharacter((bulkCharacters[9].realm).toLowerCase().replace(/\s/g,"-"), (bulkCharacters[9].name).toLowerCase(), void 0),
-                ]);
-                 */
-                console.log(test);
+                console.log(typeof test, test.length);
                 console.log('stop')
             }
             console.log(bulkCharacters.length);

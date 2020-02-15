@@ -75,4 +75,6 @@ async function getCharacter (realmSlug, characterName, rank = 'no') {
     }
 }
 
+getCharacter('gorduuni','вудду');
+
 module.exports = getCharacter;

@@ -5,6 +5,7 @@
   "scripts": {
     "tokens": "node bin/getTokens.js",
     "VOLUSPA-indexCharacters": "node voluspa/indexing/indexCharacters.js",
+    "VOLUSPA-indexRealms": "node voluspa/indexing/indexRealms.js",
     "start": "node voluspa/indexing/indexCharacters.js",
     "test": "node voluspa/indexing/indexLogs.js"
   },

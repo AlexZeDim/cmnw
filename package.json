@@ -6,8 +6,9 @@
     "tokens": "node bin/getTokens.js",
     "VOLUSPA-indexCharacters": "node voluspa/indexing/indexCharacters.js",
     "VOLUSPA-indexRealms": "node voluspa/indexing/indexRealms.js",
+    "VOLUSPA-indexLogs": "node voluspa/indexing/indexLogs.js",
     "start": "node voluspa/indexing/indexCharacters.js",
-    "test": "node voluspa/indexing/indexLogs.js"
+    "test": "node voluspa/indexing/indexGuilds.js"
   },
   "dependencies": {
     "axios": "latest",
@@ -22,7 +23,6 @@
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
-    "fast-crc32c": "^2.0.0",
-    "tabletojson": "^1.2.0"
+    "fast-crc32c": "^2.0.0"
   }
 }

@@ -27,6 +27,8 @@ async function indexRealms () {
                 await bnw.init(_id, secret, token, 'eu', realm.locale);
                 let {name} = await bnw.WowGameData.getRealm(slug);
                 realm.name_locale = name;
+            } else {
+                realm.name_locale =  realm.name;
             }
             await realms_db.findByIdAndUpdate(realm.id, realm,
                 {

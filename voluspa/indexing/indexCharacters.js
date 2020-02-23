@@ -2,17 +2,24 @@ const characters_db = require("../../db/characters_db");
 const keys_db = require("../../db/keys_db");
 const getCharacter = require('../getCharacter');
 
-async function indexCharacters (queryInput = '') {
+/***
+ *
+ * @param queryFind
+ * @param queryKeys
+ * @returns {Promise<void>}
+ */
+
+async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${indexCharacters.name}`}) {
     try {
         console.time(`VOLUSPA-${indexCharacters.name}`);
         let documentBulk = [];
-        const cursor = characters_db.find(queryInput).lean().cursor({batchSize: 20});
+        const cursor = characters_db.find(queryFind).lean().cursor({batchSize: 20});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
             if (documentBulk.length === 20) {
                 console.time(`Bulk-${indexCharacters.name}`);
                 cursor.pause();
-                const { token } = await keys_db.findOne({ tags: `VOLUSPA-${indexCharacters.name}` });
+                const { token } = await keys_db.findOne(queryKeys);
                 const promises = documentBulk.map(async (req) => {
                     try {
                         let upd_char = await getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase(), token);
@@ -47,8 +54,8 @@ async function indexCharacters (queryInput = '') {
             cursor.close();
         });
         cursor.on('close', () => {
-            console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
             cursor.close();
+            console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
             indexCharacters();
         });
     } catch (err) {

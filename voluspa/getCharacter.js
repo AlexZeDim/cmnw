@@ -4,6 +4,15 @@ const crc32 = require('fast-crc32c');
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
+/**
+ *
+ * @param realmSlug
+ * @param characterName
+ * @param token
+ * @param guildRank
+ * @returns {Promise<{name: *, realm: *, _id: string}|{}>}
+ */
+
 async function getCharacter (realmSlug, characterName, token= '', guildRank = false) {
     try {
         const bnw = new battleNetWrapper();

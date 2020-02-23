@@ -11,12 +11,17 @@ async function fromRoster () {
         await bnw.init(clientId, clientSecret, 'eu', 'en_GB');
         let guilds = await guild_db.find({}).cursor();
         for (let guild = await guilds.next(); guild != null; guild = await guilds.next()) {
+            //TODO update guild-info
+            //TODO check players and guild change vice-versa // guildhistory
             const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm, guild.slug);
             let bulkCharacters = [];
             for (let i = 0; i < members.length; i++) {
+                //TODO one-by-one
                 bulkCharacters.push({
                     _id: `${(members[i].character.name).toLowerCase()}@${guild.realm}`,
-                    realm: guild.realm,
+                    //TODO realm: guild,
+                    realm_slug: guild.realm,
+                    //TODO guildrank?
                     name: members[i].character.name,
                     source: 'VOLUSPA-roster'
                 });

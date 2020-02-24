@@ -38,7 +38,8 @@ async function indexLogs (queryInput = {isIndexed:false}) {
                                     _id: `${name.toLowerCase()}@${slug}`,
                                     name: name,
                                     realm_slug: slug,
-                                    source: `VOLUSPA-${indexLogs.name}`
+                                    createdBy: `VOLUSPA-${indexLogs.name}`,
+                                    updatedBy: `VOLUSPA-${indexLogs.name}`
                                 },
                                 {
                                     upsert : true,

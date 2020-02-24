@@ -32,16 +32,27 @@ let schema = new mongoose.Schema({
     faction: {
         type: String
     },
+    members: {
+        type: String //TODO
+    },
     achievement_points: {
         type: Number
     },
     member_count: {
         type: Number
     },
+    createdBy: {
+        type: String
+    },
+    updatedBy: {
+        type: String
+    },
     created_timestamp: {
         type: Number
+    },
+    isWatched: {
+        type: Boolean
     }
-    //TODO is watched
 },{
     timestamps: true
 });

@@ -68,12 +68,16 @@ let schema = new mongoose.Schema({
     lastModified: {
         type: Number
     },
-    source: {
+    createdBy: {
+        type: String
+    },
+    updatedBy: {
       type: String
     },
     isWatched: {
         type: Boolean
     }
+    //TODO media
 },{
     timestamps: true
 });

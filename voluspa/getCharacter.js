@@ -25,7 +25,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
         ]);
-        //TODO this is probably wrong
+        //FIXME this is probably wrong
         result._id = `${name.toLowerCase()}@${realm.slug}`;
         result.id = id;
         result.name = name;

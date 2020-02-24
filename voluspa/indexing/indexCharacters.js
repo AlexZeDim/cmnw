@@ -23,7 +23,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                 const promises = documentBulk.map(async (req) => {
                     try {
                         let upd_char = await getCharacter((req.realm).toLowerCase().replace(/\s/g,"-"), (req.name).toLowerCase(), token);
-                        upd_char.source = `VOLUSPA-${indexCharacters.name}`;
+                        upd_char.updatedBy = `VOLUSPA-${indexCharacters.name}`;
                         let {_id} = upd_char;
                         console.info(`${_id}`);
                         return await characters_db.findByIdAndUpdate(
@@ -54,7 +54,6 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
             cursor.close();
         });
         cursor.on('close', () => {
-            cursor.close();
             console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
             indexCharacters();
         });

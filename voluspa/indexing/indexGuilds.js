@@ -2,10 +2,10 @@ const guild_db = require("../../db/guilds_db");
 const characters_db = require("../../db/characters_db");
 const keys_db = require("../../db/keys_db");
 const battleNetWrapper = require('battlenet-api-wrapper');
+const moment = require('moment');
 
 async function indexGuild (queryFind = '') {
     try {
-        console.time(`VOLUSPA-${indexGuild.name}`);
         let documentBulk = [];
         const { _id, secret, token } = await keys_db.findOne({ tags: `Depo` });
         const bnw = new battleNetWrapper();
@@ -17,8 +17,43 @@ async function indexGuild (queryFind = '') {
                 console.time(`Bulk-${indexGuild.name}`);
                 cursor.pause();
                 let {slug, realm} = documentData;
+                const {id, name, faction, achievement_points, member_count, created_timestamp} = await bnw.WowProfileData.getGuildSummary(realm, slug);
                 const {members} = await bnw.WowProfileData.getGuildRoster(realm, slug);
-                console.log(members);
+                for (let i = 0; i < members.length; i++) {
+                    let {rank} = members[i];
+                    let {character} = members[i]; //TODO rank
+                    let x = await characters_db.findById(`${(character.name).toLowerCase()}@${character.realm.slug}`).exec(async function (err, char) {
+                        if (char) {
+                            let {guild_history} = char;
+                            let updated_guild_history = guild_history;
+                            if (updated_guild_history.length < 1) {
+                                char.guild_history.push({rank: rank, name: name, date: moment().format('DD/MM/YY')});
+                            } else {
+                                for (let i = 0; i < updated_guild_history.length; i++) {
+                                    if (!(updated_guild_history[i].name === name && updated_guild_history[i].rank === rank)) {
+                                        char.guild_history.push({rank: rank, name: name, date: moment().format('DD/MM/YY')});
+                                    }
+                                }
+                            }
+                            console.log(char);
+                            char.updatedBy = `VOLUSPA-${indexGuild.name}`;
+                            //char.save()
+                            /*await characters_db.create({
+                                _id: link.match(/(.{16})\s*$/g)[0],
+                                realm: 'gordunni', //TODO
+                                isIndexed: false,
+                                source: `VOLUSPA-${fromLogs.name}`
+                            }).then(function (log, error) {
+                                if (error) console.error(error);
+                                console.info(log)
+                            })*/
+                        } else {
+                            console.log('we are here')
+                            console.log(name, realm)
+                        }
+                    });
+                }
+                //character.realm
                 /*
                 const promises = documentBulk.map(async (req) => {
                     try {
@@ -72,7 +107,7 @@ async function indexGuild (queryFind = '') {
                 });
                 await Promise.all(promises);*/
                 documentBulk = [];
-                cursor.resume();
+                cursor.close();
                 console.timeEnd(`Bulk-${indexGuild.name}`);
             }
         });
@@ -85,8 +120,6 @@ async function indexGuild (queryFind = '') {
             console.log('A');
             await new Promise(resolve => setTimeout(resolve, 3000));
             console.log('C');
-            cursor.close();
-            console.timeEnd(`VOLUSPA-${indexGuild.name}`);
         });
         /*for (let guild = await guilds.next(); guild != null; guild = await guilds.next()) {
             //TODO update guild-info

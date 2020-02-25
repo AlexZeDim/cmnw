@@ -8,7 +8,8 @@
     "VOLUSPA-indexRealms": "node voluspa/indexing/indexRealms.js",
     "VOLUSPA-indexLogs": "node voluspa/indexing/indexLogs.js",
     "start": "node voluspa/indexing/indexCharacters.js",
-    "test": "node voluspa/indexing/indexGuilds.js"
+    "test": "node voluspa/indexing/indexGuilds.js",
+    "remove": "node voluspa/indexing/delete.js"
   },
   "dependencies": {
     "axios": "latest",

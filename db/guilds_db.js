@@ -29,11 +29,24 @@ let schema = new mongoose.Schema({
     realm: {
         type: String
     },
+    realm_slug: {
+        type: String
+    },
     faction: {
         type: String
     },
-    members: {
-        type: String //TODO
+    //TODO crest
+    guild_log: {
+        join: Array,
+        promote: Array,
+        demote: Array,
+        leave: Array,
+    },
+    members_latest: {
+        type: Array //
+    },
+    members_prev: {
+        type: Array //TODO
     },
     achievement_points: {
         type: Number

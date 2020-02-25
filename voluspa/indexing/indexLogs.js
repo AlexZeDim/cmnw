@@ -10,7 +10,7 @@ async function indexLogs (queryInput = {isIndexed:false}) {
     try {
         console.time(`VOLUSPA-${indexLogs.name}`);
         let documentBulk = [];
-        const cursor = logs_db.find(queryInput).cursor({batchSize: 1});
+        const cursor = logs_db.find(queryInput).lean().cursor({batchSize: 1});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
             if (documentBulk.length === 1) {

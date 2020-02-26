@@ -37,17 +37,49 @@ let schema = new mongoose.Schema({
     },
     //TODO crest
     guild_log: {
-        join: Array,
-        promote: Array,
-        demote: Array,
-        leave: Array,
+        join: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+        promote: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+        demote: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+        leave: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
     },
-    members_latest: {
-        type: Array //
-    },
-    members_prev: {
-        type: Array //TODO
-    },
+    members_latest: [{
+        character_name: String,
+        character_id: Number,
+        character_rank: Number,
+        character_date: Date,
+        character_checksum: String,
+    }],
+    members_prev: [{
+        character_name: String,
+        character_id: Number,
+        character_rank: Number,
+        character_date: Date,
+        character_checksum: String,
+    }],
     achievement_points: {
         type: Number
     },

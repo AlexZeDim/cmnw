@@ -6,10 +6,9 @@
     "tokens": "node bin/getTokens.js",
     "VOLUSPA-indexCharacters": "node voluspa/indexing/indexCharacters.js",
     "VOLUSPA-indexRealms": "node voluspa/indexing/indexRealms.js",
+    "VOLUSPA-indexGuilds": "node voluspa/indexing/indexGuilds.js",
     "VOLUSPA-indexLogs": "node voluspa/indexing/indexLogs.js",
-    "start": "node voluspa/indexing/indexCharacters.js",
-    "test": "node voluspa/indexing/indexGuilds.js",
-    "remove": "node voluspa/indexing/delete.js"
+    "start": "node voluspa/indexing/indexCharacters.js"
   },
   "dependencies": {
     "axios": "latest",

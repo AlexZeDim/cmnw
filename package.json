@@ -3,21 +3,28 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node voluspa/fromRoster.js"
+    "tokens": "node bin/getTokens.js",
+    "VOLUSPA-indexCharacters": "node voluspa/indexing/indexCharacters.js",
+    "VOLUSPA-indexRealms": "node voluspa/indexing/indexRealms.js",
+    "VOLUSPA-indexLogs": "node voluspa/indexing/indexLogs.js",
+    "start": "node voluspa/indexing/indexCharacters.js",
+    "test": "node voluspa/indexing/indexGuilds.js",
+    "remove": "node voluspa/indexing/delete.js"
   },
   "dependencies": {
-    "axios": "^0.19.2",
-    "battlenet-api-wrapper": "^1.0.3",
+    "axios": "latest",
+    "battlenet-api-wrapper": "latest",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
+    "moment": "^2.24.0",
     "mongoose": "^5.8.11",
     "morgan": "~1.9.1",
     "node-schedule": "^1.3.2",
-    "passport": "^0.4.1",
-    "passport-bnet": "^2.0.0"
+    "x-ray": "latest"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "fast-crc32c": "^2.0.0"
   }
 }

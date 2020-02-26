@@ -29,19 +29,75 @@ let schema = new mongoose.Schema({
     realm: {
         type: String
     },
+    realm_slug: {
+        type: String
+    },
     faction: {
         type: String
     },
+    //TODO crest
+    guild_log: {
+        join: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+        promote: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+        demote: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+        leave: [{
+            character_name: String,
+            character_id: Number,
+            character_rank: Number,
+            character_date: Date,
+            character_checksum: String,
+        }],
+    },
+    members_latest: [{
+        character_name: String,
+        character_id: Number,
+        character_rank: Number,
+        character_date: Date,
+        character_checksum: String,
+    }],
+    members_prev: [{
+        character_name: String,
+        character_id: Number,
+        character_rank: Number,
+        character_date: Date,
+        character_checksum: String,
+    }],
     achievement_points: {
         type: Number
     },
     member_count: {
         type: Number
     },
+    createdBy: {
+        type: String
+    },
+    updatedBy: {
+        type: String
+    },
     created_timestamp: {
         type: Number
+    },
+    isWatched: {
+        type: Boolean
     }
-    //TODO is watched
 },{
     timestamps: true
 });

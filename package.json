@@ -8,11 +8,12 @@
     "VOLUSPA-indexRealms": "node voluspa/indexing/indexRealms.js",
     "VOLUSPA-indexGuilds": "node voluspa/indexing/indexGuilds.js",
     "VOLUSPA-indexLogs": "node voluspa/indexing/indexLogs.js",
-    "start": "node voluspa/indexing/indexCharacters.js"
+    "start": "node voluspa/indexing/indexCharacters.js",
+    "test": "node dma/getAuctionData.js"
   },
   "dependencies": {
     "axios": "latest",
-    "battlenet-api-wrapper": "latest",
+    "battlenet-api-wrapper": "git+https://github.com/AlexZeDim/battlenet-api-wrapper.git",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",

@@ -6,7 +6,7 @@ module.exports = {
     autorestart: true,
     watch: true,
     max_memory_restart: '100M',
-    cron_restart: '*/1 * * * *',
+    cron_restart: '*/2 * * * *',
     time: true
   },{
     name: 'indexCharacters',

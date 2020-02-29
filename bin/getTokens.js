@@ -11,6 +11,7 @@ async function getTokens () {
             let token = await keys_db.updateOne({_id: auth._id},{token: access_token, expired_in: expires_in});
             if (token) console.info(`U,${auth._id},${expires_in}`);
         }
+        process.exit(0);
     } catch (e) {
         console.error(e);
     }

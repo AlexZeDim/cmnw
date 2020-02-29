@@ -1,5 +1,6 @@
 const keys_db = require("../db/keys_db");
 const axios = require('axios');
+const {connection} = require('mongoose');
 
 async function getTokens () {
     try {
@@ -11,7 +12,7 @@ async function getTokens () {
             let token = await keys_db.updateOne({_id: auth._id},{token: access_token, expired_in: expires_in});
             if (token) console.info(`U,${auth._id},${expires_in}`);
         }
-        process.exit(0);
+        connection.close();
     } catch (e) {
         console.error(e);
     }

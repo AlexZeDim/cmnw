@@ -8,7 +8,7 @@ module.exports = {
     max_memory_restart: '100M',
     cron_restart: '*/1 * * * *',
     time: true,
-    log_date_format: "HH:mm Z"
+    log_date_format: "HH:mm"
   },{
     name: 'indexCharacters',
     script: './voluspa/indexing/indexCharacters.js',
@@ -19,7 +19,7 @@ module.exports = {
     max_memory_restart: '1G',
     cron_restart: '0 13,01 * * *',
     time: true,
-    log_date_format: "HH:mm Z"
+    log_date_format: "HH:mm"
   },{
     name: "indexGuilds",
     script: "./voluspa/indexing/indexGuilds.js",
@@ -29,7 +29,7 @@ module.exports = {
     max_memory_restart: '1G',
     cron_restart: '0 */2 * * *',
     time: true,
-    log_date_format: "HH:mm Z"
+    log_date_format: "HH:mm"
   }],
 
   deploy : {

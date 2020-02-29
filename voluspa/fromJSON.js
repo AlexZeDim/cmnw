@@ -1,6 +1,12 @@
 const fs = require('fs');
 const guild_db = require("../db/guilds_db");
 
+/****
+ *
+ * @param path
+ * @returns {Promise<void>}
+ */
+
 async function myReadfile (path) {
     try {
         let str = await fs.readFileSync(path,'utf8');

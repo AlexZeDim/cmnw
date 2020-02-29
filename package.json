@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "axios": "latest",
-    "battlenet-api-wrapper": "latest",
+    "battlenet-api-wrapper": "git+https://github.com/AlexZeDim/battlenet-api-wrapper.git",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",

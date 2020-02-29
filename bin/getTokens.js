@@ -12,7 +12,7 @@ async function getTokens () {
             console.info(`${getTokens.name},U,${auth._id},${expires_in}`);
         }
     } catch (e) {
-        console.log(e);
+        console.error(e);
     }
 }
 

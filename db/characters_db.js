@@ -82,13 +82,13 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-schema.index({ id: 1 });
+//schema.index({ id: 1 });
 
 let characters_db = mongoose.model('characters', schema);
 
-characters_db.on('index', function(error) {
-    console.log(error.message);
-});
+//characters_db.on('index', function(error) {
+    //console.log(error.message);
+//});
 
 
 module.exports = characters_db;

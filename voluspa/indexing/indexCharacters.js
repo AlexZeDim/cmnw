@@ -55,7 +55,6 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
         });
         cursor.on('close', () => {
             console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
-            indexCharacters();
         });
     } catch (err) {
         console.error(`${indexCharacters.name},${err}`);

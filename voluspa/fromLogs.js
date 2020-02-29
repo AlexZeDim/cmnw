@@ -12,7 +12,7 @@ let x = Xray();
 async function fromLogs () {
     try {
         let emptyPage = 0;
-        for (let page = 0; page < 35; page++) {
+        for (let page = 0; page < 50; page++) {
             let indexVOLUSPA = await x(`https://www.warcraftlogs.com/zone/reports?zone=24&server=488&page=${page}`,
                 '.description-cell',
                 [{
@@ -21,11 +21,10 @@ async function fromLogs () {
             ).then((res) => {
                 return res
             });
-            //TODO check if exist, if exist don't add, else add
             if (indexVOLUSPA.length !== 0) {
                 for (let i = 0; i < indexVOLUSPA.length; i++) {
                     let {link, realm} = indexVOLUSPA[i];
-                    console.log(realm);
+                    console.log(link,realm);
                     if (link.includes('reports') === true) {
                         await logs_db.findById(
                             {

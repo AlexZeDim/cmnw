@@ -1,19 +1,32 @@
 module.exports = {
   apps : [{
-    name: 'test',
-    script: './voluspa/orchestra/orchestra.js',
-    // Options reference: https://pm2.keymetrics.io/docs/usage/application-declaration/
-    args: '-a 13 -b 12',
+    name: "getToken",
+    script: "./bin/getToken.js",
+    instances: 1,
+    autorestart: true,
+    watch: true,
+    max_memory_restart: '100M',
+    cron_restart: '* * * * *',
+    time: true
+  },{
+    name: 'indexCharacters',
+    script: './voluspa/indexing/indexCharacters.js',
+    //args: '--b 12',
     instances: 1,
     autorestart: true,
     watch: true,
     max_memory_restart: '1G',
-    env: {
-      NODE_ENV: 'development'
-    },
-    env_production: {
-      NODE_ENV: 'production'
-    }
+    cron_restart: '0 13,01 * * *',
+    time: true
+  },{
+    name: "indexGuilds",
+    script: "./voluspa/indexing/indexGuilds.js",
+    instances: 1,
+    autorestart: true,
+    watch: true,
+    max_memory_restart: '1G',
+    cron_restart: '0 */2 * * *',
+    time: true
   }],
 
   deploy : {

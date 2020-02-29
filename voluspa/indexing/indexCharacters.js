@@ -1,6 +1,7 @@
 const characters_db = require("../../db/characters_db");
 const keys_db = require("../../db/keys_db");
 const getCharacter = require('../getCharacter');
+const {connection} = require('mongoose');
 
 /***
  *
@@ -52,7 +53,8 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
             cursor.close();
         });
         cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 60000));
+            await new Promise(resolve => setTimeout(resolve, 180000));
+            connection.close();
             console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
         });
     } catch (err) {

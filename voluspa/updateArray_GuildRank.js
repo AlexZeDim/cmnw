@@ -19,7 +19,7 @@ async function updateArray_GuildRank (arrayMembers=[], guild_id, guild_name, act
             })
         }
     } catch (error) {
-        console.error(error);
+        console.error(`E,${updateArray_GuildRank.name},${error}`);
     }
 }
 

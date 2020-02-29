@@ -2,7 +2,7 @@ const logs_db = require("../db/logs_db");
 const Xray = require('x-ray');
 let x = Xray();
 
-//TODO pages and realms
+//TODO realms && zones
 
 /**
  *
@@ -23,8 +23,7 @@ async function fromLogs () {
             });
             if (indexVOLUSPA.length !== 0) {
                 for (let i = 0; i < indexVOLUSPA.length; i++) {
-                    let {link, realm} = indexVOLUSPA[i];
-                    console.log(link,realm);
+                    let {link} = indexVOLUSPA[i];
                     if (link.includes('reports') === true) {
                         await logs_db.findById(
                             {
@@ -38,8 +37,8 @@ async function fromLogs () {
                                     isIndexed: false,
                                     source: `VOLUSPA-${fromLogs.name}`
                                 }).then(function (log, error) {
-                                    if (error) console.error(error);
-                                    console.info(log)
+                                    if (error) console.error(`E,${link},${error}`);
+                                    console.info(`C,${log._id}@${log.realm}`)
                                 })
                             }
                         });

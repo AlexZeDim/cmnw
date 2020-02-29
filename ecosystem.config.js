@@ -3,10 +3,10 @@ module.exports = {
     name: "getToken",
     script: "./bin/getTokens.js",
     instances: 1,
-    autorestart: true,
     watch: true,
+    autorestart: true,
     max_memory_restart: '100M',
-    cron_restart: '*/2 * * * *',
+    cron_restart: '*/1 * * * *',
     time: true
   },{
     name: 'indexCharacters',

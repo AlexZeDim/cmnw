@@ -4,6 +4,7 @@ const keys_db = require("../../db/keys_db");
 const getGuild = require('../getGuild');
 const updateArray_GuildRank = require('../updateArray_GuildRank');
 const moment = require('moment');
+const {connection} = require('mongoose');
 
 async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGuilds` }, bulkSize = 1) {
     try {
@@ -138,7 +139,8 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
             cursor.close();
         });
         cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 60000));
+            await new Promise(resolve => setTimeout(resolve, 180000));
+            connection.close();
             console.timeEnd(`VOLUSPA-${indexGuild.name}`);
         });
     } catch (e) {

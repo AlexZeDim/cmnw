@@ -86,25 +86,25 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                         }
                         let leave = members_latest.filter(({ character_id: id1 }) => !members_.some(({ character_id: id2 }) => id2 === id1));
                         if (leave.length) {
-                            console.info(`${guild_.id}:${guild_.name}, leave: ${guild_log.leave.length}, added: ${leave.length}`);
+                            console.info(`LEAVE: ${leave.length} => ${guild_log.leave.length}`);
                             guild_log.leave = [...guild_log.leave, ...leave];
                             await updateArray_GuildRank(leave, guild_.id, guild_.name, 'leaves');
                         }
                         let promote = members_.filter(({ character_id: id1, character_rank: r1 }) => members_latest.some(({ character_id: id2, character_rank: r2 }) => id2 === id1 && r2 > r1));
                         if (promote.length) {
-                            console.info(`${guild_.id}:${guild_.name}, promoted: ${guild_log.promote.length}, added: ${promote.length}`);
+                            console.info(`PROMOTED: ${promote.length} => ${guild_log.promote.length}`);
                             guild_log.promote = [...guild_log.promote, ...promote];
                             await updateArray_GuildRank(promote, guild_.id, guild_.name, 'promoted');
                         }
                         let demote = members_.filter(({ character_id: id1, character_rank: r1 }) => members_latest.some(({ character_id: id2, character_rank: r2 }) => id2 === id1 && r2 < r1));
                         if (demote.length) {
-                            console.info(`${guild_.id}:${guild_.name}, demoted: ${guild_log.demote.length}, added: ${demote.length}`);
+                            console.info(`DEMOTED: ${demote.length} => ${guild_log.demote.length}`);
                             guild_log.demote = [...guild_log.demote, ...demote];
                             await updateArray_GuildRank(demote, guild_.id, guild_.name, 'demoted');
                         }
                         let join = members_.filter(({character_id: id1}) => !members_latest.some(({character_id: id2}) => id2 === id1));
                         if (join.length) {
-                            console.info(`${guild_.id}:${guild_.name}, join: ${guild_log.join.length}, added: ${join.length}`);
+                            console.info(`JOIN: ${join.length} => ${guild_log.join.length}`);
                             guild_log.join = [...guild_log.join, ...join];
                             await updateArray_GuildRank(join, guild_.id, guild_.name, 'joins');
                         }

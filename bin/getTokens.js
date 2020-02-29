@@ -9,7 +9,7 @@ async function getTokens () {
                 return res.data;
             });
             let token = await keys_db.updateOne({_id: auth._id},{token: access_token, expired_in: expires_in});
-            if (token) console.info(`U,${getTokens.name},${token}`);
+            if (token) console.info(`U,${auth._id},${expires_in}`);
         }
     } catch (e) {
         console.error(e);

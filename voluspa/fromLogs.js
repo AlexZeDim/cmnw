@@ -40,6 +40,8 @@ async function fromLogs () {
                                     if (error) console.error(`E,${link},${error}`);
                                     console.info(`C,${log._id}@${log.realm}`)
                                 })
+                            } else {
+                                console.info(`E,${log._id}@${log.realm}`);
                             }
                         });
                     }

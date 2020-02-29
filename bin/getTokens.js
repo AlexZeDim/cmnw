@@ -1,10 +1,5 @@
 const keys_db = require("../db/keys_db");
-const schedule = require('node-schedule');
 const axios = require('axios');
-
-schedule.scheduleJob(`*/1 * * *`, function() {
-    getTokens();
-});
 
 async function getTokens () {
     try {
@@ -20,3 +15,5 @@ async function getTokens () {
         console.log(e);
     }
 }
+
+getTokens();

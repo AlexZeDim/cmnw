@@ -10,7 +10,6 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param characterName
  * @param token
  * @param guildRank
- * @returns {Promise<{name: *, realm: *, _id: string}|{}>}
  */
 
 async function getCharacter (realmSlug, characterName, token= '', guildRank = false) {
@@ -25,8 +24,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
         ]);
-        //FIXME this is probably wrong
-        result._id = `${name.toLowerCase()}@${realm.slug}`;
+        result._id = `${characterName}@${realmSlug}`;
         result.id = id;
         result.name = name;
         result.gender = gender.name;
@@ -70,15 +68,17 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         if (mounts) {
             let mount_array = [];
             for (let i = 0; i < mounts.length; i++) {
-                mount_array.push(mounts[i].mount.id)
+                let {mount} = mounts[i];
+                mount_array.push(mount.id)
             }
             mounts_checksum = crc32.calculate(Buffer.from(mount_array)).toString(16);
             result.checksum.mounts = mounts_checksum;
         }
+        console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
         return result;
     } catch (error) {
-        console.log(error);
-        return { _id: `${characterName}@${realmSlug}`, name: characterName, realm: realmSlug }
+        console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
+        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug }
     }
 }
 

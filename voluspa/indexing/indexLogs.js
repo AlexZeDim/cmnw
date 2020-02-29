@@ -27,7 +27,8 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                             let {slug} = await realms_db.findOne({$or:
                                     [
                                         { 'name_locale': server },
-                                        { 'name': server }
+                                        { 'name': server },
+                                        { 'slug': server }
                                     ]
                             }).lean().exec();
                             return await characters_db.findByIdAndUpdate(
@@ -47,7 +48,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                                     setDefaultsOnInsert: true,
                                     lean: true
                                 }
-                            ).exec();
+                            ).then(ch => console.info(`C,${ch._id}`));
                         });
                         return await logs_db.findByIdAndUpdate(
                             {
@@ -62,7 +63,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                                 setDefaultsOnInsert: true,
                                 lean: true
                             }
-                        ).exec();
+                        ).then(lg => console.info(`U,${lg._id}`));
                     } catch (e) {
                         console.log(e)
                     }

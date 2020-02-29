@@ -1,26 +1,61 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
-const crypto = require('crypto');
+const crc32 = require('fast-crc32c');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
-async function getCharacter (realmSlug, characterName) {
+/**
+ *
+ * @param realmSlug
+ * @param characterName
+ * @param token
+ * @param guildRank
+ * @returns {Promise<{name: *, realm: *, _id: string}|{}>}
+ */
+
+async function getCharacter (realmSlug, characterName, token= '', guildRank = false) {
     try {
         const bnw = new battleNetWrapper();
-        await bnw.init(clientId, clientSecret, 'eu', 'en_GB');
+        await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let pets_checksum, mounts_checksum;
         let petSlots = [];
-        const {id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level} = await bnw.WowProfileData.getCharacterSummary(realmSlug, characterName);
-        const {pets, unlocked_battle_pet_slots} = await bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName);
-        const {mounts} = await bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName);
+        let result = {};
+        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
+            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
+        ]);
+        //FIXME this is probably wrong
+        result._id = `${name.toLowerCase()}@${realm.slug}`;
+        result.id = id;
+        result.name = name;
+        result.gender = gender.name;
+        result.faction = faction.name;
+        result.race = race.name;
+        result.class = character_class.name;
+        result.spec = active_spec.name;
+        result.realm = realm.name;
+        result.realm_slug = realm.slug;
+        result.level = level;
+        result.lastModified = last_login_timestamp;
+        result.checksum = {};
+        result.ilvl = {
+            eq: average_item_level,
+            avg: equipped_item_level
+        };
         if (guild) {
-            //console.log(guild)
+            result.guild = guild.name;
+            if (guildRank) {
+                const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
+                const {rank} = members.find( ({ character }) => character.name === name );
+                result.guild_rank = rank;
+            }
         }
         if (pets) {
             let pets_string = '';
             for (let i = 0; i < pets.length; i++) {
                 if (pets[i].hasOwnProperty('is_active')) {
-                    petSlots.push(pets[i])
+                    petSlots.push(pets[i]);
                 }
                 if (typeof pets[i].name === 'undefined') {
                     pets_string += pets[i].species.name
@@ -28,28 +63,23 @@ async function getCharacter (realmSlug, characterName) {
                     pets_string += pets[i].name
                 }
             }
-            const hash = crypto.createHash('sha1');
-            pets_checksum = hash.update(pets_string).digest('hex');
+            pets_checksum = crc32.calculate(pets_string).toString(16);
+            result.checksum.petSlots = petSlots;
+            result.checksum.pets = pets_checksum;
         }
         if (mounts) {
             let mount_array = [];
             for (let i = 0; i < mounts.length; i++) {
                 mount_array.push(mounts[i].mount.id)
             }
-            const hash = crypto.createHash('sha1');
-            mounts_checksum = hash.update(Buffer.from(mount_array)).digest('hex');
+            mounts_checksum = crc32.calculate(Buffer.from(mount_array)).toString(16);
+            result.checksum.mounts = mounts_checksum;
         }
-        console.log(realm);
-    } catch (e) {
-        if (typeof e.code != 'undefined' && e.code  === 'ECONNRESET') {
-            console.log('error');
-        }
-        if (typeof e.response != 'undefined' && e.response.status === 404) {
-            console.log('error');
-        }
+        return result;
+    } catch (error) {
+        console.log(error);
+        return { _id: `${characterName}@${realmSlug}`, name: characterName, realm: realmSlug }
     }
 }
-
-getCharacter('gordunni','инициатива');
 
 module.exports = getCharacter;

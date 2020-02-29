@@ -15,73 +15,57 @@ mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema({
     _id: {
-        type: String
-    },
-    id: {
         type: Number
+    },
+    region: {
+        type: String
     },
     name: {
         type: String
     },
-    guild: {
+    name_locale: {
         type: String
     },
-    guild_rank: {
+    slug: {
+        type: String
+    },
+    category: {
+        type: String
+    },
+    locale: {
+        type: String
+    },
+    timezone: {
+        type: String
+    },
+    type: {
+        type: String
+    },
+    is_tournament: {
+        type: Boolean
+    },
+    has_queue: {
+        type: Boolean
+    },
+    status: {
+        type: String
+    },
+    population: {
+        type: String
+    },
+    connected_realm_id: {
         type: Number
     },
-    guild_history: {
+    connected_realm: {
         type: Array
     },
-    realm: {
+    ticker: {
         type: String
-    },
-    realm_slug: {
-        type: String
-    },
-    ilvl: {
-        eq: Number,
-        avg: Number,
-    },
-    checksum: {
-        pets: String,
-        mounts: String,
-        petSlots: Array
-    },
-    race: {
-        type: String
-    },
-    class: {
-        type: String
-    },
-    spec: {
-        type: String
-    },
-    gender: {
-        type: String
-    },
-    faction: {
-        type: String
-    },
-    level: {
-        type: Number
-    },
-    lastModified: {
-        type: Number
-    },
-    createdBy: {
-        type: String
-    },
-    updatedBy: {
-      type: String
-    },
-    isWatched: {
-        type: Boolean
     }
-    //TODO media
 },{
     timestamps: true
 });
 
-let characters_db = mongoose.model('characters', schema);
+let realms_db = mongoose.model('realms', schema);
 
-module.exports = characters_db;
+module.exports = realms_db;

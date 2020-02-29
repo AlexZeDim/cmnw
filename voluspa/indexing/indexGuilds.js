@@ -5,14 +5,15 @@ const getGuild = require('../getGuild');
 const updateArray_GuildRank = require('../updateArray_GuildRank');
 const moment = require('moment');
 
-async function indexGuild (queryFind = '', queryKeys = { tags: `Depo` }) {
+async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGuilds` }, bulkSize = 1) {
     try {
+        console.time(`VOLUSPA-${indexGuild.name}`);
         let documentBulk = [];
-        let cursor = await guild_db.find(queryFind).lean().cursor({batchSize: 1});
+        let cursor = await guild_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
-            if (documentBulk.length === 1) {
-                console.time(`Bulk-${indexGuild.name}`);
+            if (documentBulk.length === bulkSize) {
+                console.time(`================================`);
                 cursor.pause();
                 const { token } = await keys_db.findOne(queryKeys);
                 //TODO crest
@@ -72,7 +73,8 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `Depo` }) {
                                     realm_slug: guild_.realm_slug,
                                     createdBy: `VOLUSPA-${indexGuild.name}`,
                                     updatedBy: `VOLUSPA-${indexGuild.name}`
-                                });
+                                })
+                                .then(ch => console.info(`C,${ch._id}`));
                                 members_.push({
                                     character_name: name,
                                     character_id: id,
@@ -84,32 +86,31 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `Depo` }) {
                         }
                         let leave = members_latest.filter(({ character_id: id1 }) => !members_.some(({ character_id: id2 }) => id2 === id1));
                         if (leave.length) {
-                            console.log(`${guild_.id}:${guild_.name}, leave: ${guild_log.leave.length}, added: ${leave.length}`);
+                            console.info(`${guild_.id}:${guild_.name}, leave: ${guild_log.leave.length}, added: ${leave.length}`);
                             guild_log.leave = [...guild_log.leave, ...leave];
                             await updateArray_GuildRank(leave, guild_.id, guild_.name, 'leaves');
                         }
                         let promote = members_.filter(({ character_id: id1, character_rank: r1 }) => members_latest.some(({ character_id: id2, character_rank: r2 }) => id2 === id1 && r2 > r1));
                         if (promote.length) {
-                            console.log(`${guild_.id}:${guild_.name}, promoted: ${guild_log.promote.length}, added: ${promote.length}`);
+                            console.info(`${guild_.id}:${guild_.name}, promoted: ${guild_log.promote.length}, added: ${promote.length}`);
                             guild_log.promote = [...guild_log.promote, ...promote];
                             await updateArray_GuildRank(promote, guild_.id, guild_.name, 'promoted');
                         }
                         let demote = members_.filter(({ character_id: id1, character_rank: r1 }) => members_latest.some(({ character_id: id2, character_rank: r2 }) => id2 === id1 && r2 < r1));
                         if (demote.length) {
-                            console.log(`${guild_.id}:${guild_.name}, demoted: ${guild_log.demote.length}, added: ${demote.length}`);
+                            console.info(`${guild_.id}:${guild_.name}, demoted: ${guild_log.demote.length}, added: ${demote.length}`);
                             guild_log.demote = [...guild_log.demote, ...demote];
                             await updateArray_GuildRank(demote, guild_.id, guild_.name, 'demoted');
                         }
                         let join = members_.filter(({character_id: id1}) => !members_latest.some(({character_id: id2}) => id2 === id1));
                         if (join.length) {
-                            console.log(`${guild_.id}:${guild_.name}, join: ${guild_log.join.length}, added: ${join.length}`);
+                            console.info(`${guild_.id}:${guild_.name}, join: ${guild_log.join.length}, added: ${join.length}`);
                             guild_log.join = [...guild_log.join, ...join];
                             await updateArray_GuildRank(join, guild_.id, guild_.name, 'joins');
                         }
                         guild_.members_prev = members_latest;
                         guild_.members_latest = members_;
                         guild_.guild_log = guild_log;
-                        console.log(`${guild_.id}:${guild_.name},U,${guild_.members_latest.length}`);
                         return await guild_db.findByIdAndUpdate(
                             {
                                 _id: `${slug}@${realm_slug}`
@@ -129,18 +130,16 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `Depo` }) {
                 await Promise.all(promises);
                 documentBulk = [];
                 cursor.resume();
-                console.timeEnd(`Bulk-${indexGuild.name}`);
+                console.timeEnd(`================================`);
             }
         });
         cursor.on('error', error => {
-            console.log('B');
-            console.error(error);
+            console.error(`E,VOLUSPA-${indexGuild.name},${error}`);
             cursor.close();
         });
         cursor.on('close', async () => {
-            console.log('A');
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log('C');
+            await new Promise(resolve => setTimeout(resolve, 60000));
+            console.timeEnd(`VOLUSPA-${indexGuild.name}`);
         });
     } catch (e) {
         console.log(e)

@@ -11,6 +11,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
             bnw.WowProfileData.getGuildSummary(realmSlug, nameSlug),
             bnw.WowProfileData.getGuildRoster(realmSlug, nameSlug),
         ]);
+        console.info(`U,${getGuild.name},${nameSlug}@${realmSlug}:${id},${member_count}`);
         return ({
             _id: `${nameSlug}@${realmSlug}`,
             id: id,
@@ -26,7 +27,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
             members: members
         });
     } catch (error) {
-        console.error(error);
+        console.error(`E,${getGuild.name},${nameSlug}@${realmSlug},${error}`);
         return {_id: `${nameSlug}@${realmSlug}`, slug: nameSlug, realm_slug: realmSlug}
     }
 

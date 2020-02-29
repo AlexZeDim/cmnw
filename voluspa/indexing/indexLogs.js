@@ -6,15 +6,15 @@ const axios = require('axios');
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 const private_key = '71255109b6687eb1afa4d23f39f2fa76';
 
-async function indexLogs (queryInput = {isIndexed:false}) {
+async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
     try {
         console.time(`VOLUSPA-${indexLogs.name}`);
         let documentBulk = [];
-        const cursor = logs_db.find(queryInput).lean().cursor({batchSize: 1});
+        const cursor = logs_db.find(queryInput).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
-            if (documentBulk.length === 1) {
-                console.time(`Bulk-${indexLogs.name}`);
+            if (documentBulk.length === bulkSize) {
+                console.time(`================`);
                 cursor.pause();
                 const promises = documentBulk.map(async (req) => {
                     try {
@@ -70,21 +70,16 @@ async function indexLogs (queryInput = {isIndexed:false}) {
                 await Promise.all(promises);
                 documentBulk = [];
                 cursor.resume();
-                console.timeEnd(`Bulk-${indexLogs.name}`);
+                console.timeEnd(`================`);
             }
         });
         cursor.on('error', error => {
-            console.log('B');
-            console.error(error);
+            console.error(`E,VOLUSPA-${indexLogs.name},${error}`);
             cursor.close();
         });
         cursor.on('close', async () => {
-            console.log('A');
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log('C');
+            await new Promise(resolve => setTimeout(resolve, 60000));
             console.timeEnd(`VOLUSPA-${indexLogs.name}`);
-            //TODO call for
-            //indexLogs();
         });
     } catch (err) {
         console.error(`${indexLogs.name},${err}`);

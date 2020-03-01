@@ -22,48 +22,36 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                         let { exportedCharacters } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${_id}?api_key=${pub_key}`).then(res => {
                             return res.data;
                         });
-                        //FIXME for of
-                        exportedCharacters.map(async ({name, server}) => {
-                            let {slug} = await realms_db.findOne({$or:
-                                    [
-                                        { 'name_locale': server },
-                                        { 'name': server },
-                                        { 'slug': server }
-                                    ]
-                            }).lean().exec();
-                            return await characters_db.findByIdAndUpdate(
-                                {
-                                    _id: `${name.toLowerCase()}@${slug}`
-                                },
-                                {
-                                    _id: `${name.toLowerCase()}@${slug}`,
-                                    name: name,
-                                    realm_slug: slug,
-                                    createdBy: `VOLUSPA-${indexLogs.name}`,
-                                    updatedBy: `VOLUSPA-${indexLogs.name}`
-                                },
-                                {
-                                    upsert : true,
-                                    new: true,
-                                    setDefaultsOnInsert: true,
-                                    lean: true
+                        if (exportedCharacters) {
+                            for ({name, server} of exportedCharacters) {
+                                let {slug} = await realms_db.findOne({
+                                    $or:
+                                        [
+                                            {'name_locale': server},
+                                            {'name': server},
+                                        ]
+                                }).lean().exec();
+                                if (!slug) {
+                                    slug = server.toLowerCase().replace(/\s/g,"-");
                                 }
-                            ).then(ch => console.info(`C,${ch._id}`));
-                        });
-                        return await logs_db.findByIdAndUpdate(
-                            {
-                                _id: _id
-                            },
-                            {
-                                isIndexed: true
-                            },
-                            {
-                                upsert : true,
-                                new: true,
-                                setDefaultsOnInsert: true,
-                                lean: true
+                                let character_ = await characters_db.findById(`${name.toLowerCase()}@${slug}`);
+                                if (!character_) {
+                                    characters_db.create(                                {
+                                        _id: `${name.toLowerCase()}@${slug}`,
+                                        name: name,
+                                        realm_slug: slug,
+                                        createdBy: `VOLUSPA-${indexLogs.name}`,
+                                        updatedBy: `VOLUSPA-${indexLogs.name}`
+                                    }).then(function (ch, error) {
+                                        if (error) console.error(`E,${error}`);
+                                        console.info(`C,${ch._id}`)
+                                    })
+                                } else {
+                                    console.info(`E,${character_._id}`)
+                                }
                             }
-                        ).then(lg => console.info(`U,${lg._id}`));
+                            return await logs_db.findByIdAndUpdate(_id, {isIndexed: true}).then(lg => console.info(`U,${lg._id}`));
+                        }
                     } catch (e) {
                         console.log(e)
                     }

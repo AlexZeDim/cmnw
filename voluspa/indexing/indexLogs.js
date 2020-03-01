@@ -4,7 +4,6 @@ const characters_db = require("../../db/characters_db");
 const axios = require('axios');
 
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
-const private_key = '71255109b6687eb1afa4d23f39f2fa76';
 
 async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
     try {

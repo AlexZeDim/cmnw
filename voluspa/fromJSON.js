@@ -12,6 +12,7 @@ async function myReadfile (path) {
         let str = await fs.readFileSync(path,'utf8');
         let obj = JSON.parse(str);
         let guild_array = [];
+        //TODO createdBy
         for (let i = 0; i < obj.length; i++) {
             guild_array.push({_id: `${obj[i].name.toLowerCase().replace(/\s/g,"-")}@gordunni`, slug: obj[i].name.toLowerCase().replace(/\s/g,"-"), realm: `gordunni`});
         }

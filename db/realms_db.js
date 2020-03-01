@@ -61,6 +61,9 @@ let schema = new mongoose.Schema({
     },
     ticker: {
         type: String
+    },
+    wcl_id: {
+        type: Number
     }
 },{
     timestamps: true

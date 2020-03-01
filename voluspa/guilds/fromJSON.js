@@ -1,5 +1,5 @@
 const fs = require('fs');
-const guild_db = require("../db/guilds_db");
+const guild_db = require("../../db/guilds_db");
 
 /****
  *

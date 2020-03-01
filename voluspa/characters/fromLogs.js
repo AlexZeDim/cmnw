@@ -9,7 +9,7 @@ let x = Xray();
  * @returns {Promise<void>}
  */
 
-async function fromLogs (queryFind = {locale: 'ru_RU'},delay = 10, startPage = 0, endPage = 100, faultTolerance = 400, emptyPage = 2) {
+async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 0, endPage = 100, faultTolerance = 400, emptyPage = 2) {
     try {
         console.time(`VOLUSPA-${fromLogs.name}`);
         let realms = await realms_db.find(queryFind).lean().cursor();

@@ -6,6 +6,9 @@ const zlib = require('zlib');
 const Xray = require('x-ray');
 let x = Xray();
 
+const util = require('util');
+const readdir = util.promisify(fs.readdir);
+
 async function downloadImage () {
     try {
         //TODO all paths
@@ -13,8 +16,6 @@ async function downloadImage () {
         //TODO delete folder
         const url = 'https://www.wowprogress.com/export/ranks/';
         const path = "C:\\testing\\test.gz";
-        //const writer = fs.createWriteStream(path);
-        /*
         let urls = await x(`https://www.wowprogress.com/export/ranks/`,'pre',['a@href']).then((res) => {
             return res
         });
@@ -26,26 +27,38 @@ async function downloadImage () {
                 await axios({
                     url: string,
                     responseType: "stream"
-                }).then(function (response) {
+                }).then(async function (response) {
                     return response.data.pipe(fs.createWriteStream(`/testing/${file_name}`));
                 });
             }
-        }*/
+        }
         console.log('here');
-        fs.readdir('C:/testing', function (err, files) {
+        let files = await readdir('C:/testing');
+        if (files) {
+            for (let y = 0; y < files.length; y++) {
+                const fileContents = await fs.createReadStream(`C:/testing/${files[y]}`);
+                const writeStream = await fs.createWriteStream(`C:/testing/${files[y].slice(0, -3)}`);
+                const unzip = await zlib.createGunzip();
+                await fileContents.pipe(unzip).pipe(writeStream);
+            }
+        }
+        //await new Promise(resolve => setTimeout(resolve, 10000));
+        console.log('here1');
+        /*await fs.readdir('C:/testing', async function (err, files) {
             //handling error
             if (err) {
                 return console.log('Unable to scan directory: ' + err);
             }
+            console.log(files);
             files.forEach( async (file) => {
-                // Do whatever you want to do with the file
-                await gzipy.decompress(`C:/testing/${file}`, `C:/testing/${file.slice(0, -3)}`, function(error)
-                    {
-                        if (error){ /* Something went wrong... */ }
-                        console.log('File decompressed');
-                    });
-            });
-        });
+
+                if (file.match(/json$/g)) {
+                    let str = await fs.readFileSync(`C:/testing/${file}`,'utf8');
+                    let obj = await JSON.parse(str);
+                    console.log(obj)
+                }
+            })
+        });*/
         //
     } catch (err) {
         console.log(err)

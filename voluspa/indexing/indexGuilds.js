@@ -17,7 +17,6 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                 console.time(`================================`);
                 cursor.pause();
                 const { token } = await keys_db.findOne(queryKeys);
-                //TODO crest
                 const promises = documentBulk.map(async (guild) => {
                     try {
                         let guild_ = {};

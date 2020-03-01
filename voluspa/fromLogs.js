@@ -4,14 +4,10 @@ const {connection} = require('mongoose');
 const Xray = require('x-ray');
 let x = Xray();
 
-//TODO realms && zones
-
 /**
  *
  * @returns {Promise<void>}
  */
-
-//TODO https://www.warcraftlogs.com/server/id/
 
 async function fromLogs (delay = 10) {
     try {

@@ -13,7 +13,7 @@ let x = Xray();
 
 //TODO https://www.warcraftlogs.com/server/id/
 
-async function fromLogs (delay = 5) {
+async function fromLogs (delay = 10) {
     try {
         console.time(`VOLUSPA-${fromLogs.name}`);
         let realms = await realms_db.find({locale: 'ru_RU'}).lean().cursor();
@@ -39,7 +39,9 @@ async function fromLogs (delay = 5) {
                                 _id: link.match(/(.{16})\s*$/g)[0]
                             }).lean().exec();
                             if (!log) {
-                                faultTolerance -= 1;
+                                if (faultTolerance > 0) {
+                                    faultTolerance -= 1;
+                                }
                                 await logs_db.create({
                                     _id: link.match(/(.{16})\s*$/g)[0],
                                     realm: slug,
@@ -63,7 +65,6 @@ async function fromLogs (delay = 5) {
                     console.info(`E,${wcl_id}:${slug},${emptyPage}`);
                     emptyPage += 1;
                     if (emptyPage === 2 ) {
-                        //realms.next();
                         break;
                     }
                 }

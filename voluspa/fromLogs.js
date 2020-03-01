@@ -1,4 +1,6 @@
 const logs_db = require("../db/logs_db");
+const realms_db = require("../db/realms_db");
+const {connection} = require('mongoose');
 const Xray = require('x-ray');
 let x = Xray();
 
@@ -9,31 +11,38 @@ let x = Xray();
  * @returns {Promise<void>}
  */
 
-async function fromLogs () {
+//TODO https://www.warcraftlogs.com/server/id/
+
+async function fromLogs (delay = 5) {
     try {
-        let emptyPage = 0;
-        for (let page = 0; page < 50; page++) {
-            let indexVOLUSPA = await x(`https://www.warcraftlogs.com/zone/reports?zone=24&server=488&page=${page}`,
-                '.description-cell',
-                [{
-                    link: 'a@href',
-                }]
-            ).then((res) => {
-                return res
-            });
-            if (indexVOLUSPA.length !== 0) {
-                for (let i = 0; i < indexVOLUSPA.length; i++) {
-                    let {link} = indexVOLUSPA[i];
-                    if (link.includes('reports') === true) {
-                        await logs_db.findById(
-                            {
+        console.time(`VOLUSPA-${fromLogs.name}`);
+        let realms = await realms_db.find({locale: 'ru_RU'}).lean().cursor();
+        for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
+            let {wcl_id, slug} = realm;
+            let emptyPage = 0;
+            let faultTolerance = 0;
+            for (let page = 0; page < 100; page++) {
+                await new Promise(resolve => setTimeout(resolve, delay * 1000));
+                let indexVOLUSPA = await x(`https://www.warcraftlogs.com/zone/reports?zone=24&server=${wcl_id}&page=${page}`,
+                    '.description-cell',
+                    [{
+                        link: 'a@href',
+                    }]
+                ).then((res) => {
+                    return res
+                });
+                if (indexVOLUSPA.length !== 0) {
+                    for (let i = 0; i < indexVOLUSPA.length; i++) {
+                        let {link} = indexVOLUSPA[i];
+                        if (link.includes('reports') === true) {
+                            let log = await logs_db.findById({
                                 _id: link.match(/(.{16})\s*$/g)[0]
-                            }
-                        ).exec(async function (err, log) {
+                            }).lean().exec();
                             if (!log) {
+                                faultTolerance -= 1;
                                 await logs_db.create({
                                     _id: link.match(/(.{16})\s*$/g)[0],
-                                    realm: 'gordunni', //TODO
+                                    realm: slug,
                                     isIndexed: false,
                                     source: `VOLUSPA-${fromLogs.name}`
                                 }).then(function (log, error) {
@@ -41,16 +50,27 @@ async function fromLogs () {
                                     console.info(`C,${log._id}@${log.realm}`)
                                 })
                             } else {
-                                console.info(`E,${log._id}@${log.realm}`);
+                                faultTolerance += 1;
+                                console.info(`E,${log._id}@${log.realm},${faultTolerance}`);
                             }
-                        });
+                        }
+                    }
+                    if (faultTolerance === 400 ) {
+                        console.info(`E,${page}:${slug},${faultTolerance}`);
+                        break;
+                    }
+                } else {
+                    console.info(`E,${wcl_id}:${slug},${emptyPage}`);
+                    emptyPage += 1;
+                    if (emptyPage === 2 ) {
+                        //realms.next();
+                        break;
                     }
                 }
-            } else {
-                emptyPage += 1;
-                if (emptyPage > 2 ) process.exit(2);
             }
         }
+        connection.close();
+        console.timeEnd(`VOLUSPA-${fromLogs.name}`);
     } catch (e) {
         console.log(e);
     }

@@ -1,70 +1,74 @@
-const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
-const gzipy = require('gzipy');
 const zlib = require('zlib');
 const Xray = require('x-ray');
 let x = Xray();
 
-const util = require('util');
-const readdir = util.promisify(fs.readdir);
+const fs = require('fs');
 
-async function downloadImage () {
+const {promisify} = require('util');
+const readDir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
+const removeDir = promisify(fs.rmdir);
+
+async function fromJSON (path_ = './temp') {
     try {
-        //TODO all paths
-        //TODO logs
-        //TODO delete folder
-        const url = 'https://www.wowprogress.com/export/ranks/';
-        const path = "C:\\testing\\test.gz";
+        console.time(`VOLUSPA-${fromJSON.name}`);
+
+        if (!fs.existsSync(path_)) fs.mkdirSync(path_);
+        console.time(`Downloading stage`);
         let urls = await x(`https://www.wowprogress.com/export/ranks/`,'pre',['a@href']).then((res) => {
             return res
         });
-        for (let i = 0; i < 50; i++) { //urls.length
+        for (let i = 0; i < urls.length; i++) {
             if (urls[i].includes('_tier26.json.gz') && urls[i].includes('eu_')) {
                 let string = encodeURI(decodeURI(urls[i]));
                 let file_name = decodeURIComponent(urls[i].substr(urls[i].lastIndexOf('/') + 1));
-                console.log(string, file_name);
+                console.info(`Downloading: ${string}`);
                 await axios({
                     url: string,
                     responseType: "stream"
                 }).then(async function (response) {
-                    return response.data.pipe(fs.createWriteStream(`/testing/${file_name}`));
+                    return response.data.pipe(fs.createWriteStream(`${path_}/${file_name}`));
                 });
             }
         }
-        console.log('here');
-        let files = await readdir('C:/testing');
+        console.timeEnd(`Downloading stage`);
+
+        console.time(`Unzipping stage`);
+        let files = await readDir(path_);
         if (files) {
             for (let y = 0; y < files.length; y++) {
-                const fileContents = await fs.createReadStream(`C:/testing/${files[y]}`);
-                const writeStream = await fs.createWriteStream(`C:/testing/${files[y].slice(0, -3)}`);
-                const unzip = await zlib.createGunzip();
-                await fileContents.pipe(unzip).pipe(writeStream);
+                if (files[y].match(/gz$/g)) {
+                    console.info(`Unzipping: ${files[y]}`);
+                    const fileContents = await fs.createReadStream(`${path_}/${files[y]}`);
+                    const writeStream = await fs.createWriteStream(`${path_}/${files[y].slice(0, -3)}`);
+                    const unzip = await zlib.createGunzip();
+                    await fileContents.pipe(unzip).pipe(writeStream);
+                }
             }
         }
-        //await new Promise(resolve => setTimeout(resolve, 10000));
-        console.log('here1');
-        /*await fs.readdir('C:/testing', async function (err, files) {
-            //handling error
-            if (err) {
-                return console.log('Unable to scan directory: ' + err);
-            }
-            console.log(files);
-            files.forEach( async (file) => {
+        console.timeEnd(`Unzipping stage`);
 
-                if (file.match(/json$/g)) {
-                    let str = await fs.readFileSync(`C:/testing/${file}`,'utf8');
-                    let obj = await JSON.parse(str);
-                    console.log(obj)
-                }
-            })
-        });*/
-        //
+        console.time(`Parsing JSON files`);
+        files = await readDir(path_);
+        for (let z = 0; z < files.length; z++) {
+            if (files[z].match(/json$/g)) {
+                console.info(`Parsing: ${files[z]}`);
+                let str = await readFile(`${path_}/${files[z]}`, {encoding: 'utf8'});
+                const obj = JSON.parse(str);
+                //TODO
+                console.log(obj);
+            }
+        }
+        console.timeEnd(`Parsing JSON files`);
+
+        await removeDir(`${path_}`, { recursive: true });
+        console.timeEnd(`VOLUSPA-${fromJSON.name}`);
     } catch (err) {
         console.log(err)
     }
 }
 
-downloadImage();
+fromJSON();
 
 //'C:\\Users\\AlexZ\\Downloads\\eu_гордунни_tier26.json'

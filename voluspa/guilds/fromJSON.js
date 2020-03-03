@@ -4,6 +4,7 @@ const Xray = require('x-ray');
 let x = Xray();
 
 const fs = require('fs');
+const realms_db = require("../../db/realms_db");
 
 const {promisify} = require('util');
 const readDir = promisify(fs.readdir);
@@ -14,22 +15,29 @@ async function fromJSON (path_ = './temp') {
     try {
         console.time(`VOLUSPA-${fromJSON.name}`);
 
+        let realms = await realms_db.find({locale:'ru_RU'}).exec();
+        realms = realms.map(({name_locale, slug}) => { return {slug_locale: name_locale.toLowerCase().replace(/\s/g,"-"), slug: slug}});
+
         if (!fs.existsSync(path_)) fs.mkdirSync(path_);
         console.time(`Downloading stage`);
         let urls = await x(`https://www.wowprogress.com/export/ranks/`,'pre',['a@href']).then((res) => {
             return res
         });
+
         for (let i = 0; i < urls.length; i++) {
             if (urls[i].includes('_tier26.json.gz') && urls[i].includes('eu_')) {
                 let string = encodeURI(decodeURI(urls[i]));
                 let file_name = decodeURIComponent(urls[i].substr(urls[i].lastIndexOf('/') + 1));
-                console.info(`Downloading: ${string}`);
-                await axios({
-                    url: string,
-                    responseType: "stream"
-                }).then(async function (response) {
-                    return response.data.pipe(fs.createWriteStream(`${path_}/${file_name}`));
-                });
+                const checkFilename = obj => obj.slug_locale === file_name.match(/(?<=_)(.*?)(?=_)/g)[0];
+                if (realms.some(checkFilename)) {
+                    console.info(`Downloading: ${file_name}`);
+                    await axios({
+                        url: string,
+                        responseType: "stream"
+                    }).then(async function (response) {
+                        return response.data.pipe(fs.createWriteStream(`${path_}/${file_name}`));
+                    });
+                }
             }
         }
         console.timeEnd(`Downloading stage`);
@@ -53,11 +61,15 @@ async function fromJSON (path_ = './temp') {
         files = await readDir(path_);
         for (let z = 0; z < files.length; z++) {
             if (files[z].match(/json$/g)) {
-                console.info(`Parsing: ${files[z]}`);
-                let str = await readFile(`${path_}/${files[z]}`, {encoding: 'utf8'});
-                const obj = JSON.parse(str);
-                //TODO
-                console.log(obj);
+                let indexOfRealms = realms.findIndex(r => r.slug_locale === files[z].match(/(?<=_)(.*?)(?=_)/g)[0]);
+                if (indexOfRealms !== -1) {
+                    console.log(realms[indexOfRealms].slug);
+                    console.info(`Parsing: ${files[z]}`);
+                    let str = await readFile(`${path_}/${files[z]}`, {encoding: 'utf8'});
+                    const obj = JSON.parse(str);
+                    //TODO
+                    console.log(obj);
+                }
             }
         }
         console.timeEnd(`Parsing JSON files`);

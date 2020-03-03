@@ -2,21 +2,22 @@ const axios = require('axios');
 const zlib = require('zlib');
 const Xray = require('x-ray');
 let x = Xray();
-
 const fs = require('fs');
 const realms_db = require("../../db/realms_db");
+const guild_db = require("../../db/guilds_db");
+const {connection} = require('mongoose');
 
 const {promisify} = require('util');
 const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const removeDir = promisify(fs.rmdir);
 
-async function fromJSON (path_ = './temp') {
+async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTier = 26, region = 'eu') {
     try {
         console.time(`VOLUSPA-${fromJSON.name}`);
 
-        let realms = await realms_db.find({locale:'ru_RU'}).exec();
-        realms = realms.map(({name_locale, slug}) => { return {slug_locale: name_locale.toLowerCase().replace(/\s/g,"-"), slug: slug}});
+        let realms = await realms_db.find(queryFind).exec();
+        realms = realms.map(({name_locale, slug, name}) => { return {slug_locale: name_locale.toLowerCase().replace(/\s/g,"-"), slug: slug, name: name}});
 
         if (!fs.existsSync(path_)) fs.mkdirSync(path_);
         console.time(`Downloading stage`);
@@ -25,7 +26,7 @@ async function fromJSON (path_ = './temp') {
         });
 
         for (let i = 0; i < urls.length; i++) {
-            if (urls[i].includes('_tier26.json.gz') && urls[i].includes('eu_')) {
+            if (urls[i].includes(`_tier${raidTier}.json.gz`) && urls[i].includes(`${region}_`)) {
                 let string = encodeURI(decodeURI(urls[i]));
                 let file_name = decodeURIComponent(urls[i].substr(urls[i].lastIndexOf('/') + 1));
                 const checkFilename = obj => obj.slug_locale === file_name.match(/(?<=_)(.*?)(?=_)/g)[0];
@@ -63,24 +64,37 @@ async function fromJSON (path_ = './temp') {
             if (files[z].match(/json$/g)) {
                 let indexOfRealms = realms.findIndex(r => r.slug_locale === files[z].match(/(?<=_)(.*?)(?=_)/g)[0]);
                 if (indexOfRealms !== -1) {
-                    console.log(realms[indexOfRealms].slug);
                     console.info(`Parsing: ${files[z]}`);
-                    let str = await readFile(`${path_}/${files[z]}`, {encoding: 'utf8'});
-                    const obj = JSON.parse(str);
-                    //TODO
-                    console.log(obj);
+                    let stringJSON = await readFile(`${path_}/${files[z]}`, {encoding: 'utf8'});
+                    const guildsJSON = JSON.parse(stringJSON);
+                    for (let g = 0; g < guildsJSON.length; g++) {
+                        if (!(guildsJSON[g].name.toLowerCase().replace(/\s/g,"-")).includes('[raid]')) {
+                            let guild_ = await guild_db.findById(`${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`);
+                            if (!guild_) {
+                                await guild_db.create({
+                                    _id: `${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`,
+                                    slug: guildsJSON[g].name.toLowerCase().replace(/\s/g, "-"),
+                                    name: guildsJSON[g].name,
+                                    realm_slug: realms[indexOfRealms].slug,
+                                    realm: realms[indexOfRealms].name,
+                                    createdBy: `VOLUSPA-${fromJSON.name}`
+                                }).then(gld => console.info(`C,${gld._id}`));
+                            } else {
+                                console.info(`E,${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`)
+                            }
+                        }
+                    }
                 }
             }
         }
         console.timeEnd(`Parsing JSON files`);
 
         await removeDir(`${path_}`, { recursive: true });
+        connection.close();
         console.timeEnd(`VOLUSPA-${fromJSON.name}`);
     } catch (err) {
-        console.log(err)
+        console.error(`E,${err}`)
     }
 }
 
 fromJSON();
-
-//'C:\\Users\\AlexZ\\Downloads\\eu_гордунни_tier26.json'

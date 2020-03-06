@@ -35,7 +35,7 @@ apps:
     cron_restart: '0 2 * * *'
     time: true
     log_date_format: 'HH:mm Z'
-  - script: ./voluspa/characters/indexLogs.js
+  - script: ./voluspa/indexing/indexLogs.js
     name: 'VOLUSPA-indexLogs'
     instances: 1
     watch: true

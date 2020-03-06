@@ -39,7 +39,7 @@ let schema = new mongoose.Schema({
         type: String
     },
     lastModified: {
-        type: Number
+        type: Date
     }
 },{
     timestamps: true

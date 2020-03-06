@@ -66,13 +66,13 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-schema.index({ connected_realm_id: 1, type: 1 });
+//schema.index({ connected_realm_id: 1});
 
 let realms_db = mongoose.model('realms', schema);
 
-realms_db.on('index', function(error) {
+//realms_db.on('index', function(error) {
     // "_id index cannot be sparse"
-    console.log(error.message);
-});
+    //console.log(error.message);
+//});
 
 module.exports = realms_db;

@@ -1,12 +1,14 @@
 const keys_db = require("./../db/keys_db");
 const realms_db = require("./../db/realms_db");
+const auctions_db = require("./../db/auctions_db");
 const battleNetWrapper = require('battlenet-api-wrapper');
 const moment = require('moment');
+const {connection} = require('mongoose');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
-async function getAuctionHouse (queryKeys = { tags: `Depo` }, realmArg = 'Gordunni') {
+async function getAuctionHouse (queryKeys = { tags: `Depo` }, realmArg = `Lich King`) {
     try {
         const { token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
@@ -16,12 +18,27 @@ async function getAuctionHouse (queryKeys = { tags: `Depo` }, realmArg = 'Gordun
                 { 'name_locale': realmArg },
             ]}).cursor();
         for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
+            let header_lastModified = '';
             let {connected_realm_id} = realm;
-            let auctionHouse = await bnw.WowGameData.getAuctionHouse(connected_realm_id);
+            const latest_lot = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');
+            if (latest_lot) header_lastModified = `${moment(latest_lot.lastModified).format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+            let auctionHouse = await bnw.WowGameData.getAuctionHouse(connected_realm_id, header_lastModified);
             let {auctions, lastModified} = auctionHouse;
-            console.info(auctions);
-            console.info(moment(lastModified).format());
+            for (let i = 0; i < auctions.length; i++) {
+                if ("bid" in auctions[i]) auctions[i].bid = parseFloat((auctions[i].bid/10000).toFixed(2));
+                if ("buyout" in auctions[i]) auctions[i].buyout = parseFloat((auctions[i].buyout/10000).toFixed(2));
+                if ("unit_price" in auctions[i]) auctions[i].unit_price = parseFloat((auctions[i].unit_price/10000).toFixed(2));
+                auctions[i].connected_realm_id = connected_realm_id;
+                auctions[i].lastModified = moment(lastModified).format();
+            }
+            console.log(connected_realm_id, auctions[0])
+            /*await auctions_db.insertMany(auctions)
+                .then(result => {
+                    console.info(`U,${realm.name},${result.length}`);
+                })
+                .catch(err => console.error(`${getAuctionHouse.name},${err}`))*/
         }
+        connection.close();
     } catch (err) {
         console.error(err);
     }

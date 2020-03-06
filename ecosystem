@@ -1,0 +1,64 @@
+apps:
+  - script: ./bin/getTokens.js
+    name: 'getToken'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '100M'
+    cron_restart: '*/1 * * * *'
+    time: true
+    log_date_format: 'HH:mm Z'
+  - script: ./voluspa/indexing/indexCharacters.js
+    name: 'VOLUSPA-indexCharacters'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '1G'
+    cron_restart: '0 6 * * *'
+    time: true
+    log_date_format: 'HH:mm Z'
+  - script: ./voluspa/indexing/indexGuilds.js
+    name: 'VOLUSPA-indexGuilds'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '1G'
+    cron_restart: '0 */2 * * *'
+    time: true
+    log_date_format: 'HH:mm Z'
+  - script: ./voluspa/characters/fromLogs.js
+    name: 'VOLUSPA-fromLogs'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '100M'
+    cron_restart: '0 2 * * *'
+    time: true
+    log_date_format: 'HH:mm Z'
+  - script: ./voluspa/characters/indexLogs.js
+    name: 'VOLUSPA-indexLogs'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '100M'
+    cron_restart: '0 3 * * *'
+    time: true
+    log_date_format: 'HH:mm Z'
+  - script: ./voluspa/guilds/fromCharacters.js
+    name: 'VOLUSPA-fromCharacters'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '100M'
+    cron_restart: '30 3 * * *'
+    time: true
+    log_date_format: 'HH:mm Z'
+  - script: ./voluspa/guilds/fromJSON.js
+    name: 'VOLUSPA-fromJSON'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '100M'
+    cron_restart: '0 5 1,15 * *'
+    time: true
+    log_date_format: 'HH:mm Z'

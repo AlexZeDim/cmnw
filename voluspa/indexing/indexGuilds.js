@@ -142,8 +142,8 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
             connection.close();
             console.timeEnd(`VOLUSPA-${indexGuild.name}`);
         });
-    } catch (e) {
-        console.log(e)
+    } catch (err) {
+        console.error(`${indexGuild.name},${err}`);
     }
 }
 

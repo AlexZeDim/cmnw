@@ -23,6 +23,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                             return res.data;
                         });
                         if (exportedCharacters) {
+                            let server;
                             for ({name, server} of exportedCharacters) {
                                 let {slug} = await realms_db.findOne({
                                     $or:

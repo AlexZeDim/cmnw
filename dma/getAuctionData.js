@@ -29,11 +29,7 @@ async function getAuctionHouse (queryKeys = { tags: `Depo` }, realmArg = `Lich K
                 auctions[i].connected_realm_id = connected_realm_id;
                 auctions[i].lastModified = moment(lastModified).format();
             }
-            await auctions_db.insertMany(auctions)
-                .then(result => {
-                    console.info(`U,${realm.name},${result.length}`);
-                })
-                .catch(err => console.error(`${getAuctionHouse.name},${err}`))
+            await auctions_db.insertMany(auctions).then(result => console.info(`U,${realm.name},${result.length}`))
         }
         connection.close();
         console.timeEnd(`DMA-${getAuctionHouse.name}`);

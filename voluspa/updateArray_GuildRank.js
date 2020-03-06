@@ -1,6 +1,8 @@
 const characters_db = require("../db/characters_db");
 const moment = require('moment');
 
+//TODO transfer guild_history on character if character was renamed
+
 async function updateArray_GuildRank (arrayMembers=[], guild_id, guild_name, action = '') {
     try {
         for (let i = 0; i < arrayMembers.length; i++) {
@@ -19,7 +21,7 @@ async function updateArray_GuildRank (arrayMembers=[], guild_id, guild_name, act
             })
         }
     } catch (error) {
-        console.error(error);
+        console.error(`E,${updateArray_GuildRank.name},${error}`);
     }
 }
 

@@ -1,9 +1,11 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
 const realms_db = require("../../db/realms_db");
 const keys_db = require("../../db/keys_db");
+const {connection} = require('mongoose');
 
 async function indexRealms () {
     try {
+        console.time(`VOLUSPA-${indexRealms.name}`);
         const { _id, secret, token } = await keys_db.findOne({ tags: `Depo` });
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
@@ -30,15 +32,18 @@ async function indexRealms () {
             } else {
                 realm.name_locale =  realm.name;
             }
-            await realms_db.findByIdAndUpdate(realm.id, realm,
-                {
-                    upsert : true,
-                    new: true,
-                    runValidators: true,
-                    setDefaultsOnInsert: true,
-                    lean: true
-                });
+            await realms_db.findByIdAndUpdate(realm.id,
+                realm,
+            {
+                upsert : true,
+                new: true,
+                runValidators: true,
+                setDefaultsOnInsert: true,
+                lean: true
+            }).then(rl => console.info(`C,${rl._id},${rl.slug}`));
         }
+        connection.close();
+        console.timeEnd(`VOLUSPA-${indexRealms.name}`);
     } catch (e) {
         console.log(e)
     }

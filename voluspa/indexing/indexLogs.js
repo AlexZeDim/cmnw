@@ -1,20 +1,20 @@
 const logs_db = require("../../db/logs_db");
 const realms_db = require("../../db/realms_db");
 const characters_db = require("../../db/characters_db");
+const {connection} = require('mongoose');
 const axios = require('axios');
 
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
-const private_key = '71255109b6687eb1afa4d23f39f2fa76';
 
-async function indexLogs (queryInput = {isIndexed:false}) {
+async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
     try {
         console.time(`VOLUSPA-${indexLogs.name}`);
         let documentBulk = [];
-        const cursor = logs_db.find(queryInput).lean().cursor({batchSize: 1});
+        const cursor = logs_db.find(queryInput).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
-            if (documentBulk.length === 1) {
-                console.time(`Bulk-${indexLogs.name}`);
+            if (documentBulk.length === bulkSize) {
+                console.time(`================`);
                 cursor.pause();
                 const promises = documentBulk.map(async (req) => {
                     try {
@@ -22,47 +22,37 @@ async function indexLogs (queryInput = {isIndexed:false}) {
                         let { exportedCharacters } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${_id}?api_key=${pub_key}`).then(res => {
                             return res.data;
                         });
-                        //FIXME for of
-                        exportedCharacters.map(async ({name, server}) => {
-                            let {slug} = await realms_db.findOne({$or:
-                                    [
-                                        { 'name_locale': server },
-                                        { 'name': server }
-                                    ]
-                            }).lean().exec();
-                            return await characters_db.findByIdAndUpdate(
-                                {
-                                    _id: `${name.toLowerCase()}@${slug}`
-                                },
-                                {
-                                    _id: `${name.toLowerCase()}@${slug}`,
-                                    name: name,
-                                    realm_slug: slug,
-                                    createdBy: `VOLUSPA-${indexLogs.name}`,
-                                    updatedBy: `VOLUSPA-${indexLogs.name}`
-                                },
-                                {
-                                    upsert : true,
-                                    new: true,
-                                    setDefaultsOnInsert: true,
-                                    lean: true
+                        if (exportedCharacters) {
+                            let server;
+                            for ({name, server} of exportedCharacters) {
+                                let {slug} = await realms_db.findOne({
+                                    $or:
+                                        [
+                                            {'name_locale': server},
+                                            {'name': server},
+                                        ]
+                                }).lean().exec();
+                                if (!slug) {
+                                    slug = server.toLowerCase().replace(/\s/g,"-");
                                 }
-                            ).exec();
-                        });
-                        return await logs_db.findByIdAndUpdate(
-                            {
-                                _id: _id
-                            },
-                            {
-                                isIndexed: true
-                            },
-                            {
-                                upsert : true,
-                                new: true,
-                                setDefaultsOnInsert: true,
-                                lean: true
+                                let character_ = await characters_db.findById(`${name.toLowerCase()}@${slug}`);
+                                if (!character_) {
+                                    characters_db.create(                                {
+                                        _id: `${name.toLowerCase()}@${slug}`,
+                                        name: name,
+                                        realm_slug: slug,
+                                        createdBy: `VOLUSPA-${indexLogs.name}`,
+                                        updatedBy: `VOLUSPA-${indexLogs.name}`
+                                    }).then(function (ch, error) {
+                                        if (error) console.error(`E,${error}`);
+                                        console.info(`C,${ch._id}`)
+                                    })
+                                } else {
+                                    console.info(`E,${character_._id}`)
+                                }
                             }
-                        ).exec();
+                            return await logs_db.findByIdAndUpdate(_id, {isIndexed: true}).then(lg => console.info(`U,${lg._id}`));
+                        }
                     } catch (e) {
                         console.log(e)
                     }
@@ -70,21 +60,17 @@ async function indexLogs (queryInput = {isIndexed:false}) {
                 await Promise.all(promises);
                 documentBulk = [];
                 cursor.resume();
-                console.timeEnd(`Bulk-${indexLogs.name}`);
+                console.timeEnd(`================`);
             }
         });
         cursor.on('error', error => {
-            console.log('B');
-            console.error(error);
+            console.error(`E,VOLUSPA-${indexLogs.name},${error}`);
             cursor.close();
         });
         cursor.on('close', async () => {
-            console.log('A');
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log('C');
+            await new Promise(resolve => setTimeout(resolve, 60000));
+            connection.close();
             console.timeEnd(`VOLUSPA-${indexLogs.name}`);
-            //TODO call for
-            //indexLogs();
         });
     } catch (err) {
         console.error(`${indexLogs.name},${err}`);

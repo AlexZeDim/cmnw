@@ -29,8 +29,11 @@ async function getGoldData () {
             }
         ]).then((res) => res);
         if (goldOrders.length !== 0) {
+            const realms = await realms_db.find();
             for (let i = 0; i < goldOrders.length; i++) {
-                const realm = await realms_db.findOne({name: goldOrders[i].realm});
+                let realm = realms.find(({name, connected_realm_id}) => {
+                    if (name === goldOrders[i].realm) return connected_realm_id
+                });
                 if (realm) {
                     goldData.push({
                         connected_realm_id: realm.connected_realm_id,

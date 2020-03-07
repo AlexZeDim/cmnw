@@ -11,9 +11,6 @@ const driver = makeDriver({
 const x = Xray();
 x.driver(driver);
 
-
-
-
 async function getGoldData () {
     try {
         console.time(`DMA-${getGoldData.name}`);

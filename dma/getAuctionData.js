@@ -5,7 +5,7 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 const moment = require('moment');
 const {connection} = require('mongoose');
 
-async function getAuctionData (queryKeys = { tags: `Depo` }, realmArg = `Lich King`) {
+async function getAuctionData (queryKeys = { tags: `Depo` }, realmArg = `ru_RU`) {
     try {
         console.time(`DMA-${getAuctionData.name}`);
         const { _id, secret, token } = await keys_db.findOne(queryKeys);

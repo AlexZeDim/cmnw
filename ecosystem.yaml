@@ -63,3 +63,21 @@ apps:
     cron_restart: '0 5 1,15 * *'
     log_date_format: 'MM-DD HH:mm:ss.SSS'
     restart_delay: 300000
+  - script: ./dma/getAuctionData.js
+    name: 'DMA-getAuctionData'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '1G'
+    cron_restart: '*/15 * * * *'
+    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    restart_delay: 300000
+  - script: ./dma/getGoldData.js
+    name: 'DMA-getGoldData'
+    instances: 1
+    watch: true
+    autorestart: true
+    max_memory_restart: '1G'
+    cron_restart: '15 */1 * * *'
+    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    restart_delay: 300000

@@ -5,9 +5,9 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 const moment = require('moment');
 const {connection} = require('mongoose');
 
-async function getAuctionHouse (queryKeys = { tags: `Depo` }, realmArg = `Lich King`) {
+async function getAuctionData (queryKeys = { tags: `Depo` }, realmArg = `Lich King`) {
     try {
-        console.time(`DMA-${getAuctionHouse.name}`);
+        console.time(`DMA-${getAuctionData.name}`);
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
@@ -29,13 +29,13 @@ async function getAuctionHouse (queryKeys = { tags: `Depo` }, realmArg = `Lich K
                 auctions[i].connected_realm_id = connected_realm_id;
                 auctions[i].lastModified = moment(lastModified).format();
             }
-            await auctions_db.insertMany(auctions).then(result => console.info(`U,${realm.name},${result.length}`))
+            await auctions_db.insertMany(auctions).then(auctions => console.info(`U,${realm.name},${auctions.length}`))
         }
         connection.close();
-        console.timeEnd(`DMA-${getAuctionHouse.name}`);
+        console.timeEnd(`DMA-${getAuctionData.name}`);
     } catch (err) {
-        console.error(`${getAuctionHouse.name},${err}`);
+        console.error(`${getAuctionData.name},${err}`);
     }
 }
 
-getAuctionHouse();
+getAuctionData();

@@ -15,7 +15,7 @@ async function test (queryKeys = { tags: `Depo` }) {
         let item = await bnw.WowGameData.getItem(174141);
         if (item) {
             console.log(item);
-            await items_db.findByIdAndUpdate(
+            /*await items_db.findByIdAndUpdate(
                 {
                     _id: item.id
                 }, {
@@ -36,7 +36,7 @@ async function test (queryKeys = { tags: `Depo` }) {
                     new: true,
                     lean: true
                 }
-            )
+            )*/
         }
         connection.close();
         console.timeEnd(`DMA-${test.name}`);

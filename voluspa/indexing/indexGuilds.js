@@ -21,7 +21,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                     try {
                         let guild_ = {};
                         let { slug, realm_slug, members_latest, guild_log } = guild;
-                        let { id, name, faction, achievement_points, member_count, realm, created_timestamp, members } = await getGuild(realm_slug, slug, token);
+                        let { id, name, faction, achievement_points, member_count, realm, created_timestamp, members, lastModified } = await getGuild(realm_slug, slug, token);
                         guild_.id = id;
                         guild_.name = name;
                         guild_.faction = faction;
@@ -60,7 +60,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                                     character_name: name,
                                     character_id: id,
                                     character_rank: rank,
-                                    character_date: moment().toISOString(true),
+                                    character_date: moment(lastModified).toISOString(true),
                                     character_checksum: pets
                                 })
                             } else {
@@ -79,7 +79,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                                     character_name: name,
                                     character_id: id,
                                     character_rank: rank,
-                                    character_date: moment().toISOString(true),
+                                    character_date: moment(lastModified).toISOString(true),
                                     character_checksum: ''
                                 });
                             }

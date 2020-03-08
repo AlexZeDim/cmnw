@@ -1,5 +1,6 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
 const crc32 = require('fast-crc32c');
+const moment = require('moment');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
@@ -35,7 +36,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         result.realm = realm.name;
         result.realm_slug = realm.slug;
         result.level = level;
-        result.lastModified = last_login_timestamp;
+        result.lastModified = moment(last_login_timestamp).toISOString(true);
         result.checksum = {};
         result.ilvl = {
             eq: average_item_level,

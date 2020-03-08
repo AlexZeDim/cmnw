@@ -1,10 +1,12 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
+const moment = require('moment');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 async function getGuild (realmSlug, nameSlug, token = '') {
     try {
+        //FIXME actual timestamp from lastModified header
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         const [{id, name, faction, achievement_points, member_count, realm, crest, created_timestamp }, {members}] = await Promise.all([
@@ -23,7 +25,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
             realm: realm.name,
             realm_slug: realmSlug,
             crest: crest,
-            created_timestamp: created_timestamp,
+            created_timestamp: moment(created_timestamp).toISOString(true),
             members: members
         });
     } catch (error) {

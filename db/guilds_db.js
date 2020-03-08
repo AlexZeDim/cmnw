@@ -93,7 +93,7 @@ let schema = new mongoose.Schema({
         type: String
     },
     created_timestamp: {
-        type: Number
+        type: Date
     },
     isWatched: {
         type: Boolean

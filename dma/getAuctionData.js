@@ -11,9 +11,9 @@ async function getAuctionData (queryKeys = { tags: `Depo` }, realmQuery = { 'loc
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
-        let realms = await realms_db.find(realmQuery).cursor();
+        let realms = await realms_db.find(realmQuery).cursor({batchSize: 1});ё
         for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
-            console.info(`R,${realm.connected_realm_id}:${realm.name}`)
+            console.info(`R,${realm.connected_realm_id}:${realm.name}`);
             let header_lastModified = '';
             let {connected_realm_id} = realm;
             const latest_lot = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');

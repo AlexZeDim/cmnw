@@ -9,7 +9,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
         //FIXME actual timestamp from lastModified header
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
-        const [{id, name, faction, achievement_points, member_count, realm, crest, created_timestamp }, {members}] = await Promise.all([
+        const [{id, name, faction, achievement_points, member_count, realm, crest, created_timestamp, lastModified }, {members}] = await Promise.all([
             bnw.WowProfileData.getGuildSummary(realmSlug, nameSlug),
             bnw.WowProfileData.getGuildRoster(realmSlug, nameSlug),
         ]);
@@ -25,6 +25,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
             realm: realm.name,
             realm_slug: realmSlug,
             crest: crest,
+            lastModified: lastModified,
             created_timestamp: moment(created_timestamp).toISOString(true),
             members: members
         });
@@ -34,5 +35,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
     }
 
 }
+
+getGuild('galakrond','безмятежность','EUUFsZ2i2A1Lrp2fMWdCO24Sk9q1Hr3cP5');
 
 module.exports = getGuild;

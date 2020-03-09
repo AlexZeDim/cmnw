@@ -1,6 +1,6 @@
 module.exports = {
     name: 'direct',
-    description: 'Ping!',
+    description: `Direct allows users to hide their identities during direct messaging`,
     args: true,
     execute(message, args, client) {
         let time = 60000;
@@ -15,7 +15,7 @@ module.exports = {
         if (params.includes('-t')) {
             time = parseFloat(params[params.indexOf('-t')+1])*1000;
         }
-        message.channel.send(`Connection established: ${params[0]}`);
+        message.channel.send(`Connection established: ${params[0]} for ${time/1000}s`);
         const filter = m => m.author.id === message.author.id;
         const collector = message.channel.createMessageCollector(filter, {
             max: messages,

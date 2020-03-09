@@ -18,8 +18,15 @@ for (const file of commandFiles) {
 
 client.on('message', async message => {
     if (message.author.bot) return;
-    let command = message.content.split(/(?<=^\S+)\s/)[0];
-    let args = message.content.split(/(?<=^\S+)\s/)[1];
+    let command = '';
+    let args = '';
+    if (message.content.startsWith('direct')) {
+        command = message.content.split(/(?<=^\S+)@/)[0];
+        args = message.content.split(/(?<=^\S+)@/)[1];
+    } else {
+        command = message.content.split(/(?<=^\S+)\s/)[0];
+        args = message.content.split(/(?<=^\S+)\s/)[1];
+    }
     if (!client.commands.has(command)) return;
     try {
         client.commands.get(command).execute(message, args, client);

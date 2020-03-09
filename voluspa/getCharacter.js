@@ -21,7 +21,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         let petSlots = [];
         let result = {};
         const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
-            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(data=>data),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
         ]);
@@ -78,13 +78,15 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             result.checksum.mounts = mounts_checksum;
         }
         console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
+        console.log('ok');
+        console.log(result);
         return result;
     } catch (error) {
         console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
-        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug }
+        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: error.toString().match(/[0-9]+/g)[0] }
     }
 }
 
-getCharacter('gordunni','инициатива');
+getCharacter('gordunni','аомина');
 
 module.exports = getCharacter;

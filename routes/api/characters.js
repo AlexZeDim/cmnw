@@ -11,9 +11,9 @@ router.get('/:name@:realm', async function(req, res) {
                 { 'slug': req.params.realm },
                 { 'name_locale': req.params.realm },
                 { 'ticker': req.params.realm },
-                { '_id': req.params.realm },
             ]});
-        let characterData = characters_db.findById(`${req.params.name}@${slug}`);
+        console.log(slug);
+        let characterData = await characters_db.findById(`${req.params.name.toLowerCase()}@${slug}`);
         console.log(characterData);
         /***
          * TODO checkDB

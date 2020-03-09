@@ -21,7 +21,6 @@ router.get('/:name@:realm', async function(req, res) {
          * TODO then send req
          * TODO return result
          */
-        //let data = await checkPlayer(req.params.name, req.params.realm);
         res.status(200).json(characterData);
     } catch (e) {
         res.status(404).json(e);

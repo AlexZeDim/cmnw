@@ -78,15 +78,13 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             result.checksum.mounts = mounts_checksum;
         }
         console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
-        console.log('ok');
-        console.log(result);
         return result;
     } catch (error) {
+        let statusCode = 0;
+        if (/\d/g.test(error.toString())) statusCode = error.toString().match(/[0-9]+/g)[0];
         console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
-        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: error.toString().match(/[0-9]+/g)[0] }
+        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }
     }
 }
-
-getCharacter('gordunni','аомина');
 
 module.exports = getCharacter;

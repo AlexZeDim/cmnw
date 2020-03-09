@@ -20,7 +20,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         let pets_checksum, mounts_checksum;
         let petSlots = [];
         let result = {};
-        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
+        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
@@ -36,8 +36,10 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         result.realm = realm.name;
         result.realm_slug = realm.slug;
         result.level = level;
-        result.lastModified = moment(last_login_timestamp).toISOString(true);
+        result.lastOnline = moment(last_login_timestamp).toISOString(true);
         result.checksum = {};
+        result.lastModified = moment(lastModified).toISOString(true);
+        result.statusCode = statusCode;
         result.ilvl = {
             eq: average_item_level,
             avg: equipped_item_level
@@ -82,5 +84,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug }
     }
 }
+
+getCharacter('gordunni','инициатива');
 
 module.exports = getCharacter;

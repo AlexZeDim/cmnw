@@ -68,6 +68,12 @@ let schema = new mongoose.Schema({
     lastModified: {
         type: Date
     },
+    lastOnline: {
+        type: Date
+    },
+    statusCode: {
+        type: Number
+    },
     createdBy: {
         type: String
     },

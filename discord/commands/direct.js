@@ -1,7 +1,3 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
-
 module.exports = {
     name: 'direct',
     description: 'Ping!',
@@ -9,7 +5,8 @@ module.exports = {
     execute(message, args, client) {
         let time = 60000;
         let messages = 50;
-        let destruction =  10000;
+        let destuction =  10000;
+        let res = true;
         const params = args.split(' ');
 
         if (params.includes('-m')) {
@@ -21,11 +18,10 @@ module.exports = {
         message.channel.send(`Connection established: ${params[0]}`);
         const filter = m => m.author.id === message.author.id;
         const collector = message.channel.createMessageCollector(filter, {
-            maxMatches: messages,
+            max: messages,
             time: time,
             errors: ['time']
         });
-
         collector.on('collect',  async m => {
             try {
                 if (m.content === '-end' || m.content === '-close') {
@@ -37,15 +33,27 @@ module.exports = {
                 if (params.includes('-s') && (params[params.indexOf('-s') + 1]) === 'base64') {
                     m.content = (Buffer.from(m.content, 'utf8').toString('base64'));
                 }
-                const sentMessage = await client.fetchUser(params[0]).then(user => {
-                    user.send(`${m.content}`);
+                let sentMessage = await client.users.fetch(params[0]).then((user) => {
+                    return user.send(`${m.content}`);
                 });
+                if (params.includes('-r') && res) {
+                    res = false;
+                    const res_filter = m => m.author.id === params[0];
+                    const res_collector = sentMessage.channel.createMessageCollector(res_filter, {
+                        time: time,
+                        errors: ['time']
+                    });
+                    res_collector.on('collect', m => {
+                        client.users.fetch(message.author.id).then((u) => {
+                            return u.send(`${m.content}`);
+                        });
+                    });
+                }
                 if (params.includes('-d')) {
-                    destruction = parseFloat(params[params.indexOf('-d') + 1]) * 1000;
-                    await sentMessage.delete(destruction);
+                    destuction = parseFloat(params[params.indexOf('-d') + 1]) * 1000;
+                    await sentMessage.delete({timeout: destuction});
                 }
             }  catch (error) {
-                console.log(error);
                 await message.channel.send(`Message wasn't sent to ${params[0]}`);
             }
         });

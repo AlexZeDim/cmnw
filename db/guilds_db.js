@@ -35,7 +35,11 @@ let schema = new mongoose.Schema({
     faction: {
         type: String
     },
-    //TODO crest
+    crest: {
+        emblem: Object,
+        border: Object,
+        background: Object
+    },
     guild_log: {
         join: [{
             character_name: String,
@@ -94,6 +98,9 @@ let schema = new mongoose.Schema({
     },
     created_timestamp: {
         type: Date
+    },
+    statusCode: {
+        type: Number
     },
     isWatched: {
         type: Boolean

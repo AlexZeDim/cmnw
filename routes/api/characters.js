@@ -20,6 +20,7 @@ router.get('/:name@:realm', async function(req, res) {
          * TODO if not res
          * TODO then send req
          * TODO return result
+         * TODO name as name-realm
          */
         res.status(200).json(characterData);
     } catch (e) {

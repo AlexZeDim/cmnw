@@ -52,6 +52,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
                 render_url: render_url
             };
         }
+        //FIXME
         if (guild) {
             result.guild = guild.name;
             if (guildRank) {
@@ -59,6 +60,9 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
                 const {rank} = members.find( ({ character }) => character.name === name );
                 result.guild_rank = rank;
             }
+        } else {
+            result.guild = '';
+            result.guild_rank = 99;
         }
         if (pets) {
             let pets_string = '';
@@ -94,5 +98,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }
     }
 }
+
+getCharacter('gordunni','маминслизень');
 
 module.exports = getCharacter;

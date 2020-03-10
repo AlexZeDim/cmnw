@@ -21,25 +21,26 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                         let { _id } = req;
                         let { exportedCharacters } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${_id}?api_key=${pub_key}`).then(res => {
                             return res.data;
-                        });
+                        }).catch(e => console.error(`${indexLogs.name},${e.response.status},${e.response.config.url.match(/(.{16})\s*$/g)[0]}`));
                         if (exportedCharacters) {
-                            let server;
-                            for ({name, server} of exportedCharacters) {
+                            for (let i = 0; i < exportedCharacters.length; i++) {
+                                if (exportedCharacters[i].server === 'Пиратская бухта') exportedCharacters[i].server = 'Пиратская Бухта';
+                                if (exportedCharacters[i].server.match(/’/g)) exportedCharacters[i].server = exportedCharacters[i].server.replace(/’/g,`'`);
                                 let {slug} = await realms_db.findOne({
                                     $or:
                                         [
-                                            {'name_locale': server},
-                                            {'name': server},
+                                            {'name_locale': exportedCharacters[i].server},
+                                            {'name': exportedCharacters[i].server},
                                         ]
                                 }).lean().exec();
                                 if (!slug) {
-                                    slug = server.toLowerCase().replace(/\s/g,"-");
+                                    slug = exportedCharacters[i].server.toLowerCase().replace(/\s/g,"-");
                                 }
-                                let character_ = await characters_db.findById(`${name.toLowerCase()}@${slug}`);
+                                let character_ = await characters_db.findById(`${exportedCharacters[i].name.toLowerCase()}@${slug}`);
                                 if (!character_) {
                                     characters_db.create(                                {
-                                        _id: `${name.toLowerCase()}@${slug}`,
-                                        name: name,
+                                        _id: `${exportedCharacters[i].name.toLowerCase()}@${slug}`,
+                                        name: exportedCharacters[i].name,
                                         realm_slug: slug,
                                         createdBy: `VOLUSPA-${indexLogs.name}`,
                                         updatedBy: `VOLUSPA-${indexLogs.name}`
@@ -72,8 +73,8 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
             connection.close();
             console.timeEnd(`VOLUSPA-${indexLogs.name}`);
         });
-    } catch (err) {
-        console.error(`${indexLogs.name},${err}`);
+    } catch (error) {
+        console.error(`${indexLogs.name},${error}`)
     }
 }
 

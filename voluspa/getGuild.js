@@ -24,7 +24,7 @@ async function getGuild (realmSlug, nameSlug, token = '') {
             realm: realm.name,
             realm_slug: realmSlug,
             crest: crest,
-            lastModified: lastModified,
+            lastModified: moment(lastModified).toISOString(true),
             created_timestamp: moment(created_timestamp).toISOString(true),
             members: members,
             statusCode: statusCode

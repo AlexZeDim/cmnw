@@ -96,6 +96,9 @@ let schema = new mongoose.Schema({
     updatedBy: {
         type: String
     },
+    lastModified: {
+        type: Date
+    },
     created_timestamp: {
         type: Date
     },

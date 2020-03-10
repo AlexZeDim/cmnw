@@ -86,7 +86,6 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             result.checksum.mounts = mounts_checksum;
         }
         console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
-        console.log(result);
         return result;
     } catch (error) {
         let statusCode = 400;
@@ -95,7 +94,5 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }
     }
 }
-
-getCharacter('gordunni', 'техперс')
 
 module.exports = getCharacter;

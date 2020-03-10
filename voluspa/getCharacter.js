@@ -20,10 +20,11 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         let pets_checksum, mounts_checksum;
         let petSlots = [];
         let result = {};
-        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
+        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}, {avatar_url, bust_url, render_url}] = await Promise.all([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(data=>data),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
-            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterMedia(realmSlug, characterName)
         ]);
         result._id = `${characterName}@${realmSlug}`;
         result.id = id;
@@ -44,6 +45,13 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             eq: average_item_level,
             avg: equipped_item_level
         };
+        if (avatar_url && bust_url && render_url) {
+            result.media = {
+                avatar_url: avatar_url,
+                bust_url: bust_url,
+                render_url: render_url
+            };
+        }
         if (guild) {
             result.guild = guild.name;
             if (guildRank) {

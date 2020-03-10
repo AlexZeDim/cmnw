@@ -42,6 +42,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                             guild_log.promote = [];
                         }
                         let members_ = [];
+                        //TODO couple of errors here fix it with length
                         for (let i = 0; i < members.length; i++) {
                             let {character, rank} = members[i];
                             let {id, name} = character;

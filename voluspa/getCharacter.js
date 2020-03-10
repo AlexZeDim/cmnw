@@ -80,7 +80,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
         return result;
     } catch (error) {
-        let statusCode = 0;
+        let statusCode = 400;
         if (/\d/g.test(error.toString())) statusCode = error.toString().match(/[0-9]+/g)[0];
         console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
         return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }

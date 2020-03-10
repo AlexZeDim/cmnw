@@ -21,10 +21,10 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         let petSlots = [];
         let result = {};
         const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}, {avatar_url, bust_url, render_url}] = await Promise.all([
-            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(data=>data),
-            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
-            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName),
-            bnw.WowProfileData.getCharacterMedia(realmSlug, characterName)
+            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).catch(e => (e)),
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).catch(e => (e)),
+            bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).catch(e => (e)),
         ]);
         result._id = `${characterName}@${realmSlug}`;
         result.id = id;
@@ -86,6 +86,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             result.checksum.mounts = mounts_checksum;
         }
         console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
+        console.log(result);
         return result;
     } catch (error) {
         let statusCode = 400;
@@ -94,5 +95,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }
     }
 }
+
+getCharacter('gordunni', 'техперс')
 
 module.exports = getCharacter;

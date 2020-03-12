@@ -6,25 +6,27 @@ apps:
     autorestart: true
     max_memory_restart: '100M'
     cron_restart: '*/1 * * * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./voluspa/indexing/indexCharacters.js
     name: 'VOLUSPA-indexCharacters'
-    instances: 1
     watch: true
     autorestart: true
+    exec_mode : "cluster"
+    instances : "max"
     max_memory_restart: '1G'
     cron_restart: '0 6 * * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 5000
     restart_delay: 3600000
   - script: ./voluspa/indexing/indexGuilds.js
     name: 'VOLUSPA-indexGuilds'
-    instances: 1
+    exec_mode : "cluster"
+    instances : "max"
     watch: true
     autorestart: true
     max_memory_restart: '1G'
     cron_restart: '0 */2 * * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 5000
     restart_delay: 1800000
   - script: ./voluspa/characters/fromLogs.js
@@ -34,7 +36,7 @@ apps:
     autorestart: true
     max_memory_restart: '1G'
     cron_restart: '0 2 * * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
   - script: ./voluspa/indexing/indexLogs.js
     name: 'VOLUSPA-indexLogs'
@@ -43,7 +45,7 @@ apps:
     autorestart: true
     max_memory_restart: '1G'
     cron_restart: '0 3 * * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
   - script: ./voluspa/guilds/fromCharacters.js
     name: 'VOLUSPA-fromCharacters'
@@ -52,7 +54,7 @@ apps:
     autorestart: true
     max_memory_restart: '1G'
     cron_restart: '30 3 * * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./voluspa/guilds/fromJSON.js
     name: 'VOLUSPA-fromJSON'
@@ -61,5 +63,5 @@ apps:
     autorestart: true
     max_memory_restart: '1G'
     cron_restart: '0 5 1,15 * *'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

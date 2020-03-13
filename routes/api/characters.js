@@ -3,6 +3,7 @@ const router = express.Router();
 
 const realms_db = require("../../db/realms_db");
 const characters_db = require("../../db/characters_db");
+const getCharacter = require('../../voluspa/getCharacter');
 
 router.get('/:name@:realm', async function(req, res) {
     try {
@@ -12,8 +13,13 @@ router.get('/:name@:realm', async function(req, res) {
                 { 'name_locale': req.params.realm },
                 { 'ticker': req.params.realm },
             ]});
-        console.log(slug);
         let characterData = await characters_db.findById(`${req.params.name.toLowerCase()}@${slug}`);
+        if (!characterData) {
+            const keys_db = require("../../db/keys_db");
+            const { token } = await keys_db.findOne({tags: `VOLUSPA-indexCharacters`});
+            console.log(req.params.name.toLowerCase());
+            characterData = await getCharacter(slug, req.params.name.toLowerCase(), token, true)
+        }
         console.log(characterData);
         /***
          * TODO checkDB

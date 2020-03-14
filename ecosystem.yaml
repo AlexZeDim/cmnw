@@ -71,5 +71,5 @@ apps:
     watch: true
     autorestart: true
     max_memory_restart: '1G'
-    log_date_format: 'MM-DD HH:mm:ss.SSS'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 10000

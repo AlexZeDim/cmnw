@@ -3,7 +3,6 @@ const router = express.Router();
 
 const realms_db = require("../../db/realms_db");
 const characters_db = require("../../db/characters_db");
-const getCharacter = require('../../voluspa/getCharacter');
 
 router.get('/:name@:realm', async function(req, res) {
     try {

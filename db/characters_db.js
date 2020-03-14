@@ -68,6 +68,17 @@ let schema = new mongoose.Schema({
     lastModified: {
         type: Date
     },
+    lastOnline: {
+        type: Date
+    },
+    statusCode: {
+        type: Number
+    },
+    media: {
+        avatar_url: String,
+        bust_url: String,
+        render_url: String
+    },
     createdBy: {
         type: String
     },
@@ -77,7 +88,6 @@ let schema = new mongoose.Schema({
     isWatched: {
         type: Boolean
     }
-    //TODO media
 },{
     timestamps: true
 });

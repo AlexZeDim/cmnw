@@ -20,10 +20,11 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         let pets_checksum, mounts_checksum;
         let petSlots = [];
         let result = {};
-        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level}, {pets, unlocked_battle_pet_slots},{mounts}] = await Promise.all([
+        const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}, {avatar_url, bust_url, render_url}] = await Promise.all([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
-            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
-            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName)
+            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).catch(e => (e)),
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).catch(e => (e)),
+            bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).catch(e => (e)),
         ]);
         result._id = `${characterName}@${realmSlug}`;
         result.id = id;
@@ -36,12 +37,22 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         result.realm = realm.name;
         result.realm_slug = realm.slug;
         result.level = level;
-        result.lastModified = moment(last_login_timestamp).toISOString(true);
+        result.lastOnline = moment(last_login_timestamp).toISOString(true);
         result.checksum = {};
+        result.lastModified = moment(lastModified).toISOString(true);
+        result.statusCode = statusCode;
         result.ilvl = {
             eq: average_item_level,
             avg: equipped_item_level
         };
+        if (avatar_url && bust_url && render_url) {
+            result.media = {
+                avatar_url: avatar_url,
+                bust_url: bust_url,
+                render_url: render_url
+            };
+        }
+        //FIXME
         if (guild) {
             result.guild = guild.name;
             if (guildRank) {
@@ -49,6 +60,9 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
                 const {rank} = members.find( ({ character }) => character.name === name );
                 result.guild_rank = rank;
             }
+        } else {
+            result.guild = '';
+            result.guild_rank = 99;
         }
         if (pets) {
             let pets_string = '';
@@ -78,9 +92,13 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         console.info(`U,${getCharacter.name},${characterName}@${realmSlug}:${id}`);
         return result;
     } catch (error) {
+        let statusCode = 400;
+        if (/\d/g.test(error.toString())) statusCode = error.toString().match(/[0-9]+/g)[0];
         console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
-        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug }
+        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }
     }
 }
+
+getCharacter('gordunni','маминслизень');
 
 module.exports = getCharacter;

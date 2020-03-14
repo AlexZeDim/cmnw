@@ -11,8 +11,7 @@ apps:
     name: 'VOLUSPA-indexCharacters'
     watch: true
     autorestart: true
-    exec_mode : "cluster"
-    instances : "max"
+    instances : 1
     max_memory_restart: '1G'
     cron_restart: '0 6 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -20,8 +19,7 @@ apps:
     restart_delay: 3600000
   - script: ./voluspa/indexing/indexGuilds.js
     name: 'VOLUSPA-indexGuilds'
-    exec_mode : "cluster"
-    instances : "max"
+    instances : 1
     watch: true
     autorestart: true
     max_memory_restart: '1G'
@@ -75,8 +73,7 @@ apps:
     restart_delay: 10000
   - script: ./dma/getAuctionData.js
     name: 'DMA-getAuctionData'
-    exec_mode: "cluster"
-    instances: "max"
+    instances: 2
     watch: true
     autorestart: true
     cron_restart: '*/15 * * * *'
@@ -84,8 +81,7 @@ apps:
     restart_delay: 300000
   - script: ./dma/getGoldData.js
     name: 'DMA-getGoldData'
-    exec_mode: "cluster"
-    instances: "max"
+    instances: 1
     watch: true
     autorestart: true
     cron_restart: '15 */1 * * *'

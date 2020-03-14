@@ -73,7 +73,7 @@ apps:
     restart_delay: 10000
   - script: ./dma/getAuctionData.js
     name: 'DMA-getAuctionData'
-    instances: 2
+    instances: 1
     watch: true
     autorestart: true
     cron_restart: '*/15 * * * *'

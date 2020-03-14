@@ -99,6 +99,4 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
     }
 }
 
-getCharacter('gordunni','маминслизень');
-
 module.exports = getCharacter;

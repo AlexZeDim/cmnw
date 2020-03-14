@@ -7,9 +7,9 @@ const characters_db = require("../../db/characters_db");
 router.get('/:name@:realm', async function(req, res) {
     try {
         let { slug } = await realms_db.findOne({$or: [
-                { 'name': req.params.realm },
+                { 'name': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
                 { 'slug': req.params.realm },
-                { 'name_locale': req.params.realm },
+                { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
                 { 'ticker': req.params.realm },
             ]});
         let characterData = await characters_db.findById(`${req.params.name.toLowerCase()}@${slug}`);
@@ -22,9 +22,9 @@ router.get('/:name@:realm', async function(req, res) {
             characterData.updatedBy = `VOLUSPA-userInput`;
             if (characterData.statusCode === 200) {
                 await characters_db.create(characterData).then(ch => console.info(`C,${ch._id}`));
+                characterData.updatedAt = Date.now();
+                characterData.updatedAt = Date.now();
             }
-            characterData.createdAt = new Date();
-            characterData.updatedAt = new Date();
         }
         res.status(200).json(characterData);
     } catch (e) {

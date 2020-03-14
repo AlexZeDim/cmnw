@@ -11,18 +11,20 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}) {
             let {slug, name} = realm;
             let guild_names = await characters_db.distinct('guild', { realm_slug: slug }).lean().exec();
             for (let i = 0; i < guild_names.length; i++) {
-                let guild_ = await guild_db.findById(`${guild_names[i].toLowerCase().replace(/\s/g,"-")}@${slug}`);
-                if (!guild_) {
-                    await guild_db.create({
-                        _id: `${guild_names[i].toLowerCase().replace(/\s/g,"-")}@${slug}`,
-                        slug: guild_names[i].toLowerCase().replace(/\s/g,"-"),
-                        name: guild_names[i],
-                        realm_slug: slug,
-                        realm: name,
-                        createdBy: `VOLUSPA-${fromCharacters.name}`
-                    }).then(gld => console.info(`C,${gld._id}`));
-                } else {
-                    console.info(`E,${guild_names[i]}@${slug}`)
+                if (guild_names[i] !== '') {
+                    let guild_ = await guild_db.findById(`${guild_names[i].toLowerCase().replace(/\s/g,"-")}@${slug}`);
+                    if (!guild_) {
+                        await guild_db.create({
+                            _id: `${guild_names[i].toLowerCase().replace(/\s/g,"-")}@${slug}`,
+                            slug: guild_names[i].toLowerCase().replace(/\s/g,"-"),
+                            name: guild_names[i],
+                            realm_slug: slug,
+                            realm: name,
+                            createdBy: `VOLUSPA-${fromCharacters.name}`
+                        }).then(gld => console.info(`C,${gld._id}`));
+                    } else {
+                        console.info(`E,${guild_names[i]}@${slug}`)
+                    }
                 }
             }
         }

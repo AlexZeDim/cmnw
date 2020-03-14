@@ -52,7 +52,6 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
                 render_url: render_url
             };
         }
-        //FIXME
         if (guild) {
             result.guild = guild.name;
             if (guildRank) {

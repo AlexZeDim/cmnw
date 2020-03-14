@@ -2,7 +2,10 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+
 const indexRouter = require('./routes/index');
+const characters = require('./routes/api/characters');
+const guilds = require('./routes/api/guilds');
 const app = express();
 
 app.use(logger('dev'));
@@ -12,5 +15,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/api/characters', characters);
+app.use('/api/guilds', guilds);
 
 module.exports = app;

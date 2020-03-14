@@ -5,13 +5,13 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 const moment = require('moment');
 const {connection} = require('mongoose');
 
-async function getAuctionData (queryKeys = { tags: `Depo` }, realmQuery = { 'locale': 'ru_RU' }) {
+async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'locale': 'ru_RU' }) {
     try {
         console.time(`DMA-${getAuctionData.name}`);
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
-        let realms = await realms_db.find(realmQuery).cursor({batchSize: 1});ё
+        let realms = await realms_db.find(realmQuery).cursor({batchSize: 1});
         for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
             console.info(`R,${realm.connected_realm_id}:${realm.name}`);
             let header_lastModified = '';

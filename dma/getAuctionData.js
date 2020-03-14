@@ -18,7 +18,7 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
             let {connected_realm_id} = realm;
             const latest_lot = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');
             if (latest_lot) header_lastModified = `${moment(latest_lot.lastModified).format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
-            let {auctions, lastModified} = await bnw.WowGameData.getAuctionHouse(connected_realm_id, header_lastModified);
+            let {auctions, lastModified} = await bnw.WowGameData.getAuctionHouse(connected_realm_id, header_lastModified).catch(e=> {console.info(`E,${realm.connected_realm_id}:${e}`); return (e)});
             if (auctions) {
                 for (let i = 0; i < auctions.length; i++) {
                     if ("bid" in auctions[i]) auctions[i].bid = parseFloat((auctions[i].bid/10000).toFixed(2));

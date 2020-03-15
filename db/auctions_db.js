@@ -47,6 +47,8 @@ let schema = new mongoose.Schema({
 });
 
 schema.index({ lastModified: -1 },{name: 'TTL', expireAfterSeconds: 86400});
+//schema.index({ unit_price: 1 },{name: 'QuotePrice'});
+schema.index({ "item.id": -1, connected_realm_id: 1 },{name: 'PriceLevel'});
 
 let auctions_db = mongoose.model('auctions', schema);
 

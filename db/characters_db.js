@@ -7,6 +7,7 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     useUnifiedTopology: true,
     bufferMaxEntries: 0,
     retryWrites: true,
+    useCreateIndex: true,
     w: "majority",
     family: 4
 });

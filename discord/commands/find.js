@@ -35,9 +35,9 @@ module.exports = {
             let embed = new Discord.MessageEmbed();
             embed.setColor('#006aff');
             embed.setTitle(_id.toUpperCase());
+            embed.setAuthor(updatedBy, '', 'https://discord.js.org');
             embed.setURL('https://discord.js.org/');
             embed.setThumbnail(media.avatar_url);
-            embed.setAuthor(updatedBy, '', 'https://discord.js.org');
             embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
             if (guild) {
                 embed.addField('Guild', guild, true);

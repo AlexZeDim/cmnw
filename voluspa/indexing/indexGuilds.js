@@ -55,7 +55,6 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                                     if (!pets) {
                                         pets = '';
                                     }
-                                    _character.guild = guild_.name;
                                     _character.guild_rank = rank;
                                     _character.updatedBy = `VOLUSPA-${indexGuild.name}`;
                                     _character.save();

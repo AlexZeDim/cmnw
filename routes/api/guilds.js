@@ -22,7 +22,7 @@ router.get('/:name@:realm', async function(req, res) {
             guildData.updatedBy = `VOLUSPA-userInput`;
             if (guildData.statusCode === 200) {
                 await guilds_db.create(guildData).then(ch => console.info(`C,${ch._id}`));
-                guildData.updatedAt = Date.now();
+                guildData.createdAt = Date.now();
                 guildData.updatedAt = Date.now();
             }
         }

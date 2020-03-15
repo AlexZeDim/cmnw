@@ -45,6 +45,8 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ lastModified: -1 },{name: 'TTL', expireAfterSeconds: 86400});
+
 let auctions_db = mongoose.model('auctions', schema);
 
 module.exports = auctions_db;

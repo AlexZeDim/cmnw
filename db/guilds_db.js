@@ -8,6 +8,7 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     bufferMaxEntries: 0,
     retryWrites: true,
     w: "majority",
+    useCreateIndex: true,
     family: 4
 });
 
@@ -111,6 +112,8 @@ let schema = new mongoose.Schema({
 },{
     timestamps: true
 });
+
+schema.index({ name: 1 },{name: 'Name'});
 
 let guild_db = mongoose.model('guilds', schema);
 

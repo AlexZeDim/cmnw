@@ -69,6 +69,10 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ name: 1 },{name: 'Name'});
+schema.index({ slug: 1 },{name: 'Slug'});
+schema.index({ connected_realm_id: 1 },{name: 'Connected Realms'});
+
 let realms_db = mongoose.model('realms', schema);
 
 module.exports = realms_db;

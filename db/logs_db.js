@@ -30,6 +30,9 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ isIndexed: 1 },{name: 'isIndexed'});
+schema.index({ createdAt: -1 },{name: 'TTL', expireAfterSeconds: 604800});
+
 let logs_db = mongoose.model('logs', schema);
 
 module.exports = logs_db;

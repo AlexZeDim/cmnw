@@ -33,6 +33,8 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ lastModified: -1 },{name: 'TTL', expireAfterSeconds: 604800});
+
 let golds_db = mongoose.model('golds', schema);
 
 module.exports = golds_db;

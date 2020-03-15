@@ -22,7 +22,7 @@ router.get('/:name@:realm', async function(req, res) {
             characterData.updatedBy = `VOLUSPA-userInput`;
             if (characterData.statusCode === 200) {
                 await characters_db.create(characterData).then(ch => console.info(`C,${ch._id}`));
-                characterData.updatedAt = Date.now();
+                characterData.createdAt = Date.now();
                 characterData.updatedAt = Date.now();
             }
         }

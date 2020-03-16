@@ -20,7 +20,8 @@ async function price_level () {
              * Price tick for chart is Pmax-Pmin/length and round to 0.25
              */
         }
-        let roundNearQtr = (number) => parseFloat((Math.round(number * 4) / 4).toFixed(2));
+        //TODO round to 0.25 (4) or 0.5 (2)
+        let roundNearQtr = (number) => parseFloat((Math.round(number * 2) / 2).toFixed(2));
 
         console.log(priceArray);
 
@@ -35,9 +36,18 @@ async function price_level () {
         const range = (start, stop, step = 1) => Array(Math.ceil((stop + step - start) / step)).fill(start).map((x, y) => x + y * step);
         let priceRange_array = await range(start, stop, step);
         console.log(priceRange_array);
-        let cursor = await auctions_db.find( { "item.id": 168487, connected_realm_id: 1602}).lean().cursor({batchSize: 20});
+        let cursor = await auctions_db.find({ "item.id": 168487, connected_realm_id: 1602}).lean().cursor({batchSize: 20});
         for (let order = await cursor.next(); order != null; order = await cursor.next()) {
             //console.log(order)
+            //TODO this one is for timestamp
+            console.log(ts.map(Number).indexOf(+order.lastModified));
+            //TODO this one is for index price
+            if (priceRange_array.indexOf(roundNearQtr(order.unit_price)) === -1) {
+                if (roundNearQtr(order.unit_price) < start) console.log(roundNearQtr(order.unit_price)); //TODO to min (priceRange_array[0] index)
+                if (roundNearQtr(order.unit_price) > stop) console.log(roundNearQtr(order.unit_price)); //TODO to max (priceRange_array[priceRange_array.length-1])
+            } else {
+                console.log(priceRange_array.indexOf(roundNearQtr(order.unit_price))); //TODO price index
+            }
         }
         connection.close();
         console.timeEnd(`DMA-${price_level.name}`);

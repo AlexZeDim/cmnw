@@ -94,7 +94,8 @@ let schema = new mongoose.Schema({
 });
 
 schema.index({ name: 1 },{name: 'Name'});
-schema.index({ name: 1 },{name: 'Guild'});
+schema.index({ guild: 1 },{name: 'Guild'});
+schema.index({ id: 1 },{name: 'ID'});
 
 let characters_db = mongoose.model('characters', schema);
 

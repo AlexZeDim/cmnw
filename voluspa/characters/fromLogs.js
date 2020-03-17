@@ -52,10 +52,10 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
                                 console.info(`E,${log._id}@${log.realm},${ft_counter}`);
                             }
                         }
-                        if (ft_counter === faultTolerance ) {
-                            console.info(`E,${page}:${slug},${ft_counter}`);
-                            break;
-                        }
+                    }
+                    if (ft_counter === faultTolerance ) {
+                        console.info(`E,${page}:${slug},${ft_counter}`);
+                        break;
                     }
                 } else {
                     console.info(`E,${wcl_id}:${slug},${ep_counter}`);

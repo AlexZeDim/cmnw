@@ -1,13 +1,13 @@
 const auctions_db = require("../db/auctions_db");
 
-async function price_level () {
+async function charts (item_id = 152510, connected_realm_id = 1602) {
     try {
         let chartArray = [];
         let priceArray = [];
         let round;
         let sampleVariable, sampleVariable_prev = 0;
-        let quotes = await auctions_db.distinct('unit_price', { "item.id": 152510, connected_realm_id: 1602}).lean();
-        let timestamp = await auctions_db.distinct('lastModified', { "item.id": 152510, connected_realm_id: 1602}).lean();
+        let quotes = await auctions_db.distinct('unit_price', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean();
+        let timestamp = await auctions_db.distinct('lastModified', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean();
         for (let i = 1; i < quotes.length; i++) {
             if (i > 1) sampleVariable_prev = sampleVariable; else sampleVariable_prev = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
             sampleVariable = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
@@ -54,7 +54,7 @@ async function price_level () {
                 chartArray.push([x_,y_,0]);
             }
         }
-        let cursor = await auctions_db.find({ "item.id": 152510, connected_realm_id: 1602}).lean().cursor({batchSize: 20});
+        let cursor = await auctions_db.find({ "item.id": item_id, connected_realm_id: connected_realm_id}).lean().cursor({batchSize: 20});
         for (let order = await cursor.next(); order != null; order = await cursor.next()) {
             let x, y = 0;
             x = timestamp.map(Number).indexOf(+order.lastModified);
@@ -66,13 +66,10 @@ async function price_level () {
             }
             chartArray[priceRange_array.length*x+y][2] = chartArray[priceRange_array.length*x+y][2]+order.quantity;
         }
-        console.log(priceRange_array);
-        console.log(timestamp);
-        console.log(chartArray);
         return {price_range: priceRange_array, timestamps: timestamp, chart: chartArray}
     } catch (err) {
         console.log(err);
     }
 }
 
-module.exports = price_level;
+module.exports = charts;

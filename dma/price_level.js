@@ -13,8 +13,8 @@ async function price_level () {
             sampleVariable = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
             if (sampleVariable_prev*3 < sampleVariable) break; else priceArray.push(quotes[i]);
         }
-        let start = Number((priceArray[0]).toFixed(2));
-        let stop = Number((priceArray[priceArray.length-1]).toFixed(2));
+        let start = Math.floor(priceArray[0]);
+        let stop = Math.round(priceArray[priceArray.length-1]);
         const price_range = stop-start;
         let step = 0;
         switch (true) {
@@ -47,9 +47,8 @@ async function price_level () {
         } else {
             round = (number, precision = 5) => Math.round(number/precision)*precision;
         }
-        const range = (start, stop, step = 1) => Array(Math.round((stop + step - start) / step)).fill(start).map((x, y) => x + y * step);
-        let priceRange_array = await range(start, stop, step);
-
+        const range = (start, stop, step = 1) => Array(Math.ceil((stop + step - start) / step)).fill(start).map((x, y) => x + y * step);
+        let priceRange_array = await range(round(start,step), round(stop,step), step);
         for (let x_ = 0; x_ < timestamp.length; x_++) {
             for (let y_ = 0; y_ < priceRange_array.length; y_++) {
                 chartArray.push([x_,y_,0]);
@@ -63,7 +62,6 @@ async function price_level () {
                 if (round(order.unit_price, step) < start) {y = 0;}
                 if (round(order.unit_price, step) > stop) {y = priceRange_array.length-1;}
             } else {
-
                 y = priceRange_array.indexOf(round(order.unit_price, step));
             }
             chartArray[priceRange_array.length*x+y][2] = chartArray[priceRange_array.length*x+y][2]+order.quantity;

@@ -6,6 +6,7 @@ const logger = require('morgan');
 const indexRouter = require('./routes/index');
 const characters = require('./routes/api/characters');
 const guilds = require('./routes/api/guilds');
+const items = require('./routes/api/items');
 const app = express();
 
 app.use(logger('dev'));
@@ -17,5 +18,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/api/characters', characters);
 app.use('/api/guilds', guilds);
+app.use('/api/items', items);
 
 module.exports = app;

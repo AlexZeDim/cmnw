@@ -19,6 +19,8 @@ let schema = new mongoose.Schema({
         type: Number
     },
     name: {
+        en_US: String,
+        es_MX: String,
         pt_BR: String,
         de_DE: String,
         en_GB: String,
@@ -26,11 +28,12 @@ let schema = new mongoose.Schema({
         fr_FR: String,
         it_IT: String,
         ru_RU: String,
-        ko_KR: String,
-        zh_TW: String,
     },
     quality: {
         type: String
+    },
+    ilvl: {
+        type: Number
     },
     level: {
       type: Number

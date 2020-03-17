@@ -3,46 +3,51 @@ const items_db = require("./../db/items_db");
 const battleNetWrapper = require('battlenet-api-wrapper');
 const {connection} = require('mongoose');
 
-async function test (queryKeys = { tags: `Depo` }) {
+async function getItems (queryKeys = { tags: `DMA` }) {
     try {
-        console.time(`DMA-${test.name}`);
+        console.time(`DMA-${getItems.name}`);
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
-        //TODO locale list? index with bnw?
-        //TODO sell price for gold
-
-        await bnw.init(_id, secret, token, 'eu', 'en_GB');
-        let item = await bnw.WowGameData.getItem(174141);
-        if (item) {
-            console.log(item);
-            /*await items_db.findByIdAndUpdate(
-                {
-                    _id: item.id
-                }, {
-                    _id: item.id,
-                    "name.en_GB": item.name,
-                    quality: item.quality.name,
-                    level: item.level,
-                    //TODO icon: item,
-                    item_class: item.item_class.name,
-                    item_subclass: item.item_subclass.name,
-                    sell_price: item.sell_price,
-                    is_equippable: item.is_equippable,
-                    is_stackable: item.is_stackable,
-                    inventory_type: item.inventory_type.name
-                },
-                {
-                    upsert: true,
-                    new: true,
-                    lean: true
-                }
-            )*/
+        await bnw.init(_id, secret, token, 'eu', '');
+        for (let item_id = 0; item_id < 250000; item_id++) {
+            const [{id, name, quality, level, required_level, item_class, item_subclass, inventory_type, sell_price, max_count, is_equippable, is_stackable}, {assets}] = await Promise.all([
+                bnw.WowGameData.getItem(item_id).catch(e => (e)),
+                bnw.WowGameData.getItemMedia(item_id).catch(e => (e)),
+            ]);
+            if (id) {
+                await items_db.findByIdAndUpdate(
+                    {
+                        _id: id
+                    }, {
+                        _id: id,
+                        name: name,
+                        quality: quality.name.en_GB,
+                        ilvl: level,
+                        level: required_level,
+                        item_class: item_class.name.en_GB,
+                        item_subclass: item_subclass.name.en_GB,
+                        inventory_type: inventory_type.name.en_GB,
+                        sell_price: parseFloat((sell_price/10000).toFixed(2)),
+                        max_count: max_count,
+                        is_equippable: is_equippable,
+                        is_stackable: is_stackable,
+                        icon: assets[0].value
+                    },
+                    {
+                        upsert: true,
+                        new: true,
+                        lean: true
+                    }
+                ).then(i => console.info(`C,${i._id}`))
+            } else {
+                console.info(`E,${item_id}`)
+            }
         }
         connection.close();
-        console.timeEnd(`DMA-${test.name}`);
+        console.timeEnd(`DMA-${getItems.name}`);
     } catch (err) {
-        console.error(`${test.name},${err}`);
+        console.error(`${getItems.name},${err}`);
     }
 }
 
-test();
+getItems();

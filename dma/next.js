@@ -2,14 +2,8 @@
 
 async function test () {
     try {
-        let round;
-        let n = 43;
-        if (n < 1) {
-            round = (number, nearest = .5) => parseFloat((Math.round(number * (1/nearest)) / (1/nearest) ).toFixed(2));
-        } else {
-            round = (number, pres = 5) => Math.round(number/pres)*pres;
-        }
-        console.log(round(n,10))
+        const range = (start, stop, step = 1) => Array(Math.ceil((stop + step - start) / step)).fill(start).map((x, y) => x + y * step);
+        console.log(range(43,112,2.5))
     } catch (err) {
         console.log(err);
     }

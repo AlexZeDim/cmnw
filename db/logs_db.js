@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
-//TODO TTL by created
+
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
     useNewUrlParser: true,
     useFindAndModify: false,

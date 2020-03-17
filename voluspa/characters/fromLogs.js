@@ -35,7 +35,7 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
                                 _id: link.match(/(.{16})\s*$/g)[0]
                             }).lean().exec();
                             if (!log) {
-                                if (ft_counter > 0) {
+                                if (ft_counter > 1) {
                                     ft_counter -= 1;
                                 }
                                 await logs_db.create({

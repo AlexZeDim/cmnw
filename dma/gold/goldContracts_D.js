@@ -1,4 +1,4 @@
-const Contract = require('../classIntraDayContract.js');
+const Contract = require('../classContracts_D.js');
 const realms_db = require("../../db/realms_db");
 const golds_db = require("../../db/golds_db");
 const contracts_db = require("../../db/contracts_db");

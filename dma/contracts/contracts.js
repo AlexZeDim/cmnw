@@ -1,6 +1,6 @@
 const realms_db = require("../../db/realms_db");
 const auctions_db = require("../../db/auctions_db");
-const contract = require('../classIntraDayContract.js');
+const contract = require('../classContracts_D.js');
 const moment = require('moment');
 
 moment.updateLocale('en', {

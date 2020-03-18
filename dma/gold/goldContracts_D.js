@@ -37,10 +37,10 @@ async function goldContracts_D (arg_realm) {
             if (contract_data) {
                 await contracts_db.findOneAndUpdate(
                     {
-                        _id: `GOLD-${moment().format('DD.MMM')}@${realm.name.toUpperCase()}`,
+                        _id: `GOLD-${moment().format('DD.MMM')}@${realm.slug.toUpperCase()}`,
                     },
                     new Contract (
-                        `GOLD-${moment().format('DD.MMM')}@${realm.name.toUpperCase()}`,
+                        `GOLD-${moment().format('DD.MMM')}@${realm.slug.toUpperCase()}`,
                         `GOLD-${moment().format('DD.MMM')}`,
                         realm.connected_realm_id,
                         'D',

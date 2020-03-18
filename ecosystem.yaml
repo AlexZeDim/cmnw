@@ -95,3 +95,11 @@ apps:
     cron_restart: '0 12 * */6 *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
+  - script: ./dma/gold/goldContracts_D.js
+    name: 'DMA-goldContracts_D'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '0 12 * */6 *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000

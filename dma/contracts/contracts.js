@@ -1,6 +1,6 @@
 const realms_db = require("../../db/realms_db");
 const auctions_db = require("../../db/auctions_db");
-const contract = require('./classIntraDayContract.js');
+const contract = require('../classIntraDayContract.js');
 const moment = require('moment');
 
 moment.updateLocale('en', {
@@ -33,7 +33,10 @@ async function createAssetContract (arg_realm = 'gordunni', arg_asset, period) {
                         }
                     }
                 ]);
-                console.log(new contract(1,`TEST`,'gordunni','D', market_data))
+                console.log(`TICKER-${moment().format('DD.MMM')}@${realm.connected_realm_id}`);
+                console.log(`TICKER-${moment().format('DD.MMM')}`);
+                console.log(`${realm.connected_realm_id}`)
+                //console.log(new contract(1,`TEST`,'gordunni','D', market_data))
             }
         }
     } catch (err) {

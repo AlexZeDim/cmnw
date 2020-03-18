@@ -2,11 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const realms_db = require("../../db/realms_db");
-const items_db = require("../../db/items_db");
-
 const charts = require("../../dma/charts");
 
-router.get('/:name@:realm', async function(req, res) {
+router.get('/:id@:realm', async function(req, res) {
     try {
         let { connected_realm_id } = await realms_db.findOne({$or: [
                 { 'name': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
@@ -14,7 +12,7 @@ router.get('/:name@:realm', async function(req, res) {
                 { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
                 { 'ticker': req.params.realm },
             ]});
-        let x = await charts(_id ,connected_realm_id);
+        let x = await charts(req.params.id, connected_realm_id);
         res.status(200).json(x);
     } catch (e) {
         res.status(404).json(e);

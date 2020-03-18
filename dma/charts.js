@@ -57,6 +57,7 @@ async function charts (item_id = 152510, connected_realm_id = 1602) {
         let cursor = await auctions_db.find({ "item.id": item_id, connected_realm_id: connected_realm_id}).lean().cursor({batchSize: 20});
         for (let order = await cursor.next(); order != null; order = await cursor.next()) {
             let x, y = 0;
+            //TODO date to string
             x = timestamp.map(Number).indexOf(+order.lastModified);
             if (priceRange_array.indexOf(round(order.unit_price, step)) === -1) {
                 if (round(order.unit_price, step) < start) {y = 0;}

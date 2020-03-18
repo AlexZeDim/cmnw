@@ -9,12 +9,11 @@ async function getItems (queryKeys = { tags: `DMA` }) {
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', '');
-        for (let item_id = 37676; item_id < 250000; item_id++) {
+        for (let item_id = 37882; item_id < 250000; item_id++) {
             const [{id, name, quality, level, required_level, item_class, item_subclass, inventory_type, sell_price, max_count, is_equippable, is_stackable}, {assets}] = await Promise.all([
                 bnw.WowGameData.getItem(item_id).catch(e => (e)),
                 bnw.WowGameData.getItemMedia(item_id).catch(e => (e)),
             ]);
-            console.log({id, name, quality, level, required_level, item_class, item_subclass, inventory_type, sell_price, max_count, is_equippable, is_stackable});
             if (id && assets && quality.name && item_class.name && item_subclass.name && inventory_type.name) {
                 await items_db.findByIdAndUpdate(
                     {

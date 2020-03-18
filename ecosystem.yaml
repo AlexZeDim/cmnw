@@ -100,6 +100,6 @@ apps:
     instances: 1
     watch: true
     autorestart: true
-    cron_restart: '0 12 * */6 *'
+    cron_restart: '00 10,20 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

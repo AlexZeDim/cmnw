@@ -40,9 +40,9 @@ module.exports = class Contract {
         let timestamp_data = [];
         let sellers = [];
         for (let i = 0; i < contract_data.length; i++) {
-            price_data = [...new Set(price_data.concat(contract_data[i].price))];
+            price_data = [...price_data.concat(contract_data[i].price)];
             timestamp_data = [...new Set(timestamp_data.concat(contract_data[i]._id))];
-            sellers = [...new Set(sellers.concat(contract_data[i].sellers))];
+            if (contract_data[i].sellers) sellers = [...new Set(sellers.concat(contract_data[i].sellers))];
         }
         this.price_data = price_data;
         this.timestamp_data = timestamp_data;
@@ -53,29 +53,30 @@ module.exports = class Contract {
                 (arr.length - (usePopulation ? 0 : 1))
             );
         };
+        //TODO Value at Risk and only for M
         /**
          * @return {number}
          */
         function VaR (portfolioEquityCurve, alpha) {
             // Compute the returns and remove the first element, always equals to NaN
             function arithmeticReturns (portfolioEquityCurve) {
-                // Compute the arithmetic returns
-                let returns = new portfolioEquityCurve.constructor(portfolioEquityCurve.length); // Inherit the array type from the input array
+                portfolioEquityCurve = portfolioEquityCurve.map(x=>parseInt(x));
+                let returns = new Array(portfolioEquityCurve.length); // Inherit the array type from the input array
                 returns[0] = NaN;
                 for (let i = 1; i < portfolioEquityCurve.length; ++i) {
-                    returns[i] = (portfolioEquityCurve[i] - portfolioEquityCurve[i-1])/portfolioEquityCurve[i-1];
+                    returns[i] = Number((portfolioEquityCurve[i] - portfolioEquityCurve[i-1])/portfolioEquityCurve[i-1]);
                 }
                 // Return the arithmetic returns
                 return returns;
             }
             let returns = arithmeticReturns(portfolioEquityCurve).slice(1);
-
+            console.log(returns);
             // Sort the returns from lowest to highest values
             returns.sort((a, b) => { return a - b;});
             // Compute w
             // C.f. p. 383 of the reference
             let c_alpha = 1 - alpha;
-            let w = Math.floor(c_alpha * returns.length);
+            let w = c_alpha * returns.length;
             // Limit case (w equals to 0), return NaN
             if (w === 0) {
                 return 0;
@@ -89,16 +90,20 @@ module.exports = class Contract {
         }
         this.risk = {
             stdDev: parseFloat((standardDeviation(contract_data.map(low => low.price*100))/100).toFixed(2)),
-            stdDev_size: parseFloat((standardDeviation(contract_data.map(low_size => low_size.price_size*100))/100).toFixed(2)),
-            VaR: parseFloat(VaR(contract_data.map(low => low.price*100),0.80).toFixed(2)),
-            VaR_size: parseFloat(VaR(contract_data.map(low => low.price_size*100).filter((value)=> value !== 0),0.80).toFixed(2)),
+            stdDev_size: parseFloat((standardDeviation(contract_data.map(low_size => low_size.price_size*100))/100).toFixed(2))
         };
-        this.sellers = {
-            sellers: sellers,
-            open: contract_data[0].sellers.length,
-            change: contract_data[contract_data.length-1].sellers.length - contract_data[0].sellers.length,
-            close: contract_data[contract_data.length-1].sellers.length,
-            total: sellers.length,
-        };
+/*        if (type === 'M') {
+            this.risk.VaR = parseFloat(VaR(contract_data.map(low => low.price*100),0.80).toFixed(2));
+            this.risk.VaR_size = parseFloat(VaR(contract_data.map(low => low.price_size*100).filter((value)=> value !== 0),0.80).toFixed(2));
+        }*/
+        if (sellers.length) {
+            this.sellers = {
+                sellers: sellers,
+                open: contract_data[0].sellers.length,
+                change: contract_data[contract_data.length-1].sellers.length - contract_data[0].sellers.length,
+                close: contract_data[contract_data.length-1].sellers.length,
+                total: sellers.length,
+            };
+        }
     }
 };

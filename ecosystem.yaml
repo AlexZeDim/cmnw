@@ -12,7 +12,7 @@ apps:
     watch: true
     autorestart: true
     instances : 1
-    max_memory_restart: '1G'
+    max_memory_restart: '2G'
     cron_restart: '0 6 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 5000

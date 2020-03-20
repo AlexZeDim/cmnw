@@ -56,6 +56,12 @@ let schema = new mongoose.Schema({
     is_stackable: {
         type: Boolean
     },
+    is_commdty: {
+        type: Boolean
+    },
+    is_auctionable: {
+        type: Boolean
+    },
     indx: {
         type: Boolean
     },

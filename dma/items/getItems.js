@@ -1,5 +1,5 @@
-const keys_db = require("./../db/keys_db");
-const items_db = require("./../db/items_db");
+const keys_db = require("../../db/keys_db");
+const items_db = require("../../db/items_db");
 const battleNetWrapper = require('battlenet-api-wrapper');
 const {connection} = require('mongoose');
 
@@ -9,14 +9,14 @@ async function getItems (queryKeys = { tags: `DMA` }) {
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', '');
-        for (let item_id = 86613; item_id < 250000; item_id++) {
+        for (let item_id = 0; item_id < 250000; item_id++) {
             const [{id, name, quality, level, required_level, item_class, item_subclass, inventory_type, sell_price, max_count, is_equippable, is_stackable}, {assets}] = await Promise.all([
                 bnw.WowGameData.getItem(item_id).catch(e => (e)),
                 bnw.WowGameData.getItemMedia(item_id).catch(e => (e)),
             ]);
             if (id && assets && quality.name && item_class.name && item_subclass.name && inventory_type.name) {
                 await items_db.findByIdAndUpdate(
-                    {
+                {
                         _id: id
                     }, {
                         _id: id,
@@ -38,7 +38,7 @@ async function getItems (queryKeys = { tags: `DMA` }) {
                         new: true,
                         lean: true
                     }
-                ).then(i => console.info(`C,${i._id}`))
+                ).then(i => console.info(`C,${i._id}`)).catch(e=>(e))
             } else {
                 console.info(`E,${item_id}`)
             }

@@ -35,7 +35,6 @@ async function getGuild (realmSlug, nameSlug, token = '') {
         console.error(`E,${getGuild.name},${nameSlug}@${realmSlug},${error}`);
         return {_id: `${nameSlug}@${realmSlug}`, slug: nameSlug, realm_slug: realmSlug, statusCode: statusCode}
     }
-
 }
 
 module.exports = getGuild;

@@ -62,7 +62,7 @@ module.exports = {
             }
             embed.addField('Class', data.class, true);
             embed.addField('Spec', spec, true);
-            embed.addField('Race', `${race},${gender[0]}`, true);
+            embed.addField('Race', `${race}, ${gender[0]}`, true);
             if (checksum) {
                 embed.addField('Pets', checksum.pets, true);
                 embed.addField('Mounts', checksum.mounts, true);

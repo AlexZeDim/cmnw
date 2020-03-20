@@ -39,36 +39,39 @@ module.exports = {
             embed.setTitle(_id.toUpperCase());
             embed.setAuthor(updatedBy, '', 'https://discord.js.org');
             embed.setURL('https://discord.js.org/');
-                if (guild) {
-                    embed.setColor('#006aff');
-                    embed.addField('Guild', guild, true);
-                    embed.addField('Guild Rank', guild_rank, true);
-                } 
-                if (faction === "Alliance") {
-                    embed.setColor('#006aff');
-                }
-                if (faction === "Horde") {
-                    embed.setColor('#ff0000');
-                }
-                embed.addField('Faction', faction, true);
-                embed.addField('LVL', level, true);
-                embed.addField('Class', data.class, true);
-                embed.addField('ilvl', ilvl.eq, true);
-                embed.addField('Spec', spec, true);
-                embed.addField('Race', race, true);
-                embed.addField('Gender', gender, true);
-                if (checksum) {
-                    embed.addField('Pets', checksum.pets, true);
-                    embed.addField('Mounts', checksum.mounts, true);
-                }
-                if (statusCode === 200) {  
-                    embed.setThumbnail(media.avatar_url);
-                    embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
-                embed.setTimestamp(updatedAt);
-                embed.setFooter(`Gonikon`);
-            } else {
-                embed.setColor('#fff');
+            if (media) {
+                embed.setThumbnail(media.avatar_url);
             }
+            embed.addField('LVL', level, true);
+            embed.addField('Ailvl', ilvl.avg, true);
+            embed.addField('Eilvl', ilvl.eq, true);
+            embed.addField('Faction', faction, true);
+            if (guild) {
+                embed.addField('Guild', guild, true);
+                if (guild_rank === 0) {
+                    embed.addField('Guild Rank', "GM", true); 
+                } else {
+                    embed.addField('Guild Rank', guild_rank, true);
+                }
+            } 
+            if (faction === "Alliance") {
+                embed.setColor('#006aff');
+            }
+            if (faction === "Horde") {
+                embed.setColor('#ff0000');
+            }
+            embed.addField('Class', data.class, true);
+            embed.addField('Spec', spec, true);
+            embed.addField('Race', `${race},${gender[0]}`, true);
+            if (checksum) {
+                embed.addField('Pets', checksum.pets, true);
+                embed.addField('Mounts', checksum.mounts, true);
+            }
+            if (statusCode === 200) {  
+                embed.setTimestamp(updatedAt);
+                embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
+            }
+            embed.setFooter(`Gonikon`);
             return embed;
         });
         const sentMessage = await message.channel.send(characterData);

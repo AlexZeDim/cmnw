@@ -7,6 +7,7 @@ const indexRouter = require('./routes/index');
 const characters = require('./routes/api/characters');
 const guilds = require('./routes/api/guilds');
 const items = require('./routes/api/items');
+const test = require('./routes/api/test');
 const app = express();
 
 app.use(logger('dev'));
@@ -19,5 +20,6 @@ app.use('/', indexRouter);
 app.use('/api/characters', characters);
 app.use('/api/guilds', guilds);
 app.use('/api/items', items);
+app.use('/api/test', test);
 
 module.exports = app;

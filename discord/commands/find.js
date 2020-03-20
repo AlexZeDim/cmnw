@@ -47,12 +47,12 @@ module.exports = {
             embed.addField('Eilvl', ilvl.eq, true);
             embed.addField('Faction', faction, true);
             if (guild) {
-                embed.addField('Guild', guild, true);
                 if (guild_rank === 0) {
                     embed.addField('Guild Rank', "GM", true); 
                 } else {
                     embed.addField('Guild Rank', guild_rank, true);
                 }
+                embed.addField('Guild', guild, true);
             } 
             if (faction === "Alliance") {
                 embed.setColor('#006aff');

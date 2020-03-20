@@ -30,30 +30,45 @@ module.exports = {
                 updatedAt,
                 updatedBy,
                 race,
-                media
+                media,
+                statusCode,
+                pets,
+                mounts
             } = data;
             let embed = new Discord.MessageEmbed();
-            embed.setColor('#006aff');
             embed.setTitle(_id.toUpperCase());
             embed.setAuthor(updatedBy, '', 'https://discord.js.org');
             embed.setURL('https://discord.js.org/');
-            embed.setThumbnail(media.avatar_url);
-            embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
-            if (guild) {
-                embed.addField('Guild', guild, true);
-                embed.addField('Guild Rank', guild_rank, true);
+                if (guild) {
+                    embed.setColor('#006aff');
+                    embed.addField('Guild', guild, true);
+                    embed.addField('Guild Rank', guild_rank, true);
+                } 
+                if (faction === "Alliance") {
+                    embed.setColor('#006aff');
+                }
+                if (faction === "Horde") {
+                    embed.setColor('#ff0000');
+                }
+                embed.addField('Faction', faction, true);
+                embed.addField('LVL', level, true);
+                embed.addField('Class', data.class, true);
+                embed.addField('ilvl', ilvl.eq, true);
+                embed.addField('Spec', spec, true);
+                embed.addField('Race', race, true);
+                embed.addField('Gender', gender, true);
+                if (checksum) {
+                    embed.addField('Pets', checksum.pets, true);
+                    embed.addField('Mounts', checksum.mounts, true);
+                }
+                if (statusCode === 200) {  
+                    embed.setThumbnail(media.avatar_url);
+                    embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
+                embed.setTimestamp(updatedAt);
+                embed.setFooter(`Gonikon`);
+            } else {
+                embed.setColor('#fff');
             }
-            embed.addField('LVL', level, true);
-            embed.addField('Class', data.class, true);
-            embed.addField('ilvl', ilvl.eq, true);
-            embed.addField('Spec', spec, true);
-            embed.addField('Race', race, true);
-            embed.addField('Faction', faction, true);
-            embed.addField('Gender', gender, true);
-            embed.addField('Pets', checksum.pets, true);
-            embed.addField('Mounts', checksum.mounts, true);
-            embed.setTimestamp(updatedAt);
-            embed.setFooter(`Gonikon`);
             return embed;
         });
         const sentMessage = await message.channel.send(characterData);

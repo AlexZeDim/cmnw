@@ -30,29 +30,47 @@ module.exports = {
                 updatedAt,
                 updatedBy,
                 race,
-                media
+                media,
+                statusCode,
+                pets,
+                mounts
             } = data;
             let embed = new Discord.MessageEmbed();
-            embed.setColor('#006aff');
             embed.setTitle(_id.toUpperCase());
             embed.setAuthor(updatedBy, '', 'https://discord.js.org');
             embed.setURL('https://discord.js.org/');
-            embed.setThumbnail(media.avatar_url);
-            embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
-            if (guild) {
-                embed.addField('Guild', guild, true);
-                embed.addField('Guild Rank', guild_rank, true);
+            if (media) {
+                embed.setThumbnail(media.avatar_url);
             }
             embed.addField('LVL', level, true);
-            embed.addField('Class', data.class, true);
-            embed.addField('ilvl', ilvl.eq, true);
-            embed.addField('Spec', spec, true);
-            embed.addField('Race', race, true);
+            embed.addField('Ailvl', ilvl.avg, true);
+            embed.addField('Eilvl', ilvl.eq, true);
             embed.addField('Faction', faction, true);
-            embed.addField('Gender', gender, true);
-            embed.addField('Pets', checksum.pets, true);
-            embed.addField('Mounts', checksum.mounts, true);
-            embed.setTimestamp(updatedAt);
+            if (guild) {
+                embed.addField('Guild', guild, true);
+                if (guild_rank === 0) {
+                    embed.addField('Guild Rank', "GM", true); 
+                } else {
+                    embed.addField('Guild Rank', guild_rank, true);
+                }
+            } 
+            if (faction === "Alliance") {
+                embed.setColor('#006aff');
+            }
+            if (faction === "Horde") {
+                embed.setColor('#ff0000');
+            }
+            embed.addField('Class', data.class, true);
+            embed.addField('Spec', spec, true);
+            embed.addField('Race', `${race}, ${gender[0]}`, true);
+            if (checksum) {
+                embed.addField('Pets', checksum.pets, true);
+                embed.addField('Mounts', checksum.mounts, true);
+            }
+            if (statusCode === 200) {  
+                embed.setTimestamp(updatedAt);
+                embed.addField('Last Online', lastModified.toLocaleString('en-GB'), true);
+            }
             embed.setFooter(`Gonikon`);
             return embed;
         });

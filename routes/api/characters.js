@@ -7,9 +7,9 @@ const characters_db = require("../../db/characters_db");
 router.get('/:name@:realm', async function(req, res) {
     try {
         let { slug } = await realms_db.findOne({$or: [
-                { 'name': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
+                { 'name': req.params.realm.charAt(0).toUpperCase() + req.params.realm.slice(1) },
                 { 'slug': req.params.realm },
-                { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
+                { 'name_locale': req.params.realm.charAt(0).toUpperCase() + req.params.realm.slice(1) },
                 { 'ticker': req.params.realm },
             ]});
         let characterData = await characters_db.findById(`${req.params.name.toLowerCase()}@${slug}`);

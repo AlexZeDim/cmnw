@@ -96,6 +96,8 @@ let schema = new mongoose.Schema({
 schema.index({ name: 1 },{name: 'Name'});
 schema.index({ guild: 1 },{name: 'Guild'});
 schema.index({ id: 1 },{name: 'ID'});
+schema.index({ "checksum.pets": 1 },{name: 'Hash A'});
+schema.index({ "checksum.mounts": 1 },{name: 'Hash B'});
 
 let characters_db = mongoose.model('characters', schema);
 

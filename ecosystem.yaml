@@ -13,7 +13,7 @@ apps:
     autorestart: true
     instances : 1
     max_memory_restart: '2G'
-    cron_restart: '0 6 * * *'
+    cron_restart: '0 6 */2 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 5000
     restart_delay: 3600000

@@ -8,19 +8,13 @@ const axios = require('axios');
 
 router.get('/:query', async function(req, res) {
     try {
-        let end;
         let args = '';
         if (req.params.query.match(/find/g)) {
             args = req.params.query.split(/(?<=^\S+)\s/)[1];
             const params = args.split('@');
             console.log(params);
-            let {data} = await axios.get(encodeURI(`http://localhost:3030/api/characters/${params[0]}@${params[1]}`));
-            end = data;
-            console.log(end);
-        } else {
-            end = req.params;
+            res.redirect(`http://localhost:3000/character/${params[1]}/${params[0]}`);
         }
-        res.status(200).json(end);
     } catch (e) {
         res.status(404).json(e);
     }

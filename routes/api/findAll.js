@@ -34,31 +34,24 @@ router.get('/:queryFind', async function(req, res) {
             }
             let {checksum} = character_;
             if (checksum["pets"] && checksum["mounts"]) {
-                findAll.hash_a = await characters_db.find({
+                findAll.match = await characters_db.find({
                     $and: [
-                        {"checksum.pets": checksum.pets},
+                        {$or: [
+                            {"checksum.pets": checksum.pets},
+                            {"checksum.mounts": checksum.mounts}
+                        ]},
                         {_id: {$ne: `${param[0].toLowerCase()}@${slug}`}},
                     ]
                 }).lean();
-                if (!findAll.hash_a.length) {
-                    delete findAll.hash_a;
-                    findAll.hash_b = await characters_db.find({
-                        $and: [
-                            {"checksum.mounts": checksum.mounts},
-                            {_id: {$ne: `${param[0].toLowerCase()}@${slug}`}},
-                        ]
-                    }).lean();
-                }
                 findAll._id = character_._id;
             } else {
                 //TODO char found but no checksum on primary
             }
         } else {
-            findAll.hash_a = await characters_db.find({"checksum.pets": queryFind}).lean();
-            if (!findAll.hash_a.length) {
-                delete findAll.hash_a;
-                findAll.hash_b = await characters_db.find({"checksum.mounts": queryFind}).lean();
-            }
+            findAll.match = await characters_db.find({$or: [
+                {"checksum.pets": queryFind},
+                {"checksum.mounts": queryFind}
+            ]}).lean();
             findAll._id = queryFind;
         }
         res.status(200).json(findAll);

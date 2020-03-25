@@ -20,9 +20,9 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
         const cursor = characters_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
-            if (documentBulk.length === bulkSize) {
-                console.time(`========================`);
+            if (documentBulk.length >= bulkSize) {
                 cursor.pause();
+                console.time(`========================`);
                 const { token } = await keys_db.findOne(queryKeys);
                 const promises = documentBulk.map(async (req) => {
                     try {

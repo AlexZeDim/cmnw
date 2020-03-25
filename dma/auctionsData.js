@@ -18,7 +18,8 @@ async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
                     quantity: "$quantity",
                     price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
                 }
-            },{
+            },
+            {
                 $group: {
                     _id: "$_id",
                     quantity: {$sum: "$quantity"},

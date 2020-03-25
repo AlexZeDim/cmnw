@@ -149,4 +149,4 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
     }
 }
 
-indexGuild({name:"Депортация"},{ tags: `VOLUSPA-indexGuilds` }, 1);
+indexGuild();

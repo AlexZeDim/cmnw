@@ -13,9 +13,9 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
         let cursor = await guild_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
             documentBulk.push(documentData);
-            if (documentBulk.length === bulkSize) {
-                console.time(`================================`);
+            if (documentBulk.length >= bulkSize) {
                 cursor.pause();
+                console.time(`================================`);
                 const { token } = await keys_db.findOne(queryKeys);
                 const promises = documentBulk.map(async (guild) => {
                     try {
@@ -149,4 +149,4 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
     }
 }
 
-indexGuild();
+indexGuild({name:"Депортация"},{ tags: `VOLUSPA-indexGuilds` }, 1);

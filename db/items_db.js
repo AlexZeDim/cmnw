@@ -88,6 +88,9 @@ let schema = new mongoose.Schema({
     },
 });
 
+schema.index({ "name.en_GB": 1 },{name: 'en_GB', collation: { locale: 'en', strength: 1 }});
+schema.index({ "name.ru_RU": 1 },{name: 'ru_RU', collation: { locale: 'en', strength: 1 }});
+
 let items_db = mongoose.model('items', schema);
 
 module.exports = items_db;

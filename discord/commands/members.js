@@ -9,7 +9,7 @@ module.exports = {
             let {user} = message.guild.members.cache.array()[u];
             members.push({id: user.id, name: user.username})
         }
-        let file_buffer = Buffer.from(JSON.stringify(members));
+        let file_buffer = Buffer.from(JSON.stringify(members), null, 4);
         message.channel.send(`Name: ${message.guild.name}\nTotal members: ${message.guild.memberCount}`, {
             files: [{
                 attachment: file_buffer,

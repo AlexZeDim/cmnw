@@ -11,8 +11,8 @@ router.get('/:item@:realm', async function(req, res) {
         let i;
         if (isNaN(req.params.item)) i = 0;
         let {_id, name} = await items_db.findOne({$or: [
-                {"name.en_GB": (req.params.item).replace(/^\w/, c => c.toUpperCase())},
-                {"name.ru_RU": (req.params.item).replace(/^\w/, c => c.toUpperCase())},
+                {"name.en_GB": /req.params.item/i},
+                {"name.ru_RU": /req.params.item/i},
                 {_id: i}
             ]});
         let { connected_realm_id } = await realms_db.findOne({$or: [

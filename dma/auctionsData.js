@@ -3,7 +3,7 @@ const auctions_db = require("../db/auctions_db");
 async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
     try {
         const {lastModified} = await auctions_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).sort({lastModified: -1});
-        let test = await auctions_db.aggregate([
+        return await auctions_db.aggregate([
             {
                 $match: {
                     lastModified: lastModified,
@@ -31,10 +31,9 @@ async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
                 }
             }
             ]);
-        console.log(test)
     } catch (error) {
         console.error(error)
     }
 }
 
-auctionsData();
+module.exports = auctionsData;

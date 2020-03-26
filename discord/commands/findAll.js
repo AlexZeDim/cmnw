@@ -13,7 +13,7 @@ module.exports = {
         let embed = new MessageEmbed();
         let character = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/findAll/${params[0]}@${params[1]}`)).then(({data}) => {
             console.log(data);
-            let { _id, checksum, match } = data;
+            let { _id, match } = data;
             embed.setTitle(_id.toUpperCase());
             embed.setURL('https://discord.js.org/');
             for (let i = 0; i < match.length; i++) {

@@ -8,13 +8,16 @@ const auctionsData = require("../../dma/auctionsData.js");
 
 router.get('/:item@:realm', async function(req, res) {
     try {
-        let i;
-        if (isNaN(req.params.item)) i = 0;
-        let {_id, name} = await items_db.findOne({$or: [
-                {"name.en_GB": /req.params.item/i},
-                {"name.ru_RU": /req.params.item/i},
-                {_id: i}
-            ]});
+        let item;
+        if (isNaN(req.params.item)) {
+            item = await items_db.findOne({"name.en_GB": req.params.item}).collation( { locale: 'en', strength: 1 } );
+            if (!item) {
+                item = await items_db.findOne({"name.ru_RU": req.params.item}).collation( { locale: 'ru', strength: 1 } );
+            }
+        } else {
+            item = await items_db.findOne({_id: req.params.item});
+        }
+        let {_id, name} = item;
         let { connected_realm_id } = await realms_db.findOne({$or: [
             { 'name': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
             { 'slug': req.params.realm },

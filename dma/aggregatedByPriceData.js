@@ -3,7 +3,7 @@ const auctions_db = require("../db/auctions_db");
 async function aggregatedByPriceData (item_id = 168487, connected_realm_id = 1602) {
     try {
         const {lastModified} = await auctions_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).sort({lastModified: -1});
-        let test = await auctions_db.aggregate([
+        return await auctions_db.aggregate([
             {
                 $match: {
                     lastModified: lastModified,
@@ -17,19 +17,22 @@ async function aggregatedByPriceData (item_id = 168487, connected_realm_id = 160
                     quantity: "$quantity",
                     price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
                 }
-            },{
+            },
+            {
                 $group: {
                     _id: "$price",
                     quantity: {$sum: "$quantity"},
                     open_interest: {$sum: { $multiply: [ "$price", "$quantity" ] }},
                     orders: {$addToSet: "$id"},
                 }
+            },
+            {
+                $sort : { "_id": 1 }
             }
         ]);
-        console.log(test)
     } catch (error) {
         console.error(error)
     }
 }
 
-aggregatedByPriceData();
+module.exports = aggregatedByPriceData;

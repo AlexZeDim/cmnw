@@ -5,6 +5,7 @@ const items_db = require("../../db/items_db");
 const realms_db = require("../../db/realms_db");
 const charts = require("../../dma/charts.js");
 const auctionsData = require("../../dma/auctionsData.js");
+const aggregatedByPriceData = require("../../dma/aggregatedByPriceData.js");
 
 router.get('/:item@:realm', async function(req, res) {
     try {
@@ -24,11 +25,12 @@ router.get('/:item@:realm', async function(req, res) {
             { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
             { 'ticker': req.params.realm },
         ]});
-        const [market, chart] = await Promise.all([
+        const [market, chart, lvl2] = await Promise.all([
             auctionsData(_id, connected_realm_id),
             charts(_id, connected_realm_id),
+            aggregatedByPriceData(_id, connected_realm_id),
         ]);
-        res.status(200).json({_id: _id, name: name, market: market[0], chart: chart});
+        res.status(200).json({_id: _id, name: name, market: market[0], chart: chart, lvl2: lvl2});
     } catch (e) {
         res.status(404).json(e);
     }

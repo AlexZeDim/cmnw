@@ -9,6 +9,7 @@ const aggregatedByPriceData = require("../../dma/aggregatedByPriceData.js");
 
 router.get('/:item@:realm', async function(req, res) {
     try {
+        //TODO search as textfields, not sure about index use
         let item;
         if (isNaN(req.params.item)) {
             item = await items_db.findOne({"name.en_GB": req.params.item}).collation( { locale: 'en', strength: 1 } );
@@ -25,11 +26,14 @@ router.get('/:item@:realm', async function(req, res) {
             { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
             { 'ticker': req.params.realm },
         ]});
-        const [market, chart, lvl2] = await Promise.all([
-            auctionsData(_id, connected_realm_id),
-            charts(_id, connected_realm_id),
-            aggregatedByPriceData(_id, connected_realm_id),
-        ]);
+        //TODO only if we are unit_price
+        if (item["is_commdty"] === true) {
+            const [market, chart, lvl2] = await Promise.all([
+                auctionsData(_id, connected_realm_id),
+                charts(_id, connected_realm_id),
+                aggregatedByPriceData(_id, connected_realm_id),
+            ]);
+        }
         res.status(200).json({_id: _id, name: name, item: item, market: market[0], chart: chart, lvl2: lvl2});
     } catch (e) {
         res.status(404).json(e);

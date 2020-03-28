@@ -51,7 +51,7 @@ async function charts (item_id = 152510, connected_realm_id = 1602) {
         let priceRange_array = await range(round(start,step), round(stop,step), step);
         for (let x_ = 0; x_ < timestamp.length; x_++) {
             for (let y_ = 0; y_ < priceRange_array.length; y_++) {
-                chartArray.push([x_,y_,0]);
+                chartArray.push({x: x_, y: y_, value: 0, oi: 0, orders: 0});
             }
         }
         let cursor = await auctions_db.find({ "item.id": item_id, connected_realm_id: connected_realm_id}).lean().cursor({batchSize: 20});
@@ -64,7 +64,13 @@ async function charts (item_id = 152510, connected_realm_id = 1602) {
             } else {
                 y = priceRange_array.indexOf(round(order.unit_price, step));
             }
-            chartArray[priceRange_array.length*x+y][2] = chartArray[priceRange_array.length*x+y][2]+order.quantity;
+            chartArray.filter((el) => {
+                if (el.x === x && el.y === y) {
+                    el.value = el.value+order.quantity;
+                    el.oi = el.oi+(order.unit_price*order.quantity);
+                    el.orders = el.orders+1
+                }
+            });
         }
         if (step < 1) {
             priceRange_array = priceRange_array.map(p => p.toFixed(2));

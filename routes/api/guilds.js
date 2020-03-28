@@ -12,6 +12,7 @@ router.get('/:name@:realm', async function(req, res) {
                 { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
                 { 'ticker': req.params.realm },
             ]});
+        //TODO guild find by ID to slug OR name&realm
         let guildData = await guilds_db.findById(`${req.params.name.toLowerCase()}@${slug}`);
         if (!guildData) {
             const getGuild = require('../../voluspa/getGuild');

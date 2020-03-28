@@ -51,7 +51,7 @@ let schema = new mongoose.Schema({
     race: {
         type: String
     },
-    class: {
+    character_class: {
         type: String
     },
     spec: {

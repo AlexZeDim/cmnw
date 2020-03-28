@@ -28,7 +28,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                     try {
                         let upd_char = await getCharacter((req._id).split('@')[1], (req._id).split('@')[0], token);
                         upd_char.updatedBy = `VOLUSPA-${indexCharacters.name}`;
-                        return await characters_db.findByIdAndUpdate(
+                        await characters_db.findByIdAndUpdate(
                             {
                                 _id: req._id
                             },
@@ -39,7 +39,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                                 setDefaultsOnInsert: true,
                                 lean: true
                             }
-                        ).exec();
+                        );
                     } catch (error) {
                         console.log(error)
                     }

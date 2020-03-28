@@ -74,7 +74,6 @@ async function charts (item_id = 152510, connected_realm_id = 1602) {
         }
         if (step < 1) {
             priceRange_array = priceRange_array.map(p => p.toFixed(2));
-            console.log(priceRange_array);
         }
         timestamp = timestamp.map(ts => ts.toLocaleString('en-GB'));
         return {price_range: priceRange_array, timestamps: timestamp, dataset: chartArray}

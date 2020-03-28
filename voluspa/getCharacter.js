@@ -21,7 +21,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         let petSlots = [];
         let result = {};
         const [{id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode}, {pets, unlocked_battle_pet_slots},{mounts}, {avatar_url, bust_url, render_url}] = await Promise.all([
-            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).catch(e => (e)),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).catch(e => (e)),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).catch(e => (e)),
             bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).catch(e => (e)),
@@ -63,7 +63,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             result.guild = '';
             result.guild_rank = 99;
         }
-        if (pets) {
+        if (pets && pets.length > 0) {
             let pets_string = '';
             for (let i = 0; i < pets.length; i++) {
                 if (pets[i].hasOwnProperty('is_active')) {
@@ -79,7 +79,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             result.checksum.petSlots = petSlots;
             result.checksum.pets = pets_checksum;
         }
-        if (mounts) {
+        if (mounts && mounts.length > 0) {
             let mount_array = [];
             for (let i = 0; i < mounts.length; i++) {
                 let {mount} = mounts[i];

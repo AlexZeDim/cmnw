@@ -32,7 +32,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
         result.gender = gender.name;
         result.faction = faction.name;
         result.race = race.name;
-        result.class = character_class.name;
+        result.character_class = character_class.name;
         result.spec = active_spec.name;
         result.realm = realm.name;
         result.realm_slug = realm.slug;

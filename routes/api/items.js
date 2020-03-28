@@ -30,7 +30,7 @@ router.get('/:item@:realm', async function(req, res) {
             charts(_id, connected_realm_id),
             aggregatedByPriceData(_id, connected_realm_id),
         ]);
-        res.status(200).json({_id: _id, name: name, market: market[0], chart: chart, lvl2: lvl2});
+        res.status(200).json({_id: _id, name: name, item: item, market: market[0], chart: chart, lvl2: lvl2});
     } catch (e) {
         res.status(404).json(e);
     }

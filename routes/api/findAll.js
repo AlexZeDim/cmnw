@@ -52,8 +52,8 @@ router.get('/:queryFind', async function(req, res) {
                 {"checksum.pets": queryFind},
                 {"checksum.mounts": queryFind}
             ]}).lean();
-            findAll._id = queryFind;
         }
+        findAll._id = queryFind;
         res.status(200).json(findAll);
     } catch (e) {
         res.status(404).json(e);

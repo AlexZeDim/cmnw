@@ -62,22 +62,16 @@ let schema = new mongoose.Schema({
     is_auctionable: {
         type: Boolean
     },
-    indx: {
-        type: Boolean
-    },
-    yld: {
-        type: Boolean
-    },
-    asset_class: {
-        type: String
-    },
     class: {
         type: String
     },
     inventory_type: {
         type: String
     },
-    type: {
+    asset_class: {
+        type: String
+    },
+    derivative: {
         type: String
     },
     expansion: {
@@ -85,6 +79,12 @@ let schema = new mongoose.Schema({
     },
     ticker: {
         type: String
+    },
+    is_yield: {
+        type: Boolean
+    },
+    is_indx: {
+        type: Boolean
     },
 });
 

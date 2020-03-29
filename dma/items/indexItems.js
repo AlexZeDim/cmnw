@@ -5,7 +5,7 @@ const {connection} = require('mongoose');
 async function indexItems () {
     try {
         console.time(`DMA-${indexItems.name}`);
-       let commdty = await auctions_db.distinct('item.id', { unit_price: { $exists: true}}).lean();
+        let commdty = await auctions_db.distinct('item.id', { unit_price: { $exists: true}}).lean();
         for (let i = 0; i < commdty.length; i++) {
             await items_db.findByIdAndUpdate(commdty[i], {is_commdty: true}, {new: true}).then(item => console.info(`U,${item._id},is_commdty`)).catch(e=>console.error(e))
         }

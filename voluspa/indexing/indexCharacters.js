@@ -13,7 +13,7 @@ const {connection} = require('mongoose');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${indexCharacters.name}`}, bulkSize = 20) {
+async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${indexCharacters.name}`}, bulkSize = 10) {
     try {
         console.time(`VOLUSPA-${indexCharacters.name}`);
         let documentBulk = [];
@@ -53,9 +53,10 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
         cursor.on('error', error => {
             console.error(`E,VOLUSPA-${indexCharacters.name},${error}`);
             cursor.close();
+            connection.close();
         });
         cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 180000));
+            await new Promise(resolve => setTimeout(resolve, 60000));
             connection.close();
             console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
         });

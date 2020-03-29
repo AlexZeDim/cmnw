@@ -25,12 +25,11 @@ async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
                     quantity: {$sum: "$quantity"},
                     open_interest: {$sum: { $multiply: [ "$price", "$quantity" ] }},
                     min: {$min: "$price"},
-                    avg: {$avg: "$price"},
                     min_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
                     orders: {$addToSet: "$id"},
                 }
             }
-            ]);
+        ]);
     } catch (error) {
         console.error(error)
     }

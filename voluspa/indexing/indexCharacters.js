@@ -50,11 +50,6 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                 console.timeEnd(`========================`);
             }
         });
-        cursor.on('error', error => {
-            console.error(`E,VOLUSPA-${indexCharacters.name},${error}`);
-            cursor.close();
-            connection.close();
-        });
         cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 60000));
             connection.close();

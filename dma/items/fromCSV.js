@@ -1,6 +1,7 @@
 const csv = require('csv');
 const fs = require('fs');
 const items_db = require("../../db/items_db");
+const {connection} = require('mongoose');
 
 async function fromCSV (path, expr) {
     try {
@@ -8,7 +9,7 @@ async function fromCSV (path, expr) {
         let eva = fs.readFileSync(path,'utf8');
         csv.parse(eva, async function(err, data) {
             switch (expr) {
-                case 'prod':
+                case 'production':
                     console.log(data[0]);
                     for (let i = 1; i < data.length; i++) {
                         is_yield = data[i][6] !== 'FALSE';
@@ -23,14 +24,14 @@ async function fromCSV (path, expr) {
                                 expansion: data[i][5],
                                 is_yield: is_yield,
                             }
-                        ).exec(function (err, item) {
+                        ).exec((err, item) => {
                             if (err) console.error(err);
                             console.info(item);
                         });
-
                     }
+                    connection.close();
                     break;
-                case 'test':
+                case 'dev':
                     console.info(data[0]);
                     for (let i = 1; i < 100; i++) {
                         is_yield = data[i][6] !== 'FALSE';

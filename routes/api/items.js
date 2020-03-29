@@ -22,7 +22,7 @@ router.get('/:item@:realm', async function(req, res) {
             item = await items_db.findOne({_id: req.params.item}).lean();
         }
 
-        let {_id, name, is_auctionable, is_commdty, is_yield} = item;
+        let {_id, is_auctionable, is_commdty, is_yield} = item;
         let { connected_realm_id } = await realms_db.findOne({$or: [
             { 'name': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
             { 'slug': req.params.realm },
@@ -35,6 +35,7 @@ router.get('/:item@:realm', async function(req, res) {
                 //TODO unit_price
                 asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
                 if (is_yield) {
+                    console.log('ok')
                     //TODO check derivative
                 }
             } else {

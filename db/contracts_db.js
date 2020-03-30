@@ -23,6 +23,9 @@ let schema = new mongoose.Schema({
         type: String,
         required: true
     },
+    item_id: {
+        type: Number,
+    },
     connected_realm_id: {
         type: Number,
         required: true,

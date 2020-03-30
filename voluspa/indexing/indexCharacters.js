@@ -39,7 +39,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                                 setDefaultsOnInsert: true,
                                 lean: true
                             }
-                        );
+                        ).then(({_id, statusCode}) => console.info(`U,${_id}:${statusCode}`));
                     } catch (error) {
                         console.log(error)
                     }

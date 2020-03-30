@@ -32,15 +32,17 @@ async function getGoldData () {
                     if (name === goldOrders[i].realm) return connected_realm_id
                 });
                 if (realm) {
-                    goldData.push({
-                        connected_realm_id: realm.connected_realm_id,
-                        faction: goldOrders[i].faction,
-                        quantity: +(goldOrders[i].quantity.replace(/\s/g,"")),
-                        status: goldOrders[i].status ? 'Online' : 'Offline',
-                        owner: goldOrders[i].owner,
-                        price: +(goldOrders[i].price.replace(/ ₽/g,"")),
-                        lastModified: moment().format()
-                    });
+                    if (parseFloat(goldOrders[i].quantity.replace(/\s/g,"")) < 15000000) {
+                        goldData.push({
+                            connected_realm_id: realm.connected_realm_id,
+                            faction: goldOrders[i].faction,
+                            quantity: +(goldOrders[i].quantity.replace(/\s/g,"")),
+                            status: goldOrders[i].status ? 'Online' : 'Offline',
+                            owner: goldOrders[i].owner,
+                            price: +(goldOrders[i].price.replace(/ ₽/g,"")),
+                            lastModified: moment().format()
+                        });
+                    }
                 }
             }
             await golds_db.insertMany(goldData).then(golds => console.info(`U,${golds.length}`))

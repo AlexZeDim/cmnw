@@ -54,7 +54,9 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
                         result.guild_rank = 99;
                     }
                 }
-            ).catch(e => (e)),
+            ).catch(e => {
+                if (/\d/g.test(e.toString())) result.statusCode = parseFloat(e.toString().match(/[0-9]+/g)[0]);
+            }),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> { //TODO unlocked_battle_pet_slots
                 let pets_string = '';
                 for (let i = 0; i < pets.length; i++) {
@@ -89,7 +91,7 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             }).catch(e =>(e)),
         ]);
         result._id = `${characterName}@${realmSlug}`;
-        if ( result.statusCode === 400) {
+        if (~[400, 404, 403, 500].indexOf(result.statusCode)) {
             console.error(`E,${characterName}@${realmSlug}:${result.statusCode}`);
         } else {
             console.info(`F,${characterName}@${realmSlug}:${result.statusCode}`);

@@ -14,12 +14,12 @@ const {connection} = require('mongoose');
 async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${indexCharacters.name}`}, bulkSize = 10) {
     try {
         console.time(`VOLUSPA-${indexCharacters.name}`);
-        let documentBulk = [];
+        let character_Array = [];
         let token;
         token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
         const cursor = characters_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async ({_id}) => {
-            documentBulk.push(getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {
+            character_Array.push(getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {
                 u_character.updatedBy = `VOLUSPA-${indexCharacters.name}`;
                 characters_db.findByIdAndUpdate(
                     {
@@ -40,12 +40,12 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                     }
                 })
             }).catch(e=>(e)));
-            if (documentBulk.length >= bulkSize) {
+            if (character_Array.length >= bulkSize) {
                 cursor.pause();
                 console.time(`========================`);
                 token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
-                await Promise.all(documentBulk);
-                documentBulk = [];
+                await Promise.all(character_Array).catch(e=>(e));
+                character_Array = [];
                 cursor.resume();
                 console.timeEnd(`========================`);
             }

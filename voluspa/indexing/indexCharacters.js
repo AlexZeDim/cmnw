@@ -44,13 +44,16 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                 cursor.pause();
                 console.time(`========================`);
                 token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
-                await Promise.all(character_Array).catch(e=>(e));
-                console.info('clear');
+                await Promise.all(character_Array);
                 character_Array = [];
-                console.info('cleaned');
                 cursor.resume();
                 console.timeEnd(`========================`);
             }
+        });
+        cursor.on('error', error => {
+            console.error(`E,VOLUSPA-${indexCharacters.name},${error}`);
+            cursor.close();
+            connection.close();
         });
         cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 60000));

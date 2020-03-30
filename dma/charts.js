@@ -7,8 +7,8 @@ async function charts (item_id = 152510, connected_realm_id = 1602) {
         let round;
         let sampleVariable, sampleVariable_prev = 0;
         let [quotes, timestamp] = await Promise.all([
-            auctions_db.distinct('unit_price', { "item.id": 169451, connected_realm_id: 1602}).lean(),
-            auctions_db.distinct('lastModified', { "item.id": 169451, connected_realm_id: 1602}).lean()
+            auctions_db.distinct('unit_price', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean(),
+            auctions_db.distinct('lastModified', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean()
         ]);
         for (let i = 1; i < quotes.length; i++) {
             if (i > 1) sampleVariable_prev = sampleVariable; else sampleVariable_prev = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));

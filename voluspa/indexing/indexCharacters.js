@@ -32,7 +32,13 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                         setDefaultsOnInsert: true,
                         lean: true
                     }
-                ).then(({_id, statusCode}) => console.info(`U,${_id}:${statusCode}`))
+                ).then(({_id, statusCode}) => {
+                    if (~[400, 404, 403, 500].indexOf(statusCode)) {
+                        console.error(`E:U,${_id}:${statusCode}`);
+                    } else {
+                        console.info(`F:U,${_id}:${statusCode}`);
+                    }
+                })
             }).catch(e=>(e)));
             if (documentBulk.length >= bulkSize) {
                 cursor.pause();

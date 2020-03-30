@@ -6,6 +6,7 @@ const realms_db = require("../../db/realms_db");
 const charts = require("../../dma/charts.js");
 const auctionsData = require("../../dma/auctionsData.js");
 const aggregatedByPriceData = require("../../dma/aggregatedByPriceData.js");
+const contracts_db = require("../../db/contracts_db");
 
 router.get('/:item@:realm', async function(req, res) {
     try {
@@ -35,8 +36,11 @@ router.get('/:item@:realm', async function(req, res) {
                 //TODO unit_price
                 asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
                 if (is_yield) {
-                    console.log('ok')
-                    //TODO check derivative
+                    let test = await contracts_db.find({_id: /GOLD/, connected_realm_id: 1602, type: 'D'},{
+                        "_id": 1,
+                        "code": 1
+                    }).sort({updatedAt: -1}).limit(5).lean();
+                    Object.assign(api, {contracts_d: test});
                 }
             } else {
                 //TODO buyout and bid

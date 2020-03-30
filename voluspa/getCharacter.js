@@ -91,11 +91,6 @@ async function getCharacter (realmSlug, characterName, token= '', guildRank = fa
             }).catch(e =>(e)),
         ]);
         result._id = `${characterName}@${realmSlug}`;
-        if (~[400, 404, 403, 500].indexOf(result.statusCode)) {
-            console.error(`E,${characterName}@${realmSlug}:${result.statusCode}`);
-        } else {
-            console.info(`F,${characterName}@${realmSlug}:${result.statusCode}`);
-        }
         return result;
     } catch (error) {
         let statusCode = 400;

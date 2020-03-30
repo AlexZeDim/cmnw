@@ -46,7 +46,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
                 token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
                 await Promise.all(character_Array).catch(e=>(e));
                 console.info('clear');
-                character_Array.length = 0;
+                character_Array = [];
                 console.info('cleaned');
                 cursor.resume();
                 console.timeEnd(`========================`);

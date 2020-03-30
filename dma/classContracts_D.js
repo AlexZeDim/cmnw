@@ -37,15 +37,19 @@ module.exports = class Contract {
             close: parseFloat((contract_data[contract_data.length-1].open_interest).toFixed(2)),
         };
         let price_data = [];
+        let quality_data = [];
         let timestamp_data = [];
         let sellers = [];
         for (let i = 0; i < contract_data.length; i++) {
             price_data = [...price_data.concat(contract_data[i].price)];
+            quality_data = [...quality_data.concat(contract_data[i].quantity)];
             timestamp_data = [...new Set(timestamp_data.concat(contract_data[i]._id))];
             if (contract_data[i].sellers) sellers = [...new Set(sellers.concat(contract_data[i].sellers))];
         }
         this.price_data = price_data;
+        this.quality_data = quality_data;
         this.timestamp_data = timestamp_data;
+
         const standardDeviation = (arr, usePopulation = false) => {
             const mean = arr.reduce((acc, val) => acc + val, 0) / arr.length;
             return Math.sqrt(
@@ -57,7 +61,7 @@ module.exports = class Contract {
         /**
          * @return {number}
          */
-        function VaR (portfolioEquityCurve, alpha) {
+        const VaR = (portfolioEquityCurve, alpha) => {
             // Compute the returns and remove the first element, always equals to NaN
             function arithmeticReturns (portfolioEquityCurve) {
                 portfolioEquityCurve = portfolioEquityCurve.map(x=>parseInt(x));
@@ -87,7 +91,7 @@ module.exports = class Contract {
             return -returns[w-1];
             // Return the value at risk
             //return parseFloat(returns[w - 1].toFixed(2));
-        }
+        };
         this.risk = {
             stdDev: parseFloat((standardDeviation(contract_data.map(low => low.price*100))/100).toFixed(2)),
             stdDev_size: parseFloat((standardDeviation(contract_data.map(low_size => low_size.price_size*100))/100).toFixed(2))

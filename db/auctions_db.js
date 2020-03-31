@@ -36,7 +36,7 @@ let schema = new mongoose.Schema({
     unit_price: {
         type: Number
     },
-    timeLeft: {
+    time_left: {
         type: String
     },
     lastModified: {

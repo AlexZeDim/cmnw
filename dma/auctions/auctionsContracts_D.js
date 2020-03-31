@@ -10,7 +10,7 @@ moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });
 
-async function createAssetContract (arg_realm = 'deathguard', arg_asset, period = 'D') {
+async function createAssetContract (arg_realm = 'gordunni', arg_asset, period = 'D') {
     try {
         let items = await items_db.find({expansion:'BFA', derivative: 'COMMDTY', is_commdty: true}).lean();
         let realms = await realms_db.find({$or: [
@@ -33,6 +33,7 @@ async function createAssetContract (arg_realm = 'deathguard', arg_asset, period 
                             quantity: {$sum: "$quantity" },
                             price: {$min: "$unit_price"},
                             price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$unit_price", null]}},
+                            orders: {$addToSet: "$id"}
                         }
                     },
                     {
@@ -46,9 +47,10 @@ async function createAssetContract (arg_realm = 'deathguard', arg_asset, period 
                     code = name.en_GB;
                 }
                 if (contract_data) {
-                    await contracts_db.findOneAndUpdate(
+                    console.log(contract_data);
+/*                    await contracts_db.findOneAndUpdate(
                         {
-                            _id: `GOLD-${moment().format('DD.MMM')}@${realm.slug.toUpperCase()}`,
+                            _id: `${code}-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
                         },
                         new Contract(
                             `${code}-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
@@ -65,7 +67,7 @@ async function createAssetContract (arg_realm = 'deathguard', arg_asset, period 
                             runValidators: true,
                             lean: true
                         }
-                    ).then(i => console.info(`C,${i._id}`))
+                    ).then(i => console.info(`C,${i._id}`))*/
                 } else {
                     console.info(`E,GOLD-${moment().format('DD.MMM')}@${slug.toUpperCase()}`);
                 }

@@ -9,7 +9,7 @@ moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });
 
-async function goldContracts_D (arg_realm) {
+async function goldContracts_D (arg_realm = 'ru_RU') {
     try {
         let realms = await realms_db.find({$or: [
                 { 'slug': arg_realm },
@@ -69,4 +69,4 @@ async function goldContracts_D (arg_realm) {
     }
 }
 
-goldContracts_D('ru_RU');
+goldContracts_D();

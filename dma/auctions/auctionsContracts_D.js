@@ -4,6 +4,7 @@ const auctions_db = require("../../db/auctions_db");
 const contracts_db = require("../../db/contracts_db");
 const Contract = require('../classContracts_D.js');
 const moment = require('moment');
+const {connection} = require('mongoose');
 
 moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
@@ -70,6 +71,7 @@ async function createAssetContract (arg_realm = 'deathguard', arg_asset, period 
                 }
             }
         }
+        connection.close();
     } catch (error) {
         console.error(`${createAssetContract.name},${error}`)
     }

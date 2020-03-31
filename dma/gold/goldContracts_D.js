@@ -3,6 +3,7 @@ const realms_db = require("../../db/realms_db");
 const golds_db = require("../../db/golds_db");
 const contracts_db = require("../../db/contracts_db");
 const moment = require('moment');
+const {connection} = require('mongoose');
 
 moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
@@ -62,6 +63,7 @@ async function goldContracts_D (arg_realm) {
                 console.info(`E,GOLD-${moment().format('DD.MMM')}@${realm.name.toUpperCase()}`);
             }
         }
+        connection.close();
     } catch (err) {
         console.error(`${goldContracts_D.name}${err}`);
     }

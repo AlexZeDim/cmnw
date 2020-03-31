@@ -4,8 +4,8 @@ const router = express.Router();
 const items_db = require("../../db/items_db");
 const realms_db = require("../../db/realms_db");
 const charts = require("../../dma/charts.js");
-const auctionsData = require("../../dma/auctionsData.js");
-const aggregatedByPriceData = require("../../dma/aggregatedByPriceData.js");
+const auctionsData = require("../../dma/auctions/auctionsData.js");
+const aggregatedByPriceData = require("../../dma/auctions/auctionsQuotes.js");
 const contracts_db = require("../../db/contracts_db");
 
 router.get('/:item@:realm', async function(req, res) {

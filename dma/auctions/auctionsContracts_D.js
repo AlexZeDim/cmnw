@@ -2,7 +2,7 @@ const realms_db = require("../../db/realms_db");
 const items_db = require("../../db/items_db");
 const auctions_db = require("../../db/auctions_db");
 const contracts_db = require("../../db/contracts_db");
-const Contract = require('../classContracts_D.js');
+const Contract = require('../contracts/classContracts_D.js');
 const moment = require('moment');
 const {connection} = require('mongoose');
 

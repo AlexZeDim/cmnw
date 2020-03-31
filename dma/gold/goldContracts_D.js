@@ -32,7 +32,10 @@ async function goldContracts_D (arg_realm) {
                         price_size: {$min: {$cond: [{$gte: ["$quantity", 1000000]}, "$price", "$min:$price"]}},
                         sellers: {$addToSet: "$owner"},
                     }
-                }
+                },
+                {
+                    $sort: { _id: 1 }
+                },
             ]);
             if (contract_data) {
                 await contracts_db.findOneAndUpdate(
@@ -42,6 +45,7 @@ async function goldContracts_D (arg_realm) {
                     new Contract (
                         `GOLD-${moment().format('DD.MMM')}@${realm.slug.toUpperCase()}`,
                         `GOLD-${moment().format('DD.MMM')}`,
+                        1,
                         realm.connected_realm_id,
                         'D',
                         contract_data

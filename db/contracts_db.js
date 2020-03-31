@@ -37,15 +37,19 @@ let schema = new mongoose.Schema({
     },
     price: {
         open: Number,
-        open_size: Number,
         low: Number,
-        low_size: Number,
         change: Number,
         avg: Number,
         high: Number,
-        high_size: Number,
         close: Number,
-        close_size: Number,
+    },
+    prize_size: {
+        open: Number,
+        low: Number,
+        change: Number,
+        avg: Number,
+        high: Number,
+        close: Number,
     },
     quantity: {
         open: Number,
@@ -75,6 +79,7 @@ let schema = new mongoose.Schema({
         total: Number,
     },
     price_data: Array,
+    quantity_data: Array,
     timestamp_data: Array,
 },{
     timestamps: true

@@ -2,26 +2,36 @@ module.exports = class Contract {
     constructor(
         id,
         code,
+        item_id,
         connected_realm_id,
         type,
         contract_data
     ) {
         this._id = id;
         this.code = code;
+        this.item_id = item_id;
         this.connected_realm_id = connected_realm_id;
         this.type = type;
         this.price = {
             open: contract_data[0].price,
-            open_size: contract_data[0].price_size,
-            low: parseFloat(Math.min(...contract_data.map(low => low.price)).toFixed(2)),
-            low_size: parseFloat(Math.min(...contract_data.map(low_size => low_size.price_size)).toFixed(2)),
+            low: parseFloat(Math.min(...contract_data.map(({price}) => price)).toFixed(2)),
             change: parseFloat((contract_data[contract_data.length-1].price - contract_data[0].price).toFixed(2)),
             avg: parseFloat((contract_data.reduce((total, next) => total + next.price_size, 0) / contract_data.length).toFixed(2)),
-            high: parseFloat(Math.max(...contract_data.map(high => high.price)).toFixed(2)),
-            high_size: parseFloat(Math.max(...contract_data.map(high => high.price_size)).toFixed(2)),
+            high: parseFloat(Math.max(...contract_data.map(({price}) => price)).toFixed(2)),
             close: contract_data[contract_data.length-1].price,
-            close_size: contract_data[contract_data.length-1].price_size,
         };
+        let price_size;
+        price_size = contract_data.filter(({price_size}) => !!price_size).map(({price_size}) => price_size);
+        if (price_size.length) {
+            this.price_size = {
+                open: price_size[0],
+                low: parseFloat(Math.min(...price_size).toFixed(2)),
+                change: parseFloat((price_size[price_size.length - 1] - price_size[0]).toFixed(2)),
+                avg: parseFloat((price_size.reduce((total, next) => total + next, 0) / price_size.length).toFixed(2)),
+                high: parseFloat(Math.max(...price_size).toFixed(2)),
+                close: price_size[price_size.length - 1],
+            };
+        }
         this.quantity = {
             open: contract_data[0].quantity,
             low: Math.min(...contract_data.map(low => low.quantity)),
@@ -37,17 +47,17 @@ module.exports = class Contract {
             close: parseFloat((contract_data[contract_data.length-1].open_interest).toFixed(2)),
         };
         let price_data = [];
-        let quality_data = [];
+        let quantity_data = [];
         let timestamp_data = [];
         let sellers = [];
         for (let i = 0; i < contract_data.length; i++) {
             price_data = [...price_data.concat(contract_data[i].price)];
-            quality_data = [...quality_data.concat(contract_data[i].quantity)];
+            quantity_data = [...quantity_data.concat(contract_data[i].quantity)];
             timestamp_data = [...new Set(timestamp_data.concat(contract_data[i]._id))];
             if (contract_data[i].sellers) sellers = [...new Set(sellers.concat(contract_data[i].sellers))];
         }
         this.price_data = price_data;
-        this.quality_data = quality_data;
+        this.quality_data = quantity_data;
         this.timestamp_data = timestamp_data;
 
         const standardDeviation = (arr, usePopulation = false) => {

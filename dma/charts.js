@@ -13,7 +13,7 @@ async function charts (item_id = 152510, connected_realm_id = 1602) {
         for (let i = 1; i < quotes.length; i++) {
             if (i > 1) sampleVariable_prev = sampleVariable; else sampleVariable_prev = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
             sampleVariable = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
-            if (sampleVariable_prev*2 < sampleVariable) break; else priceArray.push(quotes[i]);
+            if (sampleVariable_prev*1.3 < sampleVariable) break; else priceArray.push(quotes[i]);
         }
         let start = Math.floor(priceArray[0]);
         let stop = Math.round(priceArray[priceArray.length-1]);

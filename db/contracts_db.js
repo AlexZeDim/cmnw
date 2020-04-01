@@ -33,7 +33,7 @@ let schema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['D', 'M'],
+        enum: ['D', 'W', 'M'],
     },
     price: {
         open: Number,
@@ -43,7 +43,7 @@ let schema = new mongoose.Schema({
         high: Number,
         close: Number,
     },
-    prize_size: {
+    price_size: {
         open: Number,
         low: Number,
         change: Number,
@@ -66,7 +66,7 @@ let schema = new mongoose.Schema({
         close: Number,
     },
     orders: {
-        open:Number,
+        open: Number,
         low: Number,
         change: Number,
         high: Number,

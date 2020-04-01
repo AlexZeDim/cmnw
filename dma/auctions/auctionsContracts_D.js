@@ -10,9 +10,9 @@ moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });
 
-async function createAssetContract (arg_realm = 'ashenvale', arg_asset, period = 'D') {
+async function createAssetContract (arg_realm = 'ru_RU', arg_asset, period = 'D') {
     try {
-        let items = await items_db.find({"name.en_GB": "Zin'anthid", expansion:'BFA', derivative: 'COMMDTY', is_commdty: true}).lean();
+        let items = await items_db.find({expansion:'BFA', derivative: 'COMMDTY', is_commdty: true}).lean();
         let realms = await realms_db.find({$or: [
                 { 'slug': arg_realm },
                 { 'locale': arg_realm },
@@ -47,16 +47,7 @@ async function createAssetContract (arg_realm = 'ashenvale', arg_asset, period =
                     code = name.en_GB;
                 }
                 if (contract_data) {
-                    console.log(
-                        new Contract(
-                        `${code}-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
-                        `${code}-${moment().format('DD.MMM')}`,
-                        _id,
-                        connected_realm_id,
-                        period,
-                        contract_data
-                    ));
-/*                    await contracts_db.findOneAndUpdate(
+                    await contracts_db.findOneAndUpdate(
                         {
                             _id: `${code}-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
                         },
@@ -75,7 +66,7 @@ async function createAssetContract (arg_realm = 'ashenvale', arg_asset, period =
                             runValidators: true,
                             lean: true
                         }
-                    ).then(i => console.info(`C,${i._id}`))*/
+                    ).then(i => console.info(`C,${i._id}`))
                 } else {
                     console.info(`E,GOLD-${moment().format('DD.MMM')}@${slug.toUpperCase()}`);
                 }

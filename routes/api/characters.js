@@ -15,7 +15,7 @@ router.get('/:name@:realm', async function(req, res) {
             ]});
         let characterData = await characters_db.findById(`${req.params.name.toLowerCase()}@${slug}`);
         if (!characterData) {
-            const getCharacter = require('../../voluspa/getCharacter');
+            const getCharacter = require('../../osint/getCharacter');
             const keys_db = require("../../db/keys_db");
             const { token } = await keys_db.findOne({tags: `VOLUSPA-indexCharacters`});
             characterData = await getCharacter(slug, req.params.name.toLowerCase(), token, true);

@@ -11,16 +11,16 @@ const {connection} = require('mongoose');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${indexCharacters.name}`}, bulkSize = 10) {
+async function indexCharacters (queryFind = '', queryKeys = {tags: `OSINT-${indexCharacters.name}`}, bulkSize = 10) {
     try {
-        console.time(`VOLUSPA-${indexCharacters.name}`);
+        console.time(`OSINT-${indexCharacters.name}`);
         let character_Array = [];
         let token;
         token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
         const cursor = characters_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async ({_id}) => {
             character_Array.push(getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {
-                u_character.updatedBy = `VOLUSPA-${indexCharacters.name}`;
+                u_character.updatedBy = `OSINT-${indexCharacters.name}`;
                 characters_db.findByIdAndUpdate(
                     {
                         _id: u_character._id
@@ -51,14 +51,14 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `VOLUSPA-${in
             }
         });
         cursor.on('error', error => {
-            console.error(`E,VOLUSPA-${indexCharacters.name},${error}`);
+            console.error(`E,OSINT-${indexCharacters.name},${error}`);
             cursor.close();
             connection.close();
         });
         cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 60000));
             connection.close();
-            console.timeEnd(`VOLUSPA-${indexCharacters.name}`);
+            console.timeEnd(`OSINT-${indexCharacters.name}`);
         });
     } catch (err) {
         console.error(`${indexCharacters.name},${err}`);

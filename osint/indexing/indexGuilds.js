@@ -6,9 +6,9 @@ const updateArray_GuildRank = require('../updateArray_GuildRank');
 const moment = require('moment');
 const {connection} = require('mongoose');
 
-async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGuilds` }, bulkSize = 1) {
+async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuilds` }, bulkSize = 1) {
     try {
-        console.time(`VOLUSPA-${indexGuild.name}`);
+        console.time(`OSINT-${indexGuild.name}`);
         let documentBulk = [];
         let cursor = await guild_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
@@ -30,7 +30,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                         guild_.crest = crest;
                         guild_.achievement_points = achievement_points;
                         guild_.member_count = member_count;
-                        guild_.updatedBy = `VOLUSPA-${indexGuild.name}`;
+                        guild_.updatedBy = `OSINT-${indexGuild.name}`;
                         guild_.created_timestamp = created_timestamp;
                         guild_.statusCode = statusCode;
                         if (!members_latest) {
@@ -56,7 +56,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                                         pets = '';
                                     }
                                     _character.guild_rank = rank;
-                                    _character.updatedBy = `VOLUSPA-${indexGuild.name}`;
+                                    _character.updatedBy = `OSINT-${indexGuild.name}`;
                                     _character.save();
                                     members_.push({
                                         character_name: name,
@@ -73,8 +73,8 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
                                         guild: guild_.name,
                                         guild_rank: rank,
                                         realm_slug: guild_.realm_slug,
-                                        createdBy: `VOLUSPA-${indexGuild.name}`,
-                                        updatedBy: `VOLUSPA-${indexGuild.name}`
+                                        createdBy: `OSINT-${indexGuild.name}`,
+                                        updatedBy: `OSINT-${indexGuild.name}`
                                     }).then(ch => console.info(`C,${ch._id}`));
                                     members_.push({
                                         character_name: name,
@@ -136,13 +136,13 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `VOLUSPA-indexGui
             }
         });
         cursor.on('error', error => {
-            console.error(`E,VOLUSPA-${indexGuild.name},${error}`);
+            console.error(`E,OSINT-${indexGuild.name},${error}`);
             cursor.close();
         });
         cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 180000));
             connection.close();
-            console.timeEnd(`VOLUSPA-${indexGuild.name}`);
+            console.timeEnd(`OSINT-${indexGuild.name}`);
         });
     } catch (err) {
         console.error(`${indexGuild.name},${err}`);

@@ -5,7 +5,7 @@ const {connection} = require('mongoose');
 
 async function fromCharacters (queryFind = {locale: "ru_RU"}) {
     try {
-        console.time(`VOLUSPA-${fromCharacters.name}`);
+        console.time(`OSINT-${fromCharacters.name}`);
         let realms = await realms_db.find(queryFind).lean().cursor();
         for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
             let {slug, name} = realm;
@@ -20,7 +20,7 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}) {
                             name: guild_names[i],
                             realm_slug: slug,
                             realm: name,
-                            createdBy: `VOLUSPA-${fromCharacters.name}`
+                            createdBy: `OSINT-${fromCharacters.name}`
                         }).then(gld => console.info(`C,${gld._id}`));
                     } else {
                         console.info(`E,${guild_names[i]}@${slug}`)
@@ -29,7 +29,7 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}) {
             }
         }
         connection.close();
-        console.timeEnd(`VOLUSPA-${fromCharacters.name}`);
+        console.timeEnd(`OSINT-${fromCharacters.name}`);
     } catch (err) {
         console.error(`${fromCharacters.name},${err}`);
     }

@@ -14,7 +14,7 @@ const removeDir = promisify(fs.rmdir);
 
 async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTier = 26, region = 'eu') {
     try {
-        console.time(`VOLUSPA-${fromJSON.name}`);
+        console.time(`OSINT-${fromJSON.name}`);
 
         let realms = await realms_db.find(queryFind).exec();
         realms = realms.map(({name_locale, slug, name}) => { return {slug_locale: name_locale.toLowerCase().replace(/\s/g,"-"), slug: slug, name: name}});
@@ -77,7 +77,7 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
                                     name: guildsJSON[g].name,
                                     realm_slug: realms[indexOfRealms].slug,
                                     realm: realms[indexOfRealms].name,
-                                    createdBy: `VOLUSPA-${fromJSON.name}`
+                                    createdBy: `OSINT-${fromJSON.name}`
                                 }).then(gld => console.info(`C,${gld._id}`));
                             } else {
                                 console.info(`E,${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`)
@@ -91,7 +91,7 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
 
         await removeDir(`${path_}`, { recursive: true });
         connection.close();
-        console.timeEnd(`VOLUSPA-${fromJSON.name}`);
+        console.timeEnd(`OSINT-${fromJSON.name}`);
     } catch (err) {
         console.error(`E,${err}`)
     }

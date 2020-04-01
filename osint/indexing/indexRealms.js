@@ -5,7 +5,7 @@ const {connection} = require('mongoose');
 
 async function indexRealms () {
     try {
-        console.time(`VOLUSPA-${indexRealms.name}`);
+        console.time(`OSINT-${indexRealms.name}`);
         const { _id, secret, token } = await keys_db.findOne({ tags: `Depo` });
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
@@ -43,7 +43,7 @@ async function indexRealms () {
             }).then(rl => console.info(`C,${rl._id},${rl.slug}`));
         }
         connection.close();
-        console.timeEnd(`VOLUSPA-${indexRealms.name}`);
+        console.timeEnd(`OSINT-${indexRealms.name}`);
     } catch (e) {
         console.log(e)
     }

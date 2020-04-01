@@ -11,7 +11,7 @@ let x = Xray();
 
 async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 0, endPage = 100, faultTolerance = 400, emptyPage = 2) {
     try {
-        console.time(`VOLUSPA-${fromLogs.name}`);
+        console.time(`OSINT-${fromLogs.name}`);
         let realms = await realms_db.find(queryFind).lean().cursor();
         for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
             let {wcl_id, slug} = realm;
@@ -42,7 +42,7 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
                                     _id: link.match(/(.{16})\s*$/g)[0],
                                     realm: slug,
                                     isIndexed: false,
-                                    source: `VOLUSPA-${fromLogs.name}`
+                                    source: `OSINT-${fromLogs.name}`
                                 }).then(function (log, error) {
                                     if (error) console.error(`E,${link},${error}`);
                                     console.info(`C,${log._id}@${log.realm}`)
@@ -67,7 +67,7 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
             }
         }
         connection.close();
-        console.timeEnd(`VOLUSPA-${fromLogs.name}`);
+        console.timeEnd(`OSINT-${fromLogs.name}`);
     } catch (err) {
         console.error(`${fromLogs.name},${err}`);
     }

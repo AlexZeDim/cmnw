@@ -12,7 +12,7 @@ let x = Xray();
 
 async function indexRealms_WCL (startId = 247, endId = 517) {
     try {
-        console.time(`VOLUSPA-${indexRealms_WCL.name}`);
+        console.time(`OSINT-${indexRealms_WCL.name}`);
         for (let wcl_id = startId; wcl_id < endId; wcl_id++) {
             let realm_name = await x(`https://www.warcraftlogs.com/server/id/${wcl_id}`,
                 '.server-name'
@@ -34,7 +34,7 @@ async function indexRealms_WCL (startId = 247, endId = 517) {
             }
         }
         connection.close();
-        console.timeEnd(`VOLUSPA-${indexRealms_WCL.name}`);
+        console.timeEnd(`OSINT-${indexRealms_WCL.name}`);
     }
     catch (err) {
         console.error(`E,${err}`)

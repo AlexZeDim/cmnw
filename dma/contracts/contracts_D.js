@@ -11,7 +11,7 @@ moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });
 
-async function contracts_D (arg_realm = 'gordunni') {
+async function contracts_D (arg_realm = 'ru_RU') {
     try {
         let query;
         console.time(`DMA-${contracts_D.name}`);

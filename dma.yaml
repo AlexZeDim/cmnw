@@ -1,0 +1,41 @@
+apps:
+  - script: ./dma/getAuctionsData.js
+    name: 'DMA-getAuctionsData'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '*/15 * * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000
+  - script: ./dma/getGoldData.js
+    name: 'DMA-getGoldData'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '15 */1 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000
+  - script: ./dma/getItems.js
+    name: 'DMA-getItems'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '0 12 * */6 *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000
+  - script: ./dma/contracts/contracts_D.js
+    name: 'DMA-contracts_D'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '00 10,20 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000
+  - script: ./dma/contracts/contracts_M.js
+    name: 'DMA-contracts_M'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '00 00 01 */1 *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000

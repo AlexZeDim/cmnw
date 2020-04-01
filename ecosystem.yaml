@@ -103,3 +103,11 @@ apps:
     cron_restart: '00 10,20 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
+  - script: ./dma/auctions/auctionsContracts_D.js
+    name: 'DMA-auctionsContracts_D'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '05 10,20 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000

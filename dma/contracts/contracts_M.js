@@ -11,6 +11,7 @@ moment.updateLocale('en', {
 
 async function contracts_M (arg_realm = 'ru_RU') {
     try {
+        console.time(`DMA-${contracts_M.name}`);
         let [realms, items] = await Promise.all([
             realms_db.distinct('connected_realm_id', {$or: [
                 { 'slug': arg_realm },
@@ -64,6 +65,7 @@ async function contracts_M (arg_realm = 'ru_RU') {
             }
         }
         connection.close();
+        console.timeEnd(`DMA-${contracts_M.name}`);
     } catch (err) {
         console.error(`${contracts_M.name}${err}`);
     }

@@ -139,11 +139,5 @@ module.exports = class Contract {
             };
         }
         this.data = contract_data;
-
-/*        if (type === 'M') {
-            this.risk.VaR = parseFloat(VaR(contract_data.map(low => low.price*100),0.80).toFixed(2));
-            this.risk.VaR_size = parseFloat(VaR(contract_data.map(low => low.price_size*100).filter((value)=> value !== 0),0.80).toFixed(2));
-        }*/
-
     }
 };

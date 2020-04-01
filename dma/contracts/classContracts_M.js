@@ -20,6 +20,13 @@ module.exports = class Contract {
         let oi_high_Array = [];
         let price_Array = [];
         let price_size_Array = [];
+        let orders_a = 0;
+        let orders_c = 0;
+        let orders_e = 0;
+        let o_low_Array = [];
+        let o_high_Array = [];
+        const sellersArray = new Set();
+        const ordersArray = new Set();
         const standardDeviation = (arr, usePopulation = true) => {
             const mean = arr.reduce((acc, val) => acc + val, 0) / arr.length;
             return Math.sqrt(
@@ -27,10 +34,6 @@ module.exports = class Contract {
                 (arr.length - (usePopulation ? 0 : 1))
             );
         };
-        //TODO Value at Risk and only for M
-        /**
-         * @return {number}
-         */
         const VaR = (portfolioEquityCurve, alpha) => {
             const arithmeticReturns = portfolioEquityCurve => {
                 let returns = new Array(portfolioEquityCurve.length);
@@ -66,14 +69,23 @@ module.exports = class Contract {
                 oi_high_Array.push(high);
             }
             if (orders) {
+                let {orders_added, orders_cancelled, orders_expired, low, high} = orders;
+                orders_a += orders_added;
+                orders_c += orders_cancelled;
+                orders_e += orders_expired;
+                o_low_Array.push(low);
+                o_high_Array.push(high);
                 console.log(orders)
             }
-            if (sellers) {
-                console.log(sellers);
-            }
-            data.map(({price, price_size}) => {
+            data.map(({price, price_size, sellers, orders}) => {
+                if (orders) {
+                    orders.map(({id}) => {
+                        ordersArray.add(id);
+                    })
+                }
                 price_Array.push(price);
                 if (price_size) price_size_Array.push(price_size);
+                if (sellers) sellers.map(x => sellersArray.add(x))
             })
         });
         console.log(price_size_Array);
@@ -116,6 +128,30 @@ module.exports = class Contract {
             close: contract_data[contract_data.length-1].open_interest.close,
         };
         //TODO orders
-        //TODO sellers
+        if (ordersArray.size !== 0) {
+            this.orders = {
+                open: contract_data[0].orders.open,
+                low: Math.min(...o_low_Array),
+                change: (contract_data[contract_data.length-1].orders.close - contract_data[0].orders.open),
+                high: Math.max(...o_high_Array),
+                close: contract_data[contract_data.length-1].orders.close,
+                orders_total: ordersArray.size,
+                orders_added: orders_a,
+                orders_cancelled: orders_c,
+                orders_expired: orders_e,
+                ratio_added: parseFloat((orders_a/ordersArray.size).toFixed(2)),
+                ratio_cancelled: parseFloat((orders_c/ordersArray.size).toFixed(2)),
+                ratio_expired: parseFloat((orders_e/ordersArray.size).toFixed(2)),
+            };
+        }
+        if (sellersArray.size !== 0) {
+            this.sellers = {
+                sellers: [...sellersArray],
+                open: contract_data[0].sellers.open,
+                change: contract_data[contract_data.length-1].sellers.close - contract_data[0].sellers.open,
+                close: contract_data[contract_data.length-1].sellers.close,
+                total: sellersArray.size,
+            };
+        }
     }
 };

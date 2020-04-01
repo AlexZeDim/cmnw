@@ -8,7 +8,7 @@ const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 
 async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
     try {
-        console.time(`VOLUSPA-${indexLogs.name}`);
+        console.time(`OSINT-${indexLogs.name}`);
         let documentBulk = [];
         const cursor = logs_db.find(queryInput).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async (documentData) => {
@@ -42,8 +42,8 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                                         _id: `${exportedCharacters[i].name.toLowerCase()}@${slug}`,
                                         name: exportedCharacters[i].name,
                                         realm_slug: slug,
-                                        createdBy: `VOLUSPA-${indexLogs.name}`,
-                                        updatedBy: `VOLUSPA-${indexLogs.name}`
+                                        createdBy: `OSINT-${indexLogs.name}`,
+                                        updatedBy: `OSINT-${indexLogs.name}`
                                     }).then(function (ch, error) {
                                         if (error) console.error(`E,${error}`);
                                         console.info(`C,${ch._id}`)
@@ -65,13 +65,13 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
             }
         });
         cursor.on('error', error => {
-            console.error(`E,VOLUSPA-${indexLogs.name},${error}`);
+            console.error(`E,OSINT-${indexLogs.name},${error}`);
             cursor.close();
         });
         cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 60000));
             connection.close();
-            console.timeEnd(`VOLUSPA-${indexLogs.name}`);
+            console.timeEnd(`OSINT-${indexLogs.name}`);
         });
     } catch (error) {
         console.error(`${indexLogs.name},${error}`)

@@ -15,7 +15,7 @@ router.get('/:name@:realm', async function(req, res) {
         //TODO guild find by ID to slug OR name&realm
         let guildData = await guilds_db.findById(`${req.params.name.toLowerCase()}@${slug}`);
         if (!guildData) {
-            const getGuild = require('../../voluspa/getGuild');
+            const getGuild = require('../../osint/getGuild');
             const keys_db = require("../../db/keys_db");
             const { token } = await keys_db.findOne({tags: `VOLUSPA-indexGuilds`});
             guildData = await getGuild(slug, req.params.name.toLowerCase(), token);

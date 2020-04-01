@@ -7,8 +7,8 @@ apps:
     max_memory_restart: '100M'
     cron_restart: '*/1 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./voluspa/indexing/indexCharacters.js
-    name: 'VOLUSPA-indexCharacters'
+  - script: ./osint/indexing/indexCharacters.js
+    name: 'OSINT-indexCharacters'
     watch: true
     autorestart: true
     instances : 1
@@ -17,8 +17,8 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 5000
     restart_delay: 3600000
-  - script: ./voluspa/indexing/indexGuilds.js
-    name: 'VOLUSPA-indexGuilds'
+  - script: ./osint/indexing/indexGuilds.js
+    name: 'OSINT-indexGuilds'
     instances : 1
     watch: true
     autorestart: true
@@ -27,8 +27,8 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 5000
     restart_delay: 1800000
-  - script: ./voluspa/characters/fromLogs.js
-    name: 'VOLUSPA-fromLogs'
+  - script: ./osint/characters/fromLogs.js
+    name: 'OSINT-fromLogs'
     instances: 1
     watch: true
     autorestart: true
@@ -36,8 +36,8 @@ apps:
     cron_restart: '0 2 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
-  - script: ./voluspa/indexing/indexLogs.js
-    name: 'VOLUSPA-indexLogs'
+  - script: ./osint/indexing/indexLogs.js
+    name: 'OSINT-indexLogs'
     instances: 1
     watch: true
     autorestart: true
@@ -45,8 +45,8 @@ apps:
     cron_restart: '0 3 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
-  - script: ./voluspa/guilds/fromCharacters.js
-    name: 'VOLUSPA-fromCharacters'
+  - script: ./osint/guilds/fromCharacters.js
+    name: 'OSINT-fromCharacters'
     instances: 1
     watch: true
     autorestart: true
@@ -54,8 +54,8 @@ apps:
     cron_restart: '30 3 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
-  - script: ./voluspa/guilds/fromJSON.js
-    name: 'VOLUSPA-fromJSON'
+  - script: ./osint/guilds/fromJSON.js
+    name: 'OSINT-fromJSON'
     instances: 1
     watch: true
     autorestart: true

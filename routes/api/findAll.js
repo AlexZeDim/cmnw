@@ -19,7 +19,7 @@ router.get('/:queryFind', async function(req, res) {
                 ]});
             let character_ = await characters_db.findById(`${param[0].toLowerCase()}@${slug}`).lean();
             if (!character_) {
-                const getCharacter = require('../../voluspa/getCharacter');
+                const getCharacter = require('../../osint/getCharacter');
                 const keys_db = require("../../db/keys_db");
                 const { token } = await keys_db.findOne({tags: `VOLUSPA-indexCharacters`});
                 character_ = await getCharacter(slug, param[0].toLowerCase(), token, true);

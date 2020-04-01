@@ -10,9 +10,9 @@ moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });
 
-async function createAssetContract (arg_realm = 'ru_RU', arg_asset, period = 'D') {
+async function auctionsContracts_D (arg_realm = 'ru_RU', arg_asset, period = 'D') {
     try {
-        console.time(`DMA-${createAssetContract.name}`);
+        console.time(`DMA-${auctionsContracts_D.name}`);
         let items = await items_db.find({expansion:'BFA', derivative: 'COMMDTY', is_commdty: true}).lean();
         let realms = await realms_db.find({$or: [
                 { 'slug': arg_realm },
@@ -73,11 +73,11 @@ async function createAssetContract (arg_realm = 'ru_RU', arg_asset, period = 'D'
                 }
             }
         }
-        console.timeEnd(`DMA-${createAssetContract.name}`);
+        console.timeEnd(`DMA-${auctionsContracts_D.name}`);
         connection.close();
     } catch (error) {
-        console.error(`${createAssetContract.name},${error}`)
+        console.error(`${auctionsContracts_D.name},${error}`)
     }
 }
 
-createAssetContract();
+auctionsContracts_D();

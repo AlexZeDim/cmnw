@@ -65,6 +65,20 @@ let schema = new mongoose.Schema({
         high: Number,
         close: Number,
     },
+    orders: {
+        open:Number,
+        low: Number,
+        change: Number,
+        high: Number,
+        close: Number,
+        orders_total: Number,
+        orders_added: Number,
+        orders_cancelled: Number,
+        orders_expired: Number,
+        ratio_added: Number,
+        ratio_cancelled: Number,
+        ratio_expired: Number,
+    },
     risk: {
         stdDev: Number,
         stdDev_size: Number,
@@ -78,9 +92,7 @@ let schema = new mongoose.Schema({
         close: Number,
         total: Number,
     },
-    price_data: Array,
-    quantity_data: Array,
-    timestamp_data: Array,
+    data: Array,
 },{
     timestamps: true
 });

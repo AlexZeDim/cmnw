@@ -40,6 +40,7 @@ async function goldContracts_D (arg_realm = 'ru_RU') {
                 },
             ]);
             if (contract_data) {
+                //FIXME _ID
                 await contracts_db.findOneAndUpdate(
                     {
                         _id: `GOLD-${moment().format('DD.MMM')}@${realm.slug.toUpperCase()}`,

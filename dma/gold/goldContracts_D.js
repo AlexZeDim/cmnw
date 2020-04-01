@@ -11,6 +11,7 @@ moment.updateLocale('en', {
 
 async function goldContracts_D (arg_realm = 'ru_RU') {
     try {
+        console.time(`DMA-${goldContracts_D.name}`);
         let realms = await realms_db.find({$or: [
                 { 'slug': arg_realm },
                 { 'locale': arg_realm },
@@ -63,6 +64,7 @@ async function goldContracts_D (arg_realm = 'ru_RU') {
                 console.info(`E,GOLD-${moment().format('DD.MMM')}@${realm.name.toUpperCase()}`);
             }
         }
+        console.timeEnd(`DMA-${goldContracts_D.name}`);
         connection.close();
     } catch (err) {
         console.error(`${goldContracts_D.name}${err}`);

@@ -67,49 +67,15 @@ module.exports = class Contract {
                 expired_Array = [];
             }
             if (sellers) {
-                sellers.map( seller => sellersArray.add(seller));
+                sellers.map(seller => sellersArray.add(seller));
             }
         });
-        const standardDeviation = (arr, usePopulation = false) => {
+        const standardDeviation = (arr, usePopulation = true) => {
             const mean = arr.reduce((acc, val) => acc + val, 0) / arr.length;
             return Math.sqrt(
                 arr.reduce((acc, val) => acc.concat((val - mean) ** 2), []).reduce((acc, val) => acc + val, 0) /
                 (arr.length - (usePopulation ? 0 : 1))
             );
-        };
-        //TODO Value at Risk and only for M
-        /**
-         * @return {number}
-         */
-        const VaR = (portfolioEquityCurve, alpha) => {
-            // Compute the returns and remove the first element, always equals to NaN
-            const arithmeticReturns = portfolioEquityCurve => {
-                portfolioEquityCurve = portfolioEquityCurve.map(x=>parseFloat(x));
-                let returns = new Array(portfolioEquityCurve.length); // Inherit the array type from the input array
-                returns[0] = NaN;
-                for (let i = 1; i < portfolioEquityCurve.length; ++i) {
-                    returns[i] = Number((portfolioEquityCurve[i] - portfolioEquityCurve[i-1])/portfolioEquityCurve[i-1]);
-                }
-                // Return the arithmetic returns
-                return returns;
-            };
-            let returns = arithmeticReturns(portfolioEquityCurve).slice(1);
-            // Sort the returns from lowest to highest values
-            returns.sort((a, b) => { return a - b;});
-            // Compute w
-            // C.f. p. 383 of the reference
-            let c_alpha = 1 - alpha;
-            let w = c_alpha * returns.length;
-            // Limit case (w equals to 0), return NaN
-            if (w === 0) {
-                return 0;
-            }
-            // Otherwise, compute the value at risk as the w-th return
-            // C.f. (2) and (6) of the reference
-            // Return the value at risk
-            return -returns[w-1];
-            // Return the value at risk
-            //return parseFloat(returns[w - 1].toFixed(2));
         };
         this.price = {
             open: price_Array[0],
@@ -123,7 +89,7 @@ module.exports = class Contract {
             stdDev: parseFloat((standardDeviation(price_Array.map(price => price*100))/100).toFixed(2)),
         };
         if (price_size_Array.length) {
-            this.risk.stdDev_size = parseFloat((standardDeviation(price_size_Array.map(price_size => price_size*100))/100).toFixed(2))
+            this.risk.stdDev_size = parseFloat((standardDeviation(price_size_Array.map(price_size => price_size*100))/100).toFixed(2));
             this.price_size = {
                 open: price_size_Array[0],
                 low: parseFloat(Math.min(...price_size_Array).toFixed(2)),
@@ -165,7 +131,7 @@ module.exports = class Contract {
         };
         if (sellersArray.size !== 0) {
             this.sellers = {
-                sellers: sellersArray,
+                sellers: [...sellersArray],
                 open: contract_data[0].sellers.length,
                 change: contract_data[contract_data.length-1].sellers.length - contract_data[0].sellers.length,
                 close: contract_data[contract_data.length-1].sellers.length,

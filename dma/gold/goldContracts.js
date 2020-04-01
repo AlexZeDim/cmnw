@@ -15,11 +15,12 @@ async function goldContracts_M (arg_realm = 'gordunni') {
                 { 'locale': arg_realm },
             ]}).lean().cursor({batchSize: 1});
         for await (let {connected_realm_id, slug} of realms) {
+            //TODO sort it
             let contract_data = await contracts_db.find({
-                code: { $regex: new RegExp(`^GOLD-(0[1-9]|[12]\\d|3[01]).${moment().subtract(1,'months').format('MMM')}`), $options: 'i' },
+                code: { $regex: new RegExp(`^GOLD-(0[1-9]|[12]\\d|3[01]).${moment().subtract(0,'months').format('MMM')}`), $options: 'i' },
                 type: 'D',
                 connected_realm_id: connected_realm_id,
-            });
+            }).lean();
             console.log(new Contract(
                 `GOLD-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
                 `GOLD-${moment().format('DD.MMM')}`,

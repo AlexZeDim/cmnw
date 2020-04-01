@@ -52,7 +52,7 @@ module.exports = class Contract {
             }
             return parseFloat((-returns[Math.round(w)-1]).toFixed(2));
         };
-        contract_data.map(({price, quantity, open_interest, orders, sellers, data}, i) => {
+        contract_data.map(({price, quantity, open_interest, orders, data}) => {
             if (price) {
                 let {low, high} = price;
                 price_low_Array.push(low);
@@ -75,7 +75,6 @@ module.exports = class Contract {
                 orders_e += orders_expired;
                 o_low_Array.push(low);
                 o_high_Array.push(high);
-                console.log(orders)
             }
             data.map(({price, price_size, sellers, orders}) => {
                 if (orders) {
@@ -88,7 +87,6 @@ module.exports = class Contract {
                 if (sellers) sellers.map(x => sellersArray.add(x))
             })
         });
-        console.log(price_size_Array);
         this.price = {
             open: contract_data[0].price.open,
             low: Math.min(...price_low_Array),
@@ -127,7 +125,6 @@ module.exports = class Contract {
             high: Math.max(...oi_high_Array),
             close: contract_data[contract_data.length-1].open_interest.close,
         };
-        //TODO orders
         if (ordersArray.size !== 0) {
             this.orders = {
                 open: contract_data[0].orders.open,

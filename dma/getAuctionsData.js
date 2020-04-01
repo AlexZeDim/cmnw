@@ -11,6 +11,7 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
+        //FIXME distinct
         let realms = await realms_db.find(realmQuery).cursor({batchSize: 1});
         for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
             console.info(`R,${realm.connected_realm_id}:${realm.name}`);

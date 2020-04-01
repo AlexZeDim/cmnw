@@ -50,10 +50,10 @@ async function auctionsContracts_D (arg_realm = 'ru_RU', arg_asset, period = 'D'
                 if (contract_data) {
                     await contracts_db.findOneAndUpdate(
                         {
-                            _id: `${code}-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
+                            _id: `${code}-${moment().format('DD.MMM')}@${connected_realm_id}`,
                         },
                         new Contract(
-                            `${code}-${moment().format('DD.MMM')}@${slug.toUpperCase()}`,
+                            `${code}-${moment().format('DD.MMM')}@${connected_realm_id}`,
                             `${code}-${moment().format('DD.MMM')}`,
                             _id,
                             connected_realm_id,
@@ -69,7 +69,7 @@ async function auctionsContracts_D (arg_realm = 'ru_RU', arg_asset, period = 'D'
                         }
                     ).then(i => console.info(`C,${i._id}`))
                 } else {
-                    console.error(`E,GOLD-${moment().format('DD.MMM')}@${slug.toUpperCase()}`);
+                    console.error(`E,GOLD-${moment().format('DD.MMM')}@${connected_realm_id}`);
                 }
             }
         }

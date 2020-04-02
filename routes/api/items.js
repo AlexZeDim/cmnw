@@ -12,42 +12,40 @@ router.get('/:item@:realm', async function(req, res) {
     try {
         //TODO search as textfields, not sure about index use
         let api = {};
-        let item;
+        let requestPromises = [];
         let asyncPromises = [];
         if (isNaN(req.params.item)) {
-            item = await items_db.findOne({"name.en_GB": req.params.item}).collation( { locale: 'en', strength: 1 } ).lean();
-            if (!item) {
-                item = await items_db.findOne({"name.ru_RU": req.params.item}).collation( { locale: 'ru', strength: 1 } ).lean();
-            }
+            requestPromises.push( items_db.findOne({$text:{$search: req.params.item}}).lean().exec());
         } else {
-            item = await items_db.findOne({_id: req.params.item}).lean();
+            requestPromises.push( items_db.findById(Number(req.params.item)).lean().exec());
         }
-
-        let {_id, is_auctionable, is_commdty, is_yield} = item;
-        let { connected_realm_id } = await realms_db.findOne({$or: [
-            { 'name': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
-            { 'slug': req.params.realm },
-            { 'name_locale': (req.params.realm).replace(/^\w/, c => c.toUpperCase()) },
-            { 'ticker': req.params.realm },
-        ]});
+        //TODO if realm
+        requestPromises.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec());
+        let [item, {connected_realm_id}] = await Promise.all(requestPromises);
+        let {_id, is_auctionable, is_commdty, is_yield, expansion, derivative} = item;
+        //TODO if && connected_realm_id
         if (is_auctionable) {
             asyncPromises.push(auctionsData(_id, connected_realm_id).then(m => { return {market: m[0]} }), aggregatedByPriceData(_id, connected_realm_id).then(q => { return {quotes: q} }));
             if (is_commdty) {
-                //TODO unit_price
                 asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
+                if (expansion === 'BFA' && derivative === 'COMMDTY') {
+                    asyncPromises.push(
+                        contracts_db.find({item_id: _id, connected_realm_id: connected_realm_id, type: 'D'},{
+                            "_id": 1,
+                            "code": 1
+                        }).sort({updatedAt: -1}).limit(5).lean().then(c => { return {contracts_d: c}} )
+                    );
+                }
                 if (is_yield) {
-                    let test = await contracts_db.find({_id: /GOLD/, connected_realm_id: 1602, type: 'D'},{
-                        "_id": 1,
-                        "code": 1
-                    }).sort({updatedAt: -1}).limit(5).lean();
-                    Object.assign(api, {contracts_d: test});
+                    //TODO price %
+
                 }
             } else {
                 //TODO buyout and bid
             }
-        }
-        for await (let promise of asyncPromises) {
-            Object.assign(api, promise)
+            for await (let promise of asyncPromises) {
+                Object.assign(api, promise)
+            }
         }
         Object.assign(api, {item: item});
         res.status(200).json(api);

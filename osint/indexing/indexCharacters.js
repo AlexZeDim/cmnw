@@ -15,11 +15,11 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `OSINT-${inde
     try {
         console.time(`OSINT-${indexCharacters.name}`);
         let character_Array = [];
-        let token;
-        token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
+        let {token} = await keys_db.findOne(queryKeys);
         const cursor = characters_db.find(queryFind).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async ({_id}) => {
-            character_Array.push(getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {
+            character_Array.push(
+                getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {
                 u_character.updatedBy = `OSINT-${indexCharacters.name}`;
                 characters_db.findByIdAndUpdate(
                     {
@@ -43,7 +43,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `OSINT-${inde
             if (character_Array.length >= bulkSize) {
                 cursor.pause();
                 console.time(`========================`);
-                token = await keys_db.findOne(queryKeys).then(({token}) => {return token}).catch(e=>(e));
+                ({token} = await keys_db.findOne(queryKeys));
                 await Promise.all(character_Array);
                 character_Array = [];
                 cursor.resume();

@@ -11,24 +11,17 @@ router.get('/:queryFind', async function(req, res) {
         let findAll = {};
         if (queryFind.includes('@')) {
             param = queryFind.split('@');
-            let { slug } = await realms_db.findOne({$or: [
-                    { 'name': param[1].charAt(0).toUpperCase() + param[1].slice(1) },
-                    { 'slug': param[1] },
-                    { 'ticker': param[1] },
-                    { 'name_locale': param[1].charAt(0).toUpperCase() + param[1].slice(1) },
-                ]});
+            let { slug } = await realms_db.findOne({$text:{$search: param[1]}});
             let character_ = await characters_db.findById(`${param[0].toLowerCase()}@${slug}`).lean();
             if (!character_) {
                 const getCharacter = require('../../osint/getCharacter');
                 const keys_db = require("../../db/keys_db");
-                const { token } = await keys_db.findOne({tags: `VOLUSPA-indexCharacters`});
+                const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});
                 character_ = await getCharacter(slug, param[0].toLowerCase(), token, true);
-                character_.createdBy = `VOLUSPA-userInput`;
-                character_.updatedBy = `VOLUSPA-userInput`;
+                character_.createdBy = `OSINT-userInput`;
+                character_.updatedBy = `OSINT-userInput`;
                 if (character_.statusCode === 200) {
-                    await characters_db.create(character_).then(ch => console.info(`C,${ch._id}`));
-                    character_.createdAt = Date.now();
-                    character_.updatedAt = Date.now();
+                    character_ = await characters_db.create(character_).then(ch => {console.info(`C,${ch._id}`); return ch});
                 }
                 //TODO what is char not found?
             }

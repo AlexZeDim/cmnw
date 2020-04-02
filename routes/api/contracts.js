@@ -11,20 +11,12 @@ router.get('/:code@:realm', async (req, res) => {
         let item;
         let requestArray = [];
         if (isNaN(req.params.code.match(/.+?(?=-)/g)[0])) {
-            requestArray.push(
-                items_db.findOne({$text:{$search: req.params.code.match(/.+?(?=-)/g)[0]}}).exec()
-            )
+            requestArray.push(items_db.findOne({$text:{$search: req.params.code.match(/.+?(?=-)/g)[0]}}).exec())
         } else {
             requestArray.push(items_db.findById(Number(req.params.code.match(/.+?(?=-)/g)[0])).exec())
         }
         if (isNaN(req.params.realm)) {
-            requestArray.push(
-                realms_db.findOne({$or: [
-                    { 'name': req.params.realm },
-                    { 'slug': req.params.realm },
-                    { 'name_locale': req.params.realm },
-                    { 'ticker': req.params.realm },
-                ]}).exec())
+            requestArray.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec())
         } else {
             requestArray.push(realms_db.findById(Number(req.params.realm))).exec()
         }

@@ -23,8 +23,7 @@ router.get('/:item@:realm', async function(req, res) {
         requestPromises.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec());
         let [item, {connected_realm_id}] = await Promise.all(requestPromises);
         let {_id, is_auctionable, is_commdty, is_yield, expansion, derivative} = item;
-        //TODO if && connected_realm_id
-        if (is_auctionable) {
+        if (is_auctionable && connected_realm_id) {
             asyncPromises.push(auctionsData(_id, connected_realm_id).then(m => { return {market: m[0]} }), aggregatedByPriceData(_id, connected_realm_id).then(q => { return {quotes: q} }));
             if (is_commdty) {
                 asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
@@ -41,7 +40,7 @@ router.get('/:item@:realm', async function(req, res) {
 
                 }
             } else {
-                //TODO buyout and bid
+                //TODO chart if buyout and bid
             }
             for await (let promise of asyncPromises) {
                 Object.assign(api, promise)

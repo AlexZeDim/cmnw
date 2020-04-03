@@ -12,7 +12,7 @@ router.get('/:name@:realm', async function(req, res) {
             const getGuild = require('../../osint/getGuild');
             const keys_db = require("../../db/keys_db");
             const { token } = await keys_db.findOne({tags: `OSINT-indexGuilds`});
-            guildData = await getGuild(slug, req.params.name.toLowerCase(), token);
+            guildData = await getGuild(slug, req.params.name.toLowerCase().replace(/\s/g,"-"), token);
             guildData.createdBy = `OSINT-userInput`;
             guildData.updatedBy = `OSINT-userInput`;
             if (guildData.statusCode === 200) {

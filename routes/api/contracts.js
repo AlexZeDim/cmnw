@@ -18,18 +18,19 @@ router.get('/:code@:realm', async (req, res) => {
         if (isNaN(req.params.realm)) {
             requestArray.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec())
         } else {
-            requestArray.push(realms_db.findById(Number(req.params.realm))).exec()
+            requestArray.push(realms_db.findById(Number(req.params.realm)).exec())
         }
-        let [{_id, name, ticker}, {connected_realm_id}] = await Promise.all(requestArray);
+        let [{_id, name, ticker}, realm] = await Promise.all(requestArray);
         (ticker) ? (item = ticker) : (item = name.en_GB);
         let contract = await contracts_db.findOne({$or: [
-            { _id: `${req.params.code}@${connected_realm_id}` },
+            { _id: `${req.params.code}@${realm.connected_realm_id}` },
             {
                 code: `${item}${req.params.code.match(/-(.*)/)[0]}`,
-                connected_realm_id: connected_realm_id,
+                connected_realm_id: realm.connected_realm_id,
                 item_id: _id
             }
         ]}).lean();
+        contract.realmName = realm.name;
         res.status(200).json(contract);
     } catch (e) {
         res.status(404).json(e);

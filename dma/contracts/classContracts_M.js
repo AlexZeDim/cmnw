@@ -25,6 +25,7 @@ module.exports = class Contract {
         let orders_e = 0;
         let o_low_Array = [];
         let o_high_Array = [];
+        let dataArray = [];
         const sellersArray = new Set();
         const ordersArray = new Set();
         const standardDeviation = (arr, usePopulation = true) => {
@@ -52,29 +53,42 @@ module.exports = class Contract {
             }
             return parseFloat((-returns[Math.round(w)-1]).toFixed(2));
         };
-        contract_data.map(({price, quantity, open_interest, orders, data}) => {
+        contract_data.map(({price, quantity, open_interest, orders, sellers, data}) => {
+            let object = {};
             if (price) {
+                Object.assign(object, {price: price});
                 let {low, high} = price;
                 price_low_Array.push(low);
                 price_high_Array.push(high);
             }
             if (quantity) {
+                Object.assign(object, {quantity: quantity});
                 let {low, high} = quantity;
                 quantity_low_Array.push(low);
                 quantity_high_Array.push(high);
             }
             if (open_interest) {
+                Object.assign(object, {open_interest: open_interest});
                 let {low, high} = open_interest;
                 oi_low_Array.push(low);
                 oi_high_Array.push(high);
             }
             if (orders) {
+                Object.assign(object, {orders: orders});
                 let {orders_added, orders_cancelled, orders_expired, low, high} = orders;
                 orders_a += orders_added;
                 orders_c += orders_cancelled;
                 orders_e += orders_expired;
                 o_low_Array.push(low);
                 o_high_Array.push(high);
+            }
+            if (sellers) {
+                Object.assign(object, {sellers: {
+                    open: sellers.open,
+                    change: sellers.change,
+                    close: sellers.close,
+                    total: sellers.total
+                }});
             }
             data.map(({price, price_size, sellers, orders}) => {
                 if (orders) {
@@ -85,7 +99,9 @@ module.exports = class Contract {
                 price_Array.push(price);
                 if (price_size) price_size_Array.push(price_size);
                 if (sellers) sellers.map(x => sellersArray.add(x))
-            })
+            });
+            dataArray.push(object);
+            object = {};
         });
         this.price = {
             open: contract_data[0].price.open,
@@ -150,5 +166,6 @@ module.exports = class Contract {
                 total: sellersArray.size,
             };
         }
+        this.data = dataArray;
     }
 };

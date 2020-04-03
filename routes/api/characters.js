@@ -12,10 +12,10 @@ router.get('/:name@:realm', async function(req, res) {
         if (!characterData) {
             const getCharacter = require('../../osint/getCharacter');
             const keys_db = require("../../db/keys_db");
-            const { token } = await keys_db.findOne({tags: `VOLUSPA-indexCharacters`});
+            const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});
             characterData = await getCharacter(slug, req.params.name.toLowerCase(), token, true);
-            characterData.createdBy = `VOLUSPA-userInput`;
-            characterData.updatedBy = `VOLUSPA-userInput`;
+            characterData.createdBy = `OSINT-userInput`;
+            characterData.updatedBy = `OSINT-userInput`;
             if (characterData.statusCode === 200) {
                 await characters_db.create(characterData).then(ch => console.info(`C,${ch._id}`));
                 characterData.createdAt = Date.now();

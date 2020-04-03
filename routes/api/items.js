@@ -4,8 +4,7 @@ const router = express.Router();
 const items_db = require("../../db/items_db");
 const realms_db = require("../../db/realms_db");
 const charts = require("../../dma/charts.js");
-const auctionsData = require("../../dma/auctions/auctionsData.js");
-const aggregatedByPriceData = require("../../dma/auctions/auctionsQuotes.js");
+const auctionsData = require("../../dma/auctions/auctionsQuotes.js");
 const contracts_db = require("../../db/contracts_db");
 
 router.get('/:item@:realm', async function(req, res) {
@@ -15,16 +14,16 @@ router.get('/:item@:realm', async function(req, res) {
         let requestPromises = [];
         let asyncPromises = [];
         if (isNaN(req.params.item)) {
-            requestPromises.push( items_db.findOne({$text:{$search: req.params.item}}).lean().exec());
+            requestPromises.push(items_db.findOne({$text:{$search: req.params.item}}).lean().exec());
         } else {
-            requestPromises.push( items_db.findById(Number(req.params.item)).lean().exec());
+            requestPromises.push(items_db.findById(Number(req.params.item)).lean().exec());
         }
         //TODO if realm
         requestPromises.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec());
         let [item, {connected_realm_id}] = await Promise.all(requestPromises);
         let {_id, is_auctionable, is_commdty, is_yield, expansion, derivative} = item;
         if (is_auctionable && connected_realm_id) {
-            asyncPromises.push(auctionsData(_id, connected_realm_id).then(m => { return {market: m[0]} }), aggregatedByPriceData(_id, connected_realm_id).then(q => { return {quotes: q} }));
+            asyncPromises.push(auctionsData(_id, connected_realm_id).then(d => { return {quotes: d[0] , market: d[1]} }));
             if (is_commdty) {
                 asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
                 if (expansion === 'BFA' && derivative === 'COMMDTY') {
@@ -37,7 +36,6 @@ router.get('/:item@:realm', async function(req, res) {
                 }
                 if (is_yield) {
                     //TODO price %
-
                 }
             } else {
                 //TODO chart if buyout and bid

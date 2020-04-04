@@ -36,7 +36,8 @@ async function auctionsQuotes (item_id = 168487, connected_realm_id = 1602) {
             price_size: 0,
             quantity:  0,
             open_interest: 0,
-            orders: 0
+            orders: 0,
+            timestamp: lastModified,
         };
         for (let i = 0; i < auction_data.length; i++) {
             let {_id, quantity, open_interest, orders} = auction_data[i];

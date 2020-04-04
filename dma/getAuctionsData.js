@@ -11,15 +11,13 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
-        //FIXME distinct
-        let realms = await realms_db.find(realmQuery).cursor({batchSize: 1});
-        for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
-            console.info(`R,${realm.connected_realm_id}:${realm.name}`);
+        const realms = await realms_db.find(realmQuery).distinct('connected_realm_id');
+        for (let connected_realm_id of realms) {
+            console.info(`R,${connected_realm_id}`);
             let header_lastModified = '';
-            let {connected_realm_id} = realm;
             const latest_lot = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');
             if (latest_lot) header_lastModified = `${moment(latest_lot.lastModified).format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
-            let {auctions, lastModified} = await bnw.WowGameData.getAuctionHouse(connected_realm_id, header_lastModified).catch(e=> {console.info(`E,${realm.connected_realm_id}:${e}`); return (e)});
+            let {auctions, lastModified} = await bnw.WowGameData.getAuctionHouse(connected_realm_id, header_lastModified).catch(e=> {console.info(`E,${connected_realm_id}:${e}`); return (e)});
             if (auctions) {
                 for (let i = 0; i < auctions.length; i++) {
                     if ("bid" in auctions[i]) auctions[i].bid = parseFloat((auctions[i].bid/10000).toFixed(2));
@@ -28,7 +26,7 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
                     auctions[i].connected_realm_id = connected_realm_id;
                     auctions[i].lastModified = moment(lastModified).format();
                 }
-                await auctions_db.insertMany(auctions).then(auctions => console.info(`U,${realm.name},${auctions.length}`))
+                await auctions_db.insertMany(auctions).then(auctions => console.info(`U,${auctions.length}`))
             }
         }
         connection.close();

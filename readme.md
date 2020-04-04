@@ -29,7 +29,34 @@ Find all characters that belong to *Блюрателла* from *Gordunni-EU*
 ALTS блюрателла@гордунни
 ```
 
-Search for all matchings with hash `TEST` across Hash A and Hash B
+Search for characters with hash `f97efc28` across Hash A and Hash B fields.
 ```
-A TEST
+A f97efc28
 ```
+
+*Hash values are dynamic properties. They changed on day-to-day basis. There is not reason to remember them.*
+
+### G || GUILD
+
+Allows you to receive information about guild and it's members:
+```
+G депортация@гордунни
+```
+If you want to find a guild a certain name across all realms use this command:
+```
+GUILD депортация
+```
+
+### CON || CONTRACT
+
+For more information about contracts check this *link* .
+
+Provides historical market information about **Day/Week/Month** contract with following code:
+```
+CON zin'anthid-01.J@gordunni
+```
+You could also use `TICKER` item names or `connected_realm_id` for realms if you know them for sure:
+```
+CONTRACT ZNTD@1602
+```
+

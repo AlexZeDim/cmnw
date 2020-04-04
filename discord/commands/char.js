@@ -3,8 +3,8 @@ const axios = require('axios');
 require('dotenv').config();
 
 module.exports = {
-    name: 'find',
-    description: 'check selected character',
+    name: 'char',
+    description: 'Check selected character',
     args: true,
     async execute(message, args) {
         const params = args.split('@');

@@ -7,17 +7,16 @@ const characters_db = require("../../db/characters_db");
 router.get('/:queryFind', async function(req, res) {
     try {
         const {queryFind} = req.params;
-        let param = '';
         let findAll = {};
         if (queryFind.includes('@')) {
-            param = queryFind.split('@');
-            let { slug } = await realms_db.findOne({$text:{$search: param[1]}});
-            let character_ = await characters_db.findById(`${param[0].toLowerCase()}@${slug}`).lean();
+            const [n, r] = queryFind.split('@');
+            let { slug } = await realms_db.findOne({$text:{$search: r}});
+            let character_ = await characters_db.findById(`${n.toLowerCase()}@${slug}`).lean();
             if (!character_) {
                 const getCharacter = require('../../osint/getCharacter');
                 const keys_db = require("../../db/keys_db");
                 const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});
-                character_ = await getCharacter(slug, param[0].toLowerCase(), token, true);
+                character_ = await getCharacter(slug, n.toLowerCase(), token, true);
                 character_.createdBy = `OSINT-userInput`;
                 character_.updatedBy = `OSINT-userInput`;
                 if (character_.statusCode === 200) {
@@ -33,7 +32,7 @@ router.get('/:queryFind', async function(req, res) {
                             {"checksum.pets": checksum.pets},
                             {"checksum.mounts": checksum.mounts}
                         ]},
-                        {_id: {$ne: `${param[0].toLowerCase()}@${slug}`}},
+                        {_id: {$ne: `${n.toLowerCase()}@${slug}`}},
                     ]
                 }).lean();
                 findAll._id = character_._id;

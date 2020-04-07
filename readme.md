@@ -19,7 +19,7 @@ C блюрателла
 
 Command allows you to find all other characters of certain player via **OSINT DB** The matching pattern based on two different hash values.
 
-- Hash A match guarantees you 100% confidence that characters belongs to one player.
+- Hash A match guarantees you with 100% confidence that all characters belongs to one player.
 - Hash B match ensures that characters could belong to one player with 50+ % confidence
 
 You are available to search by both parameters:

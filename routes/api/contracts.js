@@ -5,27 +5,29 @@ const items_db = require("../../db/items_db");
 const realms_db = require("../../db/realms_db");
 const contracts_db = require("../../db/contracts_db");
 
-router.get('/:code@:realm', async (req, res) => {
+router.get('/:i-:dwm.:my@:r', async (req, res) => {
     try {
+        const {i, dwn, my, r} = req.params;
         //TODO check matching pattern and code date as ITEM-().()@REALM
+        //todo check time via moment? and TYPE D/W/Y
         let item;
         let requestArray = [];
-        if (isNaN(req.params.code.match(/.+?(?=-)/g)[0])) {
-            requestArray.push(items_db.findOne({$text:{$search: req.params.code.match(/.+?(?=-)/g)[0]}}).exec())
+        if (isNaN(i)) {
+            requestArray.push(items_db.findOne({$text:{$search: i}}).lean().exec())
         } else {
-            requestArray.push(items_db.findById(Number(req.params.code.match(/.+?(?=-)/g)[0])).exec())
+            requestArray.push(items_db.findById(Number(i)).lean().exec());
         }
-        if (isNaN(req.params.realm)) {
-            requestArray.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec())
+        if (isNaN(r)) {
+            requestArray.push(realms_db.findOne({$text:{$search: r}}).lean().exec())
         } else {
-            requestArray.push(realms_db.findById(Number(req.params.realm)).exec())
+            requestArray.push(realms_db.findById(Number(r)).lean().exec())
         }
         let [{_id, name, ticker}, realm] = await Promise.all(requestArray);
         (ticker) ? (item = ticker) : (item = name.en_GB);
         let contract = await contracts_db.findOne({$or: [
-            { _id: `${req.params.code}@${realm.connected_realm_id}` },
+            { _id: `${item}-${dwn}.${my}@${realm.connected_realm_id}` },
             {
-                code: `${item}${req.params.code.match(/-(.*)/)[0]}`,
+                code: `${item}-${dwn}.${my}`,
                 connected_realm_id: realm.connected_realm_id,
                 item_id: _id
             }

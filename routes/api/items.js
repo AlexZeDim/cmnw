@@ -9,17 +9,18 @@ const contracts_db = require("../../db/contracts_db");
 
 router.get('/:item@:realm', async function(req, res) {
     try {
+        const {i, r} = req.params;
         //TODO search as textfields, not sure about index use
         let api = {};
         let requestPromises = [];
         let asyncPromises = [];
-        if (isNaN(req.params.item)) {
-            requestPromises.push(items_db.findOne({$text:{$search: req.params.item}}).lean().exec());
+        if (isNaN(i)) {
+            requestPromises.push(items_db.findOne({$text:{$search: i}}).lean().exec());
         } else {
-            requestPromises.push(items_db.findById(Number(req.params.item)).lean().exec());
+            requestPromises.push(items_db.findById(Number(i)).lean().exec());
         }
         //TODO if realm
-        requestPromises.push(realms_db.findOne({$text:{$search: req.params.realm}}).exec());
+        requestPromises.push(realms_db.findOne({$text:{$search: r}}).exec());
         let [item, {connected_realm_id}] = await Promise.all(requestPromises);
         let {_id, is_auctionable, is_commdty, is_yield, expansion, derivative} = item;
         if (is_auctionable && connected_realm_id) {

@@ -75,7 +75,7 @@ schema.index({ slug: 1 },{name: 'Slug', collation: { strength: 3 }});
 schema.index({ name_locale: 1 },{name: 'NameLocale', collation: { strength: 3 }});
 schema.index({ ticker: 1 },{name: 'Ticker', collation: { strength: 3 }});
 schema.index({ connected_realm_id: 1 },{name: 'ConnectedRealms'});
-schema.index({ name: "text", slug: "text", name_locale: "text" },{name: 'SearchQuery'});
+schema.index({ name: "text", slug: "text", name_locale: "text", ticker: "text" },{name: 'SearchQuery'});
 
 let realms_db = mongoose.model('realms', schema);
 

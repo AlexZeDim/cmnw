@@ -7,33 +7,25 @@ const contracts_db = require("../../db/contracts_db");
 
 router.get('/:i-:dwm.:my@:r', async (req, res) => {
     try {
-        const {i, dwn, my, r} = req.params;
-        //TODO check matching pattern and code date as ITEM-().()@REALM
-        //todo check time via moment? and TYPE D/W/Y
-        let item;
-        let requestArray = [];
-        if (isNaN(i)) {
-            requestArray.push(items_db.findOne({$text:{$search: i}}).lean().exec())
-        } else {
-            requestArray.push(items_db.findById(Number(i)).lean().exec());
+        const {i, dwm, my, r} = req.params;
+        if (r) {
+            let item;
+            let requestArray = [];
+            isNaN(i) ? (requestArray.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestArray.push(items_db.findById(Number(i)).lean().exec()));
+            isNaN(r) ? (requestArray.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestArray.push(realms_db.findById(Number(r)).lean().exec()));
+            let [{_id, name, ticker}, realm] = await Promise.all(requestArray);
+            (ticker) ? (item = ticker) : (item = name.en_GB);
+            let contract = await contracts_db.findOne({$or: [
+                    { _id: `${item}-${dwm}.${my}@${realm.connected_realm_id}` },
+                    {
+                        code: `${item}-${dwm}.${my}`,
+                        connected_realm_id: realm.connected_realm_id,
+                        item_id: _id
+                    }
+                ]}).lean();
+            contract.realmName = realm.name;
+            res.status(200).json(contract);
         }
-        if (isNaN(r)) {
-            requestArray.push(realms_db.findOne({$text:{$search: r}}).lean().exec())
-        } else {
-            requestArray.push(realms_db.findById(Number(r)).lean().exec())
-        }
-        let [{_id, name, ticker}, realm] = await Promise.all(requestArray);
-        (ticker) ? (item = ticker) : (item = name.en_GB);
-        let contract = await contracts_db.findOne({$or: [
-            { _id: `${item}-${dwn}.${my}@${realm.connected_realm_id}` },
-            {
-                code: `${item}-${dwn}.${my}`,
-                connected_realm_id: realm.connected_realm_id,
-                item_id: _id
-            }
-        ]}).lean();
-        contract.realmName = realm.name;
-        res.status(200).json(contract);
     } catch (e) {
         res.status(404).json(e);
     }

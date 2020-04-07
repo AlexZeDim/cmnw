@@ -7,14 +7,15 @@ const characters_db = require("../../db/characters_db");
 router.get('/:n@:r', async function(req, res) {
     try {
         //TODO if not @ then
-        const {n, r} = req.params;
+        let {n, r} = req.params;
+        n = n.toLowerCase();
         let { slug } = await realms_db.findOne({$text:{$search: r}});
-        let characterData = await characters_db.findById(`${n.toLowerCase()}@${slug}`);
+        let characterData = await characters_db.findById(`${n}@${slug}`);
         if (!characterData) {
             const getCharacter = require('../../osint/getCharacter');
             const keys_db = require("../../db/keys_db");
             const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});
-            characterData = await getCharacter(slug, n.toLowerCase(), token, true);
+            characterData = await getCharacter(slug, n, token, true);
             characterData.createdBy = `OSINT-userInput`;
             characterData.updatedBy = `OSINT-userInput`;
             if (characterData.statusCode === 200) {

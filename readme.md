@@ -60,3 +60,14 @@ You could also use `TICKER` item names or `connected_realm_id` for realms if you
 CONTRACT ZNTD@1602
 ```
 
+### XSS CURVE || XRS CURVE
+
+Gives a represent vision of Cross Realm operations beetween different servers.
+
+- *in progress*
+
+### EVA
+
+Evaluate certain derivative, depends on **YLD**.
+
+- *in progress*

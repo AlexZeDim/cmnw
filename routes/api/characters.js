@@ -6,7 +6,6 @@ const characters_db = require("../../db/characters_db");
 
 router.get('/:n@:r', async function(req, res) {
     try {
-        //TODO if not @ then
         let {n, r} = req.params;
         n = n.toLowerCase();
         let { slug } = await realms_db.findOne({$text:{$search: r}});

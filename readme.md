@@ -49,7 +49,7 @@ GUILD депортация
 
 ### CON || CONTRACT
 
-For more information about contracts check this *link* .
+For more information about contracts check this *link*.
 
 Provides historical market information about **Day/Week/Month** contract with following code:
 ```
@@ -69,5 +69,11 @@ Gives a represent vision of Cross Realm operations beetween different servers.
 ### EVA
 
 Evaluate certain derivative, depends on **YLD**.
+
+- *in progress*
+
+### G || GOLD
+
+Shows gold prices on certain realm
 
 - *in progress*

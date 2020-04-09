@@ -36,6 +36,9 @@ router.get('/:item@:realm', async function(req, res) {
             } else {
                 //TODO chart if buyout and bid
             }
+            if (derivative !== 'COMMDTY' && derivative && is_yield) {
+                
+            }
             for await (let promise of asyncPromises) {
                 Object.assign(api, promise)
             }

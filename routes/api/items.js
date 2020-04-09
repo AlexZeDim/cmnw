@@ -7,7 +7,7 @@ const charts = require("../../dma/charts.js");
 const auctionsData = require("../../dma/auctions/auctionsQuotes.js");
 const contracts_db = require("../../db/contracts_db");
 
-router.get('/:item@:realm', async function(req, res) {
+router.get('/:i@:r', async function(req, res) {
     try {
         const {i, r} = req.params;
         //TODO search as textfields, not sure about index use, if realm

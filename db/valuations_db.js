@@ -36,9 +36,10 @@ let schema = new mongoose.Schema({
     rank: {
         type: Number
     },
-    type: {
+    asset_class: {
         type: String
     }
+    //TODO check asset_class for valuations
 },{
     timestamps: true
 });

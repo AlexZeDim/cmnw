@@ -72,6 +72,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuild
                                         name: name.replace(/^\w/, c => c.toUpperCase()),
                                         guild: guild_.name,
                                         guild_rank: rank,
+                                        realm: guild_.realm,
                                         realm_slug: guild_.realm_slug,
                                         createdBy: `OSINT-${indexGuild.name}`,
                                         updatedBy: `OSINT-${indexGuild.name}`

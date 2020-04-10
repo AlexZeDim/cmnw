@@ -38,7 +38,6 @@ async function getPricing (item = {
     ticker: 'POTION.HP'
     }, connected_realm_id = 1602) {
     try {
-        console.time(`DMA-${getPricing.name}`);
         if (typeof item !== 'object') {
             new Error(`no`)
             //TODO throw error, checks etc
@@ -49,6 +48,11 @@ async function getPricing (item = {
             console.log('test')
         }
         let valuation_query = {item_id: _id};
+        let result = {
+            _id: `${_id}@${connected_realm_id}`,
+            item_id: _id,
+            connected_realm_id: connected_realm_id,
+        };
         //TODO probably rework this in future
         const {lastModified} = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1});
         /**
@@ -57,9 +61,9 @@ async function getPricing (item = {
          *     query = `rank: {$exists: true, $eq: 3}`
          * }
          */
-        if (is_yield) {
+/*        if (is_yield) {
              Object.assign(valuation_query,{rank: {$exists: true, $eq: 3}})
-        }
+        }*/
         let [pricing, auctions_data] = await Promise.all([
             pricing_db.find(valuation_query).lean(),
             auctions_db.aggregate([
@@ -81,14 +85,23 @@ async function getPricing (item = {
             {
                 $group: {
                     _id: "$_id",
-                    min: {$min: "$price"},
-                    min_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                    price: {$min: "$price"},
+                    price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
                 }
             }
         ]).then(([data]) => {return data})]);
-        console.log(auctions_data);
-        for (let {reagents, quantity, rank, item_quantity} of pricing) {
+        result.market = {
+            lastModified: auctions_data._id,
+            price: auctions_data.price,
+            price_size: auctions_data.price_size
+        };
+        let valuations = [];
+        for (let {reagents, quantity, rank, item_quantity, spell_id} of pricing) {
             if (reagents.length === quantity.length) {
+                let valuation = {
+                    name: spell_id,
+                    pricing_method_id: spell_id
+                };
                 //TODO check if reagent demands evaluation as array
 
                 //TODO maybe all we need is right aggregation?
@@ -139,17 +152,23 @@ async function getPricing (item = {
                         return row
                     }
                 }));
-                let ok = await Promise.all(reagentsArray);
-                console.log({valuation: ok, underlying: ok.reduce((a, { value }) => a + value, 0)});
-                return {valuation: ok, underlying: ok.reduce((a, { value }) => a + value, 0)}
-                //TODO if yes check market price
+                /** MAP END **/
+                let valuationsArray = await Promise.all(reagentsArray);
+                let quene_cost = valuationsArray.reduce((a, { value }) => a + value, 0);
+                valuation.pricing_method = valuationsArray;
+                valuation.quene_quantity = item_quantity;
+                valuation.quene_cost = quene_cost;
+                valuation.underlying = parseFloat((quene_cost / item_quantity).toFixed(2));
+                valuation.nominal_value = parseFloat((auctions_data.price / quene_cost).toFixed(2));
+                valuations.push(valuation);
             }
         }
-        connection.close();
-        console.timeEnd(`DMA-${getPricing.name}`);
+        result.valuations = valuations;
+        result.cheapest_to_delivery = valuations.reduce((prev, curr) => prev.underlying < curr.underlying ? prev : curr);
+        return result;
     } catch (err) {
         console.error(`${getPricing.name},${err}`);
     }
 }
 
-getPricing();
+module.exports = getPricing;

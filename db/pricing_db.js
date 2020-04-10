@@ -44,6 +44,6 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-let pricing_db = mongoose.model('pricing', schema);
+let pricing_db = mongoose.model('pricing_methods', schema);
 
 module.exports = pricing_db;

@@ -45,6 +45,7 @@ async function auctionsQuotes (item_id = 168487, connected_realm_id = 1602) {
                 market.otc = parseFloat((_id*0.95).toFixed(2));
                 market.price = _id;
             }
+            //TODO min_size probably
             if (quantity >= 200 && market.quantity === 0) {
                 market.price_size = _id;
             }

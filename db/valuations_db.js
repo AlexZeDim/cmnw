@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+mongoose.Promise = global.Promise;
 
+require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -12,7 +13,6 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });
 
-mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema({
     _id: {
@@ -44,6 +44,6 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-let valuations_db = mongoose.model('valuations', schema);
+let pricing_db = mongoose.model('pricing', schema);
 
-module.exports = valuations_db;
+module.exports = pricing_db;

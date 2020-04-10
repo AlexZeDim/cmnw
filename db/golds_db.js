@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+mongoose.Promise = global.Promise;
 
+require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -11,8 +12,6 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     w: "majority",
     family: 4
 });
-
-mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema({
     connected_realm_id: Number,

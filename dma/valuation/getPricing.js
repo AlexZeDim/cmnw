@@ -1,7 +1,6 @@
 const items_db = require("../../db/items_db");
 const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
-const {connection} = require('mongoose');
 
 //TODO do it recursive?
 
@@ -31,10 +30,9 @@ async function getPricing (item = {
     sell_price: 0.12,
     is_commdty: true,
     is_auctionable: true,
-    asset_class: 'ALCH',
-    derivative: 'VANILLA',
+    profession_class: 'ALCH',
+    asset_class: 'VANILLA',
     expansion: 'BFA',
-    is_yield: true,
     ticker: 'POTION.HP'
     }, connected_realm_id = 1602) {
     try {
@@ -42,7 +40,7 @@ async function getPricing (item = {
             new Error(`no`)
             //TODO throw error, checks etc
         }
-        let {_id, is_yield, is_auctionable, asset_class, expansion} = item;
+        let {_id, is_auctionable, asset_class, expansion} = item;
         //TODO check asset_class as REQUEST VALUATION OR NOT
         if (!is_auctionable && !asset_class) {
             console.log('test')
@@ -106,13 +104,13 @@ async function getPricing (item = {
 
                 //TODO maybe all we need is right aggregation?
                 let reagentsArray = reagents.map((id, i) => items_db.findById(id).lean().then(item => {
-                    let {_id, name, ticker, asset_class, derivative, sell_price} = item;
-                    let row = {};
-                    row.id = _id;
-                    (ticker) ? (row.name = ticker) : (row.name = name.en_GB);
-                    row.quality = quantity[i];
-                    row.asset_class = asset_class;
-                    if (derivative !== 'CONST') {
+                    let {_id, name, ticker, asset_class, profession_class, sell_price} = item;
+                    let pricing_method = {};
+                    pricing_method.id = _id;
+                    (ticker) ? (pricing_method.name = ticker) : (pricing_method.name = name.en_GB);
+                    pricing_method.quality = quantity[i];
+                    pricing_method.asset_class = asset_class;
+                    if (asset_class !== 'CONST') {
                         return auctions_db.aggregate([
                             {
                                 $match: {
@@ -132,24 +130,24 @@ async function getPricing (item = {
                             {
                                 $group: {
                                     _id: "$_id",
-                                    min: {$min: "$price"},
-                                    min_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                                    price: {$min: "$price"},
+                                    price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
                                 }
                             }
-                        ]).then(([{min, min_size}]) => {
-                            if (min_size) {
-                                row.price = min_size;
-                                row.value = parseFloat((min_size * quantity[i]).toFixed(2))
+                        ]).then(([{price, price_size}]) => {
+                            if (price_size) {
+                                pricing_method.price = price_size;
+                                pricing_method.value = parseFloat((price_size * quantity[i]).toFixed(2))
                             } else {
-                                row.price = min;
-                                row.value = parseFloat((min * quantity[i]).toFixed(2))
+                                pricing_method.price = price;
+                                pricing_method.value = parseFloat((price * quantity[i]).toFixed(2))
                             }
-                            return row;
+                            return pricing_method;
                         })
                     } else {
-                        row.price = sell_price;
-                        row.value = parseFloat((sell_price * quantity[i]).toFixed(2));
-                        return row
+                        pricing_method.price = sell_price;
+                        pricing_method.value = parseFloat((sell_price * quantity[i]).toFixed(2));
+                        return pricing_method
                     }
                 }));
                 /** MAP END **/
@@ -157,7 +155,7 @@ async function getPricing (item = {
                 let quene_cost = valuationsArray.reduce((a, { value }) => a + value, 0);
                 valuation.pricing_method = valuationsArray;
                 valuation.quene_quantity = item_quantity;
-                valuation.quene_cost = quene_cost;
+                valuation.quene_cost = parseFloat(quene_cost.toFixed(2));
                 valuation.underlying = parseFloat((quene_cost / item_quantity).toFixed(2));
                 valuation.nominal_value = parseFloat((auctions_data.price / quene_cost).toFixed(2));
                 valuations.push(valuation);

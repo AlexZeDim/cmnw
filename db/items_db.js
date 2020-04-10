@@ -61,16 +61,13 @@ let schema = new mongoose.Schema({
     is_auctionable: {
         type: Boolean
     },
-    class: {
-        type: String
-    },
     inventory_type: {
         type: String
     },
-    asset_class: {
+    profession_class: {
         type: String
     },
-    derivative: {
+    asset_class: {
         type: String,
         default: 'u/r'
     },
@@ -81,9 +78,6 @@ let schema = new mongoose.Schema({
     ticker: {
         type: String,
         default: 'u/r'
-    },
-    is_yield: {
-        type: Boolean
     },
     is_indx: {
         type: Boolean

@@ -9,11 +9,14 @@ const getPricing = require("./getPricing");
 
 async function indexValuation () {
     try {
-        let items = await items_db.find({ticker:/FOOD.VERS/}).limit(2);
+        console.time(indexValuation.name);
+        //TODO cursor
+        let items = await items_db.find({asset_class:"VANILLA"});
         for (let item of items) {
             let x = await getPricing(item, 1602);
-            console.log(x.cheapest_to_delivery);
+            console.log(x);
         }
+        console.timeEnd(indexValuation.name);
     } catch (err) {
         console.log(err);
     }

@@ -36,10 +36,10 @@ let schema = new mongoose.Schema({
     rank: {
         type: Number
     },
-    asset_class: {
+    profession: {
         type: String
     }
-    //TODO check asset_class for valuations
+    //TODO check profession for valuations
 },{
     timestamps: true
 });

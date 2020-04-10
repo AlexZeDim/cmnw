@@ -5,7 +5,7 @@ const {connection} = require('mongoose');
 
 //TODO do it recursive?
 
-async function getValuation (item = {
+async function getPricing (item = {
     _id: 169451,
     __v: 0,
     icon: 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_potionsetf.jpg',
@@ -38,7 +38,7 @@ async function getValuation (item = {
     ticker: 'POTION.HP'
     }, connected_realm_id = 1602) {
     try {
-        console.time(`DMA-${getValuation.name}`);
+        console.time(`DMA-${getPricing.name}`);
         if (typeof item !== 'object') {
             new Error(`no`)
             //TODO throw error, checks etc
@@ -120,10 +120,10 @@ async function getValuation (item = {
             }
         }
         connection.close();
-        console.timeEnd(`DMA-${getValuation.name}`);
+        console.timeEnd(`DMA-${getPricing.name}`);
     } catch (err) {
-        console.error(`${getValuation.name},${err}`);
+        console.error(`${getPricing.name},${err}`);
     }
 }
 
-getValuation();
+getPricing();

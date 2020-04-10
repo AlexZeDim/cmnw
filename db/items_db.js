@@ -72,13 +72,16 @@ let schema = new mongoose.Schema({
         type: String
     },
     derivative: {
-        type: String
+        type: String,
+        default: 'u/r'
     },
     expansion: {
-        type: String
+        type: String,
+        default: 'u/r'
     },
     ticker: {
-        type: String
+        type: String,
+        default: 'u/r'
     },
     is_yield: {
         type: Boolean

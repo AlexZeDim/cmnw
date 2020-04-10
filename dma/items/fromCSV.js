@@ -5,24 +5,21 @@ const {connection} = require('mongoose');
 
 async function fromCSV (path, expr) {
     try {
-        let is_yield;
         let eva = fs.readFileSync(path,'utf8');
         csv.parse(eva, async function(err, data) {
             switch (expr) {
                 case 'production':
                     console.log(data[0]);
                     for (let i = 1; i < data.length; i++) {
-                        is_yield = data[i][6] !== 'FALSE';
                         await items_db.findOneAndUpdate(
                             {
                                 _id: parseFloat(data[i][0])
                             },
                             {
                                 ticker: data[i][2],
-                                derivative: data[i][3],
-                                asset_class: data[i][4],
+                                asset_class: data[i][3],
+                                profession_class: data[i][4],
                                 expansion: data[i][5],
-                                is_yield: is_yield,
                             }
                         ).exec((err, item) => {
                             if (err) console.error(err);
@@ -34,7 +31,6 @@ async function fromCSV (path, expr) {
                 case 'dev':
                     console.info(data[0]);
                     for (let i = 1; i < 100; i++) {
-                        is_yield = data[i][6] !== 'FALSE';
                         console.info(data[i])
                     }
                     break;

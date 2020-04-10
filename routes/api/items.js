@@ -17,12 +17,12 @@ router.get('/:i@:r', async function(req, res) {
         isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestPromises.push(items_db.findById(Number(i)).lean().exec()));
         isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).exec())) : (requestPromises.push(realms_db.findById(Number(r)).lean().exec()));
         let [item, {connected_realm_id}] = await Promise.all(requestPromises);
-        let {_id, is_auctionable, is_commdty, is_yield, expansion, derivative} = item;
+        let {_id, is_auctionable, is_commdty, asset_class, expansion} = item;
         if (is_auctionable && connected_realm_id) {
             asyncPromises.push(auctionsData(_id, connected_realm_id).then(d => { return {quotes: d[0] , market: d[1]} }));
             if (is_commdty) {
                 asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
-                if (expansion === 'BFA' && derivative === 'COMMDTY') {
+                if (expansion === 'BFA' && asset_class === 'COMMDTY') {
                     asyncPromises.push(
                         contracts_db.find({item_id: _id, connected_realm_id: connected_realm_id, type: 'D'},{
                             "_id": 1,
@@ -30,13 +30,10 @@ router.get('/:i@:r', async function(req, res) {
                         }).sort({updatedAt: -1}).limit(5).lean().then(c => { return {contracts_d: c}} )
                     );
                 }
-                if (is_yield) {
-                    //TODO price %
-                }
             } else {
                 //TODO chart if buyout and bid
             }
-            if (derivative !== 'COMMDTY' && derivative && is_yield) {
+            if (asset_class !== 'COMMDTY' && asset_class) {
                 
             }
             for await (let promise of asyncPromises) {

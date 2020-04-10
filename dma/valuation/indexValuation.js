@@ -1,5 +1,5 @@
 const items_db = require("../../db/items_db");
-
+const getPricing = require("./getPricing");
 
 /***
  * TODO evaluate all?
@@ -9,9 +9,11 @@ const items_db = require("../../db/items_db");
 
 async function indexValuation () {
     try {
-        console.log(
-            [{name: 1}, {name: 2}, {name: 3}, {name: 4}].reduce((a, { name }) => a + name, 0)
-        )
+        let items = await items_db.find({ticker:/FOOD.VERS/}).limit(2);
+        for (let item of items) {
+            let x = await getPricing(item, 1602);
+            console.log(x.cheapest_to_delivery);
+        }
     } catch (err) {
         console.log(err);
     }

@@ -10,6 +10,7 @@ router.get('/:n@:r', async function(req, res) {
         n = n.toLowerCase();
         let { slug } = await realms_db.findOne({$text:{$search: r}});
         let characterData = await characters_db.findById(`${n}@${slug}`);
+        //TODO if char was updated long ago, 3D+ days
         if (!characterData) {
             const getCharacter = require('../../osint/getCharacter');
             const keys_db = require("../../db/keys_db");

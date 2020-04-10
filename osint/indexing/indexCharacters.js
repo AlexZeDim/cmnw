@@ -16,7 +16,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `OSINT-${inde
         console.time(`OSINT-${indexCharacters.name}`);
         let character_Array = [];
         let {token} = await keys_db.findOne(queryKeys);
-        const cursor = characters_db.find(queryFind).sort({updatedAt: 1}).lean().cursor({batchSize: bulkSize});
+        const cursor = characters_db.find(queryFind).sort({updatedAt: -1}).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async ({_id}) => {
             character_Array.push(
                 getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {

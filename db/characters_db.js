@@ -97,6 +97,7 @@ schema.index({ guild: 1 },{name: 'Guild'});
 schema.index({ id: 1 },{name: 'ID'});
 schema.index({ "checksum.pets": 1 },{name: 'Hash A'});
 schema.index({ "checksum.mounts": 1 },{name: 'Hash B'});
+schema.index({ updatedAt: -1 },{name: 'IndexCharacters'});
 //TODO text index on checksum, name
 
 let characters_db = mongoose.model('characters', schema);

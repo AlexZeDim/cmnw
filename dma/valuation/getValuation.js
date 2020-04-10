@@ -1,5 +1,5 @@
 const items_db = require("../../db/items_db");
-const valuations_db = require("../../db/valuations_db");
+const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
 const {connection} = require('mongoose');
 
@@ -60,7 +60,7 @@ async function getValuation (item = {
         if (is_yield) {
              Object.assign(valuation_query,{rank: {$exists: true, $eq: 3}})
         }
-        let valuations = await valuations_db.find(valuation_query).lean();
+        let valuations = await pricing_db.find(valuation_query).lean();
         for (let {reagents, quantity, rank, item_quantity} of valuations) {
             if (reagents.length === quantity.length) {
                 //TODO check if reagent demands evaluation as array

@@ -60,8 +60,34 @@ async function getPricing (item = {
         if (is_yield) {
              Object.assign(valuation_query,{rank: {$exists: true, $eq: 3}})
         }
-        let valuations = await pricing_db.find(valuation_query).lean();
-        for (let {reagents, quantity, rank, item_quantity} of valuations) {
+        let [pricing, auctions_data] = await Promise.all([
+            pricing_db.find(valuation_query).lean(),
+            auctions_db.aggregate([
+            {
+                $match: {
+                    lastModified: lastModified,
+                    "item.id": _id,
+                    connected_realm_id: connected_realm_id,
+                }
+            },
+            {
+                $project: {
+                    _id: "$lastModified",
+                    id: "$id",
+                    quantity: "$quantity",
+                    price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    min: {$min: "$price"},
+                    min_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                }
+            }
+        ]).then(([data]) => {return data})]);
+        console.log(auctions_data);
+        for (let {reagents, quantity, rank, item_quantity} of pricing) {
             if (reagents.length === quantity.length) {
                 //TODO check if reagent demands evaluation as array
 

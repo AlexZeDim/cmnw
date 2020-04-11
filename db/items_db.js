@@ -46,6 +46,9 @@ let schema = new mongoose.Schema({
     item_subclass: {
         type: String
     },
+    purchase_price: {
+        type: Number
+    },
     sell_price: {
         type: Number
     },

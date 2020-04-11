@@ -27,6 +27,7 @@ let schema = new mongoose.Schema({
             pricing_method: Array,
             quene_quantity: Number,
             quene_cost: Number,
+            premium: Number,
             nominal_value: Number,
             underlying: Number,
             lastModified: Date
@@ -38,7 +39,8 @@ let schema = new mongoose.Schema({
         pricing_method: Array,
         quene_quantity: Number,
         quene_cost: Number,
-        face_value: Number,
+        premium: Number,
+        nominal_value: Number,
         underlying: Number,
         lastModified: Date
     },

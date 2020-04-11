@@ -10,7 +10,7 @@ async function getItems (queryKeys = { tags: `DMA` }) {
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', '');
         for (let item_id = 0; item_id < 250000; item_id++) {
-            const [{id, name, quality, level, required_level, item_class, item_subclass, inventory_type, sell_price, max_count, is_equippable, is_stackable}, {assets}] = await Promise.all([
+            const [{id, name, quality, level, required_level, item_class, item_subclass, inventory_type, purchase_price, sell_price, max_count, is_equippable, is_stackable}, {assets}] = await Promise.all([
                 bnw.WowGameData.getItem(item_id).catch(e => (e)),
                 bnw.WowGameData.getItemMedia(item_id).catch(e => (e)),
             ]);
@@ -27,6 +27,7 @@ async function getItems (queryKeys = { tags: `DMA` }) {
                         item_class: item_class.name.en_GB,
                         item_subclass: item_subclass.name.en_GB,
                         inventory_type: inventory_type.name.en_GB,
+                        purchase_price: parseFloat((purchase_price/10000).toFixed(2)),
                         sell_price: parseFloat((sell_price/10000).toFixed(2)),
                         max_count: max_count,
                         is_equippable: is_equippable,

@@ -36,129 +36,161 @@ async function getPricing (item = {
     ticker: 'POTION.HP'
     }, connected_realm_id = 1602) {
     try {
+        let lastModified;
+        let evaArrayPromise = [];
+
         if (typeof item !== 'object') {
             new Error(`no`)
             //TODO throw error, checks etc
         }
         let {_id, is_auctionable, asset_class, expansion} = item;
         //TODO check asset_class as REQUEST VALUATION OR NOT
-        if (!is_auctionable && !asset_class) {
-            console.log('test')
-        }
+
         let valuation_query = {item_id: _id};
+        evaArrayPromise.push(pricing_db.find(valuation_query).lean());
+
+        if (is_auctionable) {
+            ({lastModified} = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
+            evaArrayPromise.push(
+                auctions_db.aggregate([
+                    {
+                        $match: {
+                            lastModified: lastModified,
+                            "item.id": _id,
+                            connected_realm_id: connected_realm_id,
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: "$lastModified",
+                            id: "$id",
+                            quantity: "$quantity",
+                            price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$_id",
+                            price: {$min: "$price"},
+                            price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                        }
+                    }
+                ]).then(([data]) => {return data})
+            );
+        }
+
         let result = {
             _id: `${_id}@${connected_realm_id}`,
             item_id: _id,
             connected_realm_id: connected_realm_id,
         };
-        //TODO probably rework this in future
-        const {lastModified} = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1});
-        /**
-         * TODO if YLD then rank max else ;;;;;
-         * if (is_yield) {
-         *     query = `rank: {$exists: true, $eq: 3}`
-         * }
-         */
-/*        if (is_yield) {
-             Object.assign(valuation_query,{rank: {$exists: true, $eq: 3}})
-        }*/
-        let [pricing, auctions_data] = await Promise.all([
-            pricing_db.find(valuation_query).lean(),
-            auctions_db.aggregate([
-            {
-                $match: {
-                    lastModified: lastModified,
-                    "item.id": _id,
-                    connected_realm_id: connected_realm_id,
-                }
-            },
-            {
-                $project: {
-                    _id: "$lastModified",
-                    id: "$id",
-                    quantity: "$quantity",
-                    price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
-                }
-            },
-            {
-                $group: {
-                    _id: "$_id",
-                    price: {$min: "$price"},
-                    price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
-                }
-            }
-        ]).then(([data]) => {return data})]);
-        result.market = {
-            lastModified: auctions_data._id,
-            price: auctions_data.price,
-            price_size: auctions_data.price_size
-        };
-        let valuations = [];
-        for (let {reagents, quantity, rank, item_quantity, spell_id} of pricing) {
-            if (reagents.length === quantity.length) {
-                let valuation = {
-                    name: spell_id,
-                    pricing_method_id: spell_id
-                };
-                //TODO check if reagent demands evaluation as array
 
-                //TODO maybe all we need is right aggregation?
-                let reagentsArray = reagents.map((id, i) => items_db.findById(id).lean().then(item => {
-                    let {_id, name, ticker, asset_class, profession_class, sell_price} = item;
-                    let pricing_method = {};
-                    pricing_method.id = _id;
-                    (ticker) ? (pricing_method.name = ticker) : (pricing_method.name = name.en_GB);
-                    pricing_method.quality = quantity[i];
-                    pricing_method.asset_class = asset_class;
-                    if (asset_class !== 'CONST') {
-                        return auctions_db.aggregate([
-                            {
-                                $match: {
-                                    lastModified: lastModified,
-                                    "item.id": _id,
-                                    connected_realm_id: connected_realm_id,
-                                }
-                            },
-                            {
-                                $project: {
-                                    _id: "$lastModified",
-                                    id: "$id",
-                                    quantity: "$quantity",
-                                    price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: "$_id",
-                                    price: {$min: "$price"},
-                                    price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
-                                }
+        let [pricing, auctions_data] = await Promise.all(evaArrayPromise);
+
+        if (is_auctionable) {
+            result.market = {
+                lastModified: auctions_data._id,
+                price: auctions_data.price,
+                price_size: auctions_data.price_size
+            };
+        }
+
+        let valuations = [];
+        if (pricing) {
+            for (let {reagents, quantity, rank, item_quantity, spell_id} of pricing) {
+                if (reagents.length === quantity.length) {
+                    let valuation = {
+                        name: spell_id,
+                        pricing_method_id: spell_id
+                    };
+
+                    //TODO maybe all we need is right aggregation?
+                    let reagentsArray = reagents.map((id, i) => items_db.findById(id).lean().then(async item => {
+                        let {_id, name, ticker, asset_class, profession_class, is_auctionable, sell_price} = item;
+                        let pricing_method = {};
+                        pricing_method.id = _id;
+                        (ticker) ? (pricing_method.name = ticker) : (pricing_method.name = name.en_GB);
+                        pricing_method.quality = quantity[i];
+                        pricing_method.asset_class = asset_class;
+
+                        /**
+                         *
+                         * TODO =(item)=> (VANILLA) => Cheapest-to-Delivery // (Market)
+                         *
+                         * TODO check every asset_class and if VANILLA+ OR INDEX RECOURSE IT
+                         *
+                         * TODO rework (if up)
+                         */
+                        if (is_auctionable) {
+
+                            if (!lastModified) {
+                                (lastModified = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}).lean().then(({lastModified}) => lastModified));
                             }
-                        ]).then(([{price, price_size}]) => {
-                            if (price_size) {
-                                pricing_method.price = price_size;
-                                pricing_method.value = parseFloat((price_size * quantity[i]).toFixed(2))
+
+                            if (asset_class && asset_class !== 'CONST') {
+                                    return auctions_db.aggregate([
+                                        {
+                                            $match: {
+                                                lastModified: lastModified,
+                                                "item.id": _id,
+                                                connected_realm_id: connected_realm_id,
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id: "$lastModified",
+                                                id: "$id",
+                                                quantity: "$quantity",
+                                                price: {$ifNull: ["$buyout", {$ifNull: ["$bid", "$unit_price"]}]},
+                                            }
+                                        },
+                                        {
+                                            $group: {
+                                                _id: "$_id",
+                                                price: {$min: "$price"},
+                                                price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                                            }
+                                        }
+                                    ]).then(([{price, price_size}]) => {
+                                        if (price_size) {
+                                            pricing_method.price = price_size;
+                                            pricing_method.value = parseFloat((price_size * quantity[i]).toFixed(2))
+                                        } else {
+                                            pricing_method.price = price;
+                                            pricing_method.value = parseFloat((price * quantity[i]).toFixed(2))
+                                        }
+                                        return pricing_method;
+                                    })
                             } else {
-                                pricing_method.price = price;
-                                pricing_method.value = parseFloat((price * quantity[i]).toFixed(2))
+                                pricing_method.price = sell_price;
+                                pricing_method.value = parseFloat((sell_price * quantity[i]).toFixed(2));
+                                return pricing_method
                             }
+                        } else {
+                            pricing_method.price = 0;
+                            pricing_method.value = 0;
                             return pricing_method;
-                        })
-                    } else {
-                        pricing_method.price = sell_price;
-                        pricing_method.value = parseFloat((sell_price * quantity[i]).toFixed(2));
-                        return pricing_method
-                    }
-                }));
-                /** MAP END **/
-                let valuationsArray = await Promise.all(reagentsArray);
-                let quene_cost = valuationsArray.reduce((a, { value }) => a + value, 0);
-                valuation.pricing_method = valuationsArray;
-                valuation.quene_quantity = item_quantity;
-                valuation.quene_cost = parseFloat(quene_cost.toFixed(2));
-                valuation.underlying = parseFloat((quene_cost / item_quantity).toFixed(2));
-                valuation.nominal_value = parseFloat((auctions_data.price / quene_cost).toFixed(2));
-                valuations.push(valuation);
+                        }
+                    }));
+                    /** MAP END **/
+                    let valuationsArray = await Promise.all(reagentsArray);
+                    console.log(valuationsArray);
+                    let quene_cost = valuationsArray.reduce((a, {value}) => a + value, 0);
+                    valuation.pricing_method = valuationsArray;
+                    valuation.quene_quantity = item_quantity;
+                    valuation.quene_cost = parseFloat(quene_cost.toFixed(2));
+                    valuation.underlying = parseFloat((quene_cost / item_quantity).toFixed(2));
+                    /**
+                     * TODO (quene_cost - underlying)/INDEX QNTY
+                     *
+                     * FIXME IF MANY PREMIUM AGGREGATE LOOKUP BY ASSSET_CLASS PREMIUM
+                     *
+                     * (is_auctionable) ? (valuation.nominal_value = parseFloat((auctions_data.price / quene_cost).toFixed(2))) : ('');
+                     *
+                     * **/
+                    (is_auctionable) ? (valuation.nominal_value = parseFloat((auctions_data.price / (quene_cost / item_quantity)).toFixed(2))) : ('');
+                    valuations.push(valuation);
+                }
             }
         }
         result.valuations = valuations;

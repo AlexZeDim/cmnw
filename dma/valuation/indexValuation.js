@@ -11,10 +11,10 @@ async function indexValuation () {
     try {
         console.time(indexValuation.name);
         //TODO cursor
-        let items = await items_db.find({asset_class:"VANILLA"});
+        let items = await items_db.find({ticker: "FOOD.CRIT"});
         for (let item of items) {
             let x = await getPricing(item, 1602);
-            console.log(x);
+            //console.log(x);
         }
         console.timeEnd(indexValuation.name);
     } catch (err) {

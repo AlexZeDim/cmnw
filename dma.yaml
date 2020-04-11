@@ -15,7 +15,7 @@ apps:
     cron_restart: '15 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
-  - script: ./dma/getItems.js
+  - script: ./dma/items/getItems.js
     name: 'DMA-getItems'
     instances: 1
     watch: true

@@ -26,7 +26,6 @@ async function fromCSV (path, expr) {
                             console.info(item);
                         });
                     }
-                    connection.close();
                     break;
                 case 'dev':
                     console.info(data[0]);
@@ -43,4 +42,4 @@ async function fromCSV (path, expr) {
     }
 }
 
-fromCSV('C:\\bfa.csv', 'prod');
+fromCSV('C:\\bfa.csv', 'production');

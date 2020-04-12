@@ -125,7 +125,7 @@ async function getPricing (item = {
                 let premium_count = 0;
                 for (let [i, item_reagents] of reagents_items.entries()) {
                     let pricing_method = {};
-                    let {_id, name, ticker, quantity, asset_class, sell_price} = item_reagents;
+                    let {_id, name, ticker, quantity, asset_class, purchase_price} = item_reagents;
                     pricing_method.id = _id;
                     (ticker) ? (pricing_method.name = ticker) : (pricing_method.name = name.en_GB);
                     pricing_method.quantity = quantity;
@@ -133,9 +133,9 @@ async function getPricing (item = {
                     switch (asset_class) {
                         case 'CONST':
                             //FIXME buyprice not sell
-                            pricing_method.price = sell_price;
-                            pricing_method.value = parseFloat((sell_price * quantity).toFixed(2));
-                            quene_cost += parseFloat((sell_price * quantity).toFixed(2));
+                            pricing_method.price = purchase_price;
+                            pricing_method.value = parseFloat((purchase_price * quantity).toFixed(2));
+                            quene_cost += parseFloat((purchase_price * quantity).toFixed(2));
                             valuation.pricing_method.push(pricing_method);
                             break;
                         case 'COMMDTY':
@@ -240,12 +240,21 @@ async function getPricing (item = {
                             let v_method = { ...method };
 
                             for (let vanilla_method of vanilla_pricing) {
-                                method.reagents.forEach((v_item, i) => {
+                                let method_reagents = Array.from(method.reagents);
+                                let method_quantity = Array.from(method.quantity);
+                                let t = method_reagents.indexOf(_id);
+                                if (t !== -1) {
+                                    method_reagents.splice(t, 1);
+                                    method_quantity.splice(t, 1);
+                                }
+                                console.log(method_reagents.concat(vanilla_method.reagents));
+                                console.log(method_quantity.concat(vanilla_method.quantity));
+/*                                method.reagents.forEach((v_item, i) => {
                                     if (v_item !== _id) {
                                         v_method.reagents = v_method.reagents.splice(i, 1).concat(vanilla_method.reagents);
                                         v_method.quantity = v_method.quantity.splice(i, 1).concat(vanilla_method.quantity);
                                     }
-                                });
+                                });*/
                             //console.log(clone);
 /*                                console.log(method.quantity);
                                 let arr = method.reagents.filter((item,i) => { if (item === _id) { method.quantity.splice(i, 1)} return item !== _id}).concat(vanilla_method.reagents);

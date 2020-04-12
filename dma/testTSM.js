@@ -37,10 +37,10 @@ async function exportTSM (arg_realm) {
                         venue: venue,
                         tags: [`${exportTSM.name}`],
                         currency: 'g',
-                        price: parseFloat((element[3] / 10000).toFixed(4)),
+                        price: parseFloat((element[3] / 10000).toFixed(2)),
                         quantity: parseFloat(element[2]),
                         status: 'F',
-                        value: parseFloat(((element[3]* element[2]) / 10000).toFixed(4)) ,
+                        value: parseFloat(((element[3]* element[2]) / 10000).toFixed(2)) ,
                         counterparty: element[4],
                         realm: server.name,
                         trading_day: moment.unix(element[6]).toISOString()
@@ -50,7 +50,10 @@ async function exportTSM (arg_realm) {
             }
         }
         console.log(`Found ${order_log.length} deals, from: ${order_log[0].trading_day}, to: ${order_log[order_log.length-1].trading_day}`);
-        let file_buffer = Buffer.from(JSON.stringify(order_log), null, 4);
+/*        let file_buffer = Buffer.from(JSON.stringify(order_log), null, 4);
+        await fs.writeFile('order_log.json', file_buffer, 'utf8',function(err){
+            if(err) throw err;
+        });*/
         connection.close();
         console.timeEnd(`${exportTSM.name}`);
         return order_log;
@@ -59,6 +62,6 @@ async function exportTSM (arg_realm) {
     }
 }
 
-exportTSM('gordunni');
+exportTSM('Gordunni');
 
 module.exports = exportTSM;

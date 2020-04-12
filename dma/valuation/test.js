@@ -39,24 +39,28 @@ async function test () {
                         spell_id: 1,
                         quantity: 1
                     }
-                }
-                /**
-                 *
-                     {
-                        $group: {
-                            _id: "$spell_id" //, item_id: "$item_id", asset_class: "$reagents_items.asset_class"
-                        }
-                    },
-                     {
-                        $unwind: "$reagents_items"
-                    },
-                     {
-                        $sortByCount: "$reagents_items.asset_class"
+                },
+                {
+                    $unwind: "$reagents_items"
+                },
+                {
+                    $group: { _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class"}, count: { $sum: 1 }}
+                },
+                {
+                    $project: {
+                        _id: "$_id.spell_id",
+                        asset_class: "$_id.asset_class",
+                        count: "$count"
                     }
-                 *
-                 */
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        evaluate_class: {$addToSet: {asset_class: "$asset_class", count: "$count"}},
+                    }
+                }
             ]);
-            console.log(evaItem._id, evaItem_valuations);
+            console.log(evaItem._id, evaItem_valuations[0]);
 
             //console.log(evaItem_valuations[0].reagents_items);
 /*            for (let {reagents} of evaItem_valuations) {

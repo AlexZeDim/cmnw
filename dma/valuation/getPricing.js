@@ -46,7 +46,8 @@ async function getPricing (item = {
         let {_id, is_auctionable, asset_class, expansion} = item;
         //TODO check asset_class as REQUEST VALUATION OR NOT
 
-        let valuation_query = {item_id: _id};
+        //FIXME r3
+        let valuation_query = {item_id: _id, rank: { $exists: true, $eq: 3 }};
         evaArrayPromise.push(pricing_db.find(valuation_query).lean());
 
         if (is_auctionable) {
@@ -97,7 +98,8 @@ async function getPricing (item = {
 
         let valuations = [];
         if (pricing) {
-            for (let {reagents, quantity, item_quantity, spell_id} of pricing) { //rank
+            for (let method of pricing) { //rank
+                let {reagents, quantity, item_quantity, spell_id} = method;
                 if (reagents.length !== quantity.length) {
                     new Error('shit')
                 }
@@ -184,9 +186,83 @@ async function getPricing (item = {
                             valuation.pricing_method.push(pricing_method);
                             break;
                         case 'VANILLA':
-                            pricing_method.price = 0;
-                            pricing_method.value = 0;
-                            quene_cost += 0;
+                            let vanilla_ArrayPromise = [];
+                            vanilla_ArrayPromise.push(pricing_db.find({item_id: _id, rank: { $exists: true, $eq: 3 }}).lean());
+
+                            if (!lastModified) {
+                                ({lastModified} = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
+                            }
+                            vanilla_ArrayPromise.push(
+                                auctions_db.aggregate([
+                                    {
+                                        $match: {
+                                            lastModified: lastModified,
+                                            "item.id": _id,
+                                            connected_realm_id: connected_realm_id,
+                                        }
+                                    },
+                                    {
+                                        $project: {
+                                            _id: "$lastModified",
+                                            id: "$id",
+                                            quantity: "$quantity",
+                                            price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
+                                        }
+                                    },
+                                    {
+                                        $group: {
+                                            _id: "$_id",
+                                            price: {$min: "$price"},
+                                            price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                                        }
+                                    }
+                                ]).then(([data]) => {return data})
+                            );
+
+                            let [vanilla_pricing, vanilla_auctions_data] = await Promise.all(vanilla_ArrayPromise);
+                            //pricing
+
+                            //TODO clone array => remove id and push new one (merge), same for qnty
+ /*                           pricing.push({
+                                _id: method._id,
+                                quantity: method.quantity,
+                                reagents: method.reagents,
+                                spell_id: method.spell_id,
+                                rank: method.rank,
+                                item_id: method.item_id,
+                                item_quantity: method.item_quantity
+                            });*/
+
+                            //console.log(pricing, _id, vanilla_pricing);
+/*                            console.log(method);
+                            console.log(pricing.length);*/
+
+                            let v_method = { ...method };
+
+                            for (let vanilla_method of vanilla_pricing) {
+                                method.reagents.forEach((v_item, i) => {
+                                    if (v_item !== _id) {
+                                        v_method.reagents = v_method.reagents.splice(i, 1).concat(vanilla_method.reagents);
+                                        v_method.quantity = v_method.quantity.splice(i, 1).concat(vanilla_method.quantity);
+                                    }
+                                });
+                            //console.log(clone);
+/*                                console.log(method.quantity);
+                                let arr = method.reagents.filter((item,i) => { if (item === _id) { method.quantity.splice(i, 1)} return item !== _id}).concat(vanilla_method.reagents);
+                                let qnty = method.quantity.concat(vanilla_method.quantity);
+                                console.log(qnty)*/
+                                //console.log(method.reagents, _id, vanilla_method.reagents, arr);
+                            }
+
+
+
+
+                            //TODO CHECK PRICING FOR METHODS!
+                            //IDEA WE DONT NEED GET PRICING!
+                            let {price} = vanilla_auctions_data;
+                            pricing_method.price = price;
+                            pricing_method.value = parseFloat((price * quantity).toFixed(2));
+                            quene_cost += parseFloat((price * quantity).toFixed(2));
                             valuation.pricing_method.push(pricing_method);
                             break;
                         case 'PREMIUM':
@@ -234,7 +310,7 @@ async function getPricing (item = {
                                     pricing_method.value = 0;
                                     valuation.pricing_method.push(pricing_method);
                                     if (is_auctionable) {
-                                        valuation.premium = (auctions_data.price*item_quantity) - quene_cost;
+                                        valuation.premium = parseFloat(((auctions_data.price*item_quantity) - quene_cost).toFixed(2));
                                     }
                                 }
                             }

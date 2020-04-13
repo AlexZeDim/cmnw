@@ -34,17 +34,184 @@ async function getPricing (item = {
     asset_class: 'VANILLA',
     expansion: 'BFA',
     ticker: 'POTION.HP'
-    }, connected_realm_id = 1602) {
+    }, connected_realm_id = 1602, first = true) {
     try {
-        let lastModified;
+
+        const assetClassMap = new Map([
+            ['CONST', 0],
+            ['COMMDTY', 1],
+            ['INDX', 2],
+            ['VANILLA', 3],
+            ['PREMIUM', 4],
+        ]);
+
         let evaArrayPromise = [];
 
         if (typeof item !== 'object') {
             new Error(`no`)
-            //TODO throw error, checks etc
+            //TODO ANYWAY WE HAVE ITEMS HERE SO
         }
-        let {_id, is_auctionable, asset_class, expansion} = item;
         //TODO check asset_class as REQUEST VALUATION OR NOT
+
+        let lastModified = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');
+
+        switch (asset_class) {
+            case 'CONST':
+                pricing_method.price = purchase_price;
+                pricing_method.value = parseFloat((purchase_price * quantity).toFixed(2));
+                //TODO request buyprice
+                break;
+            case 'COMMDTY':
+                if (!lastModified) {
+                    ({lastModified} = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
+                }
+                //IDEA if first arg = true => pricing?
+                //TODO check valuationsDB
+                await auctions_db.aggregate([
+                    {
+                        $match: {
+                            lastModified: lastModified,
+                            "item.id": item._id,
+                            connected_realm_id: 1602,
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: "$lastModified",
+                            id: "$id",
+                            quantity: "$quantity",
+                            price: {$ifNull: ["$buyout", {$ifNull: ["$bid", "$unit_price"]}]},
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$_id",
+                            price: {$min: "$price"},
+                            price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                        }
+                    }
+                ]).then(([{price, price_size}]) => {
+                    if (price_size) {
+                        console.log(price_size)
+                        //TODO return
+                    } else {
+                        console.log(price)
+                        //TODO return
+                    }
+                });
+                break;
+            case 'INDX':
+                    //TODO indexPricing
+                break;
+            case 'VANILLA':
+                let pricing_methods = await pricing_db.aggregate([
+                    {
+                        $match: {
+                            item_id: item.id, rank: {$exists: true, $eq: 3}
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "items",
+                            localField: "reagents",
+                            foreignField: "_id",
+                            as: "reagents_items"
+                        }
+                    },
+                    {
+                        $project: {
+                            "item_id" : 1,
+                            reagents_items: 1,
+                            spell_id: 1,
+                            quantity: 1,
+                            item_quantity: 1,
+                        }
+                    },
+                    {
+                        $addFields: {
+                            reagents_items: {
+                                $map: {
+                                    input: {
+                                        $zip: {
+                                            inputs: [
+                                                "$quantity",
+                                                "$reagents_items"
+                                            ]
+                                        }
+                                    },
+                                    as: "reagents_items",
+                                    in: {
+                                        $mergeObjects: [
+                                            {
+                                                $arrayElemAt: [
+                                                    "$$reagents_items",
+                                                    1
+                                                ]
+                                            },
+                                            {
+                                                quantity: {
+                                                    $arrayElemAt: [
+                                                        "$$reagents_items",
+                                                        0
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $unwind: "$reagents_items"
+                    },
+                    {
+                        $group: {
+                            _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class", item_quantity: "$item_quantity"},
+                            count: { $sum: 1 },
+                            reagents: { $addToSet: "$reagents_items" },
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: "$_id.spell_id",
+                            item_quantity: "$_id.item_quantity",
+                            tranche: { asset_class: "$_id.asset_class", count: "$count", reagent_items: "$reagents"},
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {spell_id: "$_id", item_quantity: "$item_quantity"},
+                            tranche: { $addToSet: "$tranche" },
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: "$_id.spell_id",
+                            item_quantity: "$_id.item_quantity",
+                            tranches: "$tranche",
+                        }
+                    },
+                ]);
+                for (let {tranches} of pricing_methods) {
+                    tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
+                }
+
+                if (!lastModified) {
+                    ({lastModified} = await auctions_db.findOne({ "item.id": item._id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
+                }
+                //TODO
+                break;
+            case 'PREMIUM':
+                /***
+                 * TODO syntetics request in valuations
+                 */
+                break;
+            default:
+            /***
+             * TODO return market price or rito
+             */
+        }
 
         //FIXME r3
         let valuation_query = {item_id: _id, rank: { $exists: true, $eq: 3 }};

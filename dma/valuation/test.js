@@ -11,7 +11,7 @@ const {connection} = require('mongoose');
 
 async function test (arg = {asset_class: "VANILLA", ticker: "J.POTION.REJUV"}) {
     try {
-        let evaItems = await items_db.find().lean(arg).limit(1);
+        let evaItems = await items_db.find({asset_class: "VANILLA", ticker: "FOOD.CRIT"}).lean().limit(25);
         for (let evaItem of evaItems) {
             let pricing_methods = await pricing_db.aggregate([
                 {
@@ -102,8 +102,17 @@ async function test (arg = {asset_class: "VANILLA", ticker: "J.POTION.REJUV"}) {
                     }
                 },
             ]);
+            const assetClassMap = new Map([
+                ['CONST', 0],
+                ['COMMDTY', 1],
+                ['INDX', 2],
+                ['VANILLA', 3],
+                ['PREMIUM', 4],
+            ]);
             for (let {tranches} of pricing_methods) {
-                for (let {asset_class, count, reagent_items} of tranches) {
+                tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
+                console.log(tranches);
+/*                for (let {asset_class, count, reagent_items} of tranches) {
                     switch (asset_class) {
                         case 'VANILLA':
                             for (let reagent_item of reagent_items) {
@@ -112,9 +121,9 @@ async function test (arg = {asset_class: "VANILLA", ticker: "J.POTION.REJUV"}) {
                             }
                         break;
                     }
-                }
+                }*/
             }
-            //console.log(evaItem._id, pricing_methods[2]);
+
         }
         connection.close();
     } catch (err) {

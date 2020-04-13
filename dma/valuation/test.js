@@ -9,19 +9,14 @@ const pricing_db = require("../../db/pricing_db");
 
 const {connection} = require('mongoose');
 
-async function test () {
+async function test (arg = {asset_class: "VANILLA", ticker: "J.POTION.REJUV"}) {
     try {
-
-        /**
-         * IDEA test
-         */
-
-        let evaItems = await items_db.find({asset_class: "VANILLA", ticker: "FOOD.CRIT"}).lean().limit(5);
+        let evaItems = await items_db.find().lean(arg).limit(1);
         for (let evaItem of evaItems) {
-            let evaItem_valuations = await pricing_db.aggregate([
+            let pricing_methods = await pricing_db.aggregate([
                 {
                     $match: {
-                        item_id: evaItem._id
+                        item_id: evaItem._id, rank: {$exists: true, $eq: 3}
                     }
                 },
                 {
@@ -37,7 +32,43 @@ async function test () {
                         "item_id" : 1,
                         reagents_items: 1,
                         spell_id: 1,
-                        quantity: 1
+                        quantity: 1,
+                        item_quantity: 1,
+                    }
+                },
+                {
+                    $addFields: {
+                        reagents_items: {
+                            $map: {
+                                input: {
+                                    $zip: {
+                                        inputs: [
+                                            "$quantity",
+                                            "$reagents_items"
+                                        ]
+                                    }
+                                },
+                                as: "reagents_items",
+                                in: {
+                                    $mergeObjects: [
+                                        {
+                                            $arrayElemAt: [
+                                                "$$reagents_items",
+                                                1
+                                            ]
+                                        },
+                                        {
+                                            quantity: {
+                                                $arrayElemAt: [
+                                                    "$$reagents_items",
+                                                    0
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
                     }
                 },
                 {
@@ -45,7 +76,7 @@ async function test () {
                 },
                 {
                     $group: {
-                        _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class"},
+                        _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class", item_quantity: "$item_quantity"},
                         count: { $sum: 1 },
                         reagents: { $addToSet: "$reagents_items" },
                     }
@@ -53,32 +84,37 @@ async function test () {
                 {
                     $project: {
                         _id: "$_id.spell_id",
-                        asset_class: "$_id.asset_class",
-                        count: "$count",
-                        reagents: "$reagents"
+                        item_quantity: "$_id.item_quantity",
+                        tranche: { asset_class: "$_id.asset_class", count: "$count", reagent_items: "$reagents"},
                     }
-                },
-                {
-                    $unwind: "$reagents"
                 },
                 {
                     $group: {
-                        _id: "$_id",
-                        valuation_class: {$addToSet: {asset_class: "$asset_class", count: "$count"}},
-                        reagents: { $addToSet: "$reagents" },
+                        _id: {spell_id: "$_id", item_quantity: "$item_quantity"},
+                        tranche: { $addToSet: "$tranche" },
                     }
-                }
+                },
+                {
+                    $project: {
+                        _id: "$_id.spell_id",
+                        item_quantity: "$_id.item_quantity",
+                        tranches: "$tranche",
+                    }
+                },
             ]);
-            console.log(evaItem._id, evaItem_valuations[0]);
-/*            for (let {_id, valuation_class} of evaItem_valuations) {
-                if (valuation_class) {
-                    for (let {asset_class, count} of valuation_class) {
-                        if (asset_class === 'VANILLA' && count > 1) {
-                            console.log(evaItem._id, _id)
-                        }
+            for (let {tranches} of pricing_methods) {
+                for (let {asset_class, count, reagent_items} of tranches) {
+                    switch (asset_class) {
+                        case 'VANILLA':
+                            for (let reagent_item of reagent_items) {
+                                let x = await test({_id: reagent_item._id});
+                                console.log(x);
+                            }
+                        break;
                     }
                 }
-            }*/
+            }
+            //console.log(evaItem._id, pricing_methods[2]);
         }
         connection.close();
     } catch (err) {

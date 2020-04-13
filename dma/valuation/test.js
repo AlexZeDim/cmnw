@@ -44,30 +44,40 @@ async function test () {
                     $unwind: "$reagents_items"
                 },
                 {
-                    $group: { _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class"}, count: { $sum: 1 }}
+                    $group: {
+                        _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class"},
+                        count: { $sum: 1 },
+                        reagents: { $addToSet: "$reagents_items" },
+                    }
                 },
                 {
                     $project: {
                         _id: "$_id.spell_id",
                         asset_class: "$_id.asset_class",
-                        count: "$count"
+                        count: "$count",
+                        reagents: "$reagents"
                     }
+                },
+                {
+                    $unwind: "$reagents"
                 },
                 {
                     $group: {
                         _id: "$_id",
-                        evaluate_class: {$addToSet: {asset_class: "$asset_class", count: "$count"}},
+                        valuation_class: {$addToSet: {asset_class: "$asset_class", count: "$count"}},
+                        reagents: { $addToSet: "$reagents" },
                     }
                 }
             ]);
             console.log(evaItem._id, evaItem_valuations[0]);
-
-            //console.log(evaItem_valuations[0].reagents_items);
-/*            for (let {reagents} of evaItem_valuations) {
-                let reagents_items = await Promise.all(reagents.map( async (reagent_id) => {
-                    return await items_db.findById(reagent_id).lean();
-                }));
-                console.log(evaItem._id, reagents_items);
+/*            for (let {_id, valuation_class} of evaItem_valuations) {
+                if (valuation_class) {
+                    for (let {asset_class, count} of valuation_class) {
+                        if (asset_class === 'VANILLA' && count > 1) {
+                            console.log(evaItem._id, _id)
+                        }
+                    }
+                }
             }*/
         }
         connection.close();

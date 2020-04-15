@@ -55,15 +55,14 @@ async function getPricing (item = {
 
         let lastModified = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');
 
-        switch (asset_class) {
+        switch (item.asset_class) {
             case 'CONST':
-                pricing_method.price = purchase_price;
-                pricing_method.value = parseFloat((purchase_price * quantity).toFixed(2));
+                console.log(item.purchase_price);
                 //TODO request buyprice
                 break;
             case 'COMMDTY':
                 if (!lastModified) {
-                    ({lastModified} = await auctions_db.findOne({ "item.id": _id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
+                    ({lastModified} = await auctions_db.findOne({ "item.id": item._id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
                 }
                 //IDEA if first arg = true => pricing?
                 //TODO check valuationsDB
@@ -72,7 +71,7 @@ async function getPricing (item = {
                         $match: {
                             lastModified: lastModified,
                             "item.id": item._id,
-                            connected_realm_id: 1602,
+                            connected_realm_id: connected_realm_id,
                         }
                     },
                     {
@@ -195,6 +194,30 @@ async function getPricing (item = {
                 ]);
                 for (let {tranches} of pricing_methods) {
                     tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
+                    let vanillaQCost = 0;
+                    for (let {asset_class, count, reagent_items} of tranches) {
+                        switch (asset_class) {
+                            case 'CONST':
+                                //TODO async reagent_items, summ of QCost
+                                for (let reagent_item of reagent_items) {
+                                    vanillaQCost += parseFloat((reagent_item.purchase_price * reagent_item.quantity).toFixed(2));
+                                }
+                                break;
+                            case 'COMMDTY':
+                                //TODO async reagent_items, summ of QCost
+                                for (let reagent_item of reagent_items) {
+                                    //TODO valuation, if not then AH request
+                                    vanillaQCost += parseFloat((reagent_item.purchase_price * reagent_item.quantity).toFixed(2));
+                                }
+                                break;
+                            case 'INDX':
+                                break;
+                            case 'VANILLA':
+                                break;
+                            case 'PREMIUM':
+                                break;
+                        }
+                    }
                 }
 
                 if (!lastModified) {

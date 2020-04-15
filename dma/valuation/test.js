@@ -111,17 +111,12 @@ async function test (arg = {asset_class: "VANILLA", ticker: "J.POTION.REJUV"}) {
             ]);
             for (let {tranches} of pricing_methods) {
                 tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
-                console.log(tranches);
-/*                for (let {asset_class, count, reagent_items} of tranches) {
-                    switch (asset_class) {
-                        case 'VANILLA':
-                            for (let reagent_item of reagent_items) {
-                                let x = await test({_id: reagent_item._id});
-                                console.log(x);
-                            }
-                        break;
+                //console.log(tranches);
+                for (let {asset_class, count, reagent_items} of tranches) {
+                    for (let reagent_item of reagent_items) {
+                        console.log(reagent_item);
                     }
-                }*/
+                }
             }
 
         }

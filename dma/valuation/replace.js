@@ -39,7 +39,7 @@ async function tested () {
                                 profession_class: 'ALCH',
                                 asset_class: 'VANILLA',
                                 purchase_price: 2.4,
-                                quantity: 1
+                                quantity: 2
                             },
                             {
                                 _id: 152494,
@@ -72,7 +72,7 @@ async function tested () {
                                 profession_class: 'ALCH',
                                 asset_class: 'VANILLA',
                                 purchase_price: 2.4,
-                                quantity: 1
+                                quantity: 2
                             }
                         ]
                     }
@@ -112,7 +112,7 @@ async function tested () {
                                 profession_class: 'ALCH',
                                 asset_class: 'CONST',
                                 purchase_price: 0.01,
-                                quantity: 2
+                                quantity: 1
                             }
                         ] },
                     { asset_class: 'COMMDTY', count: 1, reagent_items: [
@@ -156,9 +156,10 @@ async function tested () {
             let cloneTranches = [...method.tranches];
             for (let cloneTranche of cloneTranches) {
                 if (cloneTranche.asset_class === 'VANILLA') {
-                    let t = cloneTranches.indexOf(cloneTranche);
                     cloneTranche.count = cloneTranche.count - 1;
+
                     if (cloneTranche.count === 0) {
+                        let t = cloneTranches.indexOf(cloneTranche);
                         let qnty_WeNeedThatLater = cloneTranche.reagent_items[0].quantity;
                         if (t !== -1) {
                             cloneTranches.splice(t, 1);
@@ -167,6 +168,27 @@ async function tested () {
                         //IDEA ALCH quene cost multiply
                         //TODO add to tracnhes new items
                     } else {
+                        for (let cloneVanillaReagentItem of cloneTranche.reagent_items) {
+                            //console.log(cloneVanillaReagentItem); // parseInt(cloneVanillaReagentItem.quantity / WeNeedToAdd.item_quantity)
+                            let t = cloneTranche.reagent_items.indexOf(cloneVanillaReagentItem);
+                            if (t !== -1) {
+                                cloneTranche.reagent_items.splice(t, 1);
+                            }
+                            console.log(cloneTranches);
+                            for (let vanilla_PricingMethod of WeNeedToAdd) {
+                                for (let vanillaTranche of vanilla_PricingMethod.tranches) {
+                                    console.log(vanillaTranche);
+                                    let vanilla_index = cloneTranches.indexOf(vanillaTranche);
+                                    if (t !== -1) {
+                                        //TODO permutations
+                                        cloneTranches.push(vanillaTranche);
+                                    } else {
+
+                                    }
+                                    console.log(vanilla_index);
+                                }
+                            }
+                        }
                         //TODO remove just one item from cloneTranche
                     }
 

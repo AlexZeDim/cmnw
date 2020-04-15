@@ -4,6 +4,41 @@ async function tested () {
         console.time(tested.name);
         let methods = [
             { _id: 252389, item_quantity: 1, tranches: [
+                    { asset_class: 'CONST', count: 1, reagent_items: [
+                        {
+                            _id: 3371,
+                            __v: 0,
+                            icon: 'https://render-eu.worldofwarcraft.com/icons/56/inv_alchemy_leadedvial.jpg',
+                            ilvl: 1,
+                            inventory_type: 'Non-equippable',
+                            is_equippable: false,
+                            is_stackable: true,
+                            item_class: 'Tradeskill',
+                            item_subclass: 'Other',
+                            level: 0,
+                            name: {
+                                en_US: 'Crystal Vial',
+                                es_MX: 'Vial de cristal',
+                                pt_BR: 'Ampola de Cristal',
+                                de_DE: 'Kristallphiole',
+                                en_GB: 'Crystal Vial',
+                                es_ES: 'Vial de cristal',
+                                fr_FR: 'Fiole de cristal',
+                                it_IT: 'Ampolla di Cristallo',
+                                ru_RU: 'Хрустальная колба'
+                            },
+                            quality: 'Common',
+                            sell_price: 0,
+                            is_commdty: true,
+                            is_auctionable: true,
+                            expansion: 'BFA',
+                            ticker: 'u/r',
+                            profession_class: 'ALCH',
+                            asset_class: 'CONST',
+                            purchase_price: 0.01,
+                            quantity: 1
+                        }
+                    ] },
                     {
                         asset_class: 'VANILLA',
                         count: 2,
@@ -178,18 +213,27 @@ async function tested () {
                             for (let vanilla_PricingMethod of WeNeedToAdd) {
                                 for (let vanillaTranche of vanilla_PricingMethod.tranches) {
                                     console.log(vanillaTranche);
-                                    let vanilla_index = cloneTranches.indexOf(vanillaTranche);
-                                    if (t !== -1) {
+
+                                    let tranche_VanillaIndex = cloneTranches.findIndex(tr => tr.asset_class === vanillaTranche.asset_class);
+                                    console.log(tranche_VanillaIndex);
+                                    if (tranche_VanillaIndex === -1) {
                                         //TODO permutations
                                         cloneTranches.push(vanillaTranche);
                                     } else {
-
+                                        for (let vanillaTranche_reagentItem of vanillaTranche.reagent_items) {
+                                            let item_index = cloneTranches[tranche_VanillaIndex].reagent_items.findIndex(rI => rI._id === vanillaTranche_reagentItem._id);
+                                            if (item_index === -1) {
+                                                cloneTranches[tranche_VanillaIndex].count += 1;
+                                                //TODO vanillaTranche_reagentItem.quantity
+                                                cloneTranches[tranche_VanillaIndex].reagent_items.push(vanillaTranche_reagentItem);
+                                            } else {
+                                                cloneTranches[tranche_VanillaIndex].reagent_items[item_index].quantity += vanillaTranche_reagentItem.quantity;
+                                            }
+                                        }
                                     }
-                                    console.log(vanilla_index);
                                 }
                             }
                         }
-                        //TODO remove just one item from cloneTranche
                     }
 
                 }

@@ -207,12 +207,72 @@ async function getPricing (item = {
                                 //TODO async reagent_items, summ of QCost
                                 for (let reagent_item of reagent_items) {
                                     //TODO valuation, if not then AH request
-                                    vanillaQCost += parseFloat((reagent_item.purchase_price * reagent_item.quantity).toFixed(2));
+                                    await auctions_db.aggregate([
+                                        {
+                                            $match: {
+                                                lastModified: lastModified,
+                                                "item.id": reagent_item._id,
+                                                connected_realm_id: connected_realm_id,
+                                            }
+                                        },
+                                        {
+                                            $project: {
+                                                _id: "$lastModified",
+                                                id: "$id",
+                                                quantity: "$quantity",
+                                                price: {$ifNull: ["$buyout", {$ifNull: ["$bid", "$unit_price"]}]},
+                                            }
+                                        },
+                                        {
+                                            $group: {
+                                                _id: "$_id",
+                                                price: {$min: "$price"},
+                                                price_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
+                                            }
+                                        }
+                                    ]).then(([{price, price_size}]) => {
+                                        if (price_size) {
+                                            vanillaQCost += parseFloat((price_size * reagent_item.quantity).toFixed(2));
+                                        } else {
+                                            vanillaQCost += parseFloat((price * reagent_item.quantity).toFixed(2));
+                                        }
+                                    });
                                 }
                                 break;
                             case 'INDX':
+                                for (let reagent_item of reagent_items) {
+                                    vanillaQCost += 0;
+                                }
                                 break;
                             case 'VANILLA':
+                                for (let reagent_item of reagent_items) {
+                                    //TODO getPricing return pricing_methods
+                                    let test_vanilla_PricingMethod = [
+                                        { _id: 301312, item_quantity: 1, tranches: [ [Object], [Object] ] },
+                                        { _id: 301311, item_quantity: 1, tranches: [ [Object], [Object] ] }
+                                    ];
+                                    for (let vanilla_PricingMethod of test_vanilla_PricingMethod) {
+                                        let cloneTranches = [...tranches];
+
+                                        for (let cloneTranche of cloneTranches) {
+                                            if (cloneTranche.asset_class === 'VANILLA') {
+                                                cloneTranche.count = cloneTranche.count - 1;
+                                                if (cloneTranche.count === 0) {
+                                                    //TODO quantity for quantity
+                                                    //IDEA ALCH quene cost multiply
+                                                    //TODO remove VANILLA from CloneTranche
+                                                } else {
+                                                    //TODO remove just one item from cloneTranche
+                                                }
+
+                                            }
+                                        }
+
+                                        pricing_methods.push()
+                                        //TODO reagent_item._id need to be found and removed
+                                    }
+                                    //vanillaQCost += 0;
+                                }
                                 break;
                             case 'PREMIUM':
                                 break;

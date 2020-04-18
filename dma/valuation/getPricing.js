@@ -2,7 +2,44 @@ const items_db = require("../../db/items_db");
 const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
 
-//TODO do it recursive?
+Array.prototype.addItemToTranchesByAssetClass = function(item = {
+    _id: 152509,
+    asset_class: 'VANILLA',
+    quantity: 1
+}) {
+    let tranche = this.find(element => element.asset_class === item.asset_class); //TODO some
+    if (tranche) {
+        let reagent_item = tranche.reagent_items.find(element => element._id === item._id);
+        if (reagent_item) {
+            reagent_item.quantity = reagent_item.quantity + item.quantity;
+        } else {
+            tranche.count += 1;
+            tranche.reagent_items.push(item)
+        }
+    } else {
+        this.push({asset_class: item.asset_class, count: 1, reagent_items: [item]});
+    }
+    return this;
+};
+
+Array.prototype.removeItemFromTranchesByAssetClass = function(item = {
+    _id: 152509,
+    asset_class: 'COMMDTY',
+    quantity: 1
+}) {
+    let tranche = this.some(element => element.asset_class === item.asset_class );
+    if (tranche) {
+        let trancheIndex = this.findIndex(element => element.asset_class === item.asset_class);
+        if (this[trancheIndex].count === 1) {
+            this.splice(trancheIndex, 1);
+        } else {
+            let reagent_itemIndex = this[trancheIndex].reagent_items.findIndex(element => element._id === item._id);
+            this[trancheIndex].count = this[trancheIndex].count - 1;
+            this[trancheIndex].reagent_items.splice(reagent_itemIndex, 1);
+        }
+    }
+    return this
+};
 
 async function getPricing (item = {
     _id: 169451,
@@ -251,9 +288,13 @@ async function getPricing (item = {
                                         { _id: 301312, item_quantity: 1, tranches: [ [Object], [Object] ] },
                                         { _id: 301311, item_quantity: 1, tranches: [ [Object], [Object] ] }
                                     ];
-                                    for (let vanilla_PricingMethod of test_vanilla_PricingMethod) {
-                                        let cloneTranches = [...tranches];
 
+
+                                    let cloneTranches = [...tranches];
+
+
+
+                                    for (let vanilla_PricingMethod of test_vanilla_PricingMethod) {
                                         for (let cloneTranche of cloneTranches) {
                                             if (cloneTranche.asset_class === 'VANILLA') {
                                                 cloneTranche.count = cloneTranche.count - 1;

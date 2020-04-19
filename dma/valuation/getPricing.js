@@ -272,9 +272,9 @@ async function getPricing (item = {
                         $project: {
                             _id: "$_id.spell_id",
                             item_quantity: "$_id.item_quantity",
-                            tranches: "$tranche",
+                            tranches: "$tranche"
                         }
-                    },
+                    }
                 ]);
 
                 for (let { _id, item_quantity, tranches } of pricing_methods) {
@@ -332,24 +332,35 @@ async function getPricing (item = {
                                 break;
                             case 'VANILLA':
                                 let perm = [];
+                                let perma = [];
                                 let permArrayL = 0;
-                                for await (let V of reagent_items.map(x => getPricing(x, connected_realm_id, false))) {
-                                    perm.push(V);
 
-                                    permArrayL += V.model.valuations.length;
+                                await Promise.all(reagent_items.map(async reagent_item => {
+                                    const vanilla_getPricing = await getPricing(reagent_item, connected_realm_id, false);
+                                    perm.push(vanilla_getPricing);
+                                    permArrayL += vanilla_getPricing.model.valuations.length;
 
-                                    if (V.hasOwnProperty('market')) {
+/*                                    tranches.removeItemFromTranchesByAssetClass(reagent_item);
+                                    for (let x of vanilla_getPricing.model.valuations) {
+                                        //tranches.addItemToTranchesByAssetClass(reagent_iem);
+                                        console.log(x.pricing_method)
+                                    }
+                                    console.log(tranches)*/
+                                    if (vanilla_getPricing.hasOwnProperty('market')) {
                                         permArrayL += 1;
                                     }
+                                }));
 
+                                for (let [index, val] of perm.entries()) {
+                                    console.log(val);
                                 }
+
                                 let permutations = Array.from({length: permArrayL},() => [...tranches]);
+/*                                for (let [index, val] of permutations.entries()) {
+
+                                }*/
                                 //console.log(newPermArray, newPermArray.length);
                                 console.log(permutations);
-                                for (let reagent_item of reagent_items) {
-
-
-                                }
 /*                                for (let reagent_item of reagent_items) {
                                     //TODO getPricing return pricing_methods
                                     let cloneTranches = [...tranches];

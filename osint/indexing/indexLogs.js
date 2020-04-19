@@ -59,7 +59,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                     }
                 });
                 await Promise.all(promises);
-                documentBulk = [];
+                documentBulk.length = 0;
                 cursor.resume();
                 console.timeEnd(`================`);
             }

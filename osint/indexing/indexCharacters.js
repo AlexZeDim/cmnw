@@ -45,7 +45,7 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `OSINT-${inde
                 console.time(`========================`);
                 ({token} = await keys_db.findOne(queryKeys));
                 await Promise.all(character_Array);
-                character_Array = [];
+                character_Array.length = 0;
                 cursor.resume();
                 console.timeEnd(`========================`);
             }

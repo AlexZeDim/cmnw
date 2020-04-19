@@ -20,8 +20,26 @@ let schema = new mongoose.Schema({
     },
     item_id: Number,
     connected_realm_id: Number,
-    valuations: [
-        {
+    market: {
+        lastModified: Date,
+        price: Number,
+        price_size: Number,
+    },
+    model: {
+        valuations: [
+            {
+                name: String,
+                pricing_method_id: Number,
+                pricing_method: Array,
+                quene_quantity: Number,
+                quene_cost: Number,
+                premium: Number,
+                nominal_value: Number,
+                underlying: Number,
+                lastModified: Date
+            }
+        ],
+        cheapest_to_delivery: {
             name: String,
             pricing_method_id: Number,
             pricing_method: Array,
@@ -32,23 +50,7 @@ let schema = new mongoose.Schema({
             underlying: Number,
             lastModified: Date
         }
-    ],
-    cheapest_to_delivery: {
-        name: String,
-        pricing_method_id: Number,
-        pricing_method: Array,
-        quene_quantity: Number,
-        quene_cost: Number,
-        premium: Number,
-        nominal_value: Number,
-        underlying: Number,
-        lastModified: Date
-    },
-    market: {
-        lastModified: Date,
-        price: Number,
-        price_size: Number,
-    },
+    }
 },{
     timestamps: true
 });

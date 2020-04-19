@@ -30,7 +30,7 @@ let schema = new mongoose.Schema({
             {
                 name: String,
                 pricing_method_id: Number,
-                pricing_method: Array,
+                pricing_method: Object,
                 quene_quantity: Number,
                 quene_cost: Number,
                 premium: Number,

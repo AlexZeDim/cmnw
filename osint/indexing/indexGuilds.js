@@ -131,7 +131,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuild
                     }
                 });
                 await Promise.all(promises);
-                documentBulk = [];
+                documentBulk.length = 0;
                 cursor.resume();
                 console.timeEnd(`================================`);
             }

@@ -13,8 +13,10 @@ async function indexValuation () {
         //TODO cursor
         let items = await items_db.find({ticker: "J.POTION.REJUV"});
         for (let item of items) {
-            let x = await getPricing(item, 1602);
-            //console.log(x);
+            let x = await getPricing(item, 1602, true);
+            console.log(x);
+            console.log(x.model);
+            console.log(x.model.valuations[0].pricing_method);
         }
         console.timeEnd(indexValuation.name);
     } catch (err) {

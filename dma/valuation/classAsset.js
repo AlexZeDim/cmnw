@@ -113,8 +113,9 @@ Array.prototype.addItemToTranchesByAssetClass = function(item = {
     asset_class: 'VANILLA',
     quantity: 1
 }) {
-    let tranche = this.find(element => element.asset_class === item.asset_class); //TODO some
-    if (tranche) {
+    let trancheExist = this.some(element => element.asset_class === item.asset_class);
+    if (trancheExist) {
+        let tranche = this.find(element => element.asset_class === item.asset_class);
         let reagent_item = tranche.reagent_items.find(element => element._id === item._id);
         if (reagent_item) {
             reagent_item.quantity = reagent_item.quantity + item.quantity;

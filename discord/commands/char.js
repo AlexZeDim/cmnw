@@ -15,6 +15,7 @@ module.exports = {
                 lastModified,
                 guild,
                 guild_rank,
+                character_class,
                 level,
                 ilvl,
                 spec,
@@ -26,8 +27,6 @@ module.exports = {
                 race,
                 media,
                 statusCode,
-                pets,
-                mounts
             } = data;
             let embed = new MessageEmbed();
             embed.setTitle(_id.toUpperCase());
@@ -47,7 +46,7 @@ module.exports = {
             if (faction === "Horde") {
                 embed.setColor('#ff0000');
             }
-            if (statusCode === 200) embed.addField('Class', data.class, true);
+            if (statusCode === 200) embed.addField('Class', character_class, true);
             if (guild) {
                 if (guild_rank === 0) {
                     embed.addField('Guild Rank', "GM", true);
@@ -62,8 +61,8 @@ module.exports = {
             }
             if (checksum["pets"] && checksum["mounts"]) {
                 embed.addField('ID', id, true);
-                embed.addField('Hash A', pets, true);
-                embed.addField('Hash B', mounts, true);
+                embed.addField('Hash A', checksum.pets, true);
+                embed.addField('Hash B', checksum.mounts, true);
             }
             if (statusCode === 200) {
                 embed.addField('Last Online', new Date(lastModified).toLocaleString('en-GB'), true);

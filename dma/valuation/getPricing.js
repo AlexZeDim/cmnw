@@ -1,6 +1,7 @@
 const items_db = require("../../db/items_db");
 const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
+const getMethods = require("./getMethods");
 
 Array.prototype.addItemToTranchesByAssetClass = function(item = {
     _id: 152509,
@@ -336,16 +337,21 @@ async function getPricing (item = {
                                 let permArrayL = 0;
 
                                 await Promise.all(reagent_items.map(async reagent_item => {
+                                    const vanilla_getPricing = await getMethods(reagent_item._id);
+                                    console.log(vanilla_getPricing);
+                                }));
+                                console.log(_id, item_quantity, tranches);
+/*                                await Promise.all(reagent_items.map(async reagent_item => {
                                     const vanilla_getPricing = await getPricing(reagent_item, connected_realm_id, false);
                                     perm.push(vanilla_getPricing);
                                     permArrayL += vanilla_getPricing.model.valuations.length;
 
-/*                                    tranches.removeItemFromTranchesByAssetClass(reagent_item);
+                                    tranches.removeItemFromTranchesByAssetClass(reagent_item);
                                     for (let x of vanilla_getPricing.model.valuations) {
-                                        //tranches.addItemToTranchesByAssetClass(reagent_iem);
+                                        tranches.addItemToTranchesByAssetClass(reagent_iem);
                                         console.log(x.pricing_method)
                                     }
-                                    console.log(tranches)*/
+                                    console.log(tranches)
                                     if (vanilla_getPricing.hasOwnProperty('market')) {
                                         permArrayL += 1;
                                     }
@@ -356,11 +362,11 @@ async function getPricing (item = {
                                 }
 
                                 let permutations = Array.from({length: permArrayL},() => [...tranches]);
-/*                                for (let [index, val] of permutations.entries()) {
+                               for (let [index, val] of permutations.entries()) {
 
-                                }*/
+                                }
+                                console.log(permutations);*/
                                 //console.log(newPermArray, newPermArray.length);
-                                console.log(permutations);
 /*                                for (let reagent_item of reagent_items) {
                                     //TODO getPricing return pricing_methods
                                     let cloneTranches = [...tranches];

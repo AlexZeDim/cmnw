@@ -277,7 +277,14 @@ async function getPricing (item = {
                         }
                     }
                 ]);
-
+                console.log(pricing_methods);
+                pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map(({asset_class, count, reagent_items}) => {
+                    if (asset_class === 'VANILLA') {
+                        console.log(reagent_items);
+                        reagent_items.map()
+                    }
+                }
+                ));
                 for (let { _id, item_quantity, tranches } of pricing_methods) {
                     tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
 
@@ -338,6 +345,15 @@ async function getPricing (item = {
 
                                 await Promise.all(reagent_items.map(async reagent_item => {
                                     const vanilla_getPricing = await getMethods(reagent_item._id);
+                                    vanilla_getPricing.push({
+                                        _id: _id,
+                                        item_quantity: item_quantity,
+                                        tranches: [{
+                                            asset_class: 'VANILLA',
+                                            count: 1,
+                                            reagent_items: reagent_item
+                                        }]
+                                    });
                                     console.log(vanilla_getPricing);
                                 }));
                                 console.log(_id, item_quantity, tranches);

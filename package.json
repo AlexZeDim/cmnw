@@ -4,11 +4,7 @@
   "private": true,
   "scripts": {
     "tokens": "node bin/getTokens.js",
-    "VOLUSPA-indexCharacters": "node osint/indexing/indexCharacters.js",
-    "VOLUSPA-indexRealms": "node osint/indexing/indexRealms.js",
-    "VOLUSPA-indexGuilds": "node osint/indexing/indexGuilds.js",
-    "VOLUSPA-indexLogs": "node osint/indexing/indexLogs.js",
-    "start": "node osint/indexing/indexCharacters.js"
+    "start": "node discord/bluratella.js"
   },
   "dependencies": {
     "axios": "latest",

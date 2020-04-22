@@ -48,7 +48,7 @@ let output = cartesian([1,2],[10,20],[100,200,300], [1000, 2000]);
 let f_ = (a, b) => [].concat(...a.map(a => b.map(b => [].concat(a, b))));
 //let cartesianO = (a, b, ...c) => b ? cartesianO(f_(a, b), ...c) : a;
 
-let test = f_(
+let data = [
     [
         { _id: 252384, item_quantity: 1, tranches: [
                 { asset_class: 'CONST', count: 1, reagent_items: [ {
@@ -245,8 +245,10 @@ let test = f_(
                     purchase_price: 2.4,
                     quantity: 1
                 }]
-            } ] }
+            }] }
     ]
-);
+];
 
-console.log(test);
+let result = data.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+
+console.log(result);

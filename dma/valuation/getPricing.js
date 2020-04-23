@@ -278,10 +278,23 @@ async function getPricing (item = {
                     }
                 ]);
                 console.log(pricing_methods);
-                pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map(({asset_class, count, reagent_items}) => {
+                pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map( async ({asset_class, count, reagent_items}) => {
                     if (asset_class === 'VANILLA') {
-                        console.log(reagent_items);
-                        reagent_items.map()
+                        //TODO quantity
+                        let x = await Promise.all(reagent_items.map(async reagent_item => {
+                            const vanilla_getPricing = await getMethods(reagent_item._id);
+                            vanilla_getPricing.push({
+                                _id: _id,
+                                item_quantity: item_quantity,
+                                tranches: [{
+                                    asset_class: 'VANILLA',
+                                    count: 1,
+                                    reagent_items: reagent_item
+                                }]
+                            });
+                            return vanilla_getPricing;
+                        }));
+                        console.log(x)
                     }
                 }
                 ));
@@ -342,21 +355,6 @@ async function getPricing (item = {
                                 let perm = [];
                                 let perma = [];
                                 let permArrayL = 0;
-
-                                await Promise.all(reagent_items.map(async reagent_item => {
-                                    const vanilla_getPricing = await getMethods(reagent_item._id);
-                                    vanilla_getPricing.push({
-                                        _id: _id,
-                                        item_quantity: item_quantity,
-                                        tranches: [{
-                                            asset_class: 'VANILLA',
-                                            count: 1,
-                                            reagent_items: reagent_item
-                                        }]
-                                    });
-                                    console.log(vanilla_getPricing);
-                                }));
-                                console.log(_id, item_quantity, tranches);
 /*                                await Promise.all(reagent_items.map(async reagent_item => {
                                     const vanilla_getPricing = await getPricing(reagent_item, connected_realm_id, false);
                                     perm.push(vanilla_getPricing);

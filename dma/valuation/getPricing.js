@@ -281,16 +281,18 @@ async function getPricing (item = {
                 //TODO we need to add/modify, not create new pricing!
                 await pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map(async ({asset_class, count, reagent_items}) => {
                     if (asset_class === 'VANILLA') {
-                        //TODO quantity
                         let vanilla_PricingMethods = await Promise.all(reagent_items.map(async reagent_item => {
                             const vanilla_getMethods = await getMethods(reagent_item._id);
+                            //TODO reagent_item.quantity
+                            console.log(reagent_item.quantity);
+                            console.log(vanilla_getMethods);
                             vanilla_getMethods.push({
                                 _id: _id,
                                 item_quantity: item_quantity,
                                 tranches: [{
                                     asset_class: asset_class,
                                     count: count,
-                                    reagent_items: reagent_item
+                                    reagent_items: [reagent_item]
                                 }]
                             });
                             return vanilla_getMethods;
@@ -298,10 +300,15 @@ async function getPricing (item = {
                         let vanilla_Combinations = vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
                         let t = await Promise.all(vanilla_Combinations.map(cmb => {
                             let hm  = { _id: _id, item_quantity: item_quantity, tranches: [] };
-                            cmb.forEach(obj => {
-                                obj.tranches.forEach(r_item => { hm.tranches.addItemToTranchesByAssetClass(r_item)})
+                            cmb.map(obj => {
+                                obj.tranches.map(tr => {
+                                    tr.reagent_items.map(r_item => {
+                                        hm.tranches.addItemToTranchesByAssetClass(r_item)
+                                    })
+                                })
                             });
-                            console.log(hm);
+                            //console.log('==========')
+                            //console.log(hm);
                             hm.length = 0
                         }))
                     }

@@ -8,8 +8,9 @@ Array.prototype.addItemToTranchesByAssetClass = function(item = {
     asset_class: 'VANILLA',
     quantity: 1
 }) {
-    let tranche = this.find(element => element.asset_class === item.asset_class); //TODO some
-    if (tranche) {
+    let trancheExist = this.some(element => element.asset_class === item.asset_class);
+    if (trancheExist) {
+        let tranche = this.find(element => element.asset_class === item.asset_class);
         let reagent_item = tranche.reagent_items.find(element => element._id === item._id);
         if (reagent_item) {
             reagent_item.quantity = reagent_item.quantity + item.quantity;
@@ -277,27 +278,34 @@ async function getPricing (item = {
                         }
                     }
                 ]);
-                console.log(pricing_methods);
-                pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map( async ({asset_class, count, reagent_items}) => {
+                //TODO we need to add/modify, not create new pricing!
+                await pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map(async ({asset_class, count, reagent_items}) => {
                     if (asset_class === 'VANILLA') {
                         //TODO quantity
-                        let x = await Promise.all(reagent_items.map(async reagent_item => {
-                            const vanilla_getPricing = await getMethods(reagent_item._id);
-                            vanilla_getPricing.push({
+                        let vanilla_PricingMethods = await Promise.all(reagent_items.map(async reagent_item => {
+                            const vanilla_getMethods = await getMethods(reagent_item._id);
+                            vanilla_getMethods.push({
                                 _id: _id,
                                 item_quantity: item_quantity,
                                 tranches: [{
-                                    asset_class: 'VANILLA',
-                                    count: 1,
+                                    asset_class: asset_class,
+                                    count: count,
                                     reagent_items: reagent_item
                                 }]
                             });
-                            return vanilla_getPricing;
+                            return vanilla_getMethods;
                         }));
-                        console.log(x)
+                        let vanilla_Combinations = vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+                        let t = await Promise.all(vanilla_Combinations.map(cmb => {
+                            let hm  = { _id: _id, item_quantity: item_quantity, tranches: [] };
+                            cmb.forEach(obj => {
+                                obj.tranches.forEach(r_item => { hm.tranches.addItemToTranchesByAssetClass(r_item)})
+                            });
+                            console.log(hm);
+                            hm.length = 0
+                        }))
                     }
-                }
-                ));
+                }));
                 for (let { _id, item_quantity, tranches } of pricing_methods) {
                     tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
 

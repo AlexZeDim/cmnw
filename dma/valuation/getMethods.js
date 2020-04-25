@@ -5,8 +5,47 @@ async function getMethods (id = 15389) {
         return await pricing_db.aggregate([
             {
                 $match: {
-                    item_id: id, rank: {$exists: true, $eq: 3}
+                    item_id: id
                 }
+            },
+            {
+                $group: {
+                    _id: "$item_id",
+                    max: {
+                        $max: "$rank"
+                    },
+                    data: {
+                        $push: "$$ROOT"
+                    }
+                }
+            },
+            {
+                $unwind: "$data"
+            },
+            {
+                $match: {
+                    $expr: {
+                        $or: [
+                            {
+                                $eq: [
+                                    {
+                                        $type: "$data.rank"
+                                    },
+                                    "missing"
+                                ]
+                            },
+                            {
+                                $eq: [
+                                    "$data.rank",
+                                    "$max"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                $replaceWith: "$data"
             },
             {
                 $lookup: {
@@ -95,5 +134,7 @@ async function getMethods (id = 15389) {
         console.log(err);
     }
 }
+
+getMethods(109226).then(r => console.log(r));
 
 module.exports = getMethods;

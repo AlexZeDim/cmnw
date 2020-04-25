@@ -73,7 +73,7 @@ async function getPricing (item = {
     asset_class: 'VANILLA',
     expansion: 'BFA',
     ticker: 'POTION.HP'
-    }, connected_realm_id = 1602, first = true) {
+    }, connected_realm_id = 1602) {
     try {
 
         let result = {};
@@ -93,6 +93,7 @@ async function getPricing (item = {
         //TODO check asset_class as REQUEST VALUATION OR NOT
 
         let {lastModified} = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified');
+
         switch (item.asset_class) {
             case 'CONST':
                 console.log(item.purchase_price);
@@ -279,9 +280,10 @@ async function getPricing (item = {
                     }
                 ]);
                 //TODO we need to add/modify, not create new pricing!
-                await pricing_methods.map(({_id, item_quantity, tranches}) => tranches.map(async ({asset_class, count, reagent_items}) => {
+                console.log(pricing_methods);
+                Array.from(pricing_methods).map(({_id, item_quantity, tranches}, i) => tranches.map(async ({asset_class, count, reagent_items}) => {
                     if (asset_class === 'VANILLA') {
-                        //TODO quantity
+                        Array.from(pricing_methods).splice(i, 1);
                         let vanilla_PricingMethods = await Promise.all(reagent_items.map(async reagent_item => {
                             const vanilla_getMethods = await getMethods(reagent_item._id);
                             vanilla_getMethods.push({
@@ -290,16 +292,23 @@ async function getPricing (item = {
                                 tranches: [{
                                     asset_class: asset_class,
                                     count: count,
-                                    reagent_items: reagent_item
+                                    reagent_items: [reagent_item]
                                 }]
+                            });
+                            vanilla_getMethods.map(m => {
+                                m.tranches.map(tr => tr.reagent_items.map(r_item => {
+                                    r_item.quantity = parseFloat((r_item.quantity*(reagent_item.quantity/m.item_quantity)).toFixed(3))
+                                }))
                             });
                             return vanilla_getMethods;
                         }));
                         let vanilla_Combinations = vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
                         let t = await Promise.all(vanilla_Combinations.map(cmb => {
                             let hm  = { _id: _id, item_quantity: item_quantity, tranches: [] };
-                            cmb.forEach(obj => {
-                                obj.tranches.forEach(r_item => { hm.tranches.addItemToTranchesByAssetClass(r_item)})
+                            cmb.map(obj => {
+                                obj.tranches.map(tr => { tr.reagent_items.map(r_item => {
+                                    hm.tranches.addItemToTranchesByAssetClass(r_item)
+                                })})
                             });
                             console.log(hm);
                             hm.length = 0

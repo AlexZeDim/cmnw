@@ -1,8 +1,14 @@
 const pricing_db = require("../../db/pricing_db");
 
-async function getMethods (id = 15389) {
+/**
+ *
+ * @param id
+ * @returns {Array}
+ */
+
+function getMethods (id = 15389) {
     try {
-        return await pricing_db.aggregate([
+        return pricing_db.aggregate([
             {
                 $match: {
                     item_id: id
@@ -57,7 +63,7 @@ async function getMethods (id = 15389) {
             },
             {
                 $project: {
-                    "item_id" : 1,
+                    item_id : 1,
                     reagents_items: 1,
                     spell_id: 1,
                     quantity: 1,
@@ -134,7 +140,5 @@ async function getMethods (id = 15389) {
         console.log(err);
     }
 }
-
-getMethods(109226).then(r => console.log(r));
 
 module.exports = getMethods;

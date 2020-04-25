@@ -87,7 +87,7 @@ async function getPricing (item = {
         ]);
 
         if (typeof item !== 'object') {
-            new Error(`no`)
+            new SyntaxError(`no`)
             //TODO ANYWAY WE HAVE ITEMS HERE SO
         }
         //TODO check asset_class as REQUEST VALUATION OR NOT
@@ -190,95 +190,7 @@ async function getPricing (item = {
                 });
                 //TODO MARKET
 
-                let pricing_methods = await pricing_db.aggregate([
-                    {
-                        $match: {
-                            item_id: item._id, rank: {$exists: true, $eq: 3}
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "items",
-                            localField: "reagents",
-                            foreignField: "_id",
-                            as: "reagents_items"
-                        }
-                    },
-                    {
-                        $project: {
-                            "item_id" : 1,
-                            reagents_items: 1,
-                            spell_id: 1,
-                            quantity: 1,
-                            item_quantity: 1,
-                        }
-                    },
-                    {
-                        $addFields: {
-                            reagents_items: {
-                                $map: {
-                                    input: {
-                                        $zip: {
-                                            inputs: [
-                                                "$quantity",
-                                                "$reagents_items"
-                                            ]
-                                        }
-                                    },
-                                    as: "reagents_items",
-                                    in: {
-                                        $mergeObjects: [
-                                            {
-                                                $arrayElemAt: [
-                                                    "$$reagents_items",
-                                                    1
-                                                ]
-                                            },
-                                            {
-                                                quantity: {
-                                                    $arrayElemAt: [
-                                                        "$$reagents_items",
-                                                        0
-                                                    ]
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        $unwind: "$reagents_items"
-                    },
-                    {
-                        $group: {
-                            _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class", item_quantity: "$item_quantity"},
-                            count: { $sum: 1 },
-                            reagents: { $addToSet: "$reagents_items" },
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: "$_id.spell_id",
-                            item_quantity: "$_id.item_quantity",
-                            tranche: { asset_class: "$_id.asset_class", count: "$count", reagent_items: "$reagents"},
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: {spell_id: "$_id", item_quantity: "$item_quantity"},
-                            tranche: { $addToSet: "$tranche" },
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: "$_id.spell_id",
-                            item_quantity: "$_id.item_quantity",
-                            tranches: "$tranche"
-                        }
-                    }
-                ]);
+                let pricing_methods = await getMethods(item._id);
                 //TODO we need to add/modify, not create new pricing!
                 console.log(pricing_methods);
                 Array.from(pricing_methods).map(({_id, item_quantity, tranches}, i) => tranches.map(async ({asset_class, count, reagent_items}) => {

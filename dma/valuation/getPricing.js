@@ -189,12 +189,10 @@ async function getPricing (item = {
                     result.market.lastModified = lastModified;
                 });
                 //TODO MARKET
-
-                let pricing_methods = await getMethods(item._id);
-                console.log(pricing_methods);
-                pricing_methods.map(({_id, item_quantity, tranches}, i) => {
-                    tranches.map(async ({asset_class, count, reagent_items}) => {
-                        if (asset_class === 'VANILLA') {
+                let pricing_methods = await getMethods(item._id).then(async pricing_methods => {
+                    return await Promise.all(pricing_methods.map(async ({_id, item_quantity, tranches}, i) => {
+                        tranches = await tranches.filter(({asset_class}) => asset_class === 'VANILLA');
+                        await tranches.map(async ({asset_class, count, reagent_items}) => {
                             pricing_methods.splice(i, 1);
                             let vanilla_PricingMethods = await Promise.all(reagent_items.map(async reagent_item => {
                                 let vanilla_getMethods = await getMethods(reagent_item._id);
@@ -214,24 +212,26 @@ async function getPricing (item = {
                                 });
                                 return vanilla_getMethods;
                             }));
-                            let vanilla_Combinations = vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
-                            vanilla_Combinations.map(cmb => {
-                                let hm  = { _id: _id, item_quantity: item_quantity, tranches: [] };
-                                cmb.map(obj => {
-                                    obj.tranches.map(tr => {
-                                        tr.reagent_items.map(r_item => {
-                                            hm.tranches.addItemToTranchesByAssetClass(r_item)
-                                        })
-                                    })
-                                });
-                                pricing_methods.push(hm);
-                                hm.length = 0
-                            })
-                        }
-                    })
+                            let vanilla_Combinations = await vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+                            for (let cmb of vanilla_Combinations) {
+                                let cloneMethod = { _id: _id, item_quantity: item_quantity, tranches: [] };
+                                for (let obj of cmb) {
+                                    for (let tr of obj.tranches) {
+                                        for (let r_item of tr.reagent_items) {
+                                            cloneMethod.tranches.addItemToTranchesByAssetClass(r_item)
+                                        }
+                                    }
+                                }
+                                pricing_methods.push(cloneMethod);
+                            }
+                            return pricing_methods //but here fine
+                        });
+                        console.log(pricing_methods) //[]
+                    }));
                 });
-                console.log('ok')
+                console.log('====')
                 console.log(pricing_methods);
+                console.log('====')
                 //TODO we need to add/modify, not create new pricing!
 
                 for (let { _id, item_quantity, tranches } of pricing_methods) {

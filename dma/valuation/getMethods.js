@@ -1,11 +1,5 @@
 const pricing_db = require("../../db/pricing_db");
 
-/**
- *
- * @param id
- * @returns {Array}
- */
-
 async function getMethods (id = 15389) {
     try {
         return await pricing_db.aggregate([

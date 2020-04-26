@@ -100,35 +100,10 @@ async function getMethods (id = 15389) {
                 }
             },
             {
-                $unwind: "$reagents_items"
-            },
-            {
-                $group: {
-                    _id: {spell_id: "$spell_id", asset_class: "$reagents_items.asset_class", item_quantity: "$item_quantity"},
-                    count: { $sum: 1 },
-                    reagents: { $addToSet: "$reagents_items" },
-                }
-            },
-            {
                 $project: {
-                    _id: "$_id.spell_id",
-                    item_quantity: "$_id.item_quantity",
-                    tranche: { asset_class: "$_id.asset_class", count: "$count", reagent_items: "$reagents"},
+                    quantity: 0,
                 }
             },
-            {
-                $group: {
-                    _id: {spell_id: "$_id", item_quantity: "$item_quantity"},
-                    tranche: { $addToSet: "$tranche" },
-                }
-            },
-            {
-                $project: {
-                    _id: "$_id.spell_id",
-                    item_quantity: "$_id.item_quantity",
-                    tranches: "$tranche"
-                }
-            }
         ]);
     } catch (err) {
         console.error(err);

@@ -15,7 +15,7 @@ async function test(start) {
                 quantity: 4
             }
         ];
-        exampleMap.map((doc, i) => {
+/*        exampleMap.map((doc, i) => {
             if (doc.item > 1) {
                 exampleMap.splice(i, 1);
                 let ex = {
@@ -27,8 +27,14 @@ async function test(start) {
                 ex = {};
             }
             doc.quantity = doc.quantity+1
-        });
-        console.log(exampleMap);
+        });*/
+        for (let ex of exampleMap) {
+            if (ex.item > 2) {
+                exampleMap.push({item: 4, quantity: 1});
+            }
+            console.log(ex);
+        }
+        //console.log(exampleMap);
     } catch (err) {
         console.log(err);
     }

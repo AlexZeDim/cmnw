@@ -3,6 +3,34 @@ const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
 const getMethods = require("./getMethods");
 
+Array.prototype.addItemToReagentsItems = function(item = {
+    _id: 152509,
+    asset_class: 'VANILLA',
+    quantity: 1
+}) {
+    let itemExists = this.some(element => element._id === item._id);
+    if (itemExists) {
+        let reagent_item = this.find(element => element._id === item._id);
+        reagent_item.quantity = reagent_item.quantity + item.quantity;
+    } else {
+        this.push(item);
+    }
+    return this;
+};
+
+Array.prototype.removeItemFromReagentsItems = function(item = {
+    _id: 152509,
+    asset_class: 'VANILLA',
+    quantity: 1
+}) {
+    let itemExists = this.some(element => element._id === item._id);
+    if (itemExists) {
+        let reagent_itemIndex = this.findIndex(element => element._id === item._id);
+        this.splice(reagent_itemIndex, 1);
+    }
+    return this;
+};
+
 Array.prototype.addItemToTranchesByAssetClass = function(item = {
     _id: 152509,
     asset_class: 'VANILLA',
@@ -210,6 +238,7 @@ async function getPricing (item = {
                                     r_item.quantity = parseFloat((quantity / r_item.quantity).toFixed(3));
                                 }
                             }
+                            //TODO remove vanilla items post-factum
                             //TODO now sure that we clone the right method
                             let cloneMethod = method;
                             cloneMethod.reagents_items = [reagent_items[i]];
@@ -221,8 +250,13 @@ async function getPricing (item = {
                     }
                     let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
                     for (let v_CombinedMethod of vanilla_CartesianProduct) {
+                        let cloneMethod = method;
+                        console.log(method);
+                        console.log('-----');
+                        //TODO clone
                         for (let v_combination of v_CombinedMethod) {
-                            //TODO push to reagent_items && clone method
+                            //TODO we need clone because not vanilla
+                            //TODO push to reagent_items && we dont' need clone method
                             console.log(v_combination.reagents_items);
                         }
                     }

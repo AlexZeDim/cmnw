@@ -189,7 +189,45 @@ async function getPricing (item = {
                     result.market.lastModified = lastModified;
                 });
                 //TODO MARKET
-                let pricing_methods = await getMethods(item._id).then(async pricing_methods => {
+                let pricing_methods = await getMethods(item._id);
+                /**
+                 *
+                 _id: 13957,
+                 quantity: [ 1, 1 ],
+                 spell_id: 252390,
+                 item_id: 163082,
+                 item_quantity: 1,
+                 reagents_items: [ [Object], [Object] ]
+                 */
+                for (const [index, method] of pricing_methods.entries()) {
+                    let reagent_items = method.reagents_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA');
+                    let vanilla_MethodsCombinations = [];
+                    for await (let vanilla_ItemCombination of reagent_items.map(({_id, quantity}, i) =>
+                        getMethods(_id).then(vanilla_PricingMethods => {
+                            for (let vanilla_Method of vanilla_PricingMethods) {
+                                for (let r_item of vanilla_Method.reagents_items) {
+                                    //TODO check quantity
+                                    r_item.quantity = parseFloat((quantity / r_item.quantity).toFixed(3));
+                                }
+                            }
+                            //TODO now sure that we clone the right method
+                            let cloneMethod = method;
+                            cloneMethod.reagents_items = [reagent_items[i]];
+                            vanilla_PricingMethods.push(cloneMethod);
+                            return vanilla_PricingMethods
+                        })
+                    )) {
+                        vanilla_MethodsCombinations.push(vanilla_ItemCombination);
+                    }
+                    let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+                    for (let v_CombinedMethod of vanilla_CartesianProduct) {
+                        for (let v_combination of v_CombinedMethod) {
+                            //TODO push to reagent_items && clone method
+                            console.log(v_combination.reagents_items);
+                        }
+                    }
+                }
+/*                let pricing_methods = await getMethods(item._id).then(async pricing_methods => {
                     return await Promise.all(pricing_methods.map(async ({_id, item_quantity, tranches}, i) => {
                         tranches = await tranches.filter(({asset_class}) => asset_class === 'VANILLA');
                         return await Promise.all(tranches.map(async ({asset_class, count, reagent_items}) => {
@@ -229,7 +267,7 @@ async function getPricing (item = {
                             });
                         }));
                     }));
-                });
+                });*/
                 console.log('====')
                 console.log(pricing_methods);
                 console.log('====')

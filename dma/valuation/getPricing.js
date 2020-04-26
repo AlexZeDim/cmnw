@@ -194,37 +194,39 @@ async function getPricing (item = {
                         tranches = await tranches.filter(({asset_class}) => asset_class === 'VANILLA');
                         return await Promise.all(tranches.map(async ({asset_class, count, reagent_items}) => {
                             pricing_methods.splice(i, 1);
-                            let vanilla_PricingMethods = await Promise.all(reagent_items.map(async reagent_item => {
-                                let vanilla_getMethods = await getMethods(reagent_item._id);
-                                vanilla_getMethods.push({
-                                    _id: _id,
-                                    item_quantity: item_quantity,
-                                    tranches: [{
-                                        asset_class: asset_class,
-                                        count: count,
-                                        reagent_items: [reagent_item]
-                                    }]
+                            return await Promise.all(reagent_items.map(async reagent_item => {
+                                return await getMethods(reagent_item._id).then(vanilla_PricingMethods => {
+                                    vanilla_PricingMethods.push({
+                                        _id: _id,
+                                        item_quantity: item_quantity,
+                                        tranches: [{
+                                            asset_class: asset_class,
+                                            count: count,
+                                            reagent_items: [reagent_item]
+                                        }]
+                                    });
+                                    vanilla_PricingMethods.map(m => {
+                                        m.tranches.map(tr => tr.reagent_items.map(r_item => {
+                                            r_item.quantity = parseFloat((r_item.quantity * (reagent_item.quantity / m.item_quantity)).toFixed(3))
+                                        }))
+                                    });
+                                    return vanilla_PricingMethods
                                 });
-                                await vanilla_getMethods.map(m => {
-                                    m.tranches.map(tr => tr.reagent_items.map(r_item => {
-                                        r_item.quantity = parseFloat((r_item.quantity * (reagent_item.quantity / m.item_quantity)).toFixed(3))
-                                    }))
-                                });
-                                return vanilla_getMethods;
-                            }));
-                            let vanilla_Combinations = await vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
-                            for (let cmb of vanilla_Combinations) {
-                                let cloneMethod = { _id: _id, item_quantity: item_quantity, tranches: [] };
-                                for (let obj of cmb) {
-                                    for (let tr of obj.tranches) {
-                                        for (let r_item of tr.reagent_items) {
-                                            cloneMethod.tranches.addItemToTranchesByAssetClass(r_item)
+                            })).then(vanilla_PricingMethods => {
+                                let vanilla_Combinations = vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+                                for (let cmb of vanilla_Combinations) {
+                                    let cloneMethod = { _id: _id, item_quantity: item_quantity, tranches: [] };
+                                    for (let obj of cmb) {
+                                        for (let tr of obj.tranches) {
+                                            for (let r_item of tr.reagent_items) {
+                                                cloneMethod.tranches.addItemToTranchesByAssetClass(r_item)
+                                            }
                                         }
                                     }
+                                    pricing_methods.push(cloneMethod);
                                 }
-                                await pricing_methods.push(cloneMethod);
-                            }
-                            return pricing_methods //but here fine
+                                return pricing_methods;
+                            });
                         }));
                     }));
                 });

@@ -15,8 +15,6 @@ async function indexValuation () {
         for (let item of items) {
             let x = await getPricing(item, 1602, true);
             console.log(x);
-            console.log(x.model);
-            console.log(x.model.valuations[0].pricing_method);
         }
         console.timeEnd(indexValuation.name);
     } catch (err) {

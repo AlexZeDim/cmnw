@@ -6,9 +6,9 @@ const pricing_db = require("../../db/pricing_db");
  * @returns {Array}
  */
 
-function getMethods (id = 15389) {
+async function getMethods (id = 15389) {
     try {
-        return pricing_db.aggregate([
+        return await pricing_db.aggregate([
             {
                 $match: {
                     item_id: id
@@ -137,7 +137,7 @@ function getMethods (id = 15389) {
             }
         ]);
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 }
 

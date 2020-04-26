@@ -192,7 +192,7 @@ async function getPricing (item = {
                 let pricing_methods = await getMethods(item._id).then(async pricing_methods => {
                     return await Promise.all(pricing_methods.map(async ({_id, item_quantity, tranches}, i) => {
                         tranches = await tranches.filter(({asset_class}) => asset_class === 'VANILLA');
-                        await tranches.map(async ({asset_class, count, reagent_items}) => {
+                        return await Promise.all(tranches.map(async ({asset_class, count, reagent_items}) => {
                             pricing_methods.splice(i, 1);
                             let vanilla_PricingMethods = await Promise.all(reagent_items.map(async reagent_item => {
                                 let vanilla_getMethods = await getMethods(reagent_item._id);
@@ -222,11 +222,10 @@ async function getPricing (item = {
                                         }
                                     }
                                 }
-                                pricing_methods.push(cloneMethod);
+                                await pricing_methods.push(cloneMethod);
                             }
                             return pricing_methods //but here fine
-                        });
-                        console.log(pricing_methods) //[]
+                        }));
                     }));
                 });
                 console.log('====')

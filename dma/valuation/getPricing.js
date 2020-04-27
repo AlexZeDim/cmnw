@@ -178,7 +178,7 @@ async function getPricing (item = {
                 result.model = {};
                 result.model.valuations = [];
 
-                if (!lastModified) {
+/*                if (!lastModified) {
                     ({lastModified} = await auctions_db.findOne({ "item.id": item._id, connected_realm_id: connected_realm_id}).sort({lastModified: -1}));
                 }
 
@@ -215,7 +215,7 @@ async function getPricing (item = {
                         //TODO return
                     }
                     result.market.lastModified = lastModified;
-                });
+                });*/
                 //TODO MARKET
                 let pricing_methods = await getMethods(item._id);
                 /**
@@ -228,37 +228,64 @@ async function getPricing (item = {
                  reagents_items: [ [Object], [Object] ]
                  */
                 for (const [index, method] of pricing_methods.entries()) {
-                    let reagent_items = method.reagents_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA');
+                    //TODO some? if Y -> remove method
+                    /**
+                     * We filter reagents_items to receive all
+                     * VANILLA items inside of it.
+                     * @type {Array}
+                     */
+                    let reagent_items = [...method.reagents_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
                     let vanilla_MethodsCombinations = [];
+                    /**
+                     * We request pricingMethods for
+                     * every VANILLA item inside
+                     * default method reagent_item
+                     */
                     for await (let vanilla_ItemCombination of reagent_items.map(({_id, quantity}, i) =>
                         getMethods(_id).then(vanilla_PricingMethods => {
                             for (let vanilla_Method of vanilla_PricingMethods) {
                                 for (let r_item of vanilla_Method.reagents_items) {
-                                    //TODO check quantity
+                                    /**
+                                     * We need to change reagent_items quantity
+                                     * according to vanilla_item quantity
+                                     * TODO check quantity
+                                     * @type {number}
+                                     */
                                     r_item.quantity = parseFloat((quantity / r_item.quantity).toFixed(3));
                                 }
                             }
-                            //TODO remove vanilla items post-factum
-                            //TODO now sure that we clone the right method
-                            let cloneMethod = method;
+                            /**
+                             * We need to add the vanilla item itself only and
+                             * only if he has pricing on auction house via cloning of original method.
+                             * TODO now sure that we clone the right method
+                             * TODO remove vanilla items post-factum
+                             */
+                            let cloneMethod = Object.assign({}, method);
                             cloneMethod.reagents_items = [reagent_items[i]];
                             vanilla_PricingMethods.push(cloneMethod);
                             return vanilla_PricingMethods
                         })
                     )) {
+                        /**
+                         * ITEM => [cmb1, ... cmbN] Add all available values of
+                         * VANILLA item pricing for Cartesian product stage
+                         */
                         vanilla_MethodsCombinations.push(vanilla_ItemCombination);
                     }
+                    /**
+                     * This code is provided by
+                     */
                     let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
                     for (let v_CombinedMethod of vanilla_CartesianProduct) {
-                        let cloneMethod = method;
-                        console.log(method);
-                        console.log('-----');
+                        let combinedMethod = Object.assign({}, method);
+                        console.log(combinedMethod);
+                        //console.log('-----');
                         //TODO clone
-                        for (let v_combination of v_CombinedMethod) {
+/*                        for (let v_combination of v_CombinedMethod) {
                             //TODO we need clone because not vanilla
                             //TODO push to reagent_items && we dont' need clone method
                             console.log(v_combination.reagents_items);
-                        }
+                        }*/
                     }
                 }
 /*                let pricing_methods = await getMethods(item._id).then(async pricing_methods => {

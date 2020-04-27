@@ -11,7 +11,7 @@ async function indexValuation () {
     try {
         console.time(indexValuation.name);
         //TODO cursor
-        let items = await items_db.find({ticker: "J.POTION.REJUV"});
+        let items = await items_db.find({ticker: "ALCH.CAULDRON"});
         for (let item of items) {
             let x = await getPricing(item, 1602, true);
             console.log(x);

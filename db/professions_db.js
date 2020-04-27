@@ -15,29 +15,57 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 
 
 let schema = new mongoose.Schema({
+    /** API or LOCAL */
     _id: {
         type: Number
     },
-/*    name: {
-        type: String
-    },*/
+    /** API */
+    name: {
+        type: Object
+    },
     description: {
-        type: String
+        type: Object
     },
     media: {
+        type: Number
+    },
+    horde_item_id: {
+        type: Number
+    },
+    alliance_item_id: {
+        type: Number
+    },
+    /** API or LOCAL */
+    item_id: {
+        type: Object
+    },
+    /** LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
+     *  SkillLineAbility
+     * */
+    item_quantity: {
+        type: Number
+    },
+    spell_id: {
+        type: Number
+    },
+    /** API or LOCAL
+     *  {id: Number, Quantity: Number}
+     * */
+    reagents: {
+        type: [
+            {
+                _id: Number,
+                quantity: Number
+            }
+        ]
+    },
+    /** if Local then Convert from SkillLine*/
+    profession: {
         type: String
     },
-    horde_crafted_item: {
-        type: Object
-    },
-    alliance_crafted_item: {
-        type: Object
-    },
-    crafted_item: {
-        type: Object
-    },
-    reagents: {
-        type: Array
+    /** API */
+    expansion: {
+        type: String
     },
     rank: {
         type: Number

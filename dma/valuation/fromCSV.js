@@ -1,8 +1,9 @@
 const csv = require('csv');
 const fs = require('fs');
-//const professions_db = require("../../../db/models/professions_db");
+const professions_db = require("../../db/professions_db");
+const {connection} = require('mongoose');
 
-async function getValuation (path, expr) {
+async function fromCSV (path, expr) {
     try {
         let eva = fs.readFileSync(path,'utf8');
         csv.parse(eva, async function(err, data) {
@@ -67,45 +68,51 @@ async function getValuation (path, expr) {
                     //valuations_db.insertMany(array);
                     break;
                 case 'skilllineability':
-                    for (let i = 1; i < data.length; i++) {
-                        if (parseFloat(data[i][6]) === 0) {
-                            let item = await valuations_db.findOneAndUpdate({spell_id: parseFloat(data[i][3])}, {rank: 1});
-                            console.log(item)
-                        } else {
-                            console.log(parseFloat(data[i][3]),parseFloat(data[i][6])); //if exist in valuation && rank 1
-                            let r2 = await valuations_db.findOne({spell_id: parseFloat(data[i][6]), rank: 1});
-                            if (r2 !== null) {
-                                let item = await valuations_db.findOneAndUpdate({spell_id: parseFloat(data[i][3])}, {rank: 2});
-                                console.log(item)
+                    /***
+                     * ID - recipe ID
+                     * SkillLine - professionID
+                     * Spell - spellID
+                     * SupercedesSpell - determines RANK of currentSpell, supercedes weak rank
+                     * MinSkillLineRank - require skill points
+                     * Flags: 16 ??????
+                     * NumSkillUps - pointsUP
+                     * TrivialSkillLineRankHigh - greenCraftQ
+                     * TrivialSkillLineRankLow - yellow craftQ
+                     * SkillupSkillLineID represent subCategory in professions, for expansionTicker
+                     *
+                     * @type {*[]}
+                     */
+                    let SkillLineAbility = [];
+                    for (let i = 1; i < L; i++) {
+                        let row = {};
+                        row.length = 0;
+                        await Promise.all([data[i].map((row_value, i) => {
+                            if (!isNaN(row_value)) {
+                                row_value = parseInt(row_value)
                             }
-                            let r3 = await valuations_db.findOne({spell_id: parseFloat(data[i][6]), rank: 2});
-                            if (r3 !== null) {
-                                let item = await valuations_db.findOneAndUpdate({spell_id: parseFloat(data[i][3])}, {rank: 3});
-                                console.log(item)
-                            }
+                            Object.assign(row, {[data[0][i]]: row_value})
+                        })]);
+                        SkillLineAbility.push(row);
+                    }
+                    //TODO write from local or add to API
+                    console.time('write');
+                    let cursor = await professions_db.find({}).cursor();
+                    cursor.on('data', async (craft_quene) => {
+                        cursor.pause();
+                        let profession_Q = SkillLineAbility.find(x => x.ID === craft_quene._id);
+                        if (profession_Q.hasOwnProperty("Spell")) {
+                            console.info(`${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`);
+                            craft_quene.spell_id = profession_Q.Spell;
                         }
-                    }
-                    break;
-                case 'eva_import':
-                    for (let i = 1; i < data.length; i++) {
-                        let item = await valuations_db.findOneAndUpdate(
-                            {
-                                _id: 99999-i //id
-                            },
-                            {
-                                reagents: [parseFloat(data[i][1])],
-                                quantity: [parseFloat(data[i][2])],
-                                spell_id: parseFloat(data[i][3]),
-                                item_id: parseFloat(data[i][4]),
-                                rank: parseFloat(data[i][5]),
-                                item_quantity: parseFloat(data[i][6]),
-                            },{
-                                upsert : true,
-                                new: true,
-                                lean: true
-                            });
-                        console.log(item)
-                    }
+                        craft_quene.save();
+                        cursor.resume();
+                    });
+                    cursor.on('close', async () => {
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        connection.close();
+                        console.timeEnd('write');
+                    });
+
                     break;
                 default:
                     console.log('Sorry, we got nothing');
@@ -116,9 +123,6 @@ async function getValuation (path, expr) {
     }
 }
 
-getValuation('C:\\spellreagents.csv', 'spellreagents');
-
-
-
+fromCSV('C:\\skilllineability.csv', 'skilllineability');
 
 

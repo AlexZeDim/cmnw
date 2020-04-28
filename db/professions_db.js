@@ -40,7 +40,7 @@ let schema = new mongoose.Schema({
         type: Object
     },
     /** LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
-     *  SkillLineAbility
+     *  SkillLineAbility.lua
      * */
     item_quantity: {
         type: Number
@@ -69,8 +69,7 @@ let schema = new mongoose.Schema({
     },
     rank: {
         type: Number
-    },
-    //TODO check profession for valuations
+    }
 },{
     timestamps: true
 });

@@ -29,7 +29,7 @@ async function indexProfessions () {
             [794, 'ARCH'],
         ]);
         const expansionTicker = new Map([
-            ['Kul Tiran', 'BFA'],
+            ['Kul', 'BFA'],
             ['Zandalari', 'BFA'],
             ['Legion', 'LGN'],
             ['Draenor', 'WOD'],
@@ -46,12 +46,10 @@ async function indexProfessions () {
             let {skill_tiers} = await bnw.WowGameData.getProfession(profession.id);
             if (skill_tiers) {
                 for (let tier of skill_tiers) {
-                    let expansion_ticker;
-                    for (let [value, index] of expansionTicker.entries()) {
-                        if (tier.name.en_GB.includes(value)) {
-                            expansion_ticker = index;
-                        }
-                    }
+                    let expansion_ticker = 'CLSC';
+                    [...expansionTicker.entries()].some(([k,v]) => {
+                        (tier.name.en_GB.includes(k)) ? (expansion_ticker = v) : ('')
+                    });
                     let {categories} = await bnw.WowGameData.getProfessionSkillTier(profession.id, tier.id);
                     if (categories) {
                         for (let category of categories) {
@@ -60,20 +58,20 @@ async function indexProfessions () {
                             let result = {};
                             for (let recipe of recipes) {
                                 await Promise.all([
-                                    bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, hasOwnProperty, horde_crafted_item, id, name, rank, reagents}) => {
-                                        result._id = id;
+                                    bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents}) => {
+                                        result._id = parseInt(id);
                                         result.name = name;
                                         if (description) {
                                             result.description = description;
                                         }
                                         if (alliance_crafted_item) {
-                                            result.alliance_item_id = parseFloat(alliance_crafted_item.id)
+                                            result.alliance_item_id = parseInt(alliance_crafted_item.id)
                                         }
                                         if (horde_crafted_item) {
-                                            result.horde_item_id = parseFloat(horde_crafted_item.id)
+                                            result.horde_item_id = parseInt(horde_crafted_item.id)
                                         }
                                         if (crafted_item) {
-                                            result.item_id = parseFloat(crafted_item.id)
+                                            result.item_id = parseInt(crafted_item.id)
                                         }
                                         if (professionsTicker.has(profession.id)) {
                                             result.profession = professionsTicker.get(profession.id)
@@ -84,22 +82,26 @@ async function indexProfessions () {
                                         if (rank) {
                                             result.rank = rank;
                                         }
-                                        result.reagents = reagents.map(({reagent, quantity}) => {return {_id: reagent.id , quantity: quantity}});
+                                        result.reagents = reagents.map(({reagent, quantity}) => {return {_id: parseInt(reagent.id) , quantity: parseInt(quantity)}});
                                     }).catch(e=>e),
                                     bnw.WowGameData.getRecipeMedia(recipe.id).then(({assets}) => {
                                         result.icon = assets[0].value
                                     }).catch(e=>e)
                                 ]);
-                                await professions_db.findByIdAndUpdate(
-                                {
-                                    _id: result._id
-                                },
-                                result,
-                                {
-                                    upsert: true,
-                                    new: true,
-                                    lean: true
-                                }).then(doc => console.info(doc._id));
+                                if (result) {
+                                    await professions_db.findByIdAndUpdate(
+                                    {
+                                        _id: result._id
+                                    },
+                                    result,
+                                    {
+                                        upsert: true,
+                                        new: true,
+                                        lean: true
+                                    })
+                                    .then(({_id, name, profession, expansion}) => console.info(`F:U,${expansion}:${profession}:${_id},${name.en_GB}`))
+                                    .catch(e => console.error(e));
+                                }
                             }
                         }
                     }
@@ -109,7 +111,7 @@ async function indexProfessions () {
         connection.close();
         console.timeEnd(`DMA-${indexProfessions.name}`);
     } catch (error) {
-        console.error(error)
+        console.error(`DMA-${indexProfessions.name}`, error)
     }
 }
 

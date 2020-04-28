@@ -273,7 +273,7 @@ async function getPricing (item = {
                         vanilla_MethodsCombinations.push(vanilla_ItemCombination);
                     }
                     /**
-                     * This code is provided by
+                     * This code is provided by Nina Scholz: https://stackoverflow.com/a/50631472/7475615
                      */
                     let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
                     for (let v_CombinedMethod of vanilla_CartesianProduct) {

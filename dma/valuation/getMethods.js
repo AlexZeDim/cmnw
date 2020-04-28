@@ -110,4 +110,6 @@ async function getMethods (id = 15389) {
     }
 }
 
+getMethods(168656).then(doc=> console.log(doc[0]));
+
 module.exports = getMethods;

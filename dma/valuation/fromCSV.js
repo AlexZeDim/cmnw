@@ -3,6 +3,19 @@ const fs = require('fs');
 const professions_db = require("../../db/professions_db");
 const {connection} = require('mongoose');
 
+/**
+ *
+ * API => skilllineability (spell_ID) => spelleffect (item_quantity)
+ * OR (LABS)
+ * spell_reagents => skilllineability => spelleffect => API
+ *
+ * TODO exp based on path
+ * @param path
+ * @param expr
+ * @returns {Promise<void>}
+ */
+
+
 async function fromCSV (path, expr) {
     try {
         let eva = fs.readFileSync(path,'utf8');
@@ -10,7 +23,15 @@ async function fromCSV (path, expr) {
             const L = data.length;
             switch (expr) {
                 case 'spelleffect':
-                    for (let i = 1; i < 3; i++) {
+                    /**
+                     *  EffectItemType - itemID
+                     *  EffectBasePointsF - itemQuantity
+                     *  SpellID - spellID
+                     *
+                     * @type {*[]}
+                     */
+                    let SpellEffect = [];
+                    for (let i = 1; i < L; i++) {
                         let row = {};
                         row.length = 0;
                         await Promise.all([data[i].map((row_value, i) => {
@@ -19,16 +40,30 @@ async function fromCSV (path, expr) {
                             }
                             Object.assign(row, {[data[0][i]]: row_value})
                         })]);
-                        console.log(row);
+                        SpellEffect.push(row);
                     }
+                    let SE_cursor = await professions_db.find({}).cursor();
+                    SE_cursor.on('data', async (craft_quene) => {
+                        SE_cursor.pause();
+                        let profession_Q = await SpellEffect.find(({SpellID}) => SpellID === craft_quene.spell_id);
+                        if (profession_Q.hasOwnProperty("EffectBasePointsF") && profession_Q.hasOwnProperty("SpellID")) {
+                            console.info(`${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}:${craft_quene.spell_id}=${profession_Q.SpellID}=>${profession_Q.EffectBasePointsF}`);
+                            craft_quene.item_quantity = parseInt(profession_Q.EffectBasePointsF);
+                        }
+                        craft_quene.save();
+                        SE_cursor.resume();
+                    });
+                    SE_cursor.on('close', async () => {
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        connection.close();
+                    });
                     break;
                 case 'spellreagents':
                     let array = [];
-                    //TODO find it by headers
+                    //IDEA find it by headers
                     let reagentsIndex = [2, 3, 4, 5, 6, 7, 8, 9];
                     let quantityIndex = [10, 11, 12, 13, 14, 15, 16, 17];
-                    //console.log(data[0]); headers
-                    for (let i = 1; i < 3; i++) {
+                    for (let i = 1; i < L; i++) {
                         let row = {};
                         row.length = 0;
 
@@ -43,41 +78,33 @@ async function fromCSV (path, expr) {
                             }
                         }
                         //TODO find by spell_id and array = 0;
-                        console.log({
-                            spell_id: parseInt(data[i][1]),
-                            reagents: row_reagentArray
+                        let professionQ = await professions_db.findOne({
+                            spell_id: parseInt(data[i][1])
                         });
+                        if (professionQ) {
+                            //IDEA should we update? Not lean()!
+                        } else {
+                            /**
+                             * IDEA create new CollectonLab for
+                             * {
+                             *      spell_id: parseInt(data[i][1]),
+                             *      reagents: row_reagentArray
+                             * }
+                             */
+                        }
                     }
-/*                    console.log(array);
-                    for (let i = 0; i < array.length; i++) {
-                        let test = await valuations_db.findOneAndUpdate(
-                            {
-                                _id: array[i]._id
-                            },
-                            {
-                                reagents: array[i].reagents,
-                                quantity: array[i].quantity,
-                                spell_id: array[i].spell_id,
-                            }, {
-                                upsert: true,
-                                new: true,
-                                lean: true
-                            });
-                        console.log(test);
-                    }*/
-                    //valuations_db.insertMany(array);
                     break;
                 case 'skilllineability':
                     /***
-                     * ID - recipe ID
+                     * ID - recipeID
                      * SkillLine - professionID
                      * Spell - spellID
                      * SupercedesSpell - determines RANK of currentSpell, supercedes weak rank
                      * MinSkillLineRank - require skill points
-                     * Flags: 16 ??????
-                     * NumSkillUps - pointsUP
+                     * Flags: 0 or 16 ??????
+                     * NumSkillUps - skill points up on craft
                      * TrivialSkillLineRankHigh - greenCraftQ
-                     * TrivialSkillLineRankLow - yellow craftQ
+                     * TrivialSkillLineRankLow - yellowCraftQ
                      * SkillupSkillLineID represent subCategory in professions, for expansionTicker
                      *
                      * @type {*[]}
@@ -96,23 +123,22 @@ async function fromCSV (path, expr) {
                     }
                     //TODO write from local or add to API
                     console.time('write');
-                    let cursor = await professions_db.find({}).cursor();
-                    cursor.on('data', async (craft_quene) => {
-                        cursor.pause();
+                    let SLA_cursor = await professions_db.find({}).cursor();
+                    SLA_cursor.on('data', async (craft_quene) => {
+                        SLA_cursor.pause();
                         let profession_Q = SkillLineAbility.find(x => x.ID === craft_quene._id);
                         if (profession_Q.hasOwnProperty("Spell")) {
                             console.info(`${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`);
                             craft_quene.spell_id = profession_Q.Spell;
                         }
                         craft_quene.save();
-                        cursor.resume();
+                        SLA_cursor.resume();
                     });
-                    cursor.on('close', async () => {
+                    SLA_cursor.on('close', async () => {
                         await new Promise(resolve => setTimeout(resolve, 5000));
                         connection.close();
-                        console.timeEnd('write');
                     });
-
+                    console.timeEnd('write');
                     break;
                 default:
                     console.log('Sorry, we got nothing');
@@ -123,6 +149,6 @@ async function fromCSV (path, expr) {
     }
 }
 
-fromCSV('C:\\skilllineability.csv', 'skilllineability');
+fromCSV('C:\\spelleffect.csv', 'spelleffect');
 
 

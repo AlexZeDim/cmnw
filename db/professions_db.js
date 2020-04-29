@@ -74,6 +74,12 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ item_id: -1 },{name: 'itemID'});
+schema.index({ horde_item_id: -1 },{name: 'HitemID'});
+schema.index({ alliance_item_id: -1 },{name: 'AitemID'});
+schema.index({ spell_id: -1 },{name: 'spellID'});
+
+
 let professions = mongoose.model('professions', schema);
 
 module.exports = professions;

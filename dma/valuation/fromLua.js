@@ -6,7 +6,7 @@ const {connection} = require('mongoose');
 
 async function fromLua (path, expr) {
     try {
-        let item_id, reagents, item_quantity, stringArray, lua;
+        let item_id, itemID, item_quantity, stringArray, lua;
         switch (expr) {
             case 'insc':
                 lua = fs.readFileSync(path+'Mill.lua','utf8');
@@ -16,16 +16,15 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:')) {
-                            reagents = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
+                            itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             await pricing_db.findByIdAndUpdate(parseInt(`51005${item_id}${reagents}`),
                         {
-                                _id: parseInt(`51005${item_id}${reagents}`),
+                                _id: parseInt(`51005${item_id}${itemID}`),
                                 spell_id: 51005,
                                 item_id: item_id,
-                                item_quantity: item_quantity,
-                                reagents: [reagents],
-                                quantity: 1,
+                                item_quantity: 1,
+                                reagents: [{_id: itemID, quantity: item_quantity}],
                                 profession: 'INSC'
                             }, {
                                 upsert : true,
@@ -47,17 +46,16 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:')) {
-                            reagents = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
+                            itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             await pricing_db.findByIdAndUpdate(parseInt(`31252${item_id}${reagents}`),
                             {
-                                _id: parseInt(`31252${item_id}${reagents}`),
+                                _id: parseInt(`31252${item_id}${itemID}`),
                                 spell_id: 31252,
                                 item_id: item_id,
-                                item_quantity: item_quantity,
-                                reagents: [reagents],
-                                quantity: 1,
-                                profession: 'JWC'
+                                item_quantity: 1,
+                                reagents: [{_id: itemID, quantity: item_quantity}],
+                                profession: 'JWLC'
                             }, {
                                 upsert : true,
                                 new: true,
@@ -78,16 +76,15 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:')) {
-                            reagents = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
+                            itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
-                            await pricing_db.findByIdAndUpdate(parseInt(`${item_id}${reagents}`),
+                            await pricing_db.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
                             {
-                                _id: parseInt(`${item_id}${reagents}`),
-                                spell_id: parseInt(`${item_id}${reagents}`),
+                                _id: parseInt(`${item_id}${itemID}`),
+                                spell_id: parseInt(`${item_id}${itemID}`),
                                 item_id: item_id,
-                                item_quantity: item_quantity,
-                                reagents: [reagents],
-                                quantity: 1,
+                                item_quantity: 1,
+                                reagents: [{_id: itemID, quantity: item_quantity}],
                                 profession: 'TRANSFORM'
                             }, {
                                 upsert : true,
@@ -109,16 +106,16 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:')) {
-                            reagents = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
+                            itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             console.log({
-                                _id: parseInt(`51005${item_id}${reagents}`),
+                                _id: parseInt(`51005${item_id}${itemID}`),
                                 spell_id: 51005,
                                 item_id: item_id,
-                                item_quantity: item_quantity,
-                                reagents: [reagents],
+                                item_quantity: 1,
+                                reagents: [{_id: itemID, quantity: item_quantity}],
                                 quantity: 1,
-                                profession: 'INSC'
+                                profession: 'TRANS'
                             });
                         }
                     }
@@ -132,4 +129,4 @@ async function fromLua (path, expr) {
     }
 }
 
-fromLua('C:\\', 'jwc');
+fromLua('C:\\', 'insc');

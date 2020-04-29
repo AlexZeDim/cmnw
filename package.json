@@ -7,6 +7,7 @@
     "start": "node discord/bluratella.js"
   },
   "dependencies": {
+    "async-csv": "^2.1.3",
     "axios": "latest",
     "battlenet-api-wrapper": "git+https://github.com/AlexZeDim/battlenet-api-wrapper.git",
     "cookie-parser": "~1.4.4",

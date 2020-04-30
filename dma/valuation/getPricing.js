@@ -219,7 +219,6 @@ async function getPricing (item = {
                 //TODO MARKET
                 let pricing_methods = await getMethods(item._id);
                 /**
-                 *
                  _id: 13957,
                  quantity: [ 1, 1 ],
                  spell_id: 252390,

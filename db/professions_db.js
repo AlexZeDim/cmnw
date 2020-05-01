@@ -70,6 +70,11 @@ let schema = new mongoose.Schema({
     rank: {
         type: Number
     },
+    type: {
+        type: String,
+        required: true,
+        enum: ['primary', 'synthetic'],
+    },
     createdBy: {
         type: String
     },

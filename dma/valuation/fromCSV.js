@@ -132,6 +132,7 @@ async function fromCSV (path, expr) {
                             console.info(`${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`);
                             craft_quene.spell_id = profession_Q.Spell;
                             craft_quene.updatedBy = `DMA-${fromCSV.name}`;
+                            //craft_quene.type = `primary`;
                         }
                         craft_quene.save();
                         SLA_cursor.resume();

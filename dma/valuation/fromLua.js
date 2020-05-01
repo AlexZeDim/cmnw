@@ -43,6 +43,7 @@ async function fromLua (path, expr) {
                                     item_quantity: 1,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
                                     profession: 'INSC',
+                                    type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
                                     updatedBy: `DMA-${fromLua.name}`
                                 }, {
@@ -84,6 +85,7 @@ async function fromLua (path, expr) {
                                     item_quantity: 1,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
                                     profession: 'JWLC',
+                                    type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
                                     updatedBy: `DMA-${fromLua.name}`
                                 }, {
@@ -125,6 +127,7 @@ async function fromLua (path, expr) {
                                     item_quantity: 1,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
                                     profession: 'TRANSFORM',
+                                    type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
                                     updatedBy: `DMA-${fromLua.name}`
                                 }, {
@@ -166,6 +169,7 @@ async function fromLua (path, expr) {
                                     spell_id: 51005,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
                                     profession: 'TRANS',
+                                    type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
                                     updatedBy: `DMA-${fromLua.name}`
                                 });

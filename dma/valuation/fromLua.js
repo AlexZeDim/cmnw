@@ -34,7 +34,9 @@ async function fromLua (path, expr) {
                                     item_id: item_id,
                                     item_quantity: 1,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
-                                    profession: 'INSC'
+                                    profession: 'INSC',
+                                    createdBy: `DMA-${fromLua.name}`,
+                                    updatedBy: `DMA-${fromLua.name}`
                                 }, {
                                     upsert : true,
                                     new: true,
@@ -73,7 +75,9 @@ async function fromLua (path, expr) {
                                     item_id: item_id,
                                     item_quantity: 1,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
-                                    profession: 'JWLC'
+                                    profession: 'JWLC',
+                                    createdBy: `DMA-${fromLua.name}`,
+                                    updatedBy: `DMA-${fromLua.name}`
                                 }, {
                                     upsert : true,
                                     new: true,
@@ -112,7 +116,9 @@ async function fromLua (path, expr) {
                                     item_id: item_id,
                                     item_quantity: 1,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
-                                    profession: 'TRANSFORM'
+                                    profession: 'TRANSFORM',
+                                    createdBy: `DMA-${fromLua.name}`,
+                                    updatedBy: `DMA-${fromLua.name}`
                                 }, {
                                     upsert : true,
                                     new: true,
@@ -151,7 +157,9 @@ async function fromLua (path, expr) {
                                     item_quantity: 1,
                                     spell_id: 51005,
                                     reagents: [{_id: itemID, quantity: item_quantity}],
-                                    profession: 'TRANS'
+                                    profession: 'TRANS',
+                                    createdBy: `DMA-${fromLua.name}`,
+                                    updatedBy: `DMA-${fromLua.name}`
                                 });
                             }
                         }

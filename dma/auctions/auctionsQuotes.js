@@ -53,7 +53,6 @@ async function auctionsQuotes (item_id = 168487, connected_realm_id = 1602) {
             market.quantity += quantity;
             market.open_interest += parseFloat(open_interest.toFixed(2));
             market.orders += orders.length;
-
         }
         return [auction_data, market]
     } catch (error) {

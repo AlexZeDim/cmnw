@@ -59,6 +59,8 @@ async function getProfessionsMethod (id = 15389) {
                 $project: {
                     _id: 1,
                     media: 1,
+                    //name: 1,
+                    //description: 1,
                     horde_item_id: 1,
                     alliance_item_id: 1,
                     item_id: 1,

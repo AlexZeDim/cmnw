@@ -59,6 +59,8 @@ async function indexProfessions () {
                              */
                             let {recipes} = category;
                             let result = {};
+                            result.createdBy = `DMA-${indexProfessions.name}`;
+                            result.updatedBy = `DMA-${indexProfessions.name}`;
                             for (let recipe of recipes) {
                                 await Promise.all([
                                     bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents}) => {

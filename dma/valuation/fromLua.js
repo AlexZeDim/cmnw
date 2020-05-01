@@ -3,7 +3,15 @@ const items_db = require("../../db/items_db");
 const professions_db = require("../../db/professions_db");
 const {connection} = require('mongoose');
 
-//TODO documentation
+/***
+ *
+ * This function imports data (probability rates) from TradeSkillMaster
+ * Mill.lua, Transform.lua, Prospect.lua directly to DMA-pricing_methods
+ *
+ * @param path
+ * @param expr
+ * @returns {Promise<void>}
+ */
 
 async function fromLua (path, expr) {
     try {

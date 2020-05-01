@@ -114,6 +114,7 @@ async function getValuation (item = {
             ['PREMIUM', 4],
         ]);
 
+
         if (typeof item !== 'object') {
             new SyntaxError(`no`)
             //TODO ANYWAY WE HAVE ITEMS HERE SO

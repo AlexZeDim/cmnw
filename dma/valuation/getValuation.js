@@ -1,7 +1,7 @@
 const items_db = require("../../db/items_db");
-const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
 const getProfessionsMethod = require("./getProfessionsMethod");
+const groupBy = require('lodash/groupBy');
 
 Array.prototype.addItemToReagentsItems = function(item = {
     _id: 152509,
@@ -71,7 +71,7 @@ Array.prototype.removeItemFromTranchesByAssetClass = function(item = {
     return this
 };
 
-async function getPricing (item = {
+async function getValuation (item = {
     _id: 169451,
     __v: 0,
     icon: 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_potionsetf.jpg',
@@ -217,7 +217,8 @@ async function getPricing (item = {
                     result.market.lastModified = lastModified;
                 });*/
                 //TODO MARKET
-                let pricing_methods = await getProfessionsMethod(item._id);
+                let professions_methods = await getProfessionsMethod(item._id);
+                let pricing_methods = [];
                 /**
                  _id: 13957,
                  quantity: [ 1, 1 ],
@@ -226,25 +227,34 @@ async function getPricing (item = {
                  item_quantity: 1,
                  reagents_items: [ [Object], [Object] ]
                  */
-                const L = pricing_methods.length;
-                for (let index = 0; index < L; index++) {
-                    console.log(pricing_methods[index]);
-                }
-                for (const [index, method] of pricing_methods.entries()) {
-                    //TODO some? if Y -> remove method
+                for (let method of professions_methods) {
+                    if (method.reagent_items.some(ri => ri.asset_class !== 'VANILLA')) {
+                        /**
+                         * Create tranches
+                         */
+                        let tranches = [];
+                        let tranchesByAssetClass = groupBy(method.reagent_items, 'asset_class');
+                        for (const property in tranchesByAssetClass) {
+                            if (tranchesByAssetClass.hasOwnProperty(property)) {
+                                tranches.push({asset_class: property, count: tranchesByAssetClass[property].length, tranche_items: tranchesByAssetClass[property]});
+                            }
+                        }
+                        method.tranches = tranches;
+                        pricing_methods.push(method);
+                    }
                     /**
                      * We filter reagents_items to receive all
                      * VANILLA items inside of it.
                      * @type {Array}
                      */
-                    let reagent_items = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
+                    let vanilla_ReagentItems = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
                     let vanilla_MethodsCombinations = [];
                     /**
                      * We request pricingMethods for
                      * every VANILLA item inside
                      * default method reagent_item
                      */
-                    for await (let vanilla_ItemCombination of reagent_items.map(({_id, quantity}, i) =>
+                    for await (let vanilla_ItemCombination of vanilla_ReagentItems.map(({_id, quantity}, i) =>
                         getProfessionsMethod(_id).then(vanilla_PricingMethods => {
                             for (let vanilla_Method of vanilla_PricingMethods) {
                                 for (let r_item of vanilla_Method.reagent_items) {
@@ -260,12 +270,10 @@ async function getPricing (item = {
                             /**
                              * We need to add the vanilla item itself only and
                              * only if he has pricing on auction house via cloning of original method.
-                             * TODO now sure that we clone the right method
-                             * TODO remove vanilla items post-factum
                              * TODO push vanilla only if isAuctionable! (unsure)
                              */
                             let cloneMethod = Object.assign({}, method);
-                            cloneMethod.reagent_items = [reagent_items[i]];
+                            cloneMethod.reagent_items = [vanilla_ReagentItems[i]];
                             vanilla_PricingMethods.push(cloneMethod);
                             return vanilla_PricingMethods
                         })
@@ -302,76 +310,51 @@ async function getPricing (item = {
                                 combinedMethod.reagent_items.addItemToReagentsItems(reagent_item)
                             })
                         }
-                        console.log(combinedMethod.reagent_items);
+                        /**
+                         * Create tranches
+                         */
+                        let tranches = [];
+                        let tranchesByAssetClass = groupBy(combinedMethod.reagent_items, 'asset_class');
+                        for (const property in tranchesByAssetClass) {
+                            if (tranchesByAssetClass.hasOwnProperty(property)) {
+                                tranches.push({asset_class: property, count: tranchesByAssetClass[property].length, tranche_items: tranchesByAssetClass[property]});
+                            }
+                        }
+                        combinedMethod.tranches = tranches;
+                        /**
+                         * Add every vanilla_CartesianProduct
+                         * (combined method) to result array
+                         */
+                        pricing_methods.push(combinedMethod);
                     }
                 }
-/*                let pricing_methods = await getMethods(item._id).then(async pricing_methods => {
-                    return await Promise.all(pricing_methods.map(async ({_id, item_quantity, tranches}, i) => {
-                        tranches = await tranches.filter(({asset_class}) => asset_class === 'VANILLA');
-                        return await Promise.all(tranches.map(async ({asset_class, count, reagent_items}) => {
-                            pricing_methods.splice(i, 1);
-                            return await Promise.all(reagent_items.map(async reagent_item => {
-                                return await getMethods(reagent_item._id).then(vanilla_PricingMethods => {
-                                    vanilla_PricingMethods.push({
-                                        _id: _id,
-                                        item_quantity: item_quantity,
-                                        tranches: [{
-                                            asset_class: asset_class,
-                                            count: count,
-                                            reagent_items: [reagent_item]
-                                        }]
-                                    });
-                                    vanilla_PricingMethods.map(m => {
-                                        m.tranches.map(tr => tr.reagent_items.map(r_item => {
-                                            r_item.quantity = parseFloat((r_item.quantity * (reagent_item.quantity / m.item_quantity)).toFixed(3))
-                                        }))
-                                    });
-                                    return vanilla_PricingMethods
-                                });
-                            })).then(vanilla_PricingMethods => {
-                                let vanilla_Combinations = vanilla_PricingMethods.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
-                                for (let cmb of vanilla_Combinations) {
-                                    let cloneMethod = { _id: _id, item_quantity: item_quantity, tranches: [] };
-                                    for (let obj of cmb) {
-                                        for (let tr of obj.tranches) {
-                                            for (let r_item of tr.reagent_items) {
-                                                cloneMethod.tranches.addItemToTranchesByAssetClass(r_item)
-                                            }
-                                        }
-                                    }
-                                    pricing_methods.push(cloneMethod);
-                                }
-                                return pricing_methods;
-                            });
-                        }));
-                    }));
-                });*/
                 console.log('====')
-                console.log(pricing_methods);
+                //console.log(pricing_methods);
                 console.log('====')
-                //TODO we need to add/modify, not create new pricing!
 
-                for (let { _id, item_quantity, tranches } of pricing_methods) {
+                for (let {tranches} of pricing_methods) {
+
                     tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
 
                     let vanilla_QCost = 0;
-                    for (let {asset_class, count, reagent_items, permutation} of tranches) {
+
+                    for (let {asset_class, count, tranche_items} of tranches) {
                         switch (asset_class) {
                             case 'CONST':
                                 //TODO async reagent_items, summ of QCost
-                                for (let reagent_item of reagent_items) {
-                                    vanilla_QCost += parseFloat((reagent_item.purchase_price * reagent_item.quantity).toFixed(2));
+                                for (let tranche_item of tranche_items) {
+                                    vanilla_QCost += parseFloat((tranche_item.purchase_price * tranche_item.quantity).toFixed(2));
                                 }
                                 break;
                             case 'COMMDTY':
                                 //TODO async reagent_items, summ of QCost
-                                for (let reagent_item of reagent_items) {
+                                for (let tranche_item of tranche_items) {
                                     //TODO valuation, if not then AH request
                                     await auctions_db.aggregate([
                                         {
                                             $match: {
                                                 lastModified: lastModified,
-                                                "item.id": reagent_item._id,
+                                                "item.id": tranche_item._id,
                                                 connected_realm_id: connected_realm_id,
                                             }
                                         },
@@ -392,89 +375,23 @@ async function getPricing (item = {
                                         }
                                     ]).then(([{price, price_size}]) => {
                                         if (price_size) {
-                                            vanilla_QCost += parseFloat((price_size * reagent_item.quantity).toFixed(2));
+                                            vanilla_QCost += parseFloat((price_size * tranche_item.quantity).toFixed(2));
                                         } else {
-                                            vanilla_QCost += parseFloat((price * reagent_item.quantity).toFixed(2));
+                                            vanilla_QCost += parseFloat((price * tranche_item.quantity).toFixed(2));
                                         }
                                     });
                                 }
                                 break;
                             case 'INDX':
-                                for (let reagent_item of reagent_items) {
+                                for (let tranche_item of tranche_items) {
                                     vanilla_QCost += 0;
                                 }
                                 break;
                             case 'VANILLA':
-                                let perm = [];
-                                let perma = [];
-                                let permArrayL = 0;
-/*                                await Promise.all(reagent_items.map(async reagent_item => {
-                                    const vanilla_getPricing = await getPricing(reagent_item, connected_realm_id, false);
-                                    perm.push(vanilla_getPricing);
-                                    permArrayL += vanilla_getPricing.model.valuations.length;
-
-                                    tranches.removeItemFromTranchesByAssetClass(reagent_item);
-                                    for (let x of vanilla_getPricing.model.valuations) {
-                                        tranches.addItemToTranchesByAssetClass(reagent_iem);
-                                        console.log(x.pricing_method)
-                                    }
-                                    console.log(tranches)
-                                    if (vanilla_getPricing.hasOwnProperty('market')) {
-                                        permArrayL += 1;
-                                    }
-                                }));
-
-                                for (let [index, val] of perm.entries()) {
-                                    console.log(val);
+                                //TODO valuation, if not then AH request
+                                for (let tranche_item of tranche_items) {
+                                    vanilla_QCost += 0;
                                 }
-
-                                let permutations = Array.from({length: permArrayL},() => [...tranches]);
-                               for (let [index, val] of permutations.entries()) {
-
-                                }
-                                console.log(permutations);*/
-                                //console.log(newPermArray, newPermArray.length);
-/*                                for (let reagent_item of reagent_items) {
-                                    //TODO getPricing return pricing_methods
-                                    let cloneTranches = [...tranches];
-
-                                    cloneTranches.removeItemFromTranchesByAssetClass(reagent_item);
-
-                                    let test_vanilla_PricingMethod = [
-                                        { _id: 301312, item_quantity: 1, tranches: [ [Object], [Object] ] },
-                                        { _id: 301311, item_quantity: 1, tranches: [ [Object], [Object] ] }
-                                    ];
-
-
-
-
-                                    cloneTranches.addItemToTranchesByAssetClass({
-                                        _id: 152509,
-                                        asset_class: 'VANILLA',
-                                        quantity: 1
-                                    });
-
-
-                                    for (let vanilla_PricingMethod of test_vanilla_PricingMethod) {
-                                        for (let cloneTranche of cloneTranches) {
-                                            if (cloneTranche.asset_class === 'VANILLA') {
-                                                cloneTranche.count = cloneTranche.count - 1;
-                                                if (cloneTranche.count === 0) {
-                                                    //TODO quantity for quantity
-                                                    //IDEA ALCH quene cost multiply
-                                                    //TODO remove VANILLA from CloneTranche
-                                                } else {
-                                                    //TODO remove just one item from cloneTranche
-                                                }
-
-                                            }
-                                        }
-
-                                        pricing_methods.push()
-                                        //TODO reagent_item._id need to be found and removed
-                                    }
-                                    //vanillaQCost += 0;
-                                }*/
                                 break;
                             case 'PREMIUM':
                                 break;
@@ -493,6 +410,7 @@ async function getPricing (item = {
                         lastModified: lastModified
                     });
 
+
                 }
 
                 //result.model.cheapest_to_delivery = result.model.valuations.reduce((prev, curr) => prev.underlying < curr.underlying ? prev : curr);
@@ -506,8 +424,8 @@ async function getPricing (item = {
         }
         return result;
     } catch (err) {
-        console.error(`${getPricing.name},${err}`);
+        console.error(`${getValuation.name},${err}`);
     }
 }
 
-module.exports = getPricing;
+module.exports = getValuation;

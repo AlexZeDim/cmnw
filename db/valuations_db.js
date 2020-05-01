@@ -15,9 +15,8 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 
 
 let schema = new mongoose.Schema({
-    _id: {
-        type: String
-    },
+    _id: String, /** item_id@connected_realm_id */
+    name: String, /** We should make it somehow */
     item_id: Number,
     connected_realm_id: Number,
     market: {

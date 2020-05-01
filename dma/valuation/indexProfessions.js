@@ -53,7 +53,10 @@ async function indexProfessions () {
                     let {categories} = await bnw.WowGameData.getProfessionSkillTier(profession.id, tier.id);
                     if (categories) {
                         for (let category of categories) {
-                            //IDEA category.name form ticker for item
+                            /***
+                             * IDEA category.name => ticker for item
+                             * IDEA ENC fix quantity
+                             */
                             let {recipes} = category;
                             let result = {};
                             for (let recipe of recipes) {

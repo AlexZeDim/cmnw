@@ -59,6 +59,7 @@ async function indexProfessions () {
                              */
                             let {recipes} = category;
                             let result = {};
+                            result.type = `primary`;
                             result.createdBy = `DMA-${indexProfessions.name}`;
                             result.updatedBy = `DMA-${indexProfessions.name}`;
                             for (let recipe of recipes) {

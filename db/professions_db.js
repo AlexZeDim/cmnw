@@ -69,6 +69,15 @@ let schema = new mongoose.Schema({
     },
     rank: {
         type: Number
+    },
+    createdBy: {
+        type: String
+    },
+    updatedBy: {
+        type: String
+    },
+    reagent_items: {
+        type: Array
     }
 },{
     timestamps: true

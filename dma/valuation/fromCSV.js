@@ -49,6 +49,7 @@ async function fromCSV (path, expr) {
                         if (profession_Q.hasOwnProperty("EffectBasePointsF") && profession_Q.hasOwnProperty("SpellID")) {
                             console.info(`${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}:${craft_quene.spell_id}=${profession_Q.SpellID}=>${profession_Q.EffectBasePointsF}`);
                             craft_quene.item_quantity = parseInt(profession_Q.EffectBasePointsF);
+                            craft_quene.updatedBy = `DMA-${fromCSV.name}`;
                         }
                         craft_quene.save();
                         SE_cursor.resume();
@@ -130,6 +131,7 @@ async function fromCSV (path, expr) {
                         if (profession_Q.hasOwnProperty("Spell")) {
                             console.info(`${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`);
                             craft_quene.spell_id = profession_Q.Spell;
+                            craft_quene.updatedBy = `DMA-${fromCSV.name}`;
                         }
                         craft_quene.save();
                         SLA_cursor.resume();

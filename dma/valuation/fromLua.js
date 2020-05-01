@@ -17,29 +17,38 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:') && item_id) {
+                            let item_ = await items_db.findById(item_id);
+                            name = {};
+                            if (item_) {
+                                name.en_GB = `Milling ${item_.name.en_GB}`;
+                                name.ru_RU = `Распыление ${item_.name.ru_RU}`;
+                            }
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
-                            await professions_db.findByIdAndUpdate(parseInt(`51005${item_id}${reagents}`),
-                        {
-                                _id: parseInt(`51005${item_id}${itemID}`),
-                                spell_id: 51005,
-                                item_id: item_id,
-                                item_quantity: 1,
-                                reagents: [{_id: itemID, quantity: item_quantity}],
-                                profession: 'INSC'
-                            }, {
-                                upsert : true,
-                                new: true,
-                                setDefaultsOnInsert: true,
-                                runValidators: true,
-                                lean: true
-                            }).then(doc => console.info(doc));
+                            if (item_ && item_id) {
+                                await professions_db.findByIdAndUpdate(parseInt(`51005${item_id}${itemID}`),
+                                {
+                                    _id: parseInt(`51005${item_id}${itemID}`),
+                                    spell_id: 51005,
+                                    media: 'https://render-eu.worldofwarcraft.com/icons/56/ability_miling.jpg',
+                                    item_id: item_id,
+                                    item_quantity: 1,
+                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    profession: 'INSC'
+                                }, {
+                                    upsert : true,
+                                    new: true,
+                                    setDefaultsOnInsert: true,
+                                    runValidators: true,
+                                    lean: true
+                                }).then(doc => console.info(doc));
+                            }
                         }
                     }
                 }
                 connection.close();
                 break;
-            case 'jwc':
+            case 'jwlc':
                 lua = fs.readFileSync(path+'Prospect.lua','utf8');
                 stringArray = lua.match(/\[(.*)/gm);
                 for (let string of stringArray) {
@@ -47,23 +56,32 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:') && item_id) {
+                            let item_ = await items_db.findById(item_id);
+                            name = {};
+                            if (item_) {
+                                name.en_GB = `Prospecting ${item_.name.en_GB}`;
+                                name.ru_RU = `Просеивание ${item_.name.ru_RU}`;
+                            }
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
-                            await professions_db.findByIdAndUpdate(parseInt(`31252${item_id}${reagents}`),
-                            {
-                                _id: parseInt(`31252${item_id}${itemID}`),
-                                spell_id: 31252,
-                                item_id: item_id,
-                                item_quantity: 1,
-                                reagents: [{_id: itemID, quantity: item_quantity}],
-                                profession: 'JWLC'
-                            }, {
-                                upsert : true,
-                                new: true,
-                                setDefaultsOnInsert: true,
-                                runValidators: true,
-                                lean: true
-                            }).then(doc => console.info(doc));
+                            if (item_ && item_id) {
+                                await professions_db.findByIdAndUpdate(parseInt(`31252${item_id}${itemID}`),
+                                {
+                                    _id: parseInt(`31252${item_id}${itemID}`),
+                                    spell_id: 31252,
+                                    media: 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_gem_bloodgem_01.jpg',
+                                    item_id: item_id,
+                                    item_quantity: 1,
+                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    profession: 'JWLC'
+                                }, {
+                                    upsert : true,
+                                    new: true,
+                                    setDefaultsOnInsert: true,
+                                    runValidators: true,
+                                    lean: true
+                                }).then(doc => console.info(doc));
+                            }
                         }
                     }
                 }
@@ -77,23 +95,32 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:') && item_id) {
+                            let item_ = await items_db.findById(item_id);
+                            name = {};
+                            if (item_) {
+                                name.en_GB = `Transform ${item_.name.en_GB}`;
+                                name.ru_RU = `Превращение ${item_.name.ru_RU}`;
+                            }
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
-                            await professions_db.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
-                            {
-                                _id: parseInt(`${item_id}${itemID}`),
-                                spell_id: parseInt(`${item_id}${itemID}`),
-                                item_id: item_id,
-                                item_quantity: 1,
-                                reagents: [{_id: itemID, quantity: item_quantity}],
-                                profession: 'TRANSFORM'
-                            }, {
-                                upsert : true,
-                                new: true,
-                                setDefaultsOnInsert: true,
-                                runValidators: true,
-                                lean: true
-                            }).then(doc => console.info(doc));
+                            if (item_ && item_id) {
+                                await professions_db.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
+                                    {
+                                    _id: parseInt(`${item_id}${itemID}`),
+                                    media: 'https://render-eu.worldofwarcraft.com/icons/56/trade_engineering.jpg',
+                                    spell_id: parseInt(`${item_id}${itemID}`),
+                                    item_id: item_id,
+                                    item_quantity: 1,
+                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    profession: 'TRANSFORM'
+                                }, {
+                                    upsert : true,
+                                    new: true,
+                                    setDefaultsOnInsert: true,
+                                    runValidators: true,
+                                    lean: true
+                                }).then(doc => console.info(doc));
+                            }
                         }
                     }
                 }
@@ -107,23 +134,26 @@ async function fromLua (path, expr) {
                         item_id = parseInt(string.replace(/\D/g, ""));
                     } else {
                         if (string.includes('["i:') && item_id) {
-                            name = {};
                             let item_ = await items_db.findById(item_id);
+                            name = {};
                             if (item_) {
                                 name.en_GB = `Milling ${item_.name.en_GB}`;
                                 name.ru_RU = `Распыление ${item_.name.ru_RU}`;
                             }
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
-                            console.log({
-                                _id: parseInt(`51005${item_id}${itemID}`),
-                                name: name,
-                                spell_id: 51005,
-                                item_id: item_id,
-                                item_quantity: 1,
-                                reagents: [{_id: itemID, quantity: item_quantity}],
-                                profession: 'TRANS'
-                            });
+                            if (item_ && item_id) {
+                                console.log({
+                                    _id: parseInt(`51005${item_id}${itemID}`),
+                                    media: 'https://render-eu.worldofwarcraft.com/icons/56/trade_engineering.jpg',
+                                    name: name,
+                                    item_id: item_id,
+                                    item_quantity: 1,
+                                    spell_id: 51005,
+                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    profession: 'TRANS'
+                                });
+                            }
                         }
                     }
                 }
@@ -136,4 +166,4 @@ async function fromLua (path, expr) {
     }
 }
 
-fromLua('C:\\', 'dev');
+fromLua('C:\\', 'transform');

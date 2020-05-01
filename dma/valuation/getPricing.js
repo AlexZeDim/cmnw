@@ -1,7 +1,7 @@
 const items_db = require("../../db/items_db");
 const pricing_db = require("../../db/pricing_db");
 const auctions_db = require("../../db/auctions_db");
-const getMethods = require("./getMethods");
+const getProfessionsMethod = require("./getProfessionsMethod");
 
 Array.prototype.addItemToReagentsItems = function(item = {
     _id: 152509,
@@ -217,7 +217,7 @@ async function getPricing (item = {
                     result.market.lastModified = lastModified;
                 });*/
                 //TODO MARKET
-                let pricing_methods = await getMethods(item._id);
+                let pricing_methods = await getProfessionsMethod(item._id);
                 /**
                  _id: 13957,
                  quantity: [ 1, 1 ],
@@ -226,6 +226,10 @@ async function getPricing (item = {
                  item_quantity: 1,
                  reagents_items: [ [Object], [Object] ]
                  */
+                const L = pricing_methods.length;
+                for (let index = 0; index < L; index++) {
+                    console.log(pricing_methods[index]);
+                }
                 for (const [index, method] of pricing_methods.entries()) {
                     //TODO some? if Y -> remove method
                     /**
@@ -233,7 +237,7 @@ async function getPricing (item = {
                      * VANILLA items inside of it.
                      * @type {Array}
                      */
-                    let reagent_items = [...method.reagents_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
+                    let reagent_items = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
                     let vanilla_MethodsCombinations = [];
                     /**
                      * We request pricingMethods for
@@ -241,9 +245,9 @@ async function getPricing (item = {
                      * default method reagent_item
                      */
                     for await (let vanilla_ItemCombination of reagent_items.map(({_id, quantity}, i) =>
-                        getMethods(_id).then(vanilla_PricingMethods => {
+                        getProfessionsMethod(_id).then(vanilla_PricingMethods => {
                             for (let vanilla_Method of vanilla_PricingMethods) {
-                                for (let r_item of vanilla_Method.reagents_items) {
+                                for (let r_item of vanilla_Method.reagent_items) {
                                     /**
                                      * We need to change reagent_items quantity
                                      * according to vanilla_item quantity
@@ -258,9 +262,10 @@ async function getPricing (item = {
                              * only if he has pricing on auction house via cloning of original method.
                              * TODO now sure that we clone the right method
                              * TODO remove vanilla items post-factum
+                             * TODO push vanilla only if isAuctionable! (unsure)
                              */
                             let cloneMethod = Object.assign({}, method);
-                            cloneMethod.reagents_items = [reagent_items[i]];
+                            cloneMethod.reagent_items = [reagent_items[i]];
                             vanilla_PricingMethods.push(cloneMethod);
                             return vanilla_PricingMethods
                         })
@@ -272,19 +277,32 @@ async function getPricing (item = {
                         vanilla_MethodsCombinations.push(vanilla_ItemCombination);
                     }
                     /**
-                     * This code is provided by Nina Scholz: https://stackoverflow.com/a/50631472/7475615
+                     * This code creates all possible combinations for VANILLA product
+                     * The algorithm is knows as Cartesian Product
+                     * Provided by Nina Scholz: https://stackoverflow.com/a/50631472/7475615
                      */
                     let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+
                     for (let v_CombinedMethod of vanilla_CartesianProduct) {
+                        /**
+                         * Create clones of current method for all Cartesian product
+                         */
                         let combinedMethod = Object.assign({}, method);
-                        console.log(combinedMethod);
-                        //console.log('-----');
-                        //TODO clone
-/*                        for (let v_combination of v_CombinedMethod) {
-                            //TODO we need clone because not vanilla
-                            //TODO push to reagent_items && we dont' need clone method
-                            console.log(v_combination.reagents_items);
-                        }*/
+                        combinedMethod.reagent_items = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')];
+                        /**
+                         * Taking pricing method for every VANILLA item
+                         * from combinations and it's reagent_items
+                         */
+                        for (let v_combination of v_CombinedMethod) {
+                            /**
+                             * Each reagent_item from each vanilla item
+                             * pricing method added to cloned reagent_items method
+                             */
+                            v_combination.reagent_items.map(reagent_item => {
+                                combinedMethod.reagent_items.addItemToReagentsItems(reagent_item)
+                            })
+                        }
+                        console.log(combinedMethod.reagent_items);
                     }
                 }
 /*                let pricing_methods = await getMethods(item._id).then(async pricing_methods => {

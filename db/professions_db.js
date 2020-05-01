@@ -27,7 +27,7 @@ let schema = new mongoose.Schema({
         type: Object
     },
     media: {
-        type: Number
+        type: String
     },
     horde_item_id: {
         type: Number

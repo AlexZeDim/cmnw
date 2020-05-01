@@ -1,6 +1,6 @@
 const professions_db = require("../../db/professions_db");
 
-async function getProfessionsQ (id = 15389) {
+async function getProfessionsMethod (id = 15389) {
     try {
         return await professions_db.aggregate([
             {
@@ -58,8 +58,6 @@ async function getProfessionsQ (id = 15389) {
             {
                 $project: {
                     _id: 1,
-                    name: 1,
-                    description: 1,
                     media: 1,
                     horde_item_id: 1,
                     alliance_item_id: 1,
@@ -104,4 +102,4 @@ async function getProfessionsQ (id = 15389) {
     }
 }
 
-module.exports = getProfessionsQ;
+module.exports = getProfessionsMethod;

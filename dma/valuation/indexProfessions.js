@@ -85,7 +85,7 @@ async function indexProfessions () {
                                         result.reagents = reagents.map(({reagent, quantity}) => {return {_id: parseInt(reagent.id) , quantity: parseInt(quantity)}});
                                     }).catch(e=>e),
                                     bnw.WowGameData.getRecipeMedia(recipe.id).then(({assets}) => {
-                                        result.icon = assets[0].value
+                                        result.media = assets[0].value
                                     }).catch(e=>e)
                                 ]);
                                 if (result) {

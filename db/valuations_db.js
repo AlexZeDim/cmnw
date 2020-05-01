@@ -19,6 +19,7 @@ let schema = new mongoose.Schema({
     name: String, /** We should make it somehow */
     item_id: Number,
     connected_realm_id: Number,
+    lastModified: Date,
     market: {
         lastModified: Date,
         price: Number,

@@ -4,13 +4,25 @@ async function getPricingMethods (id = 15389, synthetic = false) {
     try {
         let query = [{type: 'primary'}];
         if (synthetic) {
-            query.push({type: 'synthetic'})
+            query.push({type: 'derivative'})
         }
         return await pricing_methods.aggregate([
             {
                 $match: {
-                    item_id: id,
-                    $or: query
+                    $or: [
+                        {
+                            alliance_item_id: id,
+                            $or: query
+                        },
+                        {
+                            horde_item_id: id,
+                            $or: query
+                        },
+                        {
+                            item_id: id,
+                            $or: query
+                        }
+                    ]
                 }
             },
             {

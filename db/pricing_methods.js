@@ -17,7 +17,7 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 let schema = new mongoose.Schema({
     /** API or LOCAL */
     _id: {
-        type: Number
+        type: String
     },
     /** API */
     name: {
@@ -43,6 +43,9 @@ let schema = new mongoose.Schema({
      *  SkillLineAbility.lua
      * */
     item_quantity: {
+        type: Number
+    },
+    recipe_id: {
         type: Number
     },
     spell_id: {
@@ -93,7 +96,6 @@ schema.index({ horde_item_id: -1 },{name: 'HitemID'});
 schema.index({ alliance_item_id: -1 },{name: 'AitemID'});
 schema.index({ spell_id: -1 },{name: 'spellID'});
 
+let pricing_methods = mongoose.model('pricing_methods', schema);
 
-let professions = mongoose.model('professions', schema);
-
-module.exports = professions;
+module.exports = pricing_methods;

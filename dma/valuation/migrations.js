@@ -1,4 +1,4 @@
-const professions_db = require("../../db/professions_db");
+const pricing_methods = require("../../db/pricing_methods");
 const {connection} = require('mongoose');
 
 /***
@@ -8,9 +8,9 @@ const {connection} = require('mongoose');
 
 async function migrations() {
     try {
-        let encn = await professions_db.updateMany({ profession: "ENCH", item_quantity: 0 },{ item_quantity: 1 });
+        let encn = await pricing_methods.updateMany({ profession: "ENCH", item_quantity: 0 },{ item_quantity: 1 });
         console.info(encn);
-        let type_added = await professions_db.updateMany({},{
+        let type_added = await pricing_methods.updateMany({},{
             type: 'primary',
             createdBy: 'DMA-indexProfessions',
             updatedBy: 'DMA-indexProfessions'

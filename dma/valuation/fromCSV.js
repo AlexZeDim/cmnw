@@ -1,6 +1,6 @@
 const csv = require('csv');
 const fs = require('fs');
-const professions_db = require("../../db/professions_db");
+const pricing_methods = require("../../db/pricing_methods");
 const {connection} = require('mongoose');
 
 /**
@@ -42,7 +42,7 @@ async function fromCSV (path, expr) {
                         })]);
                         SpellEffect.push(row);
                     }
-                    let SE_cursor = await professions_db.find({}).cursor();
+                    let SE_cursor = await pricing_methods.find({}).cursor();
                     SE_cursor.on('data', async (craft_quene) => {
                         SE_cursor.pause();
                         let profession_Q = await SpellEffect.find(({SpellID}) => SpellID === craft_quene.spell_id);
@@ -79,7 +79,7 @@ async function fromCSV (path, expr) {
                             }
                         }
                         //TODO find by spell_id and array = 0;
-                        let professionQ = await professions_db.findOne({
+                        let professionQ = await pricing_methods.findOne({
                             spell_id: parseInt(data[i][1])
                         });
                         if (professionQ) {
@@ -124,7 +124,7 @@ async function fromCSV (path, expr) {
                     }
                     //TODO write from local or add to API
                     console.time('write');
-                    let SLA_cursor = await professions_db.find({}).cursor();
+                    let SLA_cursor = await pricing_methods.find({}).cursor();
                     SLA_cursor.on('data', async (craft_quene) => {
                         SLA_cursor.pause();
                         let profession_Q = SkillLineAbility.find(x => x.ID === craft_quene._id);

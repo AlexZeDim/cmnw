@@ -1,9 +1,9 @@
-const professions_db = require("../../db/professions_db");
+const pricing_methods = require("../../db/pricing_methods");
 const {connection} = require('mongoose');
 
 async function indexPricingMethods() {
     try {
-        let cursor = await professions_db.aggregate([
+        let cursor = await pricing_methods.aggregate([
             {
                 $match: {
                     expansion: "BFA"

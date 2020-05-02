@@ -1,6 +1,6 @@
 const items_db = require("../../db/items_db");
 const auctions_db = require("../../db/auctions_db");
-const getProfessionsMethod = require("./getProfessionsMethod");
+const getPricingMethods = require("./getPricingMethods");
 const groupBy = require('lodash/groupBy');
 
 Array.prototype.addItemToReagentsItems = function(item = {
@@ -218,7 +218,7 @@ async function getValuation (item = {
                     result.market.lastModified = lastModified;
                 });*/
                 //TODO MARKET
-                let professions_methods = await getProfessionsMethod(item._id);
+                let professions_methods = await getPricingMethods(item._id);
                 let pricing_methods = [];
                 /**
                  _id: 13957,
@@ -256,7 +256,7 @@ async function getValuation (item = {
                      * default method reagent_item
                      */
                     for await (let vanilla_ItemCombination of vanilla_ReagentItems.map(({_id, quantity}, i) =>
-                        getProfessionsMethod(_id).then(vanilla_PricingMethods => {
+                        getPricingMethods(_id).then(vanilla_PricingMethods => {
                             for (let vanilla_Method of vanilla_PricingMethods) {
                                 for (let r_item of vanilla_Method.reagent_items) {
                                     /**

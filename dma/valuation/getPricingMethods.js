@@ -1,11 +1,16 @@
-const professions_db = require("../../db/professions_db");
+const pricing_methods = require("../../db/pricing_methods");
 
-async function getProfessionsMethod (id = 15389) {
+async function getPricingMethods (id = 15389, synthetic = false) {
     try {
-        return await professions_db.aggregate([
+        let query = [{type: 'primary'}];
+        if (synthetic) {
+            query.push({type: 'synthetic'})
+        }
+        return await pricing_methods.aggregate([
             {
                 $match: {
-                    item_id: id
+                    item_id: id,
+                    $or: query
                 }
             },
             {
@@ -69,6 +74,9 @@ async function getProfessionsMethod (id = 15389) {
                     profession: 1,
                     expansion: 1,
                     rank: 1,
+                    type: 1,
+                    createdBy: 1,
+                    updatedBy: 1,
                     reagent_items: {
                         $map: {
                             input: "$reagent_items",
@@ -104,4 +112,4 @@ async function getProfessionsMethod (id = 15389) {
     }
 }
 
-module.exports = getProfessionsMethod;
+module.exports = getPricingMethods;

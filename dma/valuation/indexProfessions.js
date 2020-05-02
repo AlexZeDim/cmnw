@@ -1,5 +1,5 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
-const pricing_methods = require("../../db/pricing_methods");
+const pricing_methods = require("../../db/pricing_methods_db");
 const keys_db = require("../../db/keys_db");
 const {connection} = require('mongoose');
 
@@ -65,7 +65,8 @@ async function indexProfessions () {
                             for (let recipe of recipes) {
                                 await Promise.all([
                                     bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents}) => {
-                                        result._id = parseInt(id);
+                                        result._id = `P${id}`;
+                                        result.recipe_id = parseInt(id);
                                         result.name = name;
                                         if (description) {
                                             result.description = description;

@@ -1,4 +1,4 @@
-const pricing_methods = require("../../db/pricing_methods");
+const pricing_methods = require("../../db/pricing_methods_db");
 const {connection} = require('mongoose');
 
 async function indexPricingMethods() {

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const items_db = require("../../db/items_db");
-const pricing_methods = require("../../db/pricing_methods");
+const pricing_methods = require("../../db/pricing_methods_db");
 const {connection} = require('mongoose');
 
 /***
@@ -36,7 +36,8 @@ async function fromLua (path, expr) {
                             if (item_ && item_id) {
                                 await pricing_methods.findByIdAndUpdate(parseInt(`51005${item_id}${itemID}`),
                                 {
-                                    _id: parseInt(`51005${item_id}${itemID}`),
+                                    _id: `P51005${item_id}${itemID}`,
+                                    recipe_id: parseInt(`51005${item_id}${itemID}`),
                                     spell_id: 51005,
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/ability_miling.jpg',
                                     item_id: item_id,
@@ -78,7 +79,8 @@ async function fromLua (path, expr) {
                             if (item_ && item_id) {
                                 await pricing_methods.findByIdAndUpdate(parseInt(`31252${item_id}${itemID}`),
                                 {
-                                    _id: parseInt(`31252${item_id}${itemID}`),
+                                    _id: `P31252${item_id}${itemID}`,
+                                    recipe_id: parseInt(`31252${item_id}${itemID}`),
                                     spell_id: 31252,
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_gem_bloodgem_01.jpg',
                                     item_id: item_id,
@@ -120,7 +122,8 @@ async function fromLua (path, expr) {
                             if (item_ && item_id) {
                                 await pricing_methods.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
                                     {
-                                    _id: parseInt(`${item_id}${itemID}`),
+                                    _id: `P${item_id}${itemID}`,
+                                    recipe_id: parseInt(`${item_id}${itemID}`),
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/trade_engineering.jpg',
                                     spell_id: parseInt(`${item_id}${itemID}`),
                                     item_id: item_id,
@@ -161,7 +164,8 @@ async function fromLua (path, expr) {
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
                                 console.log({
-                                    _id: parseInt(`51005${item_id}${itemID}`),
+                                    _id: `P51005${item_id}${itemID}`,
+                                    recipe_id: parseInt(`51005${item_id}${itemID}`),
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/trade_engineering.jpg',
                                     name: name,
                                     item_id: item_id,

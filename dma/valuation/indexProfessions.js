@@ -1,5 +1,5 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
-const professions_db = require("../../db/professions_db");
+const pricing_methods = require("../../db/pricing_methods");
 const keys_db = require("../../db/keys_db");
 const {connection} = require('mongoose');
 
@@ -95,7 +95,7 @@ async function indexProfessions () {
                                     }).catch(e=>e)
                                 ]);
                                 if (result) {
-                                    await professions_db.findByIdAndUpdate(
+                                    await pricing_methods.findByIdAndUpdate(
                                     {
                                         _id: result._id
                                     },

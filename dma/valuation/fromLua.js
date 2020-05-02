@@ -1,6 +1,6 @@
 const fs = require('fs');
 const items_db = require("../../db/items_db");
-const professions_db = require("../../db/professions_db");
+const pricing_methods = require("../../db/pricing_methods");
 const {connection} = require('mongoose');
 
 /***
@@ -34,7 +34,7 @@ async function fromLua (path, expr) {
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
-                                await professions_db.findByIdAndUpdate(parseInt(`51005${item_id}${itemID}`),
+                                await pricing_methods.findByIdAndUpdate(parseInt(`51005${item_id}${itemID}`),
                                 {
                                     _id: parseInt(`51005${item_id}${itemID}`),
                                     spell_id: 51005,
@@ -76,7 +76,7 @@ async function fromLua (path, expr) {
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
-                                await professions_db.findByIdAndUpdate(parseInt(`31252${item_id}${itemID}`),
+                                await pricing_methods.findByIdAndUpdate(parseInt(`31252${item_id}${itemID}`),
                                 {
                                     _id: parseInt(`31252${item_id}${itemID}`),
                                     spell_id: 31252,
@@ -118,7 +118,7 @@ async function fromLua (path, expr) {
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
-                                await professions_db.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
+                                await pricing_methods.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
                                     {
                                     _id: parseInt(`${item_id}${itemID}`),
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/trade_engineering.jpg',

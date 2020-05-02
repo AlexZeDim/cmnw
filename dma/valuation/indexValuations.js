@@ -1,7 +1,9 @@
 const items_db = require("../../db/items_db");
 const auctions_db = require("../../db/auctions_db");
 const valuations_db = require("../../db/valuations_db");
-const getPricing = require("./getValuation");
+//const getPricing = require("./getValuation");
+const getPricingMethods = require("./getPricingMethods");
+const getSyntheticMethods = require("./getSyntheticMethods");
 const {connection} = require('mongoose');
 
 /***
@@ -16,7 +18,7 @@ async function indexValuations () {
         /**
          * Distinct values of realms
          */
-        let [auction_house, valuation] = await Promise.all([
+/*        let [auction_house, valuation] = await Promise.all([
             auctions_db.findOne({connected_realm_id: 1602}, {_id: 0, lastModified: 1}).sort('-lastModified'),
             valuations_db.findOne({connected_realm_id: 1602}, {_id: 0, lastModified: 1}).sort('-lastModified')
         ]);
@@ -24,13 +26,19 @@ async function indexValuations () {
         if (valuation) valuation = new Date(valuation.lastModified);
         if (auction_house > valuation) {
 
-        }
+        }*/
         //TODO cursor
-        let items = await items_db.find({ticker: "ALCH.CAULDRON"});
-        for (let item of items) {
-            let x = await getPricing(item, 1602);
-            console.log(x);
-        }
+        let cursor = await items_db.find({ticker: "VANTUS.NYA"}).cursor({batchSize: 1});
+        cursor.on('data', async item => {
+            /**
+             * If lastModified (auctions) found then go to pricing method as one
+             */
+            let primary_methods = await getPricingMethods(item._id, false);
+            let test = await getSyntheticMethods(primary_methods);
+            for (let x of test) {
+                console.log(x);
+            }
+        });
         console.timeEnd(indexValuations.name);
     } catch (err) {
         console.log(err);

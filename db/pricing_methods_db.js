@@ -76,7 +76,7 @@ let schema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['primary', 'synthetic'],
+        enum: ['primary', 'derivative'],
     },
     createdBy: {
         type: String
@@ -91,6 +91,7 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ item_id: -1, type: 1 },{name: 'gPM'});
 schema.index({ item_id: -1 },{name: 'itemID'});
 schema.index({ horde_item_id: -1 },{name: 'HitemID'});
 schema.index({ alliance_item_id: -1 },{name: 'AitemID'});

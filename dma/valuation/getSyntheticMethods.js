@@ -45,8 +45,8 @@ async function getSyntheticMethods (
          */
         for (let method of primary_methods) {
             /**
-             * Check if VANILLA reagent exits,
-             * if no = return default value
+             * If VANILLA reagent not exits,
+             * return unmodified value
              */
             if (!method.reagent_items.some(({asset_class}) => asset_class === 'VANILLA')) {
                 /**
@@ -95,7 +95,7 @@ async function getSyntheticMethods (
                                 /**
                                  * We need to change reagent_items quantity
                                  * according to vanilla_item quantity
-                                 * TODO check quantity
+                                 * TODO check quantity and fix
                                  * @type {number}
                                  */
                                 r_item.quantity = parseFloat((quantity / r_item.quantity).toFixed(3));
@@ -107,6 +107,8 @@ async function getSyntheticMethods (
                          */
                         if (is_auctionable) {
                             let cloneMethod = Object.assign({}, method);
+                            cloneMethod._id = `M${method.recipe_id}`;
+                            cloneMethod.reagent_items.length = 0;
                             cloneMethod.reagent_items = [vanilla_ReagentItems[i]];
                             vanilla_PricingMethods.push(cloneMethod);
                         }
@@ -117,7 +119,6 @@ async function getSyntheticMethods (
                      * ITEM => [cmb1, ... cmbN] Add all available values of
                      * VANILLA item pricing for Cartesian product stage
                      */
-                    console.log(vanilla_ItemCombination);
                     vanilla_MethodsCombinations.push(vanilla_ItemCombination);
                 }
                 /**
@@ -127,14 +128,18 @@ async function getSyntheticMethods (
                  */
                 let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
 
+                let combination = 0;
                 for (let v_CombinedMethod of vanilla_CartesianProduct) {
+                    combination += 1;
                     /**
                      * Create clones of current method for all Cartesian product
                      */
                     let combinedMethod = Object.assign({}, method);
+                    combinedMethod._id = `S${method.recipe_id}:${combination}`;
                     combinedMethod.type = `synthetic`;
                     combinedMethod.createdBy = `DMA-${getSyntheticMethods.name}`;
                     combinedMethod.updatedBy = `DMA-${getSyntheticMethods.name}`;
+                    combinedMethod.reagent_items.length = 0;
                     combinedMethod.reagent_items = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')];
                     /**
                      * Taking pricing method for every VANILLA item

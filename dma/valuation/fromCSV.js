@@ -1,6 +1,6 @@
 const csv = require('csv');
 const fs = require('fs');
-const pricing_methods = require("../../db/pricing_methods");
+const pricing_methods = require("../../db/pricing_methods_db");
 const {connection} = require('mongoose');
 
 /**
@@ -42,7 +42,7 @@ async function fromCSV (path, expr) {
                         })]);
                         SpellEffect.push(row);
                     }
-                    let SE_cursor = await pricing_methods.find({}).cursor();
+                    let SE_cursor = await pricing_methods.find({type: "primary"}).cursor();
                     SE_cursor.on('data', async (craft_quene) => {
                         SE_cursor.pause();
                         let profession_Q = await SpellEffect.find(({SpellID}) => SpellID === craft_quene.spell_id);
@@ -124,10 +124,10 @@ async function fromCSV (path, expr) {
                     }
                     //TODO write from local or add to API
                     console.time('write');
-                    let SLA_cursor = await pricing_methods.find({}).cursor();
+                    let SLA_cursor = await pricing_methods.find({type: "primary"}).cursor();
                     SLA_cursor.on('data', async (craft_quene) => {
                         SLA_cursor.pause();
-                        let profession_Q = SkillLineAbility.find(x => x.ID === craft_quene._id);
+                        let profession_Q = SkillLineAbility.find(x => x.ID === craft_quene.recipe_id);
                         if (profession_Q.hasOwnProperty("Spell")) {
                             console.info(`${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`);
                             craft_quene.spell_id = profession_Q.Spell;

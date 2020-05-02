@@ -96,6 +96,6 @@ schema.index({ horde_item_id: -1 },{name: 'HitemID'});
 schema.index({ alliance_item_id: -1 },{name: 'AitemID'});
 schema.index({ spell_id: -1 },{name: 'spellID'});
 
-let pricing_methods = mongoose.model('pricing_methods', schema);
+let pricing_methods_db = mongoose.model('pricing_methods', schema);
 
-module.exports = pricing_methods;
+module.exports = pricing_methods_db;

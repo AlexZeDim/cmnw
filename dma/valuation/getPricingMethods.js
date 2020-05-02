@@ -1,4 +1,4 @@
-const pricing_methods = require("../../db/pricing_methods");
+const pricing_methods = require("../../db/pricing_methods_db");
 
 async function getPricingMethods (id = 15389, synthetic = false) {
     try {
@@ -64,13 +64,14 @@ async function getPricingMethods (id = 15389, synthetic = false) {
                 $project: {
                     _id: 1,
                     media: 1,
-                    //name: 1,
-                    //description: 1,
+                    name: 1,
+                    description: 1,
                     horde_item_id: 1,
                     alliance_item_id: 1,
                     item_id: 1,
                     item_quantity: 1,
                     spell_id: 1,
+                    recipe_id: 1,
                     profession: 1,
                     expansion: 1,
                     rank: 1,

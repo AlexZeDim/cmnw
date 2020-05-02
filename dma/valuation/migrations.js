@@ -243,7 +243,18 @@ async function migrations() {
             },
         ];
         for (let method of expulsom) {
-            await pricing_methods.create(method).then(doc => console.info(doc))
+            await pricing_methods.findByIdAndUpdate(
+                {
+                    _id: method._id
+                },
+                method,
+                {
+                    upsert : true,
+                    new: true,
+                    setDefaultsOnInsert: true,
+                    lean: true
+                }
+            ).then(doc => console.info(doc._id));
         }
         connection.close();
     } catch (err) {

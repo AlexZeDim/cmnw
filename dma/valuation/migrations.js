@@ -10,7 +10,7 @@ async function migrations() {
     try {
         let enchant = await pricing_methods.updateMany({ profession: "ENCH", item_quantity: 0 },{ item_quantity: 1 });
         console.info(enchant);
-        let expulsom = [
+        let expulsom_methods = [
             {
                 _id: 'P38737:1',
                 description: {
@@ -242,12 +242,12 @@ async function migrations() {
                 ]
             },
         ];
-        for (let method of expulsom) {
+        for (let expulsom_method of expulsom_methods) {
             await pricing_methods.findByIdAndUpdate(
                 {
-                    _id: method._id
+                    _id: expulsom_method._id
                 },
-                method,
+                expulsom_method,
                 {
                     upsert : true,
                     new: true,

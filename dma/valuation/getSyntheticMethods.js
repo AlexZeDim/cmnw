@@ -16,6 +16,14 @@ Array.prototype.addItemToReagentsItems = function(item = {
     return this;
 };
 
+/**
+ * This function takes getPricingMethod as returns combinations
+ * for vanilla items and/or returns unmodified array of pricingMethods
+ *
+ * @param primary_methods array of pricing_method objects.
+ * @returns {Promise<[]>} return array of objects
+ */
+
 async function getSyntheticMethods (
     primary_methods = [
          {
@@ -128,15 +136,15 @@ async function getSyntheticMethods (
                  */
                 let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
 
-                let combination = 0;
+                let combinationID = 0;
                 for (let v_CombinedMethod of vanilla_CartesianProduct) {
-                    combination += 1;
+                    combinationID += 1;
                     /**
                      * Create clones of current method for all Cartesian product
                      */
                     let combinedMethod = Object.assign({}, method);
-                    combinedMethod._id = `S${method.recipe_id}:${combination}`;
-                    combinedMethod.type = `synthetic`;
+                    combinedMethod._id = `D${method.recipe_id}:${combinationID}`;
+                    combinedMethod.type = `derivative`;
                     combinedMethod.createdBy = `DMA-${getSyntheticMethods.name}`;
                     combinedMethod.updatedBy = `DMA-${getSyntheticMethods.name}`;
                     combinedMethod.reagent_items.length = 0;

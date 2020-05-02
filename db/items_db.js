@@ -58,15 +58,12 @@ let schema = new mongoose.Schema({
     is_stackable: {
         type: Boolean
     },
-    is_commdty: {
-        type: Boolean
-    },
-    is_auctionable: {
-        type: Boolean
-    },
     inventory_type: {
         type: String
     },
+    /**
+     * IndexAssetClass - csv import
+     */
     profession_class: {
         type: String
     },
@@ -82,8 +79,18 @@ let schema = new mongoose.Schema({
         type: String,
         default: 'u/r'
     },
-    is_indx: {
+    /**
+     * IndexItems
+     */
+    is_auctionable: {
         type: Boolean
+    },
+    is_commdty: {
+        type: Boolean
+    },
+    derivative: {
+        type: Boolean,
+        default: false
     },
 });
 

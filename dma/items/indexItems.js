@@ -50,4 +50,4 @@ async function indexItems (arg) {
     }
 }
 
-indexItems(arg = 'is_commdty');
+indexItems(arg = 'is_auctionable');

@@ -60,7 +60,6 @@ async function getDerivativeMethods (
                  * VANILLA items inside of it.
                  * @type {Array}
                  */
-                console.log(method.item_quantity);
                 let vanilla_ReagentItems = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
                 let vanilla_MethodsCombinations = [];
                 /**
@@ -78,8 +77,8 @@ async function getDerivativeMethods (
                                  * TODO check quantity and fix
                                  * @type {number}
                                  */
-                                console.info(``)
-                                r_item.quantity = parseFloat((quantity / r_item.quantity).toFixed(3));
+                                console.info(`${method.item_quantity} ${name.en_GB},${quantity} / ${r_item.name.en_GB},${r_item.quantity}`)
+                                r_item.quantity = parseFloat((quantity * r_item.quantity).toFixed(3));
                             }
                         }
                         /**

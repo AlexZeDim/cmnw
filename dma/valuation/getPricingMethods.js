@@ -1,9 +1,9 @@
 const pricing_methods = require("../../db/pricing_methods_db");
 
-async function getPricingMethods (id = 15389, synthetic = false) {
+async function getPricingMethods (id = 15389, derivative = false) {
     try {
         let query = [{type: 'primary'}];
-        if (synthetic) {
+        if (derivative) {
             query.push({type: 'derivative'})
         }
         return await pricing_methods.aggregate([

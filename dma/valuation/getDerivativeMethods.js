@@ -1,21 +1,6 @@
 const getPricingMethods = require("./getPricingMethods");
 const groupBy = require('lodash/groupBy');
 
-Array.prototype.addItemToReagentsItems = function(item = {
-    _id: 152509,
-    asset_class: 'VANILLA',
-    quantity: 1
-}) {
-    let itemExists = this.some(element => element._id === item._id);
-    if (itemExists) {
-        let reagent_item = this.find(element => element._id === item._id);
-        reagent_item.quantity = reagent_item.quantity + item.quantity;
-    } else {
-        this.push(item);
-    }
-    return this;
-};
-
 /**
  * This function takes getPricingMethod as returns combinations
  * for vanilla items and/or returns unmodified array of pricingMethods
@@ -24,22 +9,8 @@ Array.prototype.addItemToReagentsItems = function(item = {
  * @returns {Promise<[]>} return array of objects
  */
 
-async function getSyntheticMethods (
-    primary_methods = [
-         {
-             _id: 40697,
-             expansion: 'BFA',
-             item_id: 168656,
-             profession: 'ALCH',
-             rank: 3,
-             spell_id: 298864,
-             item_quantity: 1,
-             createdBy: 'DMA-indexProfessions',
-             type: 'primary',
-             updatedBy: 'DMA-indexProfessions',
-             reagent_items: [ [Object], [Object], [Object], [Object], [Object] ]
-         }
-     ]
+async function getDerivativeMethods (
+    primary_methods = []
     ) {
     try {
         let pricing_methods = [];
@@ -89,6 +60,7 @@ async function getSyntheticMethods (
                  * VANILLA items inside of it.
                  * @type {Array}
                  */
+                console.log(method.item_quantity);
                 let vanilla_ReagentItems = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
                 let vanilla_MethodsCombinations = [];
                 /**
@@ -96,7 +68,7 @@ async function getSyntheticMethods (
                  * every VANILLA item inside
                  * default method reagent_item
                  */
-                for await (let vanilla_ItemCombination of vanilla_ReagentItems.map(({_id, is_auctionable, quantity}, i) =>
+                for await (let vanilla_ItemCombination of vanilla_ReagentItems.map(({_id, name, is_auctionable, quantity}, i) =>
                     getPricingMethods(_id, true).then(vanilla_PricingMethods => {
                         for (let vanilla_Method of vanilla_PricingMethods) {
                             for (let r_item of vanilla_Method.reagent_items) {
@@ -106,6 +78,7 @@ async function getSyntheticMethods (
                                  * TODO check quantity and fix
                                  * @type {number}
                                  */
+                                console.info(``)
                                 r_item.quantity = parseFloat((quantity / r_item.quantity).toFixed(3));
                             }
                         }
@@ -116,7 +89,6 @@ async function getSyntheticMethods (
                         if (is_auctionable) {
                             let cloneMethod = Object.assign({}, method);
                             cloneMethod._id = `M${method.recipe_id}`;
-                            cloneMethod.reagent_items.length = 0;
                             cloneMethod.reagent_items = [vanilla_ReagentItems[i]];
                             vanilla_PricingMethods.push(cloneMethod);
                         }
@@ -142,32 +114,40 @@ async function getSyntheticMethods (
                     /**
                      * Create clones of current method for all Cartesian product
                      */
+                    console.log(`${combinationID}=================`);
                     let combinedMethod = Object.assign({}, method);
                     combinedMethod._id = `D${method.recipe_id}:${combinationID}`;
                     combinedMethod.type = `derivative`;
-                    combinedMethod.createdBy = `DMA-${getSyntheticMethods.name}`;
-                    combinedMethod.updatedBy = `DMA-${getSyntheticMethods.name}`;
-                    combinedMethod.reagent_items.length = 0;
+                    combinedMethod.createdBy = `DMA-${getDerivativeMethods.name}`;
+                    combinedMethod.updatedBy = `DMA-${getDerivativeMethods.name}`;
                     combinedMethod.reagent_items = [...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')];
                     /**
                      * Taking pricing method for every VANILLA item
                      * from combinations and it's reagent_items
                      */
+                    let reagentItems = [];
                     if (Array.isArray(v_CombinedMethod)) {
                         for (let v_combination of v_CombinedMethod) {
+                            reagentItems.length = 0;
                             /**
                              * Each reagent_item from each vanilla item
                              * pricing method added to cloned reagent_items method
                              */
                             v_combination.reagent_items.map(reagent_item => {
-                                combinedMethod.reagent_items.addItemToReagentsItems(reagent_item)
+                                console.log(`+ ${reagent_item.name.en_GB},${reagent_item.quantity}`);
+                                reagentItems.push(reagent_item)
                             })
                         }
                     } else {
                         v_CombinedMethod.reagent_items.map(reagent_item => {
-                            combinedMethod.reagent_items.addItemToReagentsItems(reagent_item)
+                            reagentItems.push(reagent_item)
                         })
                     }
+                    /**
+                     * TODO hack to group-merge
+                     * @type {number}
+                     */
+                    combinedMethod.reagent_items = reagentItems.concat([...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')]);
                     /**
                      * Create tranches
                      */
@@ -178,6 +158,7 @@ async function getSyntheticMethods (
                             tranches.push({asset_class: property, count: tranchesByAssetClass[property].length, tranche_items: tranchesByAssetClass[property]});
                         }
                     }
+                    combinedMethod.reagents = combinedMethod.reagent_items.map(({_id, quantity}) => {{return {_id: _id, quantity: quantity}}});
                     combinedMethod.tranches = tranches;
                     /**
                      * Add every vanilla_CartesianProduct
@@ -193,4 +174,4 @@ async function getSyntheticMethods (
     }
 }
 
-module.exports = getSyntheticMethods;
+module.exports = getDerivativeMethods;

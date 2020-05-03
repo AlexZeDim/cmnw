@@ -9,7 +9,7 @@ const {connection} = require('mongoose');
 async function indexValuations () {
     try {
         console.time(`DMA-${indexValuations.name}`);
-        let cursor = await items_db.find({expansion: "BFA", ticker: 'J.POTION.REJUV'}).cursor({batchSize: 10});
+        let cursor = await items_db.find({expansion: "BFA", ticker: 'VANTUS.NYA'}).cursor({batchSize: 10});
         cursor.on('data', async item => {
             cursor.pause();
             let primary_methods = await getPricingMethods(item._id, false);

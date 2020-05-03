@@ -1,6 +1,23 @@
 const getPricingMethods = require("./getPricingMethods");
 const groupBy = require('lodash/groupBy');
-const sumBy = require('lodash/sumBy');
+
+Array.prototype.addItemToReagentsItems = function(item = {
+    _id: 152509,
+    name: {
+        en_GB: {name: 'VANILLA'}
+    },
+    quantity: 1
+}) {
+    let itemExists = this.some(element => element._id === item._id);
+    if (itemExists) {
+        let find = Object.assign({}, this.find(element => element._id === item._id));
+        find.quantity += item.quantity;
+    } else {
+        console.log(`+ ${item.name.en_GB},${item.quantity}`);
+        this.push(item);
+    }
+    return this;
+};
 
 /**
  * This function takes getPricingMethod as returns combinations
@@ -75,11 +92,9 @@ async function getDerivativeMethods (
                                 /**
                                  * We need to change reagent_items quantity
                                  * according to vanilla_item quantity
-                                 * TODO check quantity and fix
                                  * @type {number}
                                  */
-                                console.info(`${method.item_quantity} ${name.en_GB},${quantity} / ${r_item.name.en_GB},${r_item.quantity}`)
-                                r_item.quantity = parseFloat((quantity * r_item.quantity).toFixed(3));
+                                r_item.quantity = Number((quantity * r_item.quantity).toFixed(3));
                             }
                         }
                         /**
@@ -89,7 +104,8 @@ async function getDerivativeMethods (
                         if (is_auctionable) {
                             let cloneMethod = Object.assign({}, method);
                             cloneMethod._id = `M${method.recipe_id}`;
-                            cloneMethod.reagent_items = [vanilla_ReagentItems[i]];
+                            cloneMethod.reagent_items = [];
+                            cloneMethod.reagent_items.push(vanilla_ReagentItems[i]);
                             vanilla_PricingMethods.push(cloneMethod);
                         }
                         return vanilla_PricingMethods
@@ -106,7 +122,7 @@ async function getDerivativeMethods (
                  * The algorithm is knows as Cartesian Product
                  * Provided by Nina Scholz: https://stackoverflow.com/a/50631472/7475615
                  */
-                let vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
+                const vanilla_CartesianProduct = vanilla_MethodsCombinations.reduce((a, b) => a.reduce((r, v) => r.concat(b.map(w => [].concat(v, w))), []));
 
                 let combinationID = 0;
                 for (let v_CombinedMethod of vanilla_CartesianProduct) {
@@ -114,7 +130,6 @@ async function getDerivativeMethods (
                     /**
                      * Create clones of current method for all Cartesian product
                      */
-                    console.log(`${combinationID}=================`);
                     let combinedMethod = Object.assign({}, method);
                     combinedMethod._id = `D${method.recipe_id}:${combinationID}`;
                     combinedMethod.type = `derivative`;
@@ -132,42 +147,17 @@ async function getDerivativeMethods (
                              * Each reagent_item from each vanilla item
                              * pricing method added to cloned reagent_items method
                              */
-                            v_combination.reagent_items.map(reagent_item => {
-                                console.log(`+ ${reagent_item.name.en_GB},${reagent_item.quantity}`);
-                                reagentItems.push(reagent_item)
+                            v_combination.reagent_items.map(r_item => {
+                                reagentItems.addItemToReagentsItems(r_item)
                             })
                         }
                     } else {
-                        v_CombinedMethod.reagent_items.map(reagent_item => {
-                            reagentItems.push(reagent_item)
+                        v_CombinedMethod.reagent_items.map(r_item => {
+                            reagentItems.addItemToReagentsItems(r_item)
                         })
                     }
-                    let test = [];
-
-                    const groupByReagentItems = groupBy(reagentItems, '_id');
-                    for (let [key, value] of Object.entries(groupByReagentItems)) {
-                        if (value.length < 2) {
-                            test = test.concat(value);
-                        } else {
-                            let objectA = Object.assign({}, value[0]);
-                            objectA.quantity = sumBy(value, 'quantity')
-                            console.log(objectA.quantity)
-/*                            console.log(value[0].quantity);
-                            value[0].quantity = sumBy(value, 'quantity');
-                            console.log(value[0].quantity);
-                            value[0].quantity = 0;
-                            console.log(value[0].quantity);*/
-                        }
-                    }
-/*                    for (let reagentItemsKey in groupByReagentItems) {
-                        if (groupByReagentItems[reagentItemsKey].length < 2) {
-                            test = test.concat((groupByReagentItems[reagentItemsKey]));
-                        } else {
-                            console.log(`${reagentItemsKey}: ${groupByReagentItems[reagentItemsKey].length}`);
-                        }
-                    }*/
-                    //console.log(test);
-                    //combinedMethod.reagent_items = reagentItems.concat([...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')]);
+                    combinedMethod.reagent_items = reagentItems.concat([...method.reagent_items.filter(y => y.asset_class !== 'VANILLA')]);
+                    reagentItems.length = 0;
                     /**
                      * Create tranches
                      */
@@ -178,7 +168,6 @@ async function getDerivativeMethods (
                             tranches.push({asset_class: property, count: tranchesByAssetClass[property].length, tranche_items: tranchesByAssetClass[property]});
                         }
                     }
-                    combinedMethod.reagents = combinedMethod.reagent_items.map(({_id, quantity}) => {{return {_id: _id, quantity: quantity}}});
                     combinedMethod.tranches = tranches;
                     /**
                      * Add every vanilla_CartesianProduct

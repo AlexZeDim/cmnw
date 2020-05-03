@@ -34,7 +34,8 @@ async function fromLua (path, expr) {
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
-                                await pricing_methods.findByIdAndUpdate(parseInt(`51005${item_id}${itemID}`),
+                                await pricing_methods.findByIdAndUpdate(
+                                    `P51005${item_id}${itemID}`,
                                 {
                                     _id: `P51005${item_id}${itemID}`,
                                     recipe_id: parseInt(`51005${item_id}${itemID}`),
@@ -42,7 +43,7 @@ async function fromLua (path, expr) {
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/ability_miling.jpg',
                                     item_id: item_id,
                                     item_quantity: 1,
-                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'INSC',
                                     type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
@@ -77,7 +78,8 @@ async function fromLua (path, expr) {
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
-                                await pricing_methods.findByIdAndUpdate(parseInt(`31252${item_id}${itemID}`),
+                                await pricing_methods.findByIdAndUpdate(
+                                    `P31252${item_id}${itemID}`,
                                 {
                                     _id: `P31252${item_id}${itemID}`,
                                     recipe_id: parseInt(`31252${item_id}${itemID}`),
@@ -85,7 +87,7 @@ async function fromLua (path, expr) {
                                     media: 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_gem_bloodgem_01.jpg',
                                     item_id: item_id,
                                     item_quantity: 1,
-                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'JWLC',
                                     type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
@@ -120,7 +122,8 @@ async function fromLua (path, expr) {
                             itemID = parseInt(string.match('\\["i:(.*?)\\"]')[1]);
                             item_quantity = parseFloat(string.match('\\ = (.*?)\\,')[1]);
                             if (item_ && item_id) {
-                                await pricing_methods.findByIdAndUpdate(parseInt(`${item_id}${itemID}`),
+                                await pricing_methods.findByIdAndUpdate(
+                                    `P${item_id}${itemID}`,
                                     {
                                     _id: `P${item_id}${itemID}`,
                                     recipe_id: parseInt(`${item_id}${itemID}`),
@@ -128,7 +131,7 @@ async function fromLua (path, expr) {
                                     spell_id: parseInt(`${item_id}${itemID}`),
                                     item_id: item_id,
                                     item_quantity: 1,
-                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'TRANSFORM',
                                     type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,
@@ -146,8 +149,8 @@ async function fromLua (path, expr) {
                 }
                 break;
             case 'dev':
-                console.log(path+'Transform.lua');
-                lua = fs.readFileSync(path+'Transform.lua','utf8');
+                console.log(path+'Mill.lua');
+                lua = fs.readFileSync(path+'Mill.lua','utf8');
                 stringArray = lua.match(/\[(.*)/gm);
                 for (let string of stringArray) {
                     if (string.includes(' = {')) {
@@ -171,7 +174,7 @@ async function fromLua (path, expr) {
                                     item_id: item_id,
                                     item_quantity: 1,
                                     spell_id: 51005,
-                                    reagents: [{_id: itemID, quantity: item_quantity}],
+                                    reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'TRANS',
                                     type: `primary`,
                                     createdBy: `DMA-${fromLua.name}`,

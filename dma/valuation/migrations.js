@@ -256,8 +256,6 @@ async function migrations() {
                 }
             ).then(doc => console.info(doc._id));
         }
-/*        await pricing_methods.deleteMany({ createdBy: 'DMA-migrations' });
-        await pricing_methods.deleteMany({ type: 'derivative' });*/
         connection.close();
     } catch (err) {
         console.error(err);

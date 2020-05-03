@@ -1,5 +1,6 @@
 const getPricingMethods = require("./getPricingMethods");
 const groupBy = require('lodash/groupBy');
+const sumBy = require('lodash/sumBy');
 
 /**
  * This function takes getPricingMethod as returns combinations
@@ -127,7 +128,6 @@ async function getDerivativeMethods (
                     let reagentItems = [];
                     if (Array.isArray(v_CombinedMethod)) {
                         for (let v_combination of v_CombinedMethod) {
-                            reagentItems.length = 0;
                             /**
                              * Each reagent_item from each vanilla item
                              * pricing method added to cloned reagent_items method
@@ -142,11 +142,32 @@ async function getDerivativeMethods (
                             reagentItems.push(reagent_item)
                         })
                     }
-                    /**
-                     * TODO hack to group-merge
-                     * @type {number}
-                     */
-                    combinedMethod.reagent_items = reagentItems.concat([...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')]);
+                    let test = [];
+
+                    const groupByReagentItems = groupBy(reagentItems, '_id');
+                    for (let [key, value] of Object.entries(groupByReagentItems)) {
+                        if (value.length < 2) {
+                            test = test.concat(value);
+                        } else {
+                            let objectA = Object.assign({}, value[0]);
+                            objectA.quantity = sumBy(value, 'quantity')
+                            console.log(objectA.quantity)
+/*                            console.log(value[0].quantity);
+                            value[0].quantity = sumBy(value, 'quantity');
+                            console.log(value[0].quantity);
+                            value[0].quantity = 0;
+                            console.log(value[0].quantity);*/
+                        }
+                    }
+/*                    for (let reagentItemsKey in groupByReagentItems) {
+                        if (groupByReagentItems[reagentItemsKey].length < 2) {
+                            test = test.concat((groupByReagentItems[reagentItemsKey]));
+                        } else {
+                            console.log(`${reagentItemsKey}: ${groupByReagentItems[reagentItemsKey].length}`);
+                        }
+                    }*/
+                    //console.log(test);
+                    //combinedMethod.reagent_items = reagentItems.concat([...method.reagent_items.filter(reagent_item => reagent_item.asset_class !== 'VANILLA')]);
                     /**
                      * Create tranches
                      */

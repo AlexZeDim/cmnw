@@ -15,10 +15,9 @@ async function fromCSV (path, expr) {
                             },
                             {
                                 ticker: data[i][2],
-                                asset_class: data[i][3],
-                                profession_class: data[i][4],
-                                expansion: data[i][5],
-                                v_class: [data[i][6], data[i][7]]
+                                profession_class: data[i][3],
+                                expansion: data[i][4],
+                                v_class: [data[i][5], data[i][6], data[i][7]]
                             }
                         ).exec((err, item) => {
                             if (err) console.error(err);

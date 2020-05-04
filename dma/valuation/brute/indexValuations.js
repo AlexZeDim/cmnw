@@ -1,15 +1,15 @@
-const items_db = require("../../db/items_db");
+const items_db = require("../../../db/items_db");
 //const auctions_db = require("../../db/auctions_db");
 //const getPricing = require("./getValuation");
-const getPricingMethods = require("./getPricingMethods");
+const getPricingMethods = require("../getPricingMethods");
 const getDerivativeMethods = require("./getDerivativeMethods");
-const pricing_methods = require("../../db/pricing_methods_db");
+const pricing_methods = require("../../../db/pricing_methods_db");
 const {connection} = require('mongoose');
 
 async function indexValuations () {
     try {
         console.time(`DMA-${indexValuations.name}`);
-        let cursor = await items_db.find({expansion: "BFA", ticker: 'VANTUS.NYA'}).cursor({batchSize: 10});
+        let cursor = await items_db.find({expansion: "BFA", v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC", _id: 153636}).limit(10).cursor({batchSize: 10});
         cursor.on('data', async item => {
             cursor.pause();
             let primary_methods = await getPricingMethods(item._id, false);

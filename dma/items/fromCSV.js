@@ -1,7 +1,6 @@
 const csv = require('csv');
 const fs = require('fs');
 const items_db = require("../../db/items_db");
-const {connection} = require('mongoose');
 
 async function fromCSV (path, expr) {
     try {
@@ -9,7 +8,6 @@ async function fromCSV (path, expr) {
         csv.parse(eva, async function(err, data) {
             switch (expr) {
                 case 'production':
-                    console.log(data[0]);
                     for (let i = 1; i < data.length; i++) {
                         await items_db.findOneAndUpdate(
                             {
@@ -20,6 +18,7 @@ async function fromCSV (path, expr) {
                                 asset_class: data[i][3],
                                 profession_class: data[i][4],
                                 expansion: data[i][5],
+                                v_class: [data[i][6], data[i][7]]
                             }
                         ).exec((err, item) => {
                             if (err) console.error(err);
@@ -42,4 +41,4 @@ async function fromCSV (path, expr) {
     }
 }
 
-fromCSV('C:\\bfa.csv', 'production');
+fromCSV('C:\\SHDW.csv', 'production');

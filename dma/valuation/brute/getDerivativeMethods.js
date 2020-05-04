@@ -1,7 +1,7 @@
-const getPricingMethods = require("./getPricingMethods");
+const getPricingMethods = require("../getPricingMethods");
 const groupBy = require('lodash/groupBy');
 
-Array.prototype.addItemToReagentsItems = function(item = {
+Array.prototype.addItemToReagentItems = function(item = {
     _id: 152509,
     name: {
         en_GB: {name: 'VANILLA'}
@@ -13,7 +13,6 @@ Array.prototype.addItemToReagentsItems = function(item = {
         let find = Object.assign({}, this.find(element => element._id === item._id));
         find.quantity += item.quantity;
     } else {
-        console.log(`+ ${item.name.en_GB},${item.quantity}`);
         this.push(item);
     }
     return this;
@@ -148,12 +147,12 @@ async function getDerivativeMethods (
                              * pricing method added to cloned reagent_items method
                              */
                             v_combination.reagent_items.map(r_item => {
-                                reagentItems.addItemToReagentsItems(r_item)
+                                reagentItems.addItemToReagentItems(r_item)
                             })
                         }
                     } else {
                         v_CombinedMethod.reagent_items.map(r_item => {
-                            reagentItems.addItemToReagentsItems(r_item)
+                            reagentItems.addItemToReagentItems(r_item)
                         })
                     }
                     combinedMethod.reagent_items = reagentItems.concat([...method.reagent_items.filter(y => y.asset_class !== 'VANILLA')]);

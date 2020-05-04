@@ -308,7 +308,7 @@ async function getValuation (item = {
                              * pricing method added to cloned reagent_items method
                              */
                             v_combination.reagent_items.map(reagent_item => {
-                                combinedMethod.reagent_items.addItemToReagentsItems(reagent_item)
+                                combinedMethod.reagent_items.addItemToReagentItems(reagent_item)
                             })
                         }
                         /**

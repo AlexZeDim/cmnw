@@ -71,6 +71,9 @@ let schema = new mongoose.Schema({
         type: String,
         default: 'u/r'
     },
+    v_class: {
+        type: Array,
+    },
     expansion: {
         type: String,
         default: 'u/r'
@@ -82,16 +85,24 @@ let schema = new mongoose.Schema({
     /**
      * IndexItems
      */
-    is_auctionable: {
-        type: Boolean
-    },
     is_commdty: {
         type: Boolean
     },
-    derivative: {
+    is_auctionable: {
+        type: Boolean
+    },
+    is_derivative: {
         type: Boolean,
         default: false
     },
+    is_reagent: {
+        type: Boolean,
+        default: false
+    },
+    is_const: {
+        type: Boolean,
+        default: false
+    }
 });
 
 schema.index({ "name.en_GB": "text", "name.ru_RU": "text", ticker: "text" },{name: 'SearchQuery'});

@@ -18,39 +18,37 @@ let schema = new mongoose.Schema({
     _id: String, /** item_id@connected_realm_id */
     name: String, /** We should make it somehow */
     item_id: Number,
+    asset_class: Array,
     connected_realm_id: Number,
-    lastModified: Date,
+    vendor: {
+        sell_price: Number,
+        buy_price: Number,
+        yieldMarket: Number, /** if buy_price buy_price / market.price */
+        yieldReagent: Number, /** if buy_price buy_price / market.price */
+    },
     market: {
         lastModified: Date,
         price: Number,
+        quantity: Number,
+        open_interest: Number,
+        orders: Array,
         price_size: Number,
+        yieldReagent: Number, /** price / derivative.nominal_value */
+        yieldVendor: Number, /** price / market.vendorSellPrice */
     },
-    model: {
-        valuations: [
-            {
-                name: String,
-                pricing_method_id: Number,
-                pricing_method: Object,
-                quene_quantity: Number,
-                quene_cost: Number,
-                premium: Number,
-                nominal_value: Number,
-                underlying: Number,
-                lastModified: Date
-            }
-        ],
-        cheapest_to_delivery: {
-            name: String,
-            pricing_method_id: Number,
-            pricing_method: Array,
-            quene_quantity: Number,
-            quene_cost: Number,
-            premium: Number,
-            nominal_value: Number,
-            underlying: Number,
-            lastModified: Date
-        }
-    }
+    derivative: {
+        lastModified: Date,
+        _id: String,
+        quene_cost: Number, /** Cost of production quene*/
+        quene_quantity: Number,
+        nominal_value: Number, /** Cost/Q = for x1*/
+        yieldMarket: Number, /** nominal_value / market.price */
+        yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
+    },
+    reagent: {
+        premium: Number, /** Родитель оценит остатком */
+    },
+    cheapest_to_delivery: String
 },{
     timestamps: true
 });

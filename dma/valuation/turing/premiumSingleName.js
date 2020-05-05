@@ -1,11 +1,59 @@
 const pricing_methods = require("../../../db/pricing_methods_db");
 
 async function premiumSingleName (item_id) {
-    let test = await pricing_methods.aggregate([
+    return pricing_methods.aggregate([
+        {
+            $lookup: {
+                from: "items",
+                localField: "item_id",
+                foreignField: "_id",
+                as: "item"
+            }
+        },
         {
             $match: {
-                reagent_items: { $elemMatch: { _id: item_id } }
+                reagent_items: {$elemMatch: {_id: item_id}},
+                "item.is_auctionable": true
             }
+        },
+        {
+            $group: {
+                _id: "$item_id",
+                max: {
+                    $max: "$rank"
+                },
+                data: {
+                    $push: "$$ROOT"
+                }
+            }
+        },
+        {
+            $unwind: "$data"
+        },
+        {
+            $match: {
+                $expr: {
+                    $or: [
+                        {
+                            $eq: [
+                                {
+                                    $type: "$data.rank"
+                                },
+                                "missing"
+                            ]
+                        },
+                        {
+                            $eq: [
+                                "$data.rank",
+                                "$max"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            $replaceWith: "$data"
         },
         {
             $group: {
@@ -13,7 +61,7 @@ async function premiumSingleName (item_id) {
                     v_class: "$reagent_items.v_class",
                     recipe_id: "$_id"
                 },
-                data: { $push: '$$ROOT' }
+                method: {$push: '$$ROOT'}
             }
         },
         {
@@ -30,7 +78,7 @@ async function premiumSingleName (item_id) {
                 count: {
                     $sum: 1,
                 },
-                data: { "$first": "$data" }
+                method: {"$first": "$method"}
             }
         },
         {
@@ -39,7 +87,6 @@ async function premiumSingleName (item_id) {
             }
         }
     ]);
-    console.log(test);
 }
 
 module.exports = premiumSingleName;

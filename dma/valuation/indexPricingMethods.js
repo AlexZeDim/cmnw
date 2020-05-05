@@ -5,12 +5,6 @@ async function indexPricingMethods() {
     try {
         let cursor = await pricing_methods.aggregate([
             {
-                $match: {
-                    _id: "P38729",
-                    expansion: "BFA"
-                }
-            },
-            {
                 $lookup: {
                     from: "items",
                     localField: "reagents._id",
@@ -52,7 +46,8 @@ async function indexPricingMethods() {
         ]).cursor({batchSize: 1}).exec();
         cursor.on('data', async (pricing_method) => {
             cursor.pause();
-            console.log(pricing_method);
+            let method = await pricing_methods.findByIdAndUpdate(pricing_method._id, pricing_method);
+            console.log(method);
             cursor.resume();
         });
         cursor.on('close', async () => {

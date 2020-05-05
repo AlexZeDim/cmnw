@@ -16,6 +16,7 @@ async function xvaItems () {
             (async function f (item = item_, connected_realm_id = 1602) {
                 try {
                     /***
+                     * IDEA check is recursive 3 more in line and so on
                      * IDEA check valuations cheapest to delivery before valuation!
                      */
                     let v = await valuation.findById(`${item._id}@${connected_realm_id}`);
@@ -56,6 +57,11 @@ async function xvaItems () {
                     if (item.v_class.some(v_class => v_class === 'DERIVATIVE')) {
                         console.log('DERIVATIVE')
                         /** check if derivative*/
+                        /**
+                         * Evaluate all combinations for FLOOR
+                         * we should write it somehow
+                         *
+                         * */
                         //let primary_methods = await getPricingMethods(item._id, false);
                     }
                     if (item.v_class.some(v_class => v_class === 'REAGENT') && item.v_class.some(v_class => v_class === 'PREMIUM')) {

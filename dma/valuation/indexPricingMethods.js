@@ -6,6 +6,7 @@ async function indexPricingMethods() {
         let cursor = await pricing_methods.aggregate([
             {
                 $match: {
+                    _id: "P38729",
                     expansion: "BFA"
                 }
             },
@@ -18,19 +19,7 @@ async function indexPricingMethods() {
                 }
             },
             {
-                $project: {
-                    _id: 1,
-                    name: 1,
-                    description: 1,
-                    media: 1,
-                    horde_item_id: 1,
-                    alliance_item_id: 1,
-                    item_id: 1,
-                    item_quantity: 1,
-                    spell_id: 1,
-                    profession: 1,
-                    expansion: 1,
-                    rank: 1,
+                $addFields: {
                     reagent_items: {
                         $map: {
                             input: "$reagent_items",
@@ -61,16 +50,10 @@ async function indexPricingMethods() {
                 }
             }
         ]).cursor({batchSize: 1}).exec();
-        cursor.on('data', async (craft_quene) => {
-            //cursor.pause();
-            console.time('===');
-
-            let vanilla_MethodsCombinations = [];
-            let reagent_items = [...craft_quene.reagent_items.filter(reagent_item => reagent_item.asset_class === 'VANILLA')];
-            console.log(reagent_items);
-
-            console.timeEnd('===');
-            //cursor.resume();
+        cursor.on('data', async (pricing_method) => {
+            cursor.pause();
+            console.log(pricing_method);
+            cursor.resume();
         });
         cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 5000));

@@ -46,13 +46,17 @@ let schema = new mongoose.Schema({
         yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
     }],
     reagent: {
+        cheapest_to_delivery: {
+            market: Number,
+            vendor: Number,
+            derivative: Number,
+        },
         premium: Number, /** Родитель оценит остатком */
     },
-    cheapest_to_delivery: String
 },{
     timestamps: true
 });
 
-let pricing_db = mongoose.model('pricing', schema);
+let valuations_db = mongoose.model('valuations', schema);
 
-module.exports = pricing_db;
+module.exports = valuations_db;

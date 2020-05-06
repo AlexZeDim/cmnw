@@ -36,7 +36,7 @@ let schema = new mongoose.Schema({
         yieldReagent: Number, /** price / derivative.nominal_value */
         yieldVendor: Number, /** price / market.vendorSellPrice */
     },
-    derivative: {
+    derivative: [{
         lastModified: Date,
         _id: String,
         quene_cost: Number, /** Cost of production quene*/
@@ -44,7 +44,7 @@ let schema = new mongoose.Schema({
         nominal_value: Number, /** Cost/Q = for x1*/
         yieldMarket: Number, /** nominal_value / market.price */
         yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
-    },
+    }],
     reagent: {
         premium: Number, /** Родитель оценит остатком */
     },

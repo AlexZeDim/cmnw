@@ -2,6 +2,7 @@ const items_db = require("../../../db/items_db");
 const pricing_methods = require("../../../db/pricing_methods_db");
 const valuation = require("../../../db/valuations_db");
 const getPricingMethods = require("../getPricingMethods");
+const premiumSingleName = require("./premiumSingleName");
 const groupBy = require('lodash/groupBy');
 const auctionsData  = require('../../auctions/auctionsData');
 const {connection} = require('mongoose');
@@ -62,9 +63,21 @@ async function xvaItems () {
                          * we should write it somehow
                          *
                          * */
-                        //let primary_methods = await getPricingMethods(item._id, false);
+                        let primary_methods = await getPricingMethods(item._id, false);
+                        /** Array of Pricing Methods*/
+                        for (let price_method of primary_methods) {
+                            /** Pricing Method => Reagents*/
+                            let quene_cost = () => {
+
+                            };
+                            /** THREAD*/
+                            for (let reagent_item of price_method.reagent_items) {
+                                /** f(n) => ? */
+                            }
+                        }
                     }
                     if (item.v_class.some(v_class => v_class === 'REAGENT') && item.v_class.some(v_class => v_class === 'PREMIUM')) {
+                        let getSingleNames = await premiumSingleName(item._id);
                         console.log('REAGENT')
                         console.log('PREMIUM')
                         /** if reagent => cheapest to delivery

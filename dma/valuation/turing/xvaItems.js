@@ -102,13 +102,13 @@ async function xvaItems () {
                                     case 'VENDOR,REAGENT,ITEM':
                                         for (let tranche_item of tranche_items) {
                                             let x = await f(tranche_item, connected_realm_id);
-                                            console.log(x);
+                                            //console.log(x);
                                         }
                                         break;
                                     default:
                                         for (let tranche_item of tranche_items) {
                                             let x = await f(tranche_item, connected_realm_id);
-                                            console.log(x);
+                                            console.log(x.reagent);
                                         }
                                 }
                             }
@@ -151,21 +151,23 @@ async function xvaItems () {
                     }
                     if (pricing.asset_class.some(v_class => v_class === 'REAGENT')) {
                         /** If item reagent then ctd to it*/
+                        let reagentArray = [];
                         for (let source of count_in) {
                             switch (source) {
                                 case 'vendor':
-                                    let v_test = pricing.vendor.buy_price
-                                    pricing.reagent.cheapest_to_delivery = {vendor: 2}
+                                    reagentArray.push({name: 'vendor', value: pricing.vendor.buy_price});
                                 break;
                                 case 'market':
-                                    let m_test = pricing.market.price_size
+                                    reagentArray.push({name: 'market', value: pricing.market.price_size});
                                 break;
                                 case 'derivative':
-                                    const min = pricing.derivative.reduce((prev, curr) => prev.nominal_value < curr.nominal_value ? prev : curr);
+                                    reagentArray.push({name: 'derivative', value: pricing.derivative.reduce((prev, curr) => prev.nominal_value < curr.nominal_value ? prev : curr), index: pricing.derivative.reduce((prev, curr, i) => prev.nominal_value < curr.nominal_value ? i : i)});
                                 break;
                             }
                         }
+                        Object.assign(pricing.reagent, reagentArray.reduce((prev, curr) => prev.value < curr.value ? prev : curr));
                         count_out.push('reagent');
+
                         pricing.reagent.premium = 3;
                     }
                     /*** Yield calculation*/

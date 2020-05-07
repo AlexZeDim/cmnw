@@ -47,20 +47,9 @@ let schema = new mongoose.Schema({
         yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
     }],
     reagent: {
-        cheapest_to_delivery: {
-            market: Number,
-            vendor: Number,
-            derivative: {
-                lastModified: Date,
-                reagent_items: Array, /**IDEA ...add? */
-                _id: String,
-                quene_cost: Number, /** Cost of production quene*/
-                quene_quantity: Number,
-                nominal_value: Number, /** Cost/Q = for x1*/
-                yieldMarket: Number, /** nominal_value / market.price */
-                yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
-            },
-        },
+        name: String,
+        value: Number,
+        index: Number, /** Index of derivative method*/
         premium: Number, /** Родитель оценит остатком */
     },
 },{

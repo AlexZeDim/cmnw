@@ -22,9 +22,10 @@ async function xvaItems () {
                      * TODO lastModified to check if found!
                      */
                     let pricing;
-                    pricing = await valuations.findById(`${item._id}@${connected_realm_id}`);
-/*                    if (v) {
-                        return v
+                    //pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
+/*                    if (pricing) {
+                        console.log('ok')
+                        return pricing
                     }*/
                     /**
                      * TODO in not null return, else eva down
@@ -150,10 +151,24 @@ async function xvaItems () {
                     }
                     if (pricing.asset_class.some(v_class => v_class === 'REAGENT')) {
                         /** If item reagent then ctd to it*/
+                        for (let source of count_in) {
+                            switch (source) {
+                                case 'vendor':
+                                    let v_test = pricing.vendor.buy_price
+                                    pricing.reagent.cheapest_to_delivery = {vendor: 2}
+                                break;
+                                case 'market':
+                                    let m_test = pricing.market.price_size
+                                break;
+                                case 'derivative':
+                                    const min = pricing.derivative.reduce((prev, curr) => prev.nominal_value < curr.nominal_value ? prev : curr);
+                                break;
+                            }
+                        }
                         count_out.push('reagent');
                         pricing.reagent.premium = 3;
                     }
-                    /*** count outs*/
+                    /*** Yield calculation*/
                     for (let in_ of count_in) {
                         let outs = count_out.filter(x => x !== in_);
                         for (let out_ of outs) {
@@ -172,7 +187,7 @@ async function xvaItems () {
                                 y_out = pricing.market.price
                             }
                             if (in_ === 'derivative') {
-                                y_delimiter = pricing.derivative.nominal_value
+                                //TODO y_delimiter = pricing.derivative.nominal_value
                             }
                             if (out_ === 'reagent') {
                                 y_out = pricing.reagent.premium
@@ -180,17 +195,15 @@ async function xvaItems () {
                             pricing[in_][k] = Number((((y_out - y_delimiter) / y_delimiter) * 100).toFixed(2));
                         }
                     }
-                    await valuations.findByIdAndUpdate({
-                        _id: pricing._id
-                    },{
-                        pricing
-                    },{
+                    const pricingObject = pricing.toObject();
+                    return await valuations.findByIdAndUpdate({
+                        _id: pricingObject._id
+                    },
+                    pricingObject, {
                         upsert : true,
                         new: true,
-                        setDefaultsOnInsert: true,
                         lean: true
                     });
-                    return pricing;
 
                     //let primary_methods = await getPricingMethods(item._id, false);
 /*                    for (let primary_method of primary_methods) {

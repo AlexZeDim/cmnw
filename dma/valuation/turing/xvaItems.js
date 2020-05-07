@@ -85,34 +85,44 @@ async function xvaItems () {
                                 ['PREMIUM,REAGENT,ITEM', 8],
                             ]);
 
-                            let tranches = [];
-                            let tranchesByAssetClass = groupBy(price_method.reagent_items, 'v_class');
-                            for (const property in tranchesByAssetClass) {
-                                if (tranchesByAssetClass.hasOwnProperty(property)) {
-                                    tranches.push({asset_class: property, count: tranchesByAssetClass[property].length, tranche_items: tranchesByAssetClass[property]});
-                                }
-                            }
-
-                            tranches.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
-
+                            price_method.reagent_items.sort((a, b) => assetClassMap.get(a.v_class) - assetClassMap.get(b.v_class));
+                            /**
+                             * TODO we are working with tranches not reagent items! FUCK tranches?!
+                             * method_id
+                             * */
                             let quene_cost = 0;
 
-                            for (let {asset_class, count, tranche_items} of tranches) {
-                                switch (asset_class) {
-                                    case 'VENDOR,REAGENT,ITEM':
+                            for (let reagent_item of price_method.reagent_items) {
+                                switch (reagent_item.v_class) {
+/*                                    case 'VENDOR,REAGENT,ITEM':
                                         for (let tranche_item of tranche_items) {
                                             let x = await f(tranche_item, connected_realm_id);
                                             //console.log(x);
                                         }
-                                        break;
+                                        break;*/
                                     default:
-                                        for (let tranche_item of tranche_items) {
-                                            let x = await f(tranche_item, connected_realm_id);
-                                            console.log(x.reagent);
-                                        }
+                                        /**
+                                         * TODO add price to reagent_item and value
+                                         *
+                                         *  */
+                                        let x = await f(reagent_item, connected_realm_id);
+
+                                        console.log(`${x.reagent.value} * ${reagent_item.quantity} = ${x.reagent.value * reagent_item.quantity}`);
+
+                                        Object.assign(reagent_item, {
+                                            price: x.reagent.value,
+                                            value: parseFloat((x.reagent.value * reagent_item.quantity).toFixed(2))
+                                        });
+                                        console.log(reagent_item);
+                                        quene_cost += Number((x.reagent.value * reagent_item.quantity).toFixed(2));
                                 }
                             }
-
+                            console.log({
+                                _id: price_method._id,
+                                quene_cost: Number(quene_cost.toFixed(2)),
+                                quene_quantity: price_method.item_quantity,
+                                nominal_value: Number((quene_cost / price_method.item_quantity).toFixed(2)),
+                            });
                             /** THREAD*/
                             //for (let reagent_item of price_method.reagent_items) {
                                 //console.log(reagent_item);

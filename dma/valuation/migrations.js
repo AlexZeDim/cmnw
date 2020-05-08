@@ -1,3 +1,4 @@
+const items = require("../../db/items_db");
 const pricing_methods = require("../../db/pricing_methods_db");
 const {connection} = require('mongoose');
 
@@ -8,6 +9,21 @@ const {connection} = require('mongoose');
 
 async function migrations() {
     try {
+        let array_of_vendor = [
+            {_id: 160398, quantity: 10},
+            {_id: 160399, quantity: 10},
+            {_id: 160400, quantity: 3},
+            {_id: 160709, quantity: 10},
+            {_id: 160710, quantity: 10},
+            {_id: 160712, quantity: 10},
+            {_id: 163569, quantity: 5},
+            {_id: 158186, quantity: 20},
+        ];
+        for (let item of array_of_vendor) {
+            let {purchase_price} = await items.findById(item._id);
+            console.log(purchase_price);
+            //await items.findByIdAndUpdate(item._id, {purchase_price: purchase_price/item.quantity});
+        }
         let enchant = await pricing_methods.updateMany({ profession: "ENCH", item_quantity: 0 },{ item_quantity: 1 });
         console.info(enchant);
         let expulsom_methods = [

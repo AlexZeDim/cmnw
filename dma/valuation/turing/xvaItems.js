@@ -87,52 +87,20 @@ async function xvaItems () {
 
                             let quene_cost = 0;
                             let premium = 0;
-                            let x;
                             for (let reagent_item of price_method.reagent_items) {
-                                switch (reagent_item.v_class.toString()) {
-                                    case 'PREMIUM,REAGENT,ITEM':
-                                        console.log(`=== PREMIUM ===`);
-                                        x = await f(reagent_item, connected_realm_id);
-                                        if (x.hasOwnProperty('reagent')) {
-                                            console.log('ok')
-                                        } else {
-                                            console.log('nok')
-                                            if (item.is_auctionable) {
-                                                premium += Number((pricing.market.price_size - quene_cost).toFixed(2));
-                                            }
-                                        }
-                                        console.log(`-premium-`);
-                                        console.log(premium);
-                                        console.log(`=== END PREMIUM ===`);
-                                        /**
-                                         * Check Reagent.value, if there is not add to cost 0 but premium
-                                         * premium += (Price market (if exist) - quene_cost)
-                                         * */
-                                        break;
-                                    default:
-                                        /**
-                                         * TODO add price to reagent_item and value
-                                         *
-                                         *  */
-                                        console.log(item._id); //item.quantity!
-                                        console.log(reagent_item.quantity);//quantity
-                                        x = await f(reagent_item, connected_realm_id);
-
-                                        Object.assign(reagent_item, {
-                                            price: x.reagent.value,
-                                            value: parseFloat((x.reagent.value * reagent_item.quantity).toFixed(2))
-                                        });
-
-                                        console.log(x.reagent);
-                                        /**
-                                         * If reagent have index for derivative, then take derivative[index] reagent_items?
-                                         * Else? Market => add reagent_item
-                                         * TODO QUANTITY OF QUENE FOR NOMINAL VALUE BIG MECH PROBLEM!
-                                         * ( Method.item_quantity / pricing_method.quantity ) * reagent_item.quantity?
-                                         */
-
-                                        quene_cost += Number((x.reagent.value * reagent_item.quantity).toFixed(2));
-                                }
+                                /**
+                                 * Check Reagent.value, if there is not add to cost 0 but premium
+                                 * premium += (Price market (if exist) - quene_cost)
+                                 * */
+                                console.log(`premium: ${pricing.market.price_size} x ${price_method.item_quantity} - ${quene_cost}`);
+                                console.log(item._id);
+                                console.log(reagent_item.quantity);
+                                let x = await f(reagent_item, connected_realm_id);
+                                Object.assign(reagent_item, {
+                                    price: x.reagent.value,
+                                    value: parseFloat((x.reagent.value * reagent_item.quantity).toFixed(2))
+                                });
+                                quene_cost += Number((x.reagent.value * reagent_item.quantity).toFixed(2));
                             }
                             pricing.derivative.push({
                                 _id: price_method._id,
@@ -150,9 +118,9 @@ async function xvaItems () {
                             /***
                              * TODO probably thread
                              * */
-                            console.log(`=== Single Names PREMIUM && REAGENT ===`);
-                            console.log(method[0].reagent_items);
-                            console.log(`=== END Single Names ===`);
+                            //console.log(`=== Single Names PREMIUM && REAGENT ===`);
+                            //console.log(method[0].reagent_items);
+                            //console.log(`=== END Single Names ===`);
                         }
                         /** if reagent => cheapest to delivery
                          * IDEA should we place here ctd derivative pricing_method?
@@ -177,7 +145,6 @@ async function xvaItems () {
                     if (pricing.derivative.length > 0) {
                         count_in.push('derivative')
                     }
-                    console.log(count_in, count_out)
                     /***
                      * Cheapest-to-delivery for Reagent {name, value, index}
                      * */
@@ -263,7 +230,7 @@ async function xvaItems () {
             cursor.close();
         });
         cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
             connection.close();
             console.timeEnd(`DMA-${xvaItems.name}`);
         });

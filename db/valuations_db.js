@@ -40,10 +40,10 @@ let schema = new mongoose.Schema({
         lastModified: Date,
         reagent_items: Array, /**IDEA ...add? */
         _id: String,
-        quene_cost: Number, /** Cost of production quene*/
-        quene_quantity: Number,
-        premium: Number,
+        queue_cost: Number, /** Cost of production quene*/
+        queue_quantity: Number,
         nominal_value: Number, /** Cost/Q = for x1*/
+        premium: Number,
         yieldMarket: Number, /** nominal_value / market.price */
         yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
     }],

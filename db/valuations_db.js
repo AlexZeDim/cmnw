@@ -42,6 +42,7 @@ let schema = new mongoose.Schema({
         _id: String,
         quene_cost: Number, /** Cost of production quene*/
         quene_quantity: Number,
+        premium: Number,
         nominal_value: Number, /** Cost/Q = for x1*/
         yieldMarket: Number, /** nominal_value / market.price */
         yieldVendor: Number, /** nominal_value / market.vendorSellPrice */

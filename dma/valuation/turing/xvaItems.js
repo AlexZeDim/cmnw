@@ -136,7 +136,7 @@ async function xvaItems () {
                             /** END THREAD*/
                         }
                     }
-                    if (item.v_class.some(v_class => v_class === 'REAGENT') && item.v_class.some(v_class => v_class === 'PREMIUM')) {
+                    if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
                         let getSingleNames = await premiumSingleName(item._id);
                         for (let {_id, method} of getSingleNames) {
                             /***

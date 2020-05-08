@@ -11,10 +11,10 @@ const {connection} = require('mongoose');
 async function xvaItems () {
     try {
         console.time(`DMA-${xvaItems.name}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
-        let cursor = await items_db.find({expansion: "BFA", _id: 169449}).limit(10).cursor({batchSize: 10});
+        let cursor = await items_db.find({expansion: "BFA", _id: 168310}).limit(10).cursor({batchSize: 10});
         cursor.on('data', async item_ => {
             cursor.pause();
-            (async function f (item = item_, connected_realm_id = 1602, lastModified) {
+            await (async function f (item = item_, connected_realm_id = 1602, lastModified) {
                 try {
                     /***
                      * IDEA check is recursive 3 more in line and so on
@@ -60,8 +60,7 @@ async function xvaItems () {
                             lastModified: _id
                         };
                     }
-                    if (item.v_class.some(v_class => v_class === 'DERIVATIVE')) {
-
+                    if (pricing.asset_class.some(v_class => v_class === 'DERIVATIVE')) {
                         /**
                          * Evaluate all combinations for FLOOR
                          * we should write it somehow
@@ -92,11 +91,19 @@ async function xvaItems () {
                             for (let reagent_item of price_method.reagent_items) {
                                 switch (reagent_item.v_class.toString()) {
                                     case 'PREMIUM,REAGENT,ITEM':
+                                        console.log(`=== PREMIUM ===`);
                                         x = await f(reagent_item, connected_realm_id);
-                                        console.log(`===`);
-                                        console.log(x);
-                                        console.log(`===`);
-                                        console.log(reagent_item);
+                                        if (x.hasOwnProperty('reagent')) {
+                                            console.log('ok')
+                                        } else {
+                                            console.log('nok')
+                                            if (item.is_auctionable) {
+                                                premium += Number((pricing.market.price_size - quene_cost).toFixed(2));
+                                            }
+                                        }
+                                        console.log(`-premium-`);
+                                        console.log(premium);
+                                        console.log(`=== END PREMIUM ===`);
                                         /**
                                          * Check Reagent.value, if there is not add to cost 0 but premium
                                          * premium += (Price market (if exist) - quene_cost)
@@ -120,7 +127,7 @@ async function xvaItems () {
                                         /**
                                          * If reagent have index for derivative, then take derivative[index] reagent_items?
                                          * Else? Market => add reagent_item
-                                         *
+                                         * TODO QUANTITY OF QUENE FOR NOMINAL VALUE BIG MECH PROBLEM!
                                          * ( Method.item_quantity / pricing_method.quantity ) * reagent_item.quantity?
                                          */
 
@@ -132,6 +139,7 @@ async function xvaItems () {
                                 quene_cost: Number(quene_cost.toFixed(2)),
                                 quene_quantity: price_method.item_quantity,
                                 nominal_value: Number((quene_cost / price_method.item_quantity).toFixed(2)), //TODO add premium to (quene_cost)
+                                premium: premium
                             });
                             /** END THREAD*/
                         }
@@ -142,10 +150,10 @@ async function xvaItems () {
                             /***
                              * TODO probably thread
                              * */
+                            console.log(`=== Single Names PREMIUM && REAGENT ===`);
                             console.log(method[0].reagent_items);
+                            console.log(`=== END Single Names ===`);
                         }
-                        console.log('REAGENT')
-                        console.log('PREMIUM')
                         /** if reagent => cheapest to delivery
                          * IDEA should we place here ctd derivative pricing_method?
                          * */
@@ -169,6 +177,7 @@ async function xvaItems () {
                     if (pricing.derivative.length > 0) {
                         count_in.push('derivative')
                     }
+                    console.log(count_in, count_out)
                     /***
                      * Cheapest-to-delivery for Reagent {name, value, index}
                      * */

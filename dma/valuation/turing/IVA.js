@@ -52,11 +52,6 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             };
         }
         if (pricing.asset_class.some(v_class => v_class === 'DERIVATIVE')) {
-            /**
-             * Evaluate all combinations for FLOOR
-             * we should write it somehow
-             *
-             * */
             let primary_methods = await getPricingMethods(item._id, false);
             /** Array of Pricing Methods*/
             for (let price_method of primary_methods) {
@@ -67,13 +62,9 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             }
         }
         if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
-            let getSingleNames = await premiumSingleName(item._id);
-            for (let {_id, method} of getSingleNames) {
+            let SingleNames = await premiumSingleName(item._id);
+            for (let {_id, method} of SingleNames) {
 
-                console.log(_id.recipe_id, _id.item_id, _id.item_quantity, _id.alliance_item_id, method);
-                for (let reagent_item of method[0].reagent_items) {
-
-                }
                 /***
                  * TODO probably thread
                  * */

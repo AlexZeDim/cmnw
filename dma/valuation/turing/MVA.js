@@ -43,13 +43,13 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
             if (reagent_item.v_class.some(v_class => v_class === 'PREMIUM')) {
                 premium_items.push(reagent_item)
             } else {
-                let x = await itemValuationAdjustment(reagent_item, connected_realm_id);
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id);
                 Object.assign(reagent_item, {
-                    price: x.reagent.value,
-                    value: parseFloat((x.reagent.value * reagent_item.quantity).toFixed(2))
+                    price: iva.reagent.value,
+                    value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
                 });
                 reagent_items.push(reagent_item);
-                queue_cost += Number((x.reagent.value * reagent_item.quantity).toFixed(2));
+                queue_cost += Number((iva.reagent.value * reagent_item.quantity).toFixed(2));
             }
         }
         /**

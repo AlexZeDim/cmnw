@@ -43,7 +43,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                 //let iva = await itemValuationAdjustment(reagent_item, connected_realm_id);
                 reagent_items.push(reagent_item);
                 /**
-                 * if iva has value or premium
+                 * if iva has value then from premium
                  * TODO push to reagent items too
                  */
                 premium_items.push(reagent_item)

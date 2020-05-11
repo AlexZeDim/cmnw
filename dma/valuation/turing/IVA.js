@@ -68,10 +68,12 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
                      */
                     if (mva.premium_items.length > 0) {
                         if (mva.premium_items.length === 1) {
-                            let test = Number(((pricing.market.price_size * 0.95) *  mva.queue_quantity - mva.queue_cost).toFixed(2));
-                            console.log(mva.premium_items[0]);
+                            console.log(`===PREMIUM SINGLE===`);
+                            let test = Number((((pricing.market.price_size * 0.95) *  mva.queue_quantity - mva.queue_cost) / mva.premium_items[0].quantity).toFixed(2));
+                            console.log(mva._id, mva.premium_items[0]._id, connected_realm_id, test, item.name.en_GB, pricing.market.open_interest );
                             /***
                              * IDEA this item is SingleItem
+                             * findByID and Update
                              * direct to push to valuations (reagent) as value && premium
                              */
                         }

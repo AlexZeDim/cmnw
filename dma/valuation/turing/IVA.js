@@ -7,6 +7,12 @@ const auctionsData  = require('../../auctions/auctionsData');
 async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified) {
     const methodValuationAdjustment = require('./MVA');
     try {
+        if ("quantity" in item) {
+            /***
+             * IF quantity =>
+             * return derivative.reagent items xQuantity
+             */
+        }
         /***
          * IDEA check is recursive 3 more in line and so on
          * IDEA check valuations cheapest to delivery before valuation!
@@ -56,7 +62,31 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             /** Array of Pricing Methods*/
             for (let price_method of primary_methods) {
                 let mva = await methodValuationAdjustment(price_method, connected_realm_id);
-                console.log(mva);
+                if ("premium_items" in mva && item.is_auctionable) {
+                    /***
+                     * If mva premium items length more then one
+                     */
+                    if (mva.premium_items.length > 0) {
+                        if (mva.premium_items.length === 1) {
+                            let test = Number(((pricing.market.price_size * 0.95) *  mva.queue_quantity - mva.queue_cost).toFixed(2));
+                            console.log(mva.premium_items[0]);
+                            /***
+                             * IDEA this item is SingleItem
+                             * direct to push to valuations (reagent) as value && premium
+                             */
+                        }
+                        /***
+                         * Find premium for all items if market price
+                         */
+                        let w_premium = {
+                            premium: Number(((pricing.market.price_size * 0.95) - (mva.nominal_value)).toFixed(2)),
+                            queue_cost: Number(((pricing.market.price_size * 0.95) * mva.queue_quantity).toFixed(2)),
+                            nominal_value: Number((pricing.market.price_size * 0.95).toFixed(2)),
+                        };
+                        Object.assign(mva, w_premium);
+                    }
+                    delete mva.premium_items;
+                }
                 pricing.derivative.push(mva);
                 /** END THREAD*/
             }

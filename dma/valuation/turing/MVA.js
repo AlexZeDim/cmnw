@@ -1,9 +1,8 @@
-
-/**
+/***
  * TODO RECURSIVE CONTROL
  * @param method
  * @param connected_realm_id
- * @constructor
+ * @returns {Promise<{queue_quantity: number, reagent_items: [], premium_items: [], nominal_value: number, _id: string, queue_cost: number}>}
  */
 
 async function methodValuationAdjustment (method = {}, connected_realm_id = 1602) {
@@ -11,7 +10,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
     try {
         /**
          * Asset Class hierarchy map
-         * @type {Map<unknown, unknown>}
+         * @type {Map<string, number>}
          */
         const assetClassMap = new Map([
             ['VENDOR,REAGENT,ITEM', 0],
@@ -41,6 +40,12 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
              * premium += (Price market (if exist) - quene_cost)
              * */
             if (reagent_item.v_class.some(v_class => v_class === 'PREMIUM')) {
+                //let iva = await itemValuationAdjustment(reagent_item, connected_realm_id);
+                reagent_items.push(reagent_item);
+                /**
+                 * if iva has value or premium
+                 * TODO push to reagent items too
+                 */
                 premium_items.push(reagent_item)
             } else {
                 let iva = await itemValuationAdjustment(reagent_item, connected_realm_id);
@@ -58,7 +63,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
         return {
             _id: method._id,
             queue_cost: Number(queue_cost.toFixed(2)),
-            queue_quantity: method.item_quantity,
+            queue_quantity: Number(method.item_quantity),
             nominal_value: Number((queue_cost / method.item_quantity).toFixed(2)),
             reagent_items: reagent_items,
             premium_items: premium_items

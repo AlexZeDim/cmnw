@@ -54,7 +54,7 @@ let schema = new mongoose.Schema({
         premium: [{ /** Родитель оценит остатком */
             _id: String,
             value: Number,
-            wi: Number,
+            wi: Number, /** premiumItem_Q x quantity */
         }],
     },
 },{

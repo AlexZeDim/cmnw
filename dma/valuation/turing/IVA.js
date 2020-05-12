@@ -110,18 +110,9 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         }
         if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
             let SingleNames = await premiumSingleName(item._id);
-            for (let {_id, method} of SingleNames) {
-
-                /***
-                 * TODO probably thread
-                 * */
-                console.log(`=== Single Names PREMIUM && REAGENT ===`);
-                console.log(method[0].reagent_items);
-                console.log(`=== END Single Names ===`);
+            for (let {method} of SingleNames) {
+                await methodValuationAdjustment(method, connected_realm_id);
             }
-            /** if reagent => cheapest to delivery
-             * IDEA should we place here ctd derivative pricing_method?
-             * */
         }
         /***
          * All in and out combinations

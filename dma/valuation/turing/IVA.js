@@ -68,14 +68,29 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
                      */
                     if (mva.premium_items.length > 0) {
                         if (mva.premium_items.length === 1) {
-                            console.log(`===PREMIUM SINGLE===`);
-                            let test = Number((((pricing.market.price_size * 0.95) *  mva.queue_quantity - mva.queue_cost) / mva.premium_items[0].quantity).toFixed(2));
-                            console.log(mva._id, mva.premium_items[0]._id, connected_realm_id, test, item.name.en_GB, pricing.market.open_interest );
                             /***
-                             * IDEA this item is SingleItem
-                             * findByID and Update
-                             * direct to push to valuations (reagent) as value && premium
+                             * item is SingleName for premium
+                             * _id String (recipe_id)
+                             * value: Number (premium value)
+                             * wi: Number (premium quantity on market)
                              */
+                            await valuations.findByIdAndUpdate({
+                                    _id: `${mva.premium_items[0]._id}@${connected_realm_id}`
+                                },
+                                {
+                                    $addToSet: {
+                                        "reagent.premium": {
+                                            _id: mva._id,
+                                            value: Number((((pricing.market.price_size * 0.95) *  mva.queue_quantity - mva.queue_cost) / mva.premium_items[0].quantity).toFixed(2)),
+                                            wi: Number(((mva.premium_items[0].quantity/mva.queue_quantity)*pricing.market.quantity).toFixed(3))
+                                        }
+                                    }
+                                },
+                                {
+                                    upsert : true,
+                                    new: true,
+                                    lean: true
+                                });
                         }
                         /***
                          * Find premium for all items if market price

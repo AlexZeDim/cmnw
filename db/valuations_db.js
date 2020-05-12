@@ -53,7 +53,8 @@ let schema = new mongoose.Schema({
         index: Number, /** Index of derivative method*/
         premium: [{ /** Родитель оценит остатком */
             _id: String,
-            value: Number
+            value: Number,
+            wi: Number,
         }],
     },
 },{

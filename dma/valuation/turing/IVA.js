@@ -3,6 +3,13 @@ const getPricingMethods = require("../getPricingMethods");
 const premiumSingleName = require("./premiumSingleName");
 const auctionsData  = require('../../auctions/auctionsData');
 
+/**
+ *
+ * @param item {Object}
+ * @param connected_realm_id {Number}
+ * @param lastModified {Number}
+ * @returns {Promise<void>}
+ */
 
 async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified) {
     const methodValuationAdjustment = require('./MVA');
@@ -18,15 +25,24 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
          * IDEA check valuations cheapest to delivery before valuation!
          * TODO lastModified to check if found!
          */
+        if (!lastModified) {
+            const auctions_db = require("../../../db/auctions_db");
+            ({lastModified} = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified'));
+
+        }
         let pricing;
-        //pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
-        /*if (pricing) {
-            console.log('ok')
-            return pricing
-        }*/
+        pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
+        console.log(pricing);
+        if (pricing) {
+            if (pricing.market.lastModified === lastModified) {
+                return pricing
+            }
+            if (pricing.derivative.length && pricing.derivative[0].lastModified === lastModified) {
+                return pricing
+            }
+        }
         /**
-         * TODO in not null return, else eva down
-         * timestamp check?
+         * else => evaluation process
          */
         pricing = new valuations({
             _id: `${item._id}@${connected_realm_id}`,

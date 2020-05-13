@@ -2,10 +2,11 @@
  * TODO RECURSIVE CONTROL
  * @param method
  * @param connected_realm_id
+ * @param lastModified
  * @returns {Promise<{queue_quantity: number, reagent_items: [], premium_items: [], nominal_value: number, _id: string, queue_cost: number}>}
  */
 
-async function methodValuationAdjustment (method = {}, connected_realm_id = 1602) {
+async function methodValuationAdjustment (method = {}, connected_realm_id = 1602, lastModified) {
     const itemValuationAdjustment = require('./IVA');
     try {
         /**
@@ -43,36 +44,50 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                 /**
                  * if iva has value then from premium
                  */
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id);
-                if ("value" in iva.reagent) {
-                    Object.assign(reagent_item, {
-                        price: iva.reagent.value,
-                        value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
-                    });
-                } else {
-                    if (iva.reagent.premium.length > 0) {
-                        const {value} = iva.reagent.premium.reduce((p, c) => p.wi > c.wi ? p : c);
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified);
+                if ("reagent" in iva) {
+                    if ("value" in iva.reagent) {
                         Object.assign(reagent_item, {
-                            price: value,
-                            value: parseFloat((value * reagent_item.quantity).toFixed(2))
+                            price: iva.reagent.value,
+                            value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
                         });
                     } else {
-                        Object.assign(reagent_item, {
-                            price: 0,
-                            value: 0
-                        });
+                        if (iva.reagent.premium.length > 0) {
+                            const {value} = iva.reagent.premium.reduce((p, c) => p.wi > c.wi ? p : c);
+                            Object.assign(reagent_item, {
+                                price: value,
+                                value: parseFloat((value * reagent_item.quantity).toFixed(2))
+                            });
+                        } else {
+                            Object.assign(reagent_item, {
+                                price: 0,
+                                value: 0
+                            });
+                        }
                     }
+                } else {
+                    Object.assign(reagent_item, {
+                        price: 0,
+                        value: 0
+                    });
                 }
                 premium_items.push(reagent_item);
                 reagent_items.push(reagent_item);
             } else {
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id);
-                Object.assign(reagent_item, {
-                    price: iva.reagent.value,
-                    value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
-                });
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified);
+                if ("reagent" in iva) {
+                    Object.assign(reagent_item, {
+                        price: iva.reagent.value,
+                        value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
+                    });
+                    queue_cost += Number((iva.reagent.value * reagent_item.quantity).toFixed(2));
+                } else {
+                    Object.assign(reagent_item, {
+                        price: 0,
+                        value: 0
+                    })
+                }
                 reagent_items.push(reagent_item);
-                queue_cost += Number((iva.reagent.value * reagent_item.quantity).toFixed(2));
             }
         }
         /**
@@ -83,6 +98,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
             queue_cost: Number(queue_cost.toFixed(2)),
             queue_quantity: Number(method.item_quantity),
             nominal_value: Number((queue_cost / method.item_quantity).toFixed(2)),
+            lastModified: lastModified,
             reagent_items: reagent_items,
             premium_items: premium_items
         };

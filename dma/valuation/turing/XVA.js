@@ -6,7 +6,7 @@ const {connection} = require('mongoose');
 async function XVA () {
     try {
         console.time(`DMA-${XVA.name}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
-        let cursor = await items_db.find({expansion: "BFA", _id: 169449}).limit(10).cursor({batchSize: 10});
+        let cursor = await items_db.find({expansion: "BFA", _id: 168310}).limit(10).cursor({batchSize: 10});
         cursor.on('data', async item_ => {
             cursor.pause();
             await itemValuationAdjustment(item_, 1602);

@@ -9,6 +9,7 @@ const guilds = require('./routes/api/guilds');
 const items = require('./routes/api/items');
 const findAll = require('./routes/api/findAll');
 const contracts = require('./routes/api/contracts');
+const eva = require('./routes/api/eva');
 const app = express();
 
 app.use(logger('dev'));
@@ -23,5 +24,6 @@ app.use('/api/guilds', guilds);
 app.use('/api/items', items);
 app.use('/api/findAll', findAll);
 app.use('/api/contracts', contracts);
+app.use('/api/eva', eva);
 
 module.exports = app;

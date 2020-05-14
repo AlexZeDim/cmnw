@@ -98,6 +98,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
          */
         return {
             _id: method._id,
+            rank: method.rank || 0,
             queue_cost: Number(queue_cost.toFixed(2)),
             queue_quantity: Number(method.item_quantity),
             nominal_value: Number((queue_cost / method.item_quantity).toFixed(2)),

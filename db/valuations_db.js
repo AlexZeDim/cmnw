@@ -38,6 +38,7 @@ let schema = new mongoose.Schema({
     },
     derivative: [{
         lastModified: Date,
+        rank: Number,
         reagent_items: Array, /**IDEA ...add? */
         _id: String,
         queue_cost: Number, /** Cost of production quene*/

@@ -22,8 +22,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         }
         /***
          * IDEA check is recursive 3 more in line and so on
-         * IDEA check valuations cheapest to delivery before valuation!
-         * TODO lastModified to check if found!
+         * check existing valuation based on timestamp
          */
         if (!lastModified) {
             const auctions_db = require("../../../db/auctions_db");
@@ -32,7 +31,6 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         }
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
-        console.log(pricing);
         if (pricing) {
             if (pricing.market.lastModified === lastModified) {
                 return pricing
@@ -51,7 +49,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             asset_class: item.v_class
         });
         /***
-         * check asset class
+         * determine asset class
          */
         if (item.sell_price > 0) {
             /** check vendor price out*/

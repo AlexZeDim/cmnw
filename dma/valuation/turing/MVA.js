@@ -59,6 +59,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                                 value: parseFloat((value * reagent_item.quantity).toFixed(2))
                             });
                         } else {
+                            /** failsafe */
                             Object.assign(reagent_item, {
                                 price: 0,
                                 value: 0
@@ -66,6 +67,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                         }
                     }
                 } else {
+                    /** failsafe */
                     Object.assign(reagent_item, {
                         price: 0,
                         value: 0
@@ -82,6 +84,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                     });
                     queue_cost += Number((iva.reagent.value * reagent_item.quantity).toFixed(2));
                 } else {
+                    /** failsafe */
                     Object.assign(reagent_item, {
                         price: 0,
                         value: 0

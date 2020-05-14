@@ -75,7 +75,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             let primary_methods = await getPricingMethods(item._id, false);
             /** Array of Pricing Methods*/
             for (let price_method of primary_methods) {
-                let mva = await methodValuationAdjustment(price_method, connected_realm_id);
+                let mva = await methodValuationAdjustment(price_method, connected_realm_id, lastModified);
                 if ("premium_items" in mva && item.is_auctionable) {
                     /***
                      * If mva premium items length more then one
@@ -125,7 +125,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
             let SingleNames = await premiumSingleName(item._id);
             for (let {method} of SingleNames) {
-                await methodValuationAdjustment(method, connected_realm_id);
+                await methodValuationAdjustment(method, connected_realm_id, lastModified);
             }
         }
         /***
@@ -172,8 +172,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
                         break;
                 }
             }
-            /***
-             * TODO error for premium we should add value to compare
+            /**
              * {name: 'premium', value: Number, method: String}
              */
             Object.assign(pricing.reagent, reagentArray.reduce((prev, curr) => prev.value < curr.value ? prev : curr));

@@ -161,8 +161,19 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
                         reagentArray.push({name: 'market', value: pricing.market.price_size});
                         break;
                     case 'derivative':
-                        let ctd = {min: pricing.derivative[0].nominal_value, index: 0};
-                        pricing.derivative.forEach(({nominal_value}, i) => {
+                        /**
+                         * Check proc chance if item is ALCH
+                         * @type {number}
+                         */
+                        let m = pricing.derivative[0].nominal_value;
+                        if (item.expansion === 'BFA' && item.profession_class === 'ALCH' && pricing.derivative[0].rank === 3) {
+                            m = (m * 0.6)
+                        }
+                        let ctd = {min: m, index: 0};
+                        pricing.derivative.forEach(({nominal_value, rank}, i) => {
+                            if (item.expansion === 'BFA' && item.profession_class === 'ALCH' && rank === 3) {
+                                nominal_value = (nominal_value * 0.6)
+                            }
                             if (nominal_value < ctd.min) {
                                 ctd.min = nominal_value;
                                 ctd.index = i;

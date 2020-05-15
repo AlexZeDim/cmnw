@@ -105,7 +105,7 @@ let schema = new mongoose.Schema({
     }
 });
 
-schema.index({ "name.en_GB": "text", "name.ru_RU": "text", ticker: "text" },{name: 'SearchQuery'});
+schema.index({ ticker: "text", "name.en_GB": "text", "name.ru_RU": "text" },{name: 'SearchQuery'});
 
 let items_db = mongoose.model('items', schema);
 

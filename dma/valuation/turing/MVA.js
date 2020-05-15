@@ -3,12 +3,15 @@
  * @param method
  * @param connected_realm_id
  * @param lastModified
+ * @param item_depth
+ * @param method_depth
  * @returns {Promise<{queue_quantity: number, reagent_items: [], premium_items: [], nominal_value: number, _id: string, queue_cost: number}>}
  */
 
-async function methodValuationAdjustment (method = {}, connected_realm_id = 1602, lastModified) {
+async function methodValuationAdjustment (method = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0) {
     const itemValuationAdjustment = require('./IVA');
     try {
+        method_depth += 1;
         /**
          * Asset Class hierarchy map
          * @type {Map<string, number>}
@@ -42,9 +45,9 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
              * */
             if (reagent_item.v_class.some(v_class => v_class === 'PREMIUM')) {
                 /**
-                 * if iva has value then from premium
+                 * if iva has value then for premium
                  */
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified);
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth, method_depth);
                 if ("reagent" in iva) {
                     if ("value" in iva.reagent) {
                         Object.assign(reagent_item, {
@@ -76,7 +79,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                 premium_items.push(reagent_item);
                 reagent_items.push(reagent_item);
             } else {
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified);
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth, method_depth);
                 if ("reagent" in iva) {
                     Object.assign(reagent_item, {
                         price: iva.reagent.value,
@@ -95,13 +98,18 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
         }
         /**
          * End of loop
+         * Proc chance
          */
+        let n_value = Number((queue_cost / method.item_quantity).toFixed(2));
+        if (method.expansion === 'BFA' && method.profession === 'ALCH' && method.rank === 3) {
+            n_value = Number(((queue_cost / method.item_quantity) * 0.6).toFixed(2));
+        }
         return {
             _id: method._id,
             rank: method.rank || 0,
             queue_cost: Number(queue_cost.toFixed(2)),
             queue_quantity: Number(method.item_quantity),
-            nominal_value: Number((queue_cost / method.item_quantity).toFixed(2)),
+            nominal_value: n_value,
             lastModified: lastModified,
             reagent_items: reagent_items,
             premium_items: premium_items

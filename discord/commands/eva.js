@@ -21,34 +21,97 @@ module.exports = {
                 realm,
                 updatedAt
             } = data;
-            embed.setTitle(`${item.name.en_GB}@${realm.name}`.toUpperCase());
-            embed.setAuthor(asset_class.toString().replace(/,/g, ' '), '', '');
+            embed.setTitle(asset_class.toString().replace(/,/g, ' '));
+            embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', '');
             embed.setURL('https://discord.js.org/');
             embed.setColor('#333333');
             if ("icon" in item) {
                 embed.setThumbnail(item.icon);
             }
-            if (market) {
+            if (asset_class.some(v_class => v_class === 'VENDOR') || asset_class.some(v_class => v_class === 'CONST')) {
+                embed.addFields(
+                    { name: 'Sell', value: vendor.sell_price, inline: true },
+                    { name: 'Buy', value: vendor.buy_price, inline: true },
+                    { name: '\u200B', value: "\u200B", inline: true },
+                    { name: 'Yield to Market', value: vendor.yieldMarket, inline: true },
+                    { name: 'Yield to Reagent', value: vendor.yieldReagent, inline: true },
+                );
+            }
+            if ("lastModified" in market) {
                 embed.addField('Price', market.price, true);
                 embed.addField('Price Size', market.price_size, true);
                 embed.addField('Quantity', market.quantity, true);
                 embed.addField('Open Interest', market.open_interest, true);
+            }
+            if ("yieldReagent" in market) {
                 embed.addField('Yield to Reagent', market.yieldReagent, true);
+            }
+            if ("yieldVendor" in market) {
                 embed.addField('Yield to Vendor', market.yieldVendor, true);
             }
-            embed.addField('\u200B', '\u200B');
-            if (derivative) {
-                derivative.forEach(m => {
+            if ("lastModified" in market) {
+                embed.addField('\u200B', '\u200B');
+            }
+            if (derivative.length) {
+                derivative.forEach((m, i) => {
                     embed.addFields(
                         { name: 'Method', value: m._id, inline: true },
                         { name: 'Queue Cost', value: m.queue_cost, inline: true },
                         { name: 'Nominal Value', value: m.nominal_value, inline: true },
-                        { name: 'Premium', value: m.premium || 0, inline: true },
-                        { name: 'Yield to Market', value: m.yieldMarket, inline: true },
-                        { name: 'Yield to Vendor', value: m.yieldVendor, inline: true },
-                    )
-                    embed.addField('\u200B', '\u200B');
+                    );
+                    if ("Premium" in m) {
+                        embed.addField('Premium', m.premium, true);
+                    }
+                    if ("yieldMarket" in m) {
+                        embed.addField('Yield to Market', m.yieldMarket, true);
+                    }
+                    if ("yieldVendor" in m) {
+                        embed.addField('Yield to Vendor', m.yieldVendor, true);
+                    }
+                    if (!(i === derivative.length - 1 && !("value" in reagent))) {
+                        embed.addField('\u200B', '\u200B');
+                    }
                 });
+            }
+            if (asset_class.some(v_class => v_class === 'CAP')) {
+                derivative.forEach((m, i) => {
+                    embed.addFields(
+                        { name: 'Method', value: m._id, inline: true },
+                        { name: 'Queue Cost', value: m.queue_cost, inline: true },
+                        { name: 'Nominal Value', value: m.nominal_value, inline: true },
+                    );
+                    if ("Premium" in m) {
+                        embed.addField('Premium', m.premium, true);
+                    }
+                    if ("yieldMarket" in m) {
+                        embed.addField('Yield to Market', m.yieldMarket, true);
+                    }
+                    if ("yieldVendor" in m) {
+                        embed.addField('Yield to Vendor', m.yieldVendor, true);
+                    }
+                    if (!(i === derivative.length - 1 && !("value" in reagent))) {
+                        embed.addField('\u200B', '\u200B');
+                    }
+                });
+            }
+            if (asset_class.some(v_class => v_class === 'REAGENT')) {
+                if ("index" in reagent) {
+                    embed.addFields(
+                        { name: 'Method', value: derivative[reagent.index]._id, inline: true },
+                        { name: 'Queue Cost', value: derivative[reagent.index].queue_cost, inline: true },
+                        { name: 'Nominal Value', value: derivative[reagent.index].nominal_value, inline: true },
+                    );
+                    if ("Premium" in derivative[reagent.index]) {
+                        embed.addField('Premium', derivative[reagent.index].premium, true);
+                    }
+                    if ("yieldMarket" in derivative[reagent.index]) {
+                        embed.addField('Yield to Market', derivative[reagent.index].yieldMarket, true);
+                    }
+                    if ("yieldVendor" in derivative[reagent.index]) {
+                        embed.addField('Yield to Vendor', derivative[reagent.index].yieldVendor, true);
+                    }
+                    embed.addField('\u200B', '\u200B');
+                }
             }
             if ("value" in reagent) {
                 embed.addField('CTD', reagent.name.replace(/^[a-z]/i, str => str.toUpperCase()), true);

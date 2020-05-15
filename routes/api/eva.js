@@ -13,8 +13,10 @@ router.get('/:i@:r', async function(req, res) {
         let requestPromises = [];
         isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestPromises.push(items_db.findById(Number(i)).lean().exec()));
         isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).exec())) : (requestPromises.push(realms_db.findById(Number(r)).lean().exec()));
-        let [item, {connected_realm_id}] = await Promise.all(requestPromises);
-        let iva = await itemValuationAdjustment(item, connected_realm_id);
+        let [item, realm] = await Promise.all(requestPromises);
+        let iva = await itemValuationAdjustment(item, realm.connected_realm_id);
+        Object.assign(iva, {item: item});
+        Object.assign(iva, {realm: realm});
         res.status(200).json(iva);
     } catch (e) {
         res.status(404).json(e);

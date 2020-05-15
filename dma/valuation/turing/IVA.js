@@ -8,12 +8,15 @@ const auctionsData  = require('../../auctions/auctionsData');
  * @param item {Object}
  * @param connected_realm_id {Number}
  * @param lastModified {Number}
+ * @param item_depth {Number}
+ * @param method_depth {Number}
  * @returns {Promise<void>}
  */
 
-async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified) {
+async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0) {
     const methodValuationAdjustment = require('./MVA');
     try {
+        item_depth += 1;
         if ("quantity" in item) {
             /***
              * IF quantity =>
@@ -75,7 +78,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             let primary_methods = await getPricingMethods(item._id, false);
             /** Array of Pricing Methods*/
             for (let price_method of primary_methods) {
-                let mva = await methodValuationAdjustment(price_method, connected_realm_id, lastModified);
+                let mva = await methodValuationAdjustment(price_method, connected_realm_id, lastModified, item_depth, method_depth);
                 if ("premium_items" in mva && item.is_auctionable) {
                     /***
                      * If mva premium items length more then one
@@ -122,10 +125,13 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
                 /** END THREAD*/
             }
         }
+        /**
+         * TODO fix sanguinecell = expusom problem iteration control
+         */
         if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
             let SingleNames = await premiumSingleName(item._id);
             for (let {method} of SingleNames) {
-                await methodValuationAdjustment(method, connected_realm_id, lastModified);
+                await methodValuationAdjustment(method[0], connected_realm_id, lastModified, item_depth, method_depth);
             }
         }
         /***
@@ -149,46 +155,42 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         }
         /***
          * Cheapest-to-delivery for Reagent {name, value, index}
+         * pricing.asset_class.some(v_class => v_class === 'REAGENT') &&
          * */
-        if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && !pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
-            let reagentArray = [];
-            for (let source of count_in) {
-                switch (source) {
-                    case 'vendor':
-                        reagentArray.push({name: 'vendor', value: pricing.vendor.buy_price});
-                        break;
-                    case 'market':
-                        reagentArray.push({name: 'market', value: pricing.market.price_size});
-                        break;
-                    case 'derivative':
-                        /**
-                         * Check proc chance if item is ALCH
-                         * @type {number}
-                         */
-                        let m = pricing.derivative[0].nominal_value;
-                        if (item.expansion === 'BFA' && item.profession_class === 'ALCH' && pricing.derivative[0].rank === 3) {
-                            m = (m * 0.6)
+        //if (!pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
+        let reagentArray = [];
+        for (let source of count_in) {
+            switch (source) {
+                case 'vendor':
+                    reagentArray.push({name: 'vendor', value: pricing.vendor.buy_price});
+                    break;
+                case 'market':
+                    reagentArray.push({name: 'market', value: pricing.market.price_size});
+                    break;
+                case 'derivative':
+                    /**
+                     * Check proc chance if item is ALCH (method)
+                     * @type {{min: number, index: number}}
+                     */
+                    let ctd = {min: Number(pricing.derivative[0].nominal_value), index: 0};
+                    pricing.derivative.forEach(({nominal_value, rank}, i) => {
+                        if (nominal_value < ctd.min) {
+                            ctd.min = nominal_value;
+                            ctd.index = i;
                         }
-                        let ctd = {min: m, index: 0};
-                        pricing.derivative.forEach(({nominal_value, rank}, i) => {
-                            if (item.expansion === 'BFA' && item.profession_class === 'ALCH' && rank === 3) {
-                                nominal_value = (nominal_value * 0.6)
-                            }
-                            if (nominal_value < ctd.min) {
-                                ctd.min = nominal_value;
-                                ctd.index = i;
-                            }
-                        });
-                        reagentArray.push({name: 'derivative', value: ctd.min, index: ctd.index});
-                        break;
-                }
+                    });
+                    reagentArray.push({name: 'derivative', value: Number((ctd.min).toFixed(2)), index: ctd.index});
+                    break;
             }
-            /**
-             * {name: 'premium', value: Number, method: String}
-             */
+        }
+        /**
+         * {name: 'premium', value: Number, method: String}
+         */
+        if (reagentArray.length) {
             Object.assign(pricing.reagent, reagentArray.reduce((prev, curr) => prev.value < curr.value ? prev : curr));
             count_out.push('reagent');
         }
+        //}
         /***
          * Yield calculation for each in and out
          * */

@@ -11,7 +11,6 @@
 async function methodValuationAdjustment (method = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0) {
     const itemValuationAdjustment = require('./IVA');
     try {
-        method_depth += 1;
         /**
          * Asset Class hierarchy map
          * @type {Map<string, number>}
@@ -47,7 +46,7 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                 /**
                  * if iva has value then for premium
                  */
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth, method_depth);
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1);
                 if ("reagent" in iva) {
                     if ("value" in iva.reagent) {
                         Object.assign(reagent_item, {
@@ -79,7 +78,18 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                 premium_items.push(reagent_item);
                 reagent_items.push(reagent_item);
             } else {
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth, method_depth);
+                /**
+                 * if method._id || method.item_id allow cap =>
+                 * pass to IVA as allow cap as reagent {define reagent there}
+                 *
+                 * IDEA item_id premium allow cap?
+                 */
+                let iva;
+                if (method.item_id === 152668) {
+                    iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1, true);
+                } else {
+                    iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1);
+                }
                 if ("reagent" in iva) {
                     Object.assign(reagent_item, {
                         price: iva.reagent.value,

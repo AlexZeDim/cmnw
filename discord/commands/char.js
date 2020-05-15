@@ -8,6 +8,7 @@ module.exports = {
     args: true,
     async execute(message, args) {
         const params = args.split('@');
+        let embed = new MessageEmbed();
         let character = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/characters/${params[0]}@${params[1]}`)).then(({data}) => {
             let {
                 _id,
@@ -28,9 +29,11 @@ module.exports = {
                 media,
                 statusCode,
             } = data;
-            let embed = new MessageEmbed();
-            embed.setTitle(_id.toUpperCase());
-            embed.setAuthor(updatedBy, '', 'https://discord.js.org');
+            let g_rank;
+            if (guild) {
+                embed.setTitle(`${guild.toUpperCase()} // ${guild_rank === 0 ? 'GM' : 'R' + guild_rank}`);
+            }
+            embed.setAuthor(_id.toUpperCase(), '', 'https://discord.js.org')
             embed.setURL('https://discord.js.org/');
             if (media) {
                 embed.setThumbnail(media.avatar_url);
@@ -46,16 +49,8 @@ module.exports = {
             if (faction === "Horde") {
                 embed.setColor('#ff0000');
             }
-            if (statusCode === 200) embed.addField('Class', character_class, true);
-            if (guild) {
-                if (guild_rank === 0) {
-                    embed.addField('Guild Rank', "GM", true);
-                } else {
-                    embed.addField('Guild Rank', guild_rank, true);
-                }
-                embed.addField('Guild', guild, true);
-            }
             if (statusCode === 200) {
+                embed.addField('Class', character_class, true);
                 embed.addField('Spec', spec, true);
                 embed.addField('Race', `${race}, ${gender[0]}`, true);
             }
@@ -68,7 +63,7 @@ module.exports = {
                 embed.addField('Last Online', new Date(lastModified).toLocaleString('en-GB'), true);
             }
             embed.setTimestamp(updatedAt);
-            embed.setFooter(`Gonikon`);
+            embed.setFooter(`OSINT-DB | Gonikon`);
             return embed
         });
         await message.channel.send(character);

@@ -10,13 +10,14 @@ const auctionsData  = require('../../auctions/auctionsData');
  * @param lastModified {Number}
  * @param item_depth {Number}
  * @param method_depth {Number}
+ * @param allowCap
  * @returns {Promise<void>}
  */
 
-async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0) {
+async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0, allowCap = false) {
     const methodValuationAdjustment = require('./MVA');
     try {
-        item_depth += 1;
+        console.log(`${item.name.en_GB} ${item_depth} ${method_depth}`)
         if ("quantity" in item) {
             /***
              * IF quantity =>
@@ -131,7 +132,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
             let SingleNames = await premiumSingleName(item._id);
             for (let {method} of SingleNames) {
-                await methodValuationAdjustment(method[0], connected_realm_id, lastModified, item_depth, method_depth);
+                //await methodValuationAdjustment(method[0], connected_realm_id, lastModified, item_depth, method_depth);
             }
         }
         /***
@@ -155,42 +156,46 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         }
         /***
          * Cheapest-to-delivery for Reagent {name, value, index}
-         * pricing.asset_class.some(v_class => v_class === 'REAGENT') &&
+         * TODO cap not here, but we need it
          * */
-        //if (!pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
-        let reagentArray = [];
-        for (let source of count_in) {
-            switch (source) {
-                case 'vendor':
-                    reagentArray.push({name: 'vendor', value: pricing.vendor.buy_price});
-                    break;
-                case 'market':
-                    reagentArray.push({name: 'market', value: pricing.market.price_size});
-                    break;
-                case 'derivative':
-                    /**
-                     * Check proc chance if item is ALCH (method)
-                     * @type {{min: number, index: number}}
-                     */
-                    let ctd = {min: Number(pricing.derivative[0].nominal_value), index: 0};
-                    pricing.derivative.forEach(({nominal_value, rank}, i) => {
-                        if (nominal_value < ctd.min) {
-                            ctd.min = nominal_value;
-                            ctd.index = i;
-                        }
-                    });
-                    reagentArray.push({name: 'derivative', value: Number((ctd.min).toFixed(2)), index: ctd.index});
-                    break;
+        if ((pricing.asset_class.some(v_class => v_class === 'REAGENT') || allowCap === true) && !pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
+            let reagentArray = [];
+            for (let source of count_in) {
+                switch (source) {
+                    case 'vendor':
+                        reagentArray.push({name: 'vendor', value: pricing.vendor.buy_price});
+                        break;
+                    case 'market':
+                        reagentArray.push({name: 'market', value: pricing.market.price_size});
+                        break;
+                    case 'derivative':
+                        /**
+                         * Check proc chance if item is ALCH (method)
+                         * @type {{min: number, index: number}}
+                         */
+                        let ctd = {min: Number(pricing.derivative[0].nominal_value), index: 0};
+                        pricing.derivative.forEach(({nominal_value, rank}, i) => {
+                            if (nominal_value < ctd.min) {
+                                ctd.min = nominal_value;
+                                ctd.index = i;
+                            }
+                        });
+                        reagentArray.push({name: 'derivative', value: Number((ctd.min).toFixed(2)), index: ctd.index});
+                        /***
+                         * if derivative exist, push cheapest among all at index
+                         */
+                        Object.assign(pricing.reagent, {index: ctd.index});
+                        break;
+                }
+            }
+            /**
+             * {name: 'premium', value: Number, method: String}
+             */
+            if (reagentArray.length) {
+                Object.assign(pricing.reagent, reagentArray.reduce((prev, curr) => prev.value < curr.value ? prev : curr));
+                count_out.push('reagent');
             }
         }
-        /**
-         * {name: 'premium', value: Number, method: String}
-         */
-        if (reagentArray.length) {
-            Object.assign(pricing.reagent, reagentArray.reduce((prev, curr) => prev.value < curr.value ? prev : curr));
-            count_out.push('reagent');
-        }
-        //}
         /***
          * Yield calculation for each in and out
          * */

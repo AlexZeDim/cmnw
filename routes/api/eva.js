@@ -11,8 +11,8 @@ router.get('/:i@:r', async function(req, res) {
         const {i, r} = req.params;
         let api = {};
         let requestPromises = [];
-        isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestPromises.push(items_db.findById(Number(i)).lean().exec()));
-        isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).exec())) : (requestPromises.push(realms_db.findById(Number(r)).lean().exec()));
+        isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestPromises.push(items_db.findById(i).lean().exec()));
+        isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));
         let [item, realm] = await Promise.all(requestPromises);
         let iva = await itemValuationAdjustment(item, realm.connected_realm_id);
         Object.assign(iva, {item: item});

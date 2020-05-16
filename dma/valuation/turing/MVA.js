@@ -5,10 +5,18 @@
  * @param lastModified
  * @param item_depth
  * @param method_depth
+ * @param single_name
  * @returns {Promise<{queue_quantity: number, reagent_items: [], premium_items: [], nominal_value: number, _id: string, queue_cost: number}>}
  */
 
-async function methodValuationAdjustment (method = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0) {
+async function methodValuationAdjustment (
+        method = {},
+        connected_realm_id = 1602,
+        lastModified,
+        item_depth = 0,
+        method_depth = 0,
+        single_name = false
+    ) {
     const itemValuationAdjustment = require('./IVA');
     try {
         /**
@@ -46,34 +54,41 @@ async function methodValuationAdjustment (method = {}, connected_realm_id = 1602
                 /**
                  * if iva has value then for premium
                  */
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1);
-                if ("reagent" in iva) {
-                    if ("value" in iva.reagent) {
-                        Object.assign(reagent_item, {
-                            price: iva.reagent.value,
-                            value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
-                        });
-                    } else {
-                        if (iva.reagent.premium.length > 0) {
-                            const {value} = iva.reagent.premium.reduce((p, c) => p.wi > c.wi ? p : c);
-                            Object.assign(reagent_item, {
-                                price: value,
-                                value: parseFloat((value * reagent_item.quantity).toFixed(2))
-                            });
-                        } else {
-                            /** failsafe */
-                            Object.assign(reagent_item, {
-                                price: 0,
-                                value: 0
-                            });
-                        }
-                    }
-                } else {
-                    /** failsafe */
+                if (single_name === true) {
                     Object.assign(reagent_item, {
                         price: 0,
                         value: 0
                     });
+                } else {
+                    let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1);
+                    if ("reagent" in iva) {
+                        if ("value" in iva.reagent) {
+                            Object.assign(reagent_item, {
+                                price: iva.reagent.value,
+                                value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
+                            });
+                        } else {
+                            if (iva.reagent.premium.length > 0) {
+                                const {value} = iva.reagent.premium.reduce((p, c) => p.wi > c.wi ? p : c);
+                                Object.assign(reagent_item, {
+                                    price: value,
+                                    value: parseFloat((value * reagent_item.quantity).toFixed(2))
+                                });
+                            } else {
+                                /** failsafe */
+                                Object.assign(reagent_item, {
+                                    price: 0,
+                                    value: 0
+                                });
+                            }
+                        }
+                    } else {
+                        /** failsafe */
+                        Object.assign(reagent_item, {
+                            price: 0,
+                            value: 0
+                        });
+                    }
                 }
                 premium_items.push(reagent_item);
                 reagent_items.push(reagent_item);

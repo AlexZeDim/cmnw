@@ -44,13 +44,14 @@ async function itemValuationAdjustment (
         }
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
-        //TODO
         if (pricing) {
-            if ("market" in pricing && Date(pricing.market.lastModified) !== Date(lastModified)) {
-                return pricing
+            if ("lastModified" in pricing.market) {
+                if (moment(pricing.market.lastModified).isSame(lastModified)) {
+                    return pricing
+                }
             }
             if ("derivative" in pricing && pricing.derivative.length) {
-                if (pricing.derivative.length && Date(pricing.derivative[0].lastModified) !== Date(lastModified)) {
+                if (moment(pricing.derivative[0].lastModified).isSame(lastModified)) {
                     return pricing
                 }
             }
@@ -158,15 +159,6 @@ async function itemValuationAdjustment (
                     let [{min_size, quantity}] = await auctionsData(method.item_id, connected_realm_id);
                     /** If market data exists and premium_item just one */
                     if (min_size && quantity) {
-                        console.log(
-                            `Method: ${method._id}
-                            Item: ${method.item_id}
-                            Price: ${min_size}
-                            Quantity:${quantity}
-                            Method Quantity: ${single_premium.queue_quantity}
-                            Method Q_Cost: ${single_premium.queue_cost}
-                            Premium_Q: ${single_premium.premium_items[0].quantity}`
-                        )
                         /** If premium have PRVA */
                         pricing.reagent.premium.push({
                             _id: single_premium._id,
@@ -244,18 +236,34 @@ async function itemValuationAdjustment (
                  * them take it from premium array
                  */
                 if (pricing.reagent.premium.length) {
-                    let [wi_max, wi_index] = pricing.reagent.premium.reduce((prev, curr, i) => prev.wi > curr.wi ? [prev, i] : [curr, i])
+                    let premium_value = pricing.reagent.premium[0].value
+                    let wi_max = pricing.reagent.premium[0].wi;
+                    let wi_index = 0;
+                    pricing.reagent.premium.forEach(({value, wi}, i) => {
+                        if (wi > wi_max) {
+                            wi_max = wi;
+                            premium_value = value;
+                            wi_index = i;
+                        }
+                    });
                     pricing.reagent.name = "premium";
-                    pricing.reagent.value = wi_max.value;
+                    pricing.reagent.value = wi_max;
                     pricing.reagent.index = wi_index;
-                    //Object.assign(pricing.reagent, {name: "premium", value: wi_max.value, index: wi_index});
                 }
             }
             if (pricing.reagent.premium.length) {
-                let [wi_max, wi_index] = pricing.reagent.premium.reduce((prev, curr, i) => prev.wi > curr.wi ? [prev, i] : [curr, i])
-                pricing.reagent.p_value = wi_max.value;
+                let premium_value = pricing.reagent.premium[0].value
+                let wi_max = pricing.reagent.premium[0].wi;
+                let wi_index = 0;
+                pricing.reagent.premium.forEach(({value, wi}, i) => {
+                    if (wi > wi_max) {
+                        wi_max = wi;
+                        premium_value = value;
+                        wi_index = i;
+                    }
+                });
+                pricing.reagent.p_value = premium_value;
                 pricing.reagent.p_index = wi_index;
-                //Object.assign(pricing.reagent, {p_value: wi_max.value, p_index: wi_index});
             }
             /** END of RVA for PR */
         }

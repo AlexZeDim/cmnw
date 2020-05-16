@@ -6,10 +6,11 @@ const {connection} = require('mongoose');
 async function XVA () {
     try {
         console.time(`DMA-${XVA.name}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
-        let cursor = await items_db.find({expansion: "BFA", _id: 162461}).limit(10).cursor({batchSize: 10});
+        let cursor = await items_db.find({expansion: "BFA", _id: 152668}).limit(10).cursor({batchSize: 10});
         cursor.on('data', async item_ => {
             cursor.pause();
-            await itemValuationAdjustment(item_, 1602);
+            let x = await itemValuationAdjustment(item_, 1602);
+            console.log(x);
             cursor.resume();
         });
         cursor.on('error', error => {
@@ -17,7 +18,7 @@ async function XVA () {
             cursor.close();
         });
         cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 180000));
+            await new Promise(resolve => setTimeout(resolve, 600000));
             connection.close();
             console.timeEnd(`DMA-${XVA.name}`);
         });

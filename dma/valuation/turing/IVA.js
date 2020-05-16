@@ -139,7 +139,6 @@ async function itemValuationAdjustment (
             if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
                 /** Request list of all single names methods */
                 let SingleNames = await premiumSingleName(item._id);
-                console.log(`F: ${SingleNames.length}`)
                 /**
                  * Method Valuation Adjustment
                  *

@@ -113,29 +113,7 @@ async function itemValuationAdjustment (
 
                 /** If MVA returns at least one premium reagent and IVA item has market price */
                 if ("premium_items" in mva && pricing.price_size) {
-                    if (mva.premium_items.length > 0) {
-                        /** If premium reagent just one.. */
-                        //TODO probably delete because unused
-                        if (mva.premium_items.length === 1) {
-                            /** ..we could passively update premium reagent..  */
-                            await valuations.findByIdAndUpdate({
-                                    _id: `${mva.premium_items[0]._id}@${connected_realm_id}`
-                                },
-                                {
-                                    $addToSet: {
-                                        "reagent.premium": {
-                                            _id: mva._id,
-                                            value: Number((((pricing.market.price_size * 0.95) *  mva.queue_quantity - mva.queue_cost) / mva.premium_items[0].quantity).toFixed(2)),
-                                            wi: Number(((mva.premium_items[0].quantity/mva.queue_quantity)*pricing.market.quantity).toFixed(3))
-                                        }
-                                    }
-                                },
-                                {
-                                    upsert : true,
-                                    new: true,
-                                    lean: true
-                                });
-                        }
+                    if (mva.premium_items.length) {
                         /** For all premium reagents without valuation in method.. */
                         let w_premium = {
                             premium: Number(((pricing.market.price_size * 0.95) - (mva.nominal_value)).toFixed(2)),

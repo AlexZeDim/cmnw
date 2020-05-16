@@ -14,10 +14,16 @@ const auctionsData  = require('../../auctions/auctionsData');
  * @returns {Promise<void>}
  */
 
-async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, lastModified, item_depth = 0, method_depth = 0, allowCap = false) {
+async function itemValuationAdjustment (
+        item = {},
+        connected_realm_id = 1602,
+        lastModified,
+        item_depth = 0,
+        method_depth = 0,
+        allowCap = false
+    ) {
     const methodValuationAdjustment = require('./MVA');
     try {
-        console.log(`${item.name.en_GB} ${item_depth} ${method_depth}`)
         if ("quantity" in item) {
             /***
              * IF quantity =>
@@ -36,11 +42,13 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
         if (pricing) {
-            if (pricing.market.lastModified === lastModified) {
+            if ("market" in pricing && pricing.market.lastModified === lastModified) {
                 return pricing
             }
-            if (pricing.derivative.length && pricing.derivative[0].lastModified === lastModified) {
-                return pricing
+            if ("derivative" in pricing) {
+                if (pricing.derivative.length && pricing.derivative[0].lastModified === lastModified) {
+                    return pricing
+                }
             }
         }
         /**
@@ -127,12 +135,70 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             }
         }
         /**
-         * TODO fix sanguinecell = expusom problem iteration control
+         *
          */
-        if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
-            let SingleNames = await premiumSingleName(item._id);
-            for (let {method} of SingleNames) {
-                //await methodValuationAdjustment(method[0], connected_realm_id, lastModified, item_depth, method_depth);
+        if (method_depth === 0 && item_depth === 0) {
+            if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
+                let SingleNames = await premiumSingleName(item._id);
+                const L = pricing.reagent.premium.length;
+                console.log(`F: ${SingleNames.length}, L: ${L}`)
+                /**
+                 * premiumSingleName can't have alliance or horde items
+                 */
+                for (let {method} of SingleNames) {
+                    let single_premium = await methodValuationAdjustment(method[0], connected_realm_id, lastModified, item_depth, method_depth, true);
+                    let [{min_size, quantity}] = await auctionsData(method[0].item_id, connected_realm_id);
+                    console.log(
+                        `Method: ${_id}
+                        Item: ${method[0].item_id}
+                        Price: ${min_size}
+                        Quantity:${quantity}
+                        Method Quantity: ${single_premium.queue_quantity}
+                        Method Q_Cost: ${single_premium.queue_cost}
+                        Premium_Q: ${single_premium.premium_items[0].quantity}`
+                    )
+                    if (single_premium.premium_items.length === 1) {
+                        /***
+                         * item is SingleName for premium
+                         * _id String (recipe_id)
+                         * value: Number (premium value)
+                         * wi: Number (premium quantity on market)
+                         */
+                        if (L) {
+                            await valuations.findByIdAndUpdate({
+                                    _id: `${single_premium.premium_items[0]._id}@${connected_realm_id}`
+                                },
+                                {
+                                    $addToSet: {
+                                        "reagent.premium": {
+                                            _id: single_premium._id,
+                                            value: Number((((min_size * 0.95) *  single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity).toFixed(2)),
+                                            wi: Number(((single_premium.premium_items[0].quantity/single_premium.queue_quantity)*quantity).toFixed(3))
+                                        }
+                                    }
+                                },
+                                {
+                                    upsert : true,
+                                    new: true,
+                                    lean: true
+                                });
+                        } else {
+                            let methodExists = pricing.reagent.premium.some(element => element._id === single_premium._id);
+                            if (methodExists) {
+                                let find = Object.assign({}, pricing.reagent.premium.find(element => element._id === single_premium._id));
+                                find._id = single_premium._id;
+                                find.value = Number((((min_size * 0.95) *  single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity).toFixed(2))
+                                find.wi = Number(((single_premium.premium_items[0].quantity/single_premium.queue_quantity)*quantity).toFixed(3))
+                            } else {
+                                pricing.reagent.premium.push({
+                                    _id: single_premium._id,
+                                    value: Number((((min_size * 0.95) *  single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity).toFixed(2)),
+                                    wi: Number(((single_premium.premium_items[0].quantity/single_premium.queue_quantity)*quantity).toFixed(3))
+                                });
+                            }
+                        }
+                    }
+                }
             }
         }
         /***
@@ -158,7 +224,7 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
          * Cheapest-to-delivery for Reagent {name, value, index}
          * TODO cap not here, but we need it
          * */
-        if ((pricing.asset_class.some(v_class => v_class === 'REAGENT') || allowCap === true) && !pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
+        if ((pricing.asset_class.some(v_class => v_class === 'REAGENT') || allowCap === true)) {
             let reagentArray = [];
             for (let source of count_in) {
                 switch (source) {
@@ -194,6 +260,15 @@ async function itemValuationAdjustment (item = {}, connected_realm_id = 1602, la
             if (reagentArray.length) {
                 Object.assign(pricing.reagent, reagentArray.reduce((prev, curr) => prev.value < curr.value ? prev : curr));
                 count_out.push('reagent');
+            } else {
+                if (pricing.reagent.premium.length) {
+                    let [wi_max, wi_index] = pricing.reagent.premium.reduce((prev, curr, i) => prev.wi > curr.wi ? [prev, i] : [curr, i])
+                    Object.assign(pricing.reagent, {name: "premium", value: wi_max.value, index: wi_index});
+                }
+            }
+            if (pricing.reagent.premium.length) {
+                let [wi_max, wi_index] = pricing.reagent.premium.reduce((prev, curr, i) => prev.wi > curr.wi ? [prev, i] : [curr, i])
+                Object.assign(pricing.reagent, {p_value: wi_max.value, p_index: wi_index});
             }
         }
         /***

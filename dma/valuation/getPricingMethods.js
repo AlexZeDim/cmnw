@@ -73,23 +73,7 @@ async function getPricingMethods (id = 15389, derivative = false) {
                 }
             },
             {
-                $project: {
-                    _id: 1,
-                    media: 1,
-                    name: 1,
-                    description: 1,
-                    horde_item_id: 1,
-                    alliance_item_id: 1,
-                    item_id: 1,
-                    item_quantity: 1,
-                    spell_id: 1,
-                    recipe_id: 1,
-                    profession: 1,
-                    expansion: 1,
-                    rank: 1,
-                    type: 1,
-                    createdBy: 1,
-                    updatedBy: 1,
+                $addFields: {
                     reagent_items: {
                         $map: {
                             input: "$reagent_items",

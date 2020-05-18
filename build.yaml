@@ -1,3 +1,12 @@
 # we need this file to build
 # static data or update it
 # on first launch or patch day
+
+apps:
+  - script: ./dma/valuation/turing/parent.js
+    name: 'DMA-test'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '*/1 * * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'

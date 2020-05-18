@@ -27,7 +27,7 @@ async function methodValuationAdjustment (
             ['VENDOR,REAGENT,ITEM', 0],
             ['CONST,REAGENT,ITEM', 1],
             ['REAGENT,MARKET,ITEM', 2],
-            ['REAGENT,MARKET,MARKET', 3],
+            ['REAGENT,MARKET,DERIVATIVE', 3],
             ['CAP,MARKET,DERIVATIVE', 4],
             ['CAP,PREMIUM,DERIVATIVE', 5],
             ['PREMIUM,REAGENT,DERIVATIVE', 6],
@@ -67,6 +67,7 @@ async function methodValuationAdjustment (
                                 value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
                             });
                         } else {
+                            /** failsafe */
                             if (iva.reagent.premium.length > 0) {
                                 const {value} = iva.reagent.premium.reduce((p, c) => p.wi > c.wi ? p : c);
                                 Object.assign(reagent_item, {

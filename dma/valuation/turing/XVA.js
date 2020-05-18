@@ -5,7 +5,33 @@ const {connection} = require('mongoose');
 
 async function XVA () {
     try {
-        console.time(`DMA-${XVA.name}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
+        //console.time(`DMA-${XVA.name}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
+
+        /**
+         * Asset Class hierarchy map
+         * @type {Map<string, number>}
+         */
+        let query = {expansion: "BFA"};
+
+        const assetClassMap = new Map([
+            [0, ['VENDOR','REAGENT','ITEM']],
+            [1, ['CONST','REAGENT','ITEM']],
+            [2, ['PREMIUM','REAGENT','DERIVATIVE']],
+            [3, ['PREMIUM','MARKET','ITEM']],
+            [4, ['PREMIUM','REAGENT','ITEM']],
+            [5, ['REAGENT','MARKET','ITEM']],
+            [6, ['REAGENT','MARKET','DERIVATIVE']],
+            [7, ['CAP','MARKET','DERIVATIVE']],
+            [8, ['CAP','PREMIUM','DERIVATIVE']],
+        ]);
+
+        for (let kv of assetClassMap) {
+            Object.assign(query, {v_classs: kv[1]})
+            console.log(query);
+            let test = await items_db.find({expansion: "BFA", v_class: ['REAGENT','MARKET','DERIVATIVE']}).limit(10);
+            console.log(test);
+        }
+
         let cursor = await items_db.find({expansion: "BFA", _id: 152668}).limit(10).cursor({batchSize: 10});
         cursor.on('data', async item_ => {
             cursor.pause();

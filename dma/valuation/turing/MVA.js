@@ -40,7 +40,6 @@ async function methodValuationAdjustment (
         method.reagent_items.sort((a, b) => assetClassMap.get(a.v_class) - assetClassMap.get(b.v_class));
         /**
          * Init production cost and premium
-         * @type {number}
          */
         let queue_cost = 0;
         let premium_items = [];
@@ -99,12 +98,11 @@ async function methodValuationAdjustment (
                  *
                  * IDEA item_id premium allow cap?
                  */
-                let iva;
+                let allowCap = false;
                 if (method.item_id === 152668) {
-                    iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1, true);
-                } else {
-                    iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1);
+                    allowCap = true;
                 }
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1, allowCap);
                 if ("reagent" in iva) {
                     Object.assign(reagent_item, {
                         price: iva.reagent.value,

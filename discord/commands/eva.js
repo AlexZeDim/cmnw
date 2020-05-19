@@ -100,6 +100,8 @@ module.exports = {
                 embed.addField('Value', `${reagent.value} g`, true);
                 if (reagent.premium.length && reagent.name !== "premium") {
                     embed.addField('Premium Value', `${reagent.p_value}`, true);
+                } else {
+                    embed.addField('\u200B', '\u200B', true);
                 }
             }
             embed.setTimestamp(lastModified);

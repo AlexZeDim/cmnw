@@ -9,9 +9,10 @@ module.exports = {
     async execute(message, args) {
         const params = args.split('@');
         let embed = new MessageEmbed();
-        let character = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/eva/${params[0]}@${params[1]}`)).then(({data}) => {
+        let valuation = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/eva/${params[0]}@${params[1]}`)).then(({data}) => {
             let {
                 _id,
+                lastModified,
                 asset_class,
                 derivative,
                 market,
@@ -40,8 +41,8 @@ module.exports = {
             }
             if (asset_class.some(v_class => v_class === 'VENDOR') || asset_class.some(v_class => v_class === 'CONST')) {
                 embed.addFields(
-                    { name: 'Sell', value: vendor.sell_price, inline: true },
-                    { name: 'Buy', value: vendor.buy_price, inline: true },
+                    { name: 'Sell', value: `${vendor.sell_price} g`, inline: true },
+                    { name: 'Buy', value: `${vendor.buy_price} g`, inline: true },
                     { name: '\u200B', value: "\u200B", inline: true },
                     { name: 'Yield to Market', value: `${vendor.yieldMarket} %`, inline: true },
                     { name: 'Yield to Reagent', value: `${vendor.yieldReagent} %`, inline: true },
@@ -50,14 +51,18 @@ module.exports = {
             if ("lastModified" in market) {
                 embed.addField('\u200B', '\u200B');
                 embed.addField('Price', `${market.price} g`, true);
-                embed.addField('Price Size', `${market.price_size}g`, true);
-                embed.addField('Quantity', `x${market.quantity}`, true);
-                embed.addField('Open Interest', market.open_interest, true);
+                embed.addField('Price Size', `${market.price_size} g`, true);
+                embed.addField('Quantity', market.quantity.toLocaleString('en-GB'),true);
+                embed.addField('Open Interest', `${market.open_interest.toLocaleString('ru-RU')} g`, true);
                 if ("yieldReagent" in market) {
                     embed.addField('Yield to Reagent', `${market.yieldReagent} %`, true);
+                } else {
+                    embed.addField('\u200B', '\u200B', true);
                 }
                 if ("yieldVendor" in market) {
                     embed.addField('Yield to Vendor', `${market.yieldVendor} %`, true);
+                } else {
+                    embed.addField('\u200B', '\u200B', true);
                 }
             }
             if (derivative.length) {
@@ -70,28 +75,37 @@ module.exports = {
                 }
                 embed.addFields(
                     { name: 'Method', value: `[${m._id}](https://discordapp.com)`, inline: true },
-                    { name: 'Queue Cost', value: m.queue_cost, inline: true },
-                    { name: 'Nominal Value', value: m.nominal_value, inline: true },
+                    { name: 'Queue Cost', value: `${m.queue_cost} g`, inline: true },
+                    { name: 'Nominal Value', value: `${m.nominal_value} g`, inline: true },
                 );
-                if ("Premium" in m) {
-                    embed.addField('Premium', m.premium, true);
-                }
                 if ("yieldMarket" in m) {
                     embed.addField('Yield to Market', `${m.yieldMarket} %`, true);
+                } else {
+                    embed.addField('\u200B', '\u200B', true);
                 }
                 if ("yieldVendor" in m) {
                     embed.addField('Yield to Vendor', `${m.yieldVendor} %`, true);
+                } else {
+                    embed.addField('\u200B', '\u200B', true);
+                }
+                if ("Premium" in m) {
+                    embed.addField('Premium', `${m.premium}`, true);
+                } else {
+                    embed.addField('\u200B', '\u200B', true);
                 }
             }
             if ("value" in reagent) {
+                embed.addField('\u200B', '\u200B');
                 embed.addField('CTD', reagent.name.replace(/^[a-z]/i, str => str.toUpperCase()), true);
-                embed.addField('Value', reagent.value, true);
-                //embed.addField('PSN', reagent.premium.length || 0, true);
+                embed.addField('Value', `${reagent.value} g`, true);
+                if (reagent.premium.length && reagent.name !== "premium") {
+                    embed.addField('Premium Value', `${reagent.p_value}`, true);
+                }
             }
-            embed.setTimestamp(updatedAt);
-            embed.setFooter(`PH`);
+            embed.setTimestamp(lastModified);
+            embed.setFooter(`DMA-XVA`);
             return embed
         });
-        await message.channel.send(character);
+        await message.channel.send(valuation);
     },
 };

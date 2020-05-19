@@ -54,7 +54,7 @@ let schema = new mongoose.Schema({
         type: String
     },
     history: [{
-        action: String,
+        action: String, //TODO store previous value!
         before: Date,
         after: Date
     }],

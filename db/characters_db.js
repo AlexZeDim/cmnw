@@ -42,9 +42,9 @@ let schema = new mongoose.Schema({
         eq: Number,
         avg: Number,
     },
-    checksum: {
-        pets: String,
-        mounts: String,
+    hash: {
+        a: String,
+        b: String,
         petSlots: Array
     },
     race: {
@@ -53,6 +53,11 @@ let schema = new mongoose.Schema({
     character_class: {
         type: String
     },
+    history: [{
+        action: String,
+        before: Date,
+        after: Date
+    }],
     spec: {
         type: String
     },
@@ -95,8 +100,8 @@ let schema = new mongoose.Schema({
 schema.index({ name: 1 },{name: 'Name'});
 schema.index({ guild: 1 },{name: 'Guild'});
 schema.index({ id: 1 },{name: 'ID'});
-schema.index({ "checksum.pets": 1 },{name: 'Hash A'});
-schema.index({ "checksum.mounts": 1 },{name: 'Hash B'});
+schema.index({ "hash.a": 1 },{name: 'Hash A'});
+schema.index({ "hash.b": 1 },{name: 'Hash B'});
 schema.index({ updatedAt: -1 },{name: 'IndexCharacters'});
 //TODO text index on checksum, name
 

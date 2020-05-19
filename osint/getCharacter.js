@@ -93,7 +93,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 };
             }).catch(e =>(e)),
         ]);
-        //TODO status code 200, else hui sosi
         if (character.statusCode === 200) {
             /**
              * Detective:IndexDB
@@ -134,6 +133,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              */
         } else {
             if (Object.keys(characterObject).length) {
+                //TODO status code 200, else hui sosi
                 /**
                  * All values from key to original char and write, if 4o3 error!
                  */

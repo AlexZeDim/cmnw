@@ -20,8 +20,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
     try {
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
-        let character;
-        character = new characters_db({
+        let character = new characters_db({
             _id: `${characterName}@${realmSlug}`,
             statusCode: 400,
             updatedBy: updatedBy,
@@ -128,9 +127,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     })
                 }
             }
-            /**
-             * isCreated and createdBy
-             */
         } else {
             if (Object.keys(characterObject).length) {
                 //TODO status code 200, else hui sosi
@@ -140,6 +136,9 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
 
             }
         }
+        /**
+         * isCreated and createdBy
+         */
         let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();
         if (!isCreated) {
             character.createdBy = updatedBy;
@@ -157,7 +156,5 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
     }
 }
-
-getCharacter('howling-fjord', 'зефирбриз', {}, 'EUUFsZ2i2A1Lrp2fMWdCO24Sk9q1Hr3cP5', null, true).then(c => console.log(c))
 
 module.exports = getCharacter;

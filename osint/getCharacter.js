@@ -1,4 +1,5 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
+const characters_db = require("../db/characters_db");
 const crc32 = require('fast-crc32c');
 const moment = require('moment');
 
@@ -9,94 +10,154 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  *
  * @param realmSlug
  * @param characterName
+ * @param characterObject
  * @param token
+ * @param updatedBy
  * @param guildRank
  */
 
-async function getCharacter (realmSlug, characterName, token= '', guildRank = false) {
+async function getCharacter (realmSlug, characterName, characterObject = {}, token= '', updatedBy = 'DMA-getCharacter', guildRank = false) {
     try {
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
-        let pets_checksum, mounts_checksum;
-        let petSlots = [];
-        let result = {};
-        result.statusCode = 400;
-        result.checksum = {};
+        let character;
+        character = new characters_db({
+            _id: `${characterName}@${realmSlug}`,
+            statusCode: 400,
+            updatedBy: updatedBy,
+            isWatched: false
+        });
         await Promise.all([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(async (
                 { id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode }) => {
-                    result.id = id;
-                    result.name = name;
-                    result.gender = gender.name;
-                    result.faction = faction.name;
-                    result.race = race.name;
-                    result.character_class = character_class.name;
-                    result.spec = active_spec.name;
-                    result.realm = realm.name;
-                    result.realm_slug = realm.slug;
-                    result.level = level;
-                    result.lastOnline = moment(last_login_timestamp).toISOString(true);
-                    result.lastModified = moment(lastModified).toISOString(true);
-                    result.statusCode = statusCode;
-                    result.ilvl = {
+                    character.id = id;
+                    character.name = name;
+                    character.gender = gender.name;
+                    character.faction = faction.name;
+                    character.race = race.name;
+                    character.character_class = character_class.name;
+                    character.spec = active_spec.name;
+                    character.realm = realm.name;
+                    character.realm_slug = realm.slug;
+                    character.level = level;
+                    character.lastOnline = moment(last_login_timestamp).toISOString(true);
+                    character.lastModified = moment(lastModified).toISOString(true);
+                    character.statusCode = statusCode;
+                    character.ilvl = {
                         eq: average_item_level,
                         avg: equipped_item_level
                     };
                     if (guild) {
-                        result.guild = guild.name;
+                        character.guild = guild.name;
                         if (guildRank) {
                             const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
-                            const {rank} = members.find( ({ character }) => character.name === name );
-                            result.guild_rank = rank;
+                            const {rank} = members.find(({ character }) => character.name === name );
+                            character.guild_rank = rank;
                         }
                     } else {
-                        result.guild = '';
-                        result.guild_rank = 99;
+                        delete character.guild;
+                        delete character.guild_rank;
                     }
                 }
             ).catch(e => {
-                if (/\d/g.test(e.toString())) result.statusCode = parseFloat(e.toString().match(/[0-9]+/g)[0]);
+                if (/\d/g.test(e.toString())) character.statusCode = parseFloat(e.toString().match(/[0-9]+/g)[0]);
             }),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> { //TODO unlocked_battle_pet_slots
-                let pets_string = '';
-                for (let i = 0; i < pets.length; i++) {
-                    if (pets[i].hasOwnProperty('is_active')) {
-                        petSlots.push(pets[i]);
+                let pets_array = [];
+                if (pets.length) {
+                    for (let pet of pets) {
+                        if ("is_active" in pet) {
+                            character.hash.petSlots.push(pet);
+                        }
+                        if ("name" in pet) {
+                            pets_array.push(pet.name)
+                        } else {
+                            pets_array.push(pet.species.name)
+                        }
                     }
-                    if (typeof pets[i].name === 'undefined') {
-                        pets_string += pets[i].species.name
-                    } else {
-                        pets_string += pets[i].name
-                    }
+                    character.hash.a = crc32.calculate(Buffer.from(pets_array)).toString(16);
                 }
-                pets_checksum = crc32.calculate(pets_string).toString(16);
-                result.checksum.petSlots = petSlots;
-                result.checksum.pets = pets_checksum;
             }).catch(e =>(e)),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).then( ({mounts}) => {
                 let mount_array = [];
-                for (let i = 0; i < mounts.length; i++) {
-                    let {mount} = mounts[i];
+                for (let mount of mounts) {
                     mount_array.push(mount.id)
                 }
-                mounts_checksum = crc32.calculate(Buffer.from(mount_array)).toString(16);
-                result.checksum.mounts = mounts_checksum;
+                character.hash.b = crc32.calculate(Buffer.from(mount_array)).toString(16);
             }).catch(e =>(e)),
             bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).then(({avatar_url, bust_url, render_url}) => {
-                result.media = {
+                character.media = {
                     avatar_url: avatar_url,
                     bust_url: bust_url,
                     render_url: render_url
                 };
             }).catch(e =>(e)),
         ]);
-        result._id = `${characterName}@${realmSlug}`;
-        return result;
+        //TODO status code 200, else hui sosi
+        if (character.statusCode === 200) {
+            /**
+             * Detective:IndexDB
+             */
+            let character_check = await characters_db.findOne({id: character.id, character_class: character.character_class}).lean();
+            if (character_check) {
+                if (character_check.name !== character.name) {
+                    character_check.history.push({
+                        action: 'rename',
+                        before: character.lastModified,
+                        after: character_check.lastModified
+                    })
+                }
+                if (character_check.realm !== character.realm) {
+                    character_check.history.push({
+                        action: 'transfer',
+                        before: character.lastModified,
+                        after: character_check.lastModified
+                    })
+                }
+                if (character_check.race !== character.race) {
+                    character_check.history.push({
+                        action: 'race',
+                        before: character.lastModified,
+                        after: character_check.lastModified
+                    })
+                }
+                if (character_check.faction !== character.faction) {
+                    character_check.history.push({
+                        action: 'faction',
+                        before: character.lastModified,
+                        after: character_check.lastModified
+                    })
+                }
+            }
+            /**
+             * isCreated and createdBy
+             */
+        } else {
+            if (Object.keys(characterObject).length) {
+                /**
+                 * All values from key to original char and write, if 4o3 error!
+                 */
+
+            }
+        }
+        let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();
+        if (!isCreated) {
+            character.createdBy = updatedBy;
+        }
+        return await characters_db.findByIdAndUpdate({
+                _id: character._id
+            },
+            character.toObject(),
+            {
+                upsert : true,
+                new: true,
+                lean: true
+            });
     } catch (error) {
-        let statusCode = 400;
-        console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}:${statusCode}`);
-        return { _id: `${characterName}@${realmSlug}`, name: characterName.replace(/^\w/, c => c.toUpperCase()), realm_slug: realmSlug, statusCode: statusCode }
+        console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
     }
 }
+
+getCharacter('howling-fjord', 'зефирбриз', {}, 'EUUFsZ2i2A1Lrp2fMWdCO24Sk9q1Hr3cP5', null, true).then(c => console.log(c))
 
 module.exports = getCharacter;

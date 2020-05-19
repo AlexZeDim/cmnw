@@ -3,13 +3,11 @@ const itemValuationAdjustment = require('./IVA');
 const {connection} = require('mongoose');
 
 
-async function XVA () {
+async function XVA (connected_realm_id = 1602) {
     try {
-        //console.time(`DMA-${XVA.name}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
-
         /**
          * Asset Class hierarchy map
-         * @type {Map<string, number>}
+         * @type {{expansion: string}}
          */
         let query = {expansion: "BFA"};
 
@@ -25,34 +23,27 @@ async function XVA () {
             [8, ['CAP','PREMIUM','DERIVATIVE']],
         ]);
 
-        for (let kv of assetClassMap) {
-            Object.assign(query, {v_classs: kv[1]})
-            console.log(query);
-            let test = await items_db.find({expansion: "BFA", v_class: ['REAGENT','MARKET','DERIVATIVE']}).limit(10);
-            console.log(test);
+        for (let [k, v] of assetClassMap) {
+            let allowCap = false
+            console.time(`DMA-${XVA.name}-${k}:${v.toString()}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
+            if (k === 2 ||k === 3 || k === 4) {
+                allowCap = true
+            }
+            Object.assign(query, {v_class: v})
+            let cursor = await items_db.find(query).cursor({batchSize: 10});
+            for (let item = await cursor.next(); item != null; item = await cursor.next()) {
+                console.time(`DMA-${item._id}:${item.name.en_GB}`)
+                await itemValuationAdjustment(item, connected_realm_id, 0 , 0, 0, allowCap)
+                console.timeEnd(`DMA-${item._id}:${item.name.en_GB}`)
+            }
+            console.timeEnd(`DMA-${XVA.name}-${k}:${v.toString()}`);
         }
-
-        let cursor = await items_db.find({expansion: "BFA", _id: 152668}).limit(10).cursor({batchSize: 10});
-        cursor.on('data', async item_ => {
-            cursor.pause();
-            let x = await itemValuationAdjustment(item_, 1602);
-            console.log(x);
-            cursor.resume();
-        });
-        cursor.on('error', error => {
-            console.error(`E,DMA-${XVA.name},${error}`);
-            cursor.close();
-        });
-        cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 600000));
-            connection.close();
-            console.timeEnd(`DMA-${XVA.name}`);
-        });
+        connection.close();
     } catch (err) {
         console.error(`${XVA.name},${err}`);
     }
 }
 
-XVA();
+XVA(1602);
 
 module.exports = XVA;

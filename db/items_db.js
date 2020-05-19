@@ -105,12 +105,18 @@ let schema = new mongoose.Schema({
     }
 });
 
-schema.index({ ticker: "text", "name.en_GB": "text", "name.ru_RU": "text" },{
-    weights: {
-        ticker: 10,
-        "name.en_GB": 5,
-        "name.ru_RU": 1
-    },name: 'SearchQuery'});
+schema.index({
+        "ticker": "text",
+        "name.en_GB": "text",
+        "name.ru_RU": "text"
+    },{
+        weights: {
+            "ticker": 10,
+            "name.en_GB": 1,
+            "name.ru_RU": 1
+        },
+        name: 'SearchQuery'
+});
 
 let items_db = mongoose.model('items', schema);
 

@@ -306,12 +306,10 @@ async function itemValuationAdjustment (
             }
         }
         /** END of YVA */
-
-        const pricingObject = pricing.toObject();
         return await valuations.findByIdAndUpdate({
-                _id: pricingObject._id
+                _id: pricing._id
             },
-            pricingObject, {
+            pricing.toObject(), {
                 upsert : true,
                 new: true,
                 lean: true

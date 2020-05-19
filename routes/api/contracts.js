@@ -11,8 +11,8 @@ router.get('/:i-:dwm.:my@:r', async (req, res) => {
         if (r) {
             let item;
             let requestArray = [];
-            isNaN(i) ? (requestArray.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestArray.push(items_db.findById(Number(i)).lean().exec()));
-            isNaN(r) ? (requestArray.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestArray.push(realms_db.findById(Number(r)).lean().exec()));
+            isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}},{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).lean().exec())) : (requestPromises.push(items_db.findById(i).lean().exec()));
+            isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));;
             let [{_id, name, ticker}, realm] = await Promise.all(requestArray);
             (ticker) ? (item = ticker) : (item = name.en_GB);
             let contract = await contracts_db.findOne({$or: [

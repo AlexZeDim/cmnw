@@ -14,8 +14,8 @@ router.get('/:i@:r', async function(req, res) {
         let api = {};
         let requestPromises = [];
         let asyncPromises = [];
-        isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}}).lean().exec())) : (requestPromises.push(items_db.findById(Number(i)).lean().exec()));
-        isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).exec())) : (requestPromises.push(realms_db.findById(Number(r)).lean().exec()));
+        isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}},{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).lean().exec())) : (requestPromises.push(items_db.findById(i).lean().exec()));
+        isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));
         let [item, {connected_realm_id}] = await Promise.all(requestPromises);
         let {_id, is_auctionable, is_commdty, asset_class, expansion} = item;
         if (is_auctionable && connected_realm_id) {

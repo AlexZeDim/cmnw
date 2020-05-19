@@ -44,6 +44,9 @@ async function itemValuationAdjustment (
         }
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
+        if (moment(pricing.lastModified).isSame(lastModified)) {
+            return pricing
+        }
         if (pricing) {
             if ("lastModified" in pricing.market) {
                 if (moment(pricing.market.lastModified).isSame(lastModified)) {
@@ -63,7 +66,8 @@ async function itemValuationAdjustment (
             _id: `${item._id}@${connected_realm_id}`,
             item_id: item._id,
             connected_realm_id: connected_realm_id,
-            asset_class: item.v_class
+            asset_class: item.v_class,
+            lastModified: lastModified
         });
         /***
          * Vendor Valuation Adjustment
@@ -90,7 +94,7 @@ async function itemValuationAdjustment (
                     price: min,
                     price_size: min_size,
                     quantity: quantity,
-                    open_interest: open_interest,
+                    open_interest: Math.round(open_interest),
                     orders: orders,
                     lastModified: _id
                 };

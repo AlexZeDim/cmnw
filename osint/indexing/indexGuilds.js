@@ -44,7 +44,31 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuild
                             guild_log.promote = [];
                         }
                         let members_ = [];
-                        if (members) {
+                        if (members.length) {
+                            for (let guild_member of members) {
+                                let {character, rank} = guild_member;
+                                let {id, name} = character;
+                                let character_ = await characters_db.findById(`${(name).toLowerCase()}@${guild_.realm_slug}`);
+                                if (character_) {
+                                    let member_object = {
+                                        character_name: name,
+                                        character_id: id,
+                                        character_rank: rank,
+                                        character_date: moment(lastModified).toISOString(true),
+                                    };
+                                    if ("a" in character_.hash) {
+                                        Object.assign(member_object, {character_hash_a: character_.hash.a})
+                                    }
+                                    if ("b" in character_.hash) {
+                                        Object.assign(member_object, {character_hash_b: character_.hash.b})
+                                    }
+                                    character_.guild_rank = rank;
+                                    character_.updatedBy = `OSINT-${indexGuild.name}`;
+                                    character_.save();
+
+                                    members_.push(member_object)
+                                }
+                            }
                             for (let i = 0; i < members.length; i++) {
                                 let {character, rank} = members[i];
                                 let {id, name} = character;

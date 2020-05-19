@@ -22,7 +22,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1) {
                         let { exportedCharacters } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${_id}?api_key=${pub_key}`).then(res => {
                             return res.data;
                         }).catch(e => console.error(`${indexLogs.name},${e.response.status},${e.response.config.url.match(/(.{16})\s*$/g)[0]}`));
-                        if (exportedCharacters) {
+                        if (exportedCharacters.length) {
                             for (let i = 0; i < exportedCharacters.length; i++) {
                                 if (exportedCharacters[i].server === 'Пиратская бухта') exportedCharacters[i].server = 'Пиратская Бухта';
                                 if (exportedCharacters[i].server.match(/’/g)) exportedCharacters[i].server = exportedCharacters[i].server.replace(/’/g,`'`);

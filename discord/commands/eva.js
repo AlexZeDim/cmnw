@@ -35,7 +35,7 @@ module.exports = {
             }
             embed.setDescription(descriptionString);
             //embed.setURL('https://discord.js.org/');
-            embed.setColor('#333333');
+            //embed.setColor('#333333');
             if ("icon" in item) {
                 embed.setThumbnail(item.icon);
             }

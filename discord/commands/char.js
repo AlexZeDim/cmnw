@@ -40,8 +40,8 @@ module.exports = {
             }
             if (statusCode === 200) embed.addField('LVL', level, true);
             if (ilvl) {
-                embed.addField('Ailvl', ilvl.avg, true);
-                embed.addField('Eilvl', ilvl.eq, true);
+                embed.addField('Equipped', ilvl.avg, true);
+                embed.addField('Actual', ilvl.eq, true);
             }
             if (faction === "Alliance") {
                 embed.setColor('#006aff');

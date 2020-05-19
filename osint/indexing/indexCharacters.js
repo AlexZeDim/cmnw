@@ -18,28 +18,8 @@ async function indexCharacters (queryFind = '', queryKeys = {tags: `OSINT-${inde
         let {token} = await keys_db.findOne(queryKeys);
         const cursor = characters_db.find(queryFind).sort({updatedAt: -1}).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async ({_id}) => {
-            character_Array.push(
-                getCharacter((_id).split('@')[1], (_id).split('@')[0], token).then(u_character => {
-                u_character.updatedBy = `OSINT-${indexCharacters.name}`;
-                characters_db.findByIdAndUpdate(
-                    {
-                        _id: u_character._id
-                    },
-                    u_character,
-                    {
-                        upsert : true,
-                        new: true,
-                        setDefaultsOnInsert: true,
-                        lean: true
-                    }
-                ).then(({_id, statusCode}) => {
-                    if (~[400, 404, 403, 500].indexOf(statusCode)) {
-                        console.error(`E:U,${_id}:${statusCode}`);
-                    } else {
-                        console.info(`F:U,${_id}:${statusCode}`);
-                    }
-                })
-            }).catch(e=>(e)));
+            let [characterName, realmSlug] = _id.split('@');
+            character_Array.push(getCharacter(realmSlug, characterName, {}, token,`OSINT-${indexCharacters.name}`, false));
             if (character_Array.length >= bulkSize) {
                 cursor.pause();
                 console.time(`========================`);

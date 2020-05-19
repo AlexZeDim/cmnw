@@ -1,5 +1,11 @@
 const auctions_db = require("../../db/auctions_db");
 
+/**
+ * @param item_id
+ * @param connected_realm_id
+ * @returns {Promise<{quantity: number, min: number, open_interest: number, min_size: number, orders: [], _id: number}[]|*>}
+ */
+
 async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
     try {
         const t = await auctions_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).select('lastModified').lean().sort({lastModified: -1});

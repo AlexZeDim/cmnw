@@ -23,6 +23,7 @@ let schema = new mongoose.Schema({
     name: {
         type: String
     },
+    //TODO name_slug
     slug: {
         type: String
     },
@@ -46,7 +47,7 @@ let schema = new mongoose.Schema({
             character_id: Number,
             character_rank: Number,
             character_date: Date,
-            character_checksum: String,
+            character_checksum: String, //TODO checksum to hash_a
         }],
         promote: [{
             character_name: String,

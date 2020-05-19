@@ -20,6 +20,7 @@ let schema = new mongoose.Schema({
     item_id: Number,
     asset_class: Array,
     connected_realm_id: Number,
+    lastModified: Date,
     vendor: {
         sell_price: Number,
         buy_price: Number,

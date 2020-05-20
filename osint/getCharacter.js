@@ -137,6 +137,13 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             }
         }
         /**
+         * Hash.ex
+         */
+        if (character.id && character.character_class) {
+            let hash_ex = [character.id, character.character_class]
+            character.hash.ex = crc32.calculate(Buffer.from(hash_ex)).toString(16);
+        }
+        /**
          * isCreated and createdBy
          */
         let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();

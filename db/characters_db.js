@@ -45,6 +45,7 @@ let schema = new mongoose.Schema({
     hash: {
         a: String,
         b: String,
+        ex: String, //TODO
         petSlots: Array
     },
     race: {

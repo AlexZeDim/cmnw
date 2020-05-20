@@ -47,36 +47,38 @@ let schema = new mongoose.Schema({
             character_id: Number,
             character_rank: Number,
             character_date: Date,
-            character_checksum: String, //TODO checksum to hash_a
+            character_hash_ex: String,
         }],
         promote: [{
             character_name: String,
             character_id: Number,
             character_rank: Number,
             character_date: Date,
-            character_checksum: String,
+            character_hash_ex: String,
         }],
         demote: [{
             character_name: String,
             character_id: Number,
             character_rank: Number,
             character_date: Date,
-            character_checksum: String,
+            character_hash_ex: String,
         }],
         leave: [{
             character_name: String,
             character_id: Number,
             character_rank: Number,
             character_date: Date,
-            character_checksum: String,
+            character_hash_ex: String,
         }],
     },
-    members_latest: [{
+    members_latest: [{ //TODO members_latest => members
         character_name: String,
         character_id: Number,
         character_rank: Number,
         character_date: Date,
-        character_checksum: String,
+        character_hash_a: String, //TODO character_checksum => character_hash_a
+        character_hash_b: String,
+        character_hash_ex: String,
     }],
     members_prev: [{
         character_name: String,

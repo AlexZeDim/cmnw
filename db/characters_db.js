@@ -60,6 +60,8 @@ let schema = new mongoose.Schema({
         type: String
     },
     character_history: [{
+        old_value: String,
+        new_value: String,
         action: String, //TODO store previous value!
         after: Date,
         before: Date

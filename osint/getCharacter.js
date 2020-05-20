@@ -92,12 +92,26 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 };
             }).catch(e =>(e)),
         ]);
+        /**
+         * isCreated and createdBy
+         */
+        let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();
+        if (isCreated) {
+            //TODO check timestamp and return
+        } else {
+            character.createdBy = updatedBy;
+        }
         if (character.statusCode === 200) {
             /**
              * Detective:IndexDB
              */
             let character_check = await characters_db.findOne({id: character.id, character_class: character.character_class}).lean();
             if (character_check) {
+                /***
+                 * TODO if character with _id not found, but have the same id & class
+                 * TODO then check lastModified
+                 * TODO if all YES and new character is created, then inherit guild_history and character_history and delete original
+                 */
                 if (character_check.name !== character.name) {
                     character_check.history.push({
                         action: 'rename',
@@ -142,13 +156,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         if (character.id && character.character_class) {
             let hash_ex = [character.id, character.character_class]
             character.hash.ex = crc32.calculate(Buffer.from(hash_ex)).toString(16);
-        }
-        /**
-         * isCreated and createdBy
-         */
-        let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();
-        if (!isCreated) {
-            character.createdBy = updatedBy;
         }
         return await characters_db.findByIdAndUpdate({
                 _id: character._id

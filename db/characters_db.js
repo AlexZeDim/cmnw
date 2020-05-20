@@ -29,9 +29,14 @@ let schema = new mongoose.Schema({
     guild_rank: {
         type: Number
     },
-    guild_history: {
-        type: Array
-    },
+    guild_history: [{
+        guild_rank: Number,
+        guild_id: Number,
+        guild_name: String,
+        action: String,
+        after: Date,
+        before: Date,
+    }],
     realm: {
         type: String
     },
@@ -54,10 +59,10 @@ let schema = new mongoose.Schema({
     character_class: {
         type: String
     },
-    history: [{
+    character_history: [{
         action: String, //TODO store previous value!
-        before: Date,
-        after: Date
+        after: Date,
+        before: Date
     }],
     spec: {
         type: String

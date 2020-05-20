@@ -105,41 +105,71 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             /**
              * Detective:IndexDB
              */
-            let character_check = await characters_db.findOne({id: character.id, character_class: character.character_class}).lean();
+            let character_check = await characters_db.findOne({
+                id: character.id,
+                character_class: character.character_class,
+            }).lean();
             if (character_check) {
-                /***
-                 * TODO if character with _id not found, but have the same id & class
-                 * TODO then check lastModified
-                 * TODO if all YES and new character is created, then inherit guild_history and character_history and delete original
-                 */
                 if (character_check.name !== character.name) {
-                    character_check.history.push({
-                        action: 'rename',
-                        before: character.lastModified,
-                        after: character_check.lastModified
-                    })
+                    if (!isCreated) {
+                        character.history.push({
+                            old_value: character_check.name,
+                            new_value: character.name,
+                            action: 'rename',
+                            before: character.lastModified,
+                            after: character_check.lastModified
+                        })
+                        //TODO character_check lastModified not older then, else it's negative or very old
+                        //TODO new document created
+                    }
+                    /**
+                     * if existed character in OSINT match EX but
+                     * have another name, check how old is this document
+                     * if old, make ghost copy and delete it
+                     */
+                    if (isCreated) {
+                        /** Copy isCreated */
+                        //TODO GHOST CLONE 304
+                        //TODO check isCreated lastModified (if older then year, _modify_ it)
+                        //TODO active/inactive flag (clone original)
+
+                    }
+
                 }
                 if (character_check.realm !== character.realm) {
-                    character_check.history.push({
+                    character.history.push({
+                        old_value: character_check.realm,
+                        new_value: character.realm,
                         action: 'transfer',
                         before: character.lastModified,
                         after: character_check.lastModified
                     })
                 }
                 if (character_check.race !== character.race) {
-                    character_check.history.push({
+                    character.history.push({
+                        old_value: character_check.race,
+                        new_value: character.race,
                         action: 'race',
                         before: character.lastModified,
                         after: character_check.lastModified
                     })
                 }
                 if (character_check.faction !== character.faction) {
-                    character_check.history.push({
+                    character.history.push({
+                        old_value: character_check.faction,
+                        new_value: character.faction,
                         action: 'faction',
                         before: character.lastModified,
                         after: character_check.lastModified
                     })
                 }
+                /***
+                 * TODO if character with _id not found, but have the same id & class
+                 * TODO then check lastModified
+                 * TODO if all YES and new character is created, then inherit guild_history and character_history and delete original
+                 * TODO if not new created the timestamp once more
+                 */
+
             }
         } else {
             if (Object.keys(characterObject).length) {

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {toSlug, fromSlug} = require('./setters');
 mongoose.Promise = global.Promise;
 
 require('dotenv').config();
@@ -21,16 +22,20 @@ let schema = new mongoose.Schema({
         type: Number
     },
     name: {
-        type: String
+        type: String,
+        set: fromSlug
     },
     name_slug: {
-        type: String
+        type: String,
+        set: toSlug
     },
     realm: {
-        type: String
+        type: String,
+        set: fromSlug
     },
     realm_slug: {
-        type: String
+        type: String,
+        set: toSlug
     },
     faction: {
         type: String
@@ -42,7 +47,10 @@ let schema = new mongoose.Schema({
     },
     guild_log: {
         join: [{
-            character_name: String,
+            character_name: {
+                type: String,
+                set: fromSlug
+            },
             character_id: Number,
             character_rank: Number,
             character_date: Date,
@@ -51,7 +59,10 @@ let schema = new mongoose.Schema({
             character_hash_ex: String,
         }],
         promote: [{
-            character_name: String,
+            character_name: {
+                type: String,
+                set: fromSlug
+            },
             character_id: Number,
             character_rank: Number,
             character_date: Date,
@@ -60,7 +71,10 @@ let schema = new mongoose.Schema({
             character_hash_ex: String,
         }],
         demote: [{
-            character_name: String,
+            character_name: {
+                type: String,
+                set: fromSlug
+            },
             character_id: Number,
             character_rank: Number,
             character_date: Date,
@@ -69,7 +83,10 @@ let schema = new mongoose.Schema({
             character_hash_ex: String,
         }],
         leave: [{
-            character_name: String,
+            character_name: {
+                type: String,
+                set: fromSlug
+            },
             character_id: Number,
             character_rank: Number,
             character_date: Date,
@@ -78,12 +95,15 @@ let schema = new mongoose.Schema({
             character_hash_ex: String,
         }],
     },
-    members_latest: [{ //TODO members_latest => members
-        character_name: String,
+    members: [{
+        character_name: {
+            type: String,
+            set: fromSlug
+        },
         character_id: Number,
         character_rank: Number,
         character_date: Date,
-        character_hash_a: String, //TODO character_checksum => character_hash_a
+        character_hash_a: String,
         character_hash_b: String,
         character_hash_ex: String,
     }],

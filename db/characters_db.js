@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {toSlug, fromSlug} = require('./setters');
 mongoose.Promise = global.Promise;
 
 require('dotenv').config();
@@ -21,10 +22,12 @@ let schema = new mongoose.Schema({
         type: Number
     },
     name: {
-        type: String
+        type: String,
+        set: fromSlug
     },
     guild: {
-        type: String
+        type: String,
+        set: fromSlug
     },
     guild_rank: {
         type: Number
@@ -42,7 +45,8 @@ let schema = new mongoose.Schema({
         type: String
     },
     realm_slug: {
-        type: String
+        type: String,
+        set: toSlug
     },
     ilvl: {
         eq: Number,
@@ -51,7 +55,7 @@ let schema = new mongoose.Schema({
     hash: {
         a: String,
         b: String,
-        ex: String, //TODO
+        ex: String,
         petSlots: Array
     },
     race: {
@@ -63,7 +67,7 @@ let schema = new mongoose.Schema({
     character_history: [{
         old_value: String,
         new_value: String,
-        action: String, //TODO store previous value!
+        action: String,
         after: Date,
         before: Date
     }],

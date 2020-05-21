@@ -1,5 +1,6 @@
 const battleNetWrapper = require('battlenet-api-wrapper');
 const characters_db = require("../db/characters_db");
+const {toSlug} = require("../db/setters");
 const crc32 = require('fast-crc32c');
 const moment = require('moment');
 
@@ -18,10 +19,13 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 async function getCharacter (realmSlug, characterName, characterObject = {}, token= '', updatedBy = 'DMA-getCharacter', guildRank = false) {
     try {
+        realmSlug = toSlug(realmSlug);
+        characterName = toSlug(characterName);
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let character = new characters_db({
             _id: `${characterName}@${realmSlug}`,
+            realm_slug: realmSlug,
             statusCode: 400,
             updatedBy: updatedBy,
             isWatched: false
@@ -49,7 +53,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     if (guild) {
                         character.guild = guild.name;
                         if (guildRank) {
-                            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, (guild.name).toLowerCase().replace(/\s/g,"-"));
+                            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, toSlug(guild.name));
                             const {rank} = members.find(({ character }) => character.name === name );
                             character.guild_rank = rank;
                         }
@@ -95,8 +99,15 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         /**
          * isCreated and createdBy
          */
-        let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();
-        if (isCreated) {
+        let [character_created, character_byId] = await Promise.all([
+            characters_db.findById(`${characterName}@${realmSlug}`).lean(),
+            characters_db.findOne({
+                realm_slug: character.realm_slug,
+                character_class: character.character_class,
+                id: character.id
+            }).lean()
+        ])
+        if (character_created) {
             //TODO check timestamp && dont return probably other things are changed
         } else {
             character.createdBy = updatedBy;
@@ -105,51 +116,46 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             /**
              * Detective:IndexDB
              */
-            let character_check = await characters_db.findOne({
-                realm_slug: character.realm_slug,
-                character_class: character.character_class,
-                id: character.id
-            }).lean();
-            if (character_check) {
+            if (character_byId) {
                 //TODO make sure it's unique
-                if (character_check.name !== character.name) {
+                if (character_byId.name !== character.name) {
                     character.history.push({
-                        old_value: character_check.name,
+                        old_value: character_byId.name,
                         new_value: character.name,
                         action: 'rename',
                         before: character.lastModified,
-                        after: character_check.lastModified
+                        after: character_byId.lastModified
                     })
-                    if (!isCreated) {
-                        character.character_history = character_check.character_history
-                        character.guild_history = character_check.guild_history
+                    if (!character_created) {
+                        character.character_history = character_byId.character_history
+                        character.guild_history = character_byId.guild_history
                     }
                 }
-                if (character_check.race !== character.race) {
+                if (character_byId.race !== character.race) {
                     character.history.push({
-                        old_value: character_check.race,
+                        old_value: character_byId.race,
                         new_value: character.race,
                         action: 'race',
                         before: character.lastModified,
-                        after: character_check.lastModified
+                        after: character_byId.lastModified
                     })
                 }
-                if (character_check.gender !== character.gender) {
+                if (character_byId.gender !== character.gender) {
                     character.history.push({
-                        old_value: character_check.gender,
+                        old_value: character_byId.gender,
                         new_value: character.gender,
                         action: 'gender',
                         before: character.lastModified,
-                        after: character_check.lastModified
+                        after: character_byId.lastModified
                     })
                 }
-                if (character_check.faction !== character.faction) {
+                if (character_byId.faction !== character.faction) {
                     character.history.push({
-                        old_value: character_check.faction,
+                        old_value: character_byId.faction,
                         new_value: character.faction,
                         action: 'faction',
                         before: character.lastModified,
-                        after: character_check.lastModified
+                        after: character_byId.lastModified
                     })
                 }
             }

@@ -1,5 +1,6 @@
 const characters_db = require("../db/characters_db");
 const moment = require('moment');
+const {toSlug} = require("../db/setters");
 
 //TODO transfer guild_history on character if character was renamed
 
@@ -7,7 +8,7 @@ async function updateCharactersGuildHistory (arrayMembers=[], guild_id, guild_na
     try {
         for (let member of arrayMembers) {
             let {character_rank, character_name} = member;
-            let character = await characters_db.findById(`${character_name.toLowerCase()}@${guild_realm_slug}`)
+            let character = await characters_db.findById(`${toSlug(character_name)}@${guild_realm_slug}`)
             if (character) {
                 character.guild_history.push({
                     guild_rank: character_rank,

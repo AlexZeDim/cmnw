@@ -106,11 +106,12 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * Detective:IndexDB
              */
             let character_check = await characters_db.findOne({
-                id: character.id,
-                character_class: character.character_class,
                 realm_slug: character.realm_slug,
+                character_class: character.character_class,
+                id: character.id
             }).lean();
-            if (character_check && !isCreated) {
+            if (character_check) {
+                //TODO make sure it's unique
                 if (character_check.name !== character.name) {
                     character.history.push({
                         old_value: character_check.name,
@@ -119,6 +120,10 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         before: character.lastModified,
                         after: character_check.lastModified
                     })
+                    if (!isCreated) {
+                        character.character_history = character_check.character_history
+                        character.guild_history = character_check.guild_history
+                    }
                 }
                 if (character_check.race !== character.race) {
                     character.history.push({
@@ -147,22 +152,14 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         after: character_check.lastModified
                     })
                 }
-                /***
-                 * TODO if character with _id not found, but have the same id & class
-                 * TODO then check lastModified
-                 * TODO if all YES and new character is created, then inherit guild_history and character_history and delete original
-                 * TODO if not new created the timestamp once more
-                 */
-
             }
         } else {
             if (Object.keys(characterObject).length) {
                 //TODO status code 200, else hui sosi
-                //TODO name to first big letter
+                //TODO name to first big letter mongoDB setters
                 /**
                  * All values from key to original char and write, if 4o3 error!
                  */
-
             }
         }
         /**

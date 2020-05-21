@@ -2,7 +2,7 @@ const guild_db = require("../../db/guilds_db");
 const characters_db = require("../../db/characters_db");
 const keys_db = require("../../db/keys_db");
 const getGuild = require('../getGuild');
-const updateArray_GuildRank = require('../updateArray_GuildRank');
+const updateCharactersGuildHistory = require('../updateCharactersGuildHistory');
 const moment = require('moment');
 const {connection} = require('mongoose');
 

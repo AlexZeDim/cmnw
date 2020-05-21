@@ -23,8 +23,7 @@ let schema = new mongoose.Schema({
     name: {
         type: String
     },
-    //TODO name_slug
-    slug: {
+    name_slug: {
         type: String
     },
     realm: {
@@ -47,6 +46,8 @@ let schema = new mongoose.Schema({
             character_id: Number,
             character_rank: Number,
             character_date: Date,
+            character_hash_a: String,
+            character_hash_b: String,
             character_hash_ex: String,
         }],
         promote: [{
@@ -54,6 +55,8 @@ let schema = new mongoose.Schema({
             character_id: Number,
             character_rank: Number,
             character_date: Date,
+            character_hash_a: String,
+            character_hash_b: String,
             character_hash_ex: String,
         }],
         demote: [{
@@ -61,6 +64,8 @@ let schema = new mongoose.Schema({
             character_id: Number,
             character_rank: Number,
             character_date: Date,
+            character_hash_a: String,
+            character_hash_b: String,
             character_hash_ex: String,
         }],
         leave: [{
@@ -68,6 +73,8 @@ let schema = new mongoose.Schema({
             character_id: Number,
             character_rank: Number,
             character_date: Date,
+            character_hash_a: String,
+            character_hash_b: String,
             character_hash_ex: String,
         }],
     },
@@ -79,13 +86,6 @@ let schema = new mongoose.Schema({
         character_hash_a: String, //TODO character_checksum => character_hash_a
         character_hash_b: String,
         character_hash_ex: String,
-    }],
-    members_prev: [{
-        character_name: String,
-        character_id: Number,
-        character_rank: Number,
-        character_date: Date,
-        character_checksum: String,
     }],
     achievement_points: {
         type: Number

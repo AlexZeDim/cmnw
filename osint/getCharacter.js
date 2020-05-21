@@ -97,7 +97,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
          */
         let isCreated = await characters_db.findById(`${characterName}@${realmSlug}`).lean();
         if (isCreated) {
-            //TODO check timestamp and return
+            //TODO check timestamp && dont return probably other things are changed
         } else {
             character.createdBy = updatedBy;
         }
@@ -108,39 +108,14 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             let character_check = await characters_db.findOne({
                 id: character.id,
                 character_class: character.character_class,
+                realm_slug: character.realm_slug,
             }).lean();
-            if (character_check) {
+            if (character_check && !isCreated) {
                 if (character_check.name !== character.name) {
-                    if (!isCreated) {
-                        character.history.push({
-                            old_value: character_check.name,
-                            new_value: character.name,
-                            action: 'rename',
-                            before: character.lastModified,
-                            after: character_check.lastModified
-                        })
-                        //TODO character_check lastModified not older then, else it's negative or very old
-                        //TODO new document created
-                    }
-                    /**
-                     * if existed character in OSINT match EX but
-                     * have another name, check how old is this document
-                     * if old, make ghost copy and delete it
-                     */
-                    if (isCreated) {
-                        /** Copy isCreated */
-                        //TODO GHOST CLONE 304
-                        //TODO check isCreated lastModified (if older then year, _modify_ it)
-                        //TODO active/inactive flag (clone original)
-
-                    }
-
-                }
-                if (character_check.realm !== character.realm) {
                     character.history.push({
-                        old_value: character_check.realm,
-                        new_value: character.realm,
-                        action: 'transfer',
+                        old_value: character_check.name,
+                        new_value: character.name,
+                        action: 'rename',
                         before: character.lastModified,
                         after: character_check.lastModified
                     })
@@ -150,6 +125,15 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         old_value: character_check.race,
                         new_value: character.race,
                         action: 'race',
+                        before: character.lastModified,
+                        after: character_check.lastModified
+                    })
+                }
+                if (character_check.gender !== character.gender) {
+                    character.history.push({
+                        old_value: character_check.gender,
+                        new_value: character.gender,
+                        action: 'gender',
                         before: character.lastModified,
                         after: character_check.lastModified
                     })
@@ -174,6 +158,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         } else {
             if (Object.keys(characterObject).length) {
                 //TODO status code 200, else hui sosi
+                //TODO name to first big letter
                 /**
                  * All values from key to original char and write, if 4o3 error!
                  */

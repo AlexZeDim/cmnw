@@ -11,6 +11,13 @@
  * @returns {Promise<void>}
  */
 
+/***
+ * TODO if character with _id not found, but have the same id & class
+ * TODO then check lastModified
+ * TODO if all YES and new character is created, then inherit guild_history and character_history and delete original
+ * TODO if not new created the timestamp once more
+ */
+
 async function f() {
     try {
 

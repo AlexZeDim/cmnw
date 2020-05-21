@@ -33,6 +33,7 @@ let schema = new mongoose.Schema({
         guild_rank: Number,
         guild_id: Number,
         guild_name: String,
+        guild_realm: String,
         action: String,
         after: Date,
         before: Date,

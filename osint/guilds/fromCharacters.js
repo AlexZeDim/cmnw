@@ -3,7 +3,6 @@ const realms_db = require("../../db/realms_db");
 const keys_db = require("../../db/keys_db");
 const guilds_db = require("../../db/guilds_db");
 const getGuild = require('../getGuild');
-const {toSlug} = require("../../db/setters");
 const {connection} = require('mongoose');
 
 async function fromCharacters (queryFind = {locale: "ru_RU"}, queryKeys = { tags: `OSINT-indexGuilds` }) {
@@ -19,7 +18,7 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}, queryKeys = { tags
                     /**
                      * Check guild before insert
                      */
-                    let guild = guilds_db.findById(`${toSlug(guild_name)}@${realm_slug}`)
+                    let guild = guilds_db.findById(`${guild_name}@${realm_slug}`)
                     if (!guild) {
                         await getGuild(realm_slug, guild_name, token, `OSINT-${fromCharacters.name}`);
                     }

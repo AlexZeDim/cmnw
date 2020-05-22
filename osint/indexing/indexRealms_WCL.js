@@ -24,7 +24,7 @@ async function indexRealms_WCL (startId = 247, endId = 517) {
                         { 'name': realm_name },
                         { 'name_locale': realm_name },
                     ]
-            }).exec();
+            });
             if (realm) {
                 realm.wcl_id = wcl_id;
                 realm.save();

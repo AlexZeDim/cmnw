@@ -3,7 +3,6 @@ const guild_db = require("../../db/guilds_db");
 const keys_db = require("../../db/keys_db");
 const getGuild = require('../getGuild');
 const {connection} = require('mongoose');
-const {toSlug} = require("../../db/setters");
 
 const axios = require('axios');
 const zlib = require('zlib');
@@ -21,7 +20,6 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
         console.time(`OSINT-${fromJSON.name}`);
 
         let realms = await realms_db.find(queryFind);
-        realms = realms.map(({name_locale, slug, name}) => { return {slug_locale: toSlug(name_locale), slug: slug, name: name}});
 
         if (!fs.existsSync(path_)) fs.mkdirSync(path_);
         console.time(`Downloading stage`);
@@ -73,10 +71,10 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
                     const guildsJSON = JSON.parse(stringJSON);
                     if (guildsJSON.length) {
                         for (let guild of guildsJSON) {
-                            if (!(toSlug(guild.name)).includes('[raid]')) {
-                                let guild_ = await guild_db.findById(`${toSlug(guild.name)}@${realms[indexOfRealms].slug}`);
+                            if (!guild.name.includes('[raid]')) {
+                                let guild_ = await guild_db.findById(`${guild.name}@${realms[indexOfRealms].slug}`);
                                 if (!guild_) {
-                                    await getGuild(realms[indexOfRealms].slug, toSlug(guild.name), token, `OSINT-${fromJSON.name}`)
+                                    await getGuild(realms[indexOfRealms].slug, guild.name, token, `OSINT-${fromJSON.name}`)
                                 }
                             }
                         }

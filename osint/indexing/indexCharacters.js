@@ -11,14 +11,14 @@ const {connection} = require('mongoose');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters (queryFind = {updatedAt: -1}, queryKeys = {tags: `OSINT-${indexCharacters.name}`}, bulkSize = 10) {
+async function indexCharacters (queryFind = {}, queryKeys = {tags: `OSINT-${indexCharacters.name}`}, bulkSize = 10) {
     try {
         console.time(`OSINT-${indexCharacters.name}`);
         let character_Array = [];
         let {token} = await keys_db.findOne(queryKeys);
-        const cursor = characters_db.find(queryFind).sort({updatedAt: -1}).lean().cursor({batchSize: bulkSize});
+        const cursor = characters_db.find(queryFind).sort({updatedAt: 1}).lean().cursor({batchSize: bulkSize});
         cursor.on('data', async ({_id}) => {
-            const [characterName, realmSlug] = _id.split('@');
+            const [characterName, realmSlug] = _id.split('-');
             character_Array.push(getCharacter(realmSlug, characterName, {}, token,`OSINT-${indexCharacters.name}`, false));
             if (character_Array.length >= bulkSize) {
                 cursor.pause();

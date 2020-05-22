@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "tokens": "node bin/getTokens.js",
-    "start": "node discord/bluratella.js",
-    "test": "node dma/valuation/turing/parent.js"
+    "start": "node discord/bluratella.js"
   },
   "dependencies": {
     "@pm2/io": "^4.3.5",

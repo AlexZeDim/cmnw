@@ -16,7 +16,8 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 
 let schema = new mongoose.Schema({
     _id: {
-        type: String
+        type: String,
+        set: toSlug
     },
     id: {
         type: Number
@@ -42,7 +43,8 @@ let schema = new mongoose.Schema({
         before: Date,
     }],
     realm: {
-        type: String
+        type: String,
+        set: fromSlug
     },
     realm_slug: {
         type: String,

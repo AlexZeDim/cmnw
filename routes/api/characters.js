@@ -4,6 +4,8 @@ const router = express.Router();
 const realms_db = require("../../db/realms_db");
 const characters_db = require("../../db/characters_db");
 
+//TODO refactoring
+
 router.get('/:n@:r', async function(req, res) {
     try {
         let {n, r} = req.params;

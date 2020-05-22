@@ -24,15 +24,18 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let character = new characters_db({
-            _id: `${characterName}@${realmSlug}`,
-            realm_slug: realmSlug,
-            statusCode: 400,
+            _id: `${characterName}-${realmSlug}-0`,
+            name: characterName,
+            realm: realmSlug,
+            statusCode: 100,
+            createdBy: updatedBy,
             updatedBy: updatedBy,
             isWatched: false
         });
         await Promise.all([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(async (
                 { id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode }) => {
+                    character._id = `${name}-${realm}-${id}`;
                     character.id = id;
                     character.name = name;
                     character.gender = gender.name;
@@ -41,7 +44,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     character.character_class = character_class.name;
                     character.spec = active_spec.name;
                     character.realm = realm.name;
-                    character.realm_slug = realm.slug;
                     character.level = level;
                     character.lastOnline = moment(last_login_timestamp).toISOString(true);
                     character.lastModified = moment(lastModified).toISOString(true);
@@ -53,6 +55,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     if (guild) {
                         character.guild = guild.name;
                         if (guildRank) {
+                            //TODO
                             const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, toSlug(guild.name));
                             const {rank} = members.find(({ character }) => character.name === name );
                             character.guild_rank = rank;
@@ -67,10 +70,15 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             }),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> { //TODO unlocked_battle_pet_slots
                 let pets_array = [];
+                let active_pets = [];
                 if (pets.length) {
                     for (let pet of pets) {
                         if ("is_active" in pet) {
-                            character.hash.petSlots.push(pet);
+                            if ("name" in pet) {
+                                active_pets.push(pet.name)
+                            } else {
+                                active_pets.push(pet.species.name)
+                            }
                         }
                         if ("name" in pet) {
                             pets_array.push(pet.name)
@@ -78,10 +86,11 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                             pets_array.push(pet.species.name)
                         }
                     }
+                    character.hash.c = crc32.calculate(Buffer.from(active_pets)).toString(16);
                     character.hash.a = crc32.calculate(Buffer.from(pets_array)).toString(16);
                 }
             }).catch(e =>(e)),
-            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).then( ({mounts}) => {
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).then(({mounts}) => {
                 let mount_array = [];
                 for (let mount of mounts) {
                     mount_array.push(mount.id)
@@ -99,18 +108,25 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         /**
          * isCreated and createdBy
          */
+        if (character.statusCode !== 200) {
+            if (Object.keys(characterObject).length) {
+                /**
+                 * FIXME All values from key to original char and write, if 4o3 error!
+                 */
+                Object.assign(character, characterObject)
+            }
+        }
         let [character_created, character_byId] = await Promise.all([
             characters_db.findById(`${characterName}@${realmSlug}`).lean(),
             characters_db.findOne({
-                realm_slug: character.realm_slug,
+                realm: realmSlug,
                 character_class: character.character_class,
                 id: character.id
             }).lean()
         ])
         if (character_created) {
+            delete character.createdBy
             //TODO check timestamp && dont return probably other things are changed
-        } else {
-            character.createdBy = updatedBy;
         }
         if (character.statusCode === 200) {
             /**
@@ -119,53 +135,47 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             if (character_byId) {
                 //TODO make sure it's unique
                 if (character_byId.name !== character.name) {
-                    character.history.push({
+                    character.logs.push({
                         old_value: character_byId.name,
                         new_value: character.name,
                         action: 'rename',
+                        message: `${character_byId.name}@${character.realm} now known as ${character.name}`,
                         before: character.lastModified,
                         after: character_byId.lastModified
                     })
                     if (!character_created) {
-                        character.character_history = character_byId.character_history
-                        character.guild_history = character_byId.guild_history
+                        character.logs = character_byId.logs
                     }
                 }
                 if (character_byId.race !== character.race) {
-                    character.history.push({
+                    character.logs.push({
                         old_value: character_byId.race,
                         new_value: character.race,
                         action: 'race',
+                        message: `${character.name}@${character.realm} changed race from ${character_byId.race} to ${character.race}`,
                         before: character.lastModified,
                         after: character_byId.lastModified
                     })
                 }
                 if (character_byId.gender !== character.gender) {
-                    character.history.push({
+                    character.logs.push({
                         old_value: character_byId.gender,
                         new_value: character.gender,
                         action: 'gender',
+                        message: `${character.name}@${character.realm} swap gender from ${character_byId.gender} to ${character.gender}`,
                         before: character.lastModified,
                         after: character_byId.lastModified
                     })
                 }
                 if (character_byId.faction !== character.faction) {
-                    character.history.push({
+                    character.logs.push({
                         old_value: character_byId.faction,
                         new_value: character.faction,
-                        action: 'faction',
+                        action: `${character.name}@${character.realm} changed faction from ${character_byId.faction} to ${character.faction}`,
                         before: character.lastModified,
                         after: character_byId.lastModified
                     })
                 }
-            }
-        } else {
-            if (Object.keys(characterObject).length) {
-                //TODO status code 200, else hui sosi
-                //TODO name to first big letter mongoDB setters
-                /**
-                 * All values from key to original char and write, if 4o3 error!
-                 */
             }
         }
         /**

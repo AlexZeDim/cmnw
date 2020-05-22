@@ -24,19 +24,13 @@ let schema = new mongoose.Schema({
     },
     name: {
         type: String,
-        set: fromSlug
-    },
-    name_slug: {
-        type: String,
-        set: toSlug
+        set: toSlug,
+        get: fromSlug
     },
     realm: {
         type: String,
-        set: fromSlug
-    },
-    realm_slug: {
-        type: String,
-        set: toSlug
+        set: toSlug,
+        get: fromSlug
     },
     faction: {
         type: String
@@ -46,79 +40,46 @@ let schema = new mongoose.Schema({
         border: Object,
         background: Object
     },
+    logs: [{
+        old_value: String,
+        new_value: String,
+        action: String,
+        message: String,
+        after: Date,
+        before: Date
+    }],
     guild_log: {
         join: [{
-            character_name: {
-                type: String,
-                set: fromSlug
-            },
-            character_id: Number,
-            character_rank: Number,
-            character_date: Date,
-            character_hash_a: String,
-            character_hash_b: String,
-            character_hash_ex: String,
+            _id: String,
+            id: Number,
+            rank: Number,
         }],
         promote: [{
-            character_name: {
-                type: String,
-                set: fromSlug
-            },
-            character_id: Number,
-            character_rank: Number,
-            character_date: Date,
-            character_hash_a: String,
-            character_hash_b: String,
-            character_hash_ex: String,
+            _id: String,
+            id: Number,
+            rank: Number,
         }],
         demote: [{
-            character_name: {
-                type: String,
-                set: fromSlug
-            },
-            character_id: Number,
-            character_rank: Number,
-            character_date: Date,
-            character_hash_a: String,
-            character_hash_b: String,
-            character_hash_ex: String,
+            _id: String,
+            id: Number,
+            rank: Number,
         }],
         leave: [{
-            character_name: {
-                type: String,
-                set: fromSlug
-            },
-            character_id: Number,
-            character_rank: Number,
-            character_date: Date,
-            character_hash_a: String,
-            character_hash_b: String,
-            character_hash_ex: String,
+            _id: String,
+            id: Number,
+            rank: Number,
         }],
     },
     members: [{
-        character_name: {
-            type: String,
-            set: fromSlug
-        },
-        character_id: Number,
-        character_rank: Number,
-        character_date: Date,
-        character_hash_a: String,
-        character_hash_b: String,
-        character_hash_ex: String,
+        _id: String,
+        id: Number,
+        rank: Number,
     }],
     achievement_points: {
         type: Number
     },
     member_count: {
         type: Number
-    },
-    createdBy: {
-        type: String
-    },
-    updatedBy: {
-        type: String
     },
     lastModified: {
         type: Date
@@ -131,7 +92,13 @@ let schema = new mongoose.Schema({
     },
     isWatched: {
         type: Boolean
-    }
+    },
+    createdBy: {
+        type: String
+    },
+    updatedBy: {
+        type: String
+    },
 },{
     timestamps: true
 });

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
+const {toSlug} = require('./setters');
 
 require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
@@ -23,11 +24,15 @@ let schema = new mongoose.Schema({
     name: {
         type: String
     },
+    slug: {
+        type: String
+    },
     name_locale: {
         type: String
     },
-    slug: {
-        type: String
+    slug_locale: {
+        type: String,
+        set: toSlug,
     },
     category: {
         type: String

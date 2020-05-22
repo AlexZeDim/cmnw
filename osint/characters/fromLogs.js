@@ -19,7 +19,7 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
             let ft_counter = 0;
             for (let page = startPage; page < endPage; page++) {
                 await new Promise(resolve => setTimeout(resolve, delay * 1000));
-                let indexVOLUSPA = await x(`https://www.warcraftlogs.com/zone/reports?zone=24&server=${wcl_id}&page=${page}`,
+                const indexLogs = await x(`https://www.warcraftlogs.com/zone/reports?zone=24&server=${wcl_id}&page=${page}`,
                     '.description-cell',
                     [{
                         link: 'a@href',
@@ -27,33 +27,35 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
                 ).then((res) => {
                     return res
                 });
-                if (indexVOLUSPA.length !== 0) {
-                    for (let i = 0; i < indexVOLUSPA.length; i++) {
-                        let {link} = indexVOLUSPA[i];
-                        if (link.includes('reports') === true) {
-                            let log = await logs_db.findById({
-                                _id: link.match(/(.{16})\s*$/g)[0]
-                            }).lean().exec();
-                            if (!log) {
-                                if (ft_counter > 1) {
-                                    ft_counter -= 1;
+                if (indexLogs.length) {
+                    for (let index_log of indexLogs) {
+                        if ("link" in index_log) {
+                            let link = index_log.link.match(/(.{16})\s*$/g)[0]
+                            if (index_log.link.includes('reports') === true) {
+                                let log = await logs_db.findById({
+                                    _id: link
+                                }).lean();
+                                if (!log) {
+                                    if (ft_counter > 1) {
+                                        ft_counter -= 1;
+                                    }
+                                    await logs_db.create({
+                                        _id: link,
+                                        realm: slug,
+                                        isIndexed: false,
+                                        source: `OSINT-${fromLogs.name}`
+                                    }).then(function (log, error) {
+                                        if (error) console.error(`E,${link},${error}`);
+                                        console.info(`C,${log._id}@${log.realm}`)
+                                    })
+                                } else {
+                                    ft_counter += 1;
+                                    console.info(`E,${log._id}@${log.realm},${ft_counter}`);
                                 }
-                                await logs_db.create({
-                                    _id: link.match(/(.{16})\s*$/g)[0],
-                                    realm: slug,
-                                    isIndexed: false,
-                                    source: `OSINT-${fromLogs.name}`
-                                }).then(function (log, error) {
-                                    if (error) console.error(`E,${link},${error}`);
-                                    console.info(`C,${log._id}@${log.realm}`)
-                                })
-                            } else {
-                                ft_counter += 1;
-                                console.info(`E,${log._id}@${log.realm},${ft_counter}`);
                             }
                         }
                     }
-                    if (ft_counter === faultTolerance ) {
+                    if (ft_counter >= faultTolerance ) {
                         console.info(`E,${page}:${slug},${ft_counter}`);
                         break;
                     }

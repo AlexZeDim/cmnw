@@ -135,7 +135,7 @@ async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuild
                                 await updateArray_GuildRank(join, guild_.id, guild_.name, 'joins');
                             }
                             guild_.members_prev = members_latest;
-                            guild_.members_latest = members_;
+                            guild_.members = members_;
                             guild_.guild_log = guild_log;
                         }
                         return await guild_db.findByIdAndUpdate(

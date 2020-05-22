@@ -1,34 +1,37 @@
+const realms_db = require("../../db/realms_db");
+const guild_db = require("../../db/guilds_db");
+const keys_db = require("../../db/keys_db");
+const getGuild = require('../getGuild');
+const {connection} = require('mongoose');
+const {toSlug} = require("../../db/setters");
+
 const axios = require('axios');
 const zlib = require('zlib');
 const Xray = require('x-ray');
 let x = Xray();
 const fs = require('fs');
-const realms_db = require("../../db/realms_db");
-const guild_db = require("../../db/guilds_db");
-const {connection} = require('mongoose');
 
 const {promisify} = require('util');
 const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const removeDir = promisify(fs.rmdir);
 
-async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTier = 26, region = 'eu') {
+async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTier = 26, region = 'eu', queryKeys = { tags: `OSINT-indexGuilds` }) {
     try {
         console.time(`OSINT-${fromJSON.name}`);
 
-        let realms = await realms_db.find(queryFind).exec();
-        realms = realms.map(({name_locale, slug, name}) => { return {slug_locale: name_locale.toLowerCase().replace(/\s/g,"-"), slug: slug, name: name}});
+        let realms = await realms_db.find(queryFind);
+        realms = realms.map(({name_locale, slug, name}) => { return {slug_locale: toSlug(name_locale), slug: slug, name: name}});
 
         if (!fs.existsSync(path_)) fs.mkdirSync(path_);
         console.time(`Downloading stage`);
         let urls = await x(`https://www.wowprogress.com/export/ranks/`,'pre',['a@href']).then((res) => {
             return res
         });
-
-        for (let i = 0; i < urls.length; i++) {
-            if (urls[i].includes(`_tier${raidTier}.json.gz`) && urls[i].includes(`${region}_`)) {
-                let string = encodeURI(decodeURI(urls[i]));
-                let file_name = decodeURIComponent(urls[i].substr(urls[i].lastIndexOf('/') + 1));
+        for (let url of urls) {
+            if (url.includes(`_tier${raidTier}.json.gz`) && url.includes(`${region}_`)) {
+                let string = encodeURI(decodeURI(url));
+                let file_name = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
                 const checkFilename = obj => obj.slug_locale === file_name.match(/(?<=_)(.*?)(?=_)/g)[0];
                 if (realms.some(checkFilename)) {
                     console.info(`Downloading: ${file_name}`);
@@ -46,11 +49,11 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
         console.time(`Unzipping stage`);
         let files = await readDir(path_);
         if (files) {
-            for (let y = 0; y < files.length; y++) {
-                if (files[y].match(/gz$/g)) {
-                    console.info(`Unzipping: ${files[y]}`);
-                    const fileContents = await fs.createReadStream(`${path_}/${files[y]}`);
-                    const writeStream = await fs.createWriteStream(`${path_}/${files[y].slice(0, -3)}`);
+            for (let file of files) {
+                if (file.match(/gz$/g)) {
+                    console.info(`Unzipping: ${file}`);
+                    const fileContents = await fs.createReadStream(`${path_}/${file}`);
+                    const writeStream = await fs.createWriteStream(`${path_}/${file.slice(0, -3)}`);
                     const unzip = await zlib.createGunzip();
                     await fileContents.pipe(unzip).pipe(writeStream);
                 }
@@ -60,27 +63,21 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
 
         console.time(`Parsing JSON files`);
         files = await readDir(path_);
-        for (let z = 0; z < files.length; z++) {
-            if (files[z].match(/json$/g)) {
-                let indexOfRealms = realms.findIndex(r => r.slug_locale === files[z].match(/(?<=_)(.*?)(?=_)/g)[0]);
+        for (let file of files) {
+            if (file.match(/json$/g)) {
+                const { token } = await keys_db.findOne(queryKeys);
+                let indexOfRealms = realms.findIndex(r => r.slug_locale === file.match(/(?<=_)(.*?)(?=_)/g)[0]);
                 if (indexOfRealms !== -1) {
-                    console.info(`Parsing: ${files[z]}`);
-                    let stringJSON = await readFile(`${path_}/${files[z]}`, {encoding: 'utf8'});
+                    console.info(`Parsing: ${file}`);
+                    let stringJSON = await readFile(`${path_}/${file}`, {encoding: 'utf8'});
                     const guildsJSON = JSON.parse(stringJSON);
-                    for (let g = 0; g < guildsJSON.length; g++) {
-                        if (!(guildsJSON[g].name.toLowerCase().replace(/\s/g,"-")).includes('[raid]')) {
-                            let guild_ = await guild_db.findById(`${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`);
-                            if (!guild_) {
-                                await guild_db.create({
-                                    _id: `${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`,
-                                    slug: guildsJSON[g].name.toLowerCase().replace(/\s/g, "-"),
-                                    name: guildsJSON[g].name,
-                                    realm_slug: realms[indexOfRealms].slug,
-                                    realm: realms[indexOfRealms].name,
-                                    createdBy: `OSINT-${fromJSON.name}`
-                                }).then(gld => console.info(`C,${gld._id}`));
-                            } else {
-                                console.info(`E,${guildsJSON[g].name.toLowerCase().replace(/\s/g, "-")}@${realms[indexOfRealms].slug}`)
+                    if (guildsJSON.length) {
+                        for (let guild of guildsJSON) {
+                            if (!(toSlug(guild.name)).includes('[raid]')) {
+                                let guild_ = await guild_db.findById(`${toSlug(guild.name)}@${realms[indexOfRealms].slug}`);
+                                if (!guild_) {
+                                    await getGuild(realms[indexOfRealms].slug, toSlug(guild.name), token, `OSINT-${fromJSON.name}`)
+                                }
                             }
                         }
                     }

@@ -1,6 +1,7 @@
 /**
  * Connection with DB
  */
+
 const {connect, connection} = require('mongoose');
 require('dotenv').config();
 connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
@@ -14,6 +15,9 @@ connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.ho
     family: 4
 });
 
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
 /**
  * Model importing
  */
@@ -21,9 +25,15 @@ const contracts_db = require("../../db/contracts_db");
 const realms_db = require("../../db/realms_db");
 const items_db = require("../../db/items_db");
 
-
+/**
+ * TODO DayContractSchema
+ * @type {Contract}
+ */
 const Contract = require('./classContracts_M.js');
 
+/**
+ * Moment monthsShort =>  Financial Format
+ */
 const moment = require('moment');
 moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]

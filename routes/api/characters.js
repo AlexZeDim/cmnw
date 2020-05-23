@@ -19,8 +19,11 @@ router.get('/:n@:r', async function(req, res) {
         let {n, r} = req.params;
         let { slug } = await realms_db.findOne({$text:{$search: r}});
         if (n && slug) {
-            let characterData = await characters_db.findById(`${n}@${slug}`).lean();
-            if (!characterData || moment(characterData.lastModified).isAfter(moment().subtract(3, 'days'))) {
+            let characterData = await characters_db.findById(`${n}@${slug}`);
+            console.log(typeof characterData)
+            console.log(characterData)
+            if (!characterData || moment(characterData.lastModified).isBefore(moment().subtract(3, 'days'))) {
+                console.log('nok')
                 const getCharacter = require('../../osint/getCharacter');
                 const keys_db = require("../../db/keys_db");
                 const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});

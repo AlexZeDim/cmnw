@@ -7,3 +7,10 @@ apps:
     max_memory_restart: '100M'
     cron_restart: '*/1 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+  - script: ./osint/indexing/T.js
+    name: 'OSINT-T'
+    instances: 1
+    watch: true
+    autorestart: false
+    max_memory_restart: '500M'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'

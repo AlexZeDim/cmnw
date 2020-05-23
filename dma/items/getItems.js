@@ -1,10 +1,37 @@
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const keys_db = require("../../db/keys_db");
 const items_db = require("../../db/items_db");
+
+/**
+ * B.net API wrapper
+ */
 const battleNetWrapper = require('battlenet-api-wrapper');
-const {connection} = require('mongoose');
 
 /***
- *
+ * TODO with new Model
  * @param queryKeys {object}
  * @param isNew {boolean}
  * @returns {Promise<void>}
@@ -52,7 +79,6 @@ async function getItems (queryKeys = { tags: `DMA` }, isNew = true) {
                 console.info(`E,${item_id}`)
             }
         };
-
         if (isNew) {
             for (let item_id = 0; item_id < 250000; item_id++) {
                 await getItemById(item_id)

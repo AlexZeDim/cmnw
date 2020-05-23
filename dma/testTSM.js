@@ -4,6 +4,12 @@ const fs = require('fs');
 const S = require('string');
 const {connection} = require('mongoose');
 
+/**
+ * TODO parse trade_log from TSM to DB or file
+ * @param arg_realm
+ * @returns {Promise<[]>}
+ */
+
 async function exportTSM (arg_realm) {
     try {
         let order_log = [];

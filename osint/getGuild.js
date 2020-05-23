@@ -33,7 +33,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @returns {Promise<*>}
  */
 
-async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${getGuild.name}`) {
+async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${getGuild.name}`) {
     try {
         realmSlug = toSlug(realmSlug);
         nameSlug = toSlug(nameSlug);
@@ -61,11 +61,11 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
             guild.statusCode = statusCode;
         })
         let [guild_created, guild_byId] = await Promise.all([
-            guild_db.findById(`${nameSlug}@${realmSlug}`).lean(),
+            guild_db.findById(`${nameSlug}@${realmSlug}`),
             guild_db.findOne({
                 realm: guild.realm,
                 id: guild.id
-            }).lean()
+            })
         ])
         /** Check request status is OK */
         if (guild.statusCode === 200) {
@@ -134,6 +134,11 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                                 character_OSINT.guild = guild.name;
                                 character_OSINT.save();
                             }
+                            /** If current character guild_name === guild => update rank */
+                            if (character_OSINT.guild === guild.name) {
+                                character_OSINT.rank = guild.rank;
+                                character_OSINT.save();
+                            }
                         } else  {
                             /**
                              * If new name in OSINT then
@@ -172,7 +177,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                 if (leave.length) {
                     console.info(`LEAVE: ${leave.length} => ${guild_created.guild_log.leave.length}`);
                     guild.guild_log.leave = [...guild_created.guild_log.leave, ...leave];
-                    await updateCharacterLogsRank(leave, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'leaves');
+                    await updateCharacterLogsRank(leave, [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'leaves');
                 }
                 /**
                  * If in old_members character_id rank was lower then in latest_members then you have been promoted
@@ -181,7 +186,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                 if (promote.length) {
                     console.info(`PROMOTED: ${promote.length} => ${guild_created.guild_log.promote.length}`);
                     guild.guild_log.promote = [...guild_created.guild_log.promote, ...promote];
-                    await updateCharacterLogsRank(promote, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'promoted');
+                    await updateCharacterLogsRank(promote, guild_created.members, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'promoted');
                 }
                 /**
                  * If in latest_members character_id rank was lower then in old_members then you have been demoted
@@ -190,7 +195,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                 if (demote.length) {
                     console.info(`DEMOTED: ${demote.length} => ${guild_created.guild_log.demote.length}`);
                     guild.guild_log.demote = [...guild_created.guild_log.demote, ...demote];
-                    await updateCharacterLogsRank(demote, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'demoted');
+                    await updateCharacterLogsRank(demote, guild_created.members, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'demoted');
                 }
                 /**
                  * If latest_members have character_id rank and old_members don't have the same id, then it's a newcomer
@@ -199,7 +204,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                 if (join.length) {
                     console.info(`JOIN: ${join.length} => ${guild_created.guild_log.join.length}`);
                     guild.guild_log.join = [...guild.guild_log.join, ...join];
-                    await updateCharacterLogsRank(join, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'joins');
+                    await updateCharacterLogsRank(join, [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'joins');
                 }
                 /**
                  * Transfer title || ownership
@@ -214,10 +219,10 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                     if (GM_old && GM_new) {
                         if (GM_old.hash.a === GM_new.hash.a) {
                             /** title transfer */
-                            await updateCharacterLogsRank([ownership_old, ownership_new], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'transfer title');
+                            await updateCharacterLogsRank([ownership_old, ownership_new], [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'transfer title');
                         } else {
                             /** transfer ownership */
-                            await updateCharacterLogsRank([ownership_old, ownership_new], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'transfer ownership');
+                            await updateCharacterLogsRank([ownership_old, ownership_new], [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'transfer ownership');
                         }
                     }
                 }

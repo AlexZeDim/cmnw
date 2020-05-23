@@ -31,7 +31,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param guildRank
  */
 
-async function getCharacter (realmSlug, characterName, characterObject = {}, token= '', updatedBy = 'DMA-getCharacter', guildRank = false) {
+async function getCharacter (realmSlug, characterName, characterObject = {}, token= '', updatedBy = 'OSINT-getCharacter', guildRank = false) {
     try {
         realmSlug = toSlug(realmSlug);
         characterName = toSlug(characterName);
@@ -110,7 +110,9 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 character.hash.b = crc32.calculate(Buffer.from(mount_array)).toString(16);
             }).catch(e =>(e)),
             bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).then(({avatar_url, bust_url, render_url}) => {
-                //TODO add data for id
+                if (!character.id) {
+                    character.id = parseInt(avatar_url.split('/').pop(-1).match(/([0-9]+)/g)[0]);
+                }
                 character.media = {
                     avatar_url: avatar_url,
                     bust_url: bust_url,
@@ -121,24 +123,27 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         /**
          * isCreated and createdBy
          */
+        //FIXME remove later
+        Object.assign(character, characterObject)
         if (character.statusCode !== 200) {
             if (Object.keys(characterObject).length) {
                 /**
-                 * FIXME All values from key to original char and write, if 4o3 error!
+                 * If request about certain character isn't successful
+                 * but we already have provided values, then we use it.
                  */
                 Object.assign(character, characterObject)
             }
         }
         let [character_created, character_byId] = await Promise.all([
-            characters_db.findById(`${characterName}@${realmSlug}`).lean(),
+            characters_db.findById(`${characterName}@${realmSlug}`),
             characters_db.findOne({
                 realm: realmSlug,
-                id: character.id | 0
-            }).lean()
+                id: character.id
+            })
         ])
         if (character_created) {
             if (character_created.statusCode === 200 && character.statusCode !== 200) {
-                //TODO inactive char or error
+                //TODO inactive char or error, check lastModified for that
             }
             delete character.createdBy
             //TODO check timestamp && dont return probably other things are changed
@@ -148,8 +153,39 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * Detective:IndexDB
              */
             if (character_byId) {
-                //TODO make sure it's unique
+                /**
+                 * If statusCode to API is 200 && character_byId exists,
+                 * but name of character_byId not equal to requested B.net character
+                 * then it's rename
+                 */
                 if (character_byId.name !== character.name) {
+                    /**
+                     * Clone character.logs from characterByID to newly created character
+                     */
+                    character.logs = character_byId.logs
+                    if (character_created) {
+                        /**
+                         * And it characterByID exits, but character with the same name already existed (cause inactive)
+                         * then make shadow copy of already existed character and then create it
+                         */
+                        await characters_db.findByIdAndUpdate({
+                                _id: `${characterName}@${realmSlug}-${character_created.id}}`
+                            },
+                            character_created.toObject(),
+                            {
+                                upsert : true,
+                                new: true,
+                                lean: true
+                            });
+                        /**
+                         * Delete the existing (inactive) character
+                         * FIXME not sure that it's a good pattern
+                         */
+                        await characters_db.findByIdAndDelete(`${characterName}@${realmSlug}`)
+                    }
+                    /**
+                     * Add info to logs about rename
+                     */
                     character.logs.push({
                         old_value: character_byId.name,
                         new_value: character.name,
@@ -158,11 +194,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         before: character.lastModified,
                         after: character_byId.lastModified
                     })
-                    if (!character_created) {
-                        character.logs = character_byId.logs
-                    } else {
-                        //TODO delete old, copy to new or shadow
-                    }
                 }
                 if (character_byId.race !== character.race) {
                     character.logs.push({
@@ -203,14 +234,14 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             character.hash.ex = crc32.calculate(Buffer.from(hash_ex)).toString(16);
         }
         return await characters_db.findByIdAndUpdate({
-                _id: character._id
-            },
-            character.toObject(),
-            {
-                upsert : true,
-                new: true,
-                lean: true
-            });
+            _id: character._id
+        },
+        character.toObject(),
+        {
+            upsert : true,
+            new: true,
+            lean: true
+        });
     } catch (error) {
         console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
     }

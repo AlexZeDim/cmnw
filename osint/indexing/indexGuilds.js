@@ -39,34 +39,16 @@ const getGuild = require('../getGuild');
  * @returns {Promise<void>}
  */
 
-async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuilds` }, bulkSize = 1) {
+async function indexGuild (queryFind = '', queryKeys = { tags: `OSINT-indexGuilds` }, bulkSize = 2) {
     try {
         console.time(`OSINT-${indexGuild.name}`);
-        let guild_Array = [];
         const { token } = await keys_db.findOne(queryKeys);
-        let cursor = await guild_db.find(queryFind).lean().cursor({batchSize: bulkSize});
-        cursor.on('data', async ({_id}) => {
+        await guild_db.find(queryFind).lean().cursor({batchSize: bulkSize}).eachAsync(async ({_id}) => {
             const [guildName, realmSlug] = _id.split('@');
-            guild_Array.push(getGuild(realmSlug, guildName, token, `OSINT-${indexGuild.name}`));
-            if (guild_Array.length >= bulkSize) {
-                cursor.pause();
-                console.time(`================================`);
-                ({ token } = await keys_db.findOne(queryKeys));
-                await Promise.all(guild_Array);
-                guild_Array.length = 0;
-                cursor.resume();
-                console.timeEnd(`================================`);
-            }
-        });
-        cursor.on('error', error => {
-            console.error(`E,OSINT-${indexGuild.name},${error}`);
-            cursor.close();
-        });
-        cursor.on('close', async () => {
-            await new Promise(resolve => setTimeout(resolve, 180000));
-            connection.close();
-            console.timeEnd(`OSINT-${indexGuild.name}`);
-        });
+            await getGuild(realmSlug, guildName, token, `OSINT-${indexGuild.name}`)
+        }, { parallel: bulkSize })
+        connection.close();
+        console.timeEnd(`OSINT-${indexGuild.name}`);
     } catch (err) {
         console.error(`${indexGuild.name},${err}`);
     }

@@ -27,18 +27,18 @@ let schema = new mongoose.Schema({
     },
     name: {
         type: String,
-        set: toSlug,
         get: fromSlug,
+        set: toSlug,
     },
     realm: {
         type: String,
+        get: fromSlug,
         set: toSlug,
-        get: fromSlug
     },
     guild: {
         type: String,
+        get: fromSlug,
         set: toSlug,
-        get: fromSlug
     },
     guild_rank: {
         type: Number

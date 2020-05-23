@@ -51,4 +51,4 @@ async function getTokens () {
     }
 }
 
-getTokens();
+getTokens().then(r => r);

@@ -1,7 +1,7 @@
 const characters_db = require("../db/characters_db");
 const moment = require('moment');
 
-async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, guild_realm, before, after, action = '') {
+async function updateCharacterLogsRank (arrayMembers=[], arrayMembersOld = [], guild_id, guild_name, guild_realm, before, after, action = '') {
     try {
         for (let member of arrayMembers) {
             let {rank, _id, id} = member;
@@ -20,7 +20,7 @@ async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, g
                                 old_value: guild_name,
                                 new_value: character.guild,
                                 action: action,
-                                message: `${character.name}@${character.realm} leaves ${guild_name} // ${rank}`,
+                                message: `${character.name}@${character.realm} leaves ${guild_name} // Rank: ${rank}`,
                                 before: moment(before).toISOString(true),
                                 after: moment(after).toISOString(true),
                             })
@@ -33,7 +33,7 @@ async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, g
                                 old_value: character.guild_rank,
                                 new_value: rank,
                                 action: action,
-                                message: `${character.name}@${character.realm}#${guild_name}:${guild_id} was promoted from Rank ${character.guild_rank} to Rank ${rank}`,
+                                message: `${character.name}@${character.realm}#${guild_name}:${guild_id} was promoted from Rank: ${character.guild_rank} to Rank: ${rank}`,
                                 before: moment(before).toISOString(true),
                                 after: moment(after).toISOString(true),
                             })
@@ -46,7 +46,7 @@ async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, g
                                 old_value: character.guild_rank,
                                 new_value: rank,
                                 action: action,
-                                message: `${character.name}@${character.realm}#${guild_name}:${guild_id} was demoted from Rank ${character.guild_rank} to Rank ${rank}`,
+                                message: `${character.name}@${character.realm}#${guild_name}:${guild_id} was demoted from Rank: ${character.guild_rank} to Rank: ${rank}`,
                                 before: moment(before).toISOString(true),
                                 after: moment(after).toISOString(true),
                             })
@@ -58,7 +58,7 @@ async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, g
                                 old_value: character.guild_rank,
                                 new_value: guild_name,
                                 action: action,
-                                message: `${character.name}@${character.realm} leaves ${guild_name} // ${rank}`,
+                                message: `${character.name}@${character.realm} joins ${guild_name} //  Rank: ${rank}`,
                                 before: moment(before).toISOString(true),
                                 after: moment(after).toISOString(true),
                             })
@@ -113,7 +113,7 @@ async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, g
                         }
                         break;
                     default:
-                        console.log(`Sorry, we are out of ${expr}.`);
+                        console.log(`Sorry, we are out of options.`);
                 }
                 character.save()
             }

@@ -1,7 +1,41 @@
-const items_db = require("../../../db/items_db");
-const itemValuationAdjustment = require('./IVA');
-const {connection} = require('mongoose');
+/**
+ * Connection with DB
+ */
 
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
+const items_db = require("../../../db/items_db");
+
+/**
+ * IVA pricing
+ * @type {itemValuationAdjustment}
+ */
+const itemValuationAdjustment = require('./IVA');
+
+/**
+ * This function evaluate any item with asset_classes property on certain realm
+ * @param connected_realm_id
+ * @returns {Promise<void>}
+ * @constructor
+ */
 
 async function XVA (connected_realm_id = 1602) {
     try {

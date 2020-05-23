@@ -1,7 +1,35 @@
-const battleNetWrapper = require('battlenet-api-wrapper');
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const pricing_methods = require("../../db/pricing_methods_db");
 const keys_db = require("../../db/keys_db");
-const {connection} = require('mongoose');
+
+/**
+ * B.net Wrapper
+ */
+
+const battleNetWrapper = require('battlenet-api-wrapper');
 
 /**
  * This function is based on Blizzard API or skilllineability.csv file
@@ -9,9 +37,9 @@ const {connection} = require('mongoose');
  * @returns {Promise<void>}
  */
 
-async function indexProfessions () {
+async function importMethodsBlizzardAPI () {
     try {
-        console.time(`DMA-${indexProfessions.name}`);
+        console.time(`DMA-${importMethodsBlizzardAPI.name}`);
         const professionsTicker = new Map([
             [164, 'BSMT'],
             [165, 'LTHR'],
@@ -60,8 +88,8 @@ async function indexProfessions () {
                             let {recipes} = category;
                             let result = {};
                             result.type = `primary`;
-                            result.createdBy = `DMA-${indexProfessions.name}`;
-                            result.updatedBy = `DMA-${indexProfessions.name}`;
+                            result.createdBy = `DMA-${importMethodsBlizzardAPI.name}`;
+                            result.updatedBy = `DMA-${importMethodsBlizzardAPI.name}`;
                             for (let recipe of recipes) {
                                 await Promise.all([
                                     bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents}) => {
@@ -116,10 +144,10 @@ async function indexProfessions () {
             }
         }
         connection.close();
-        console.timeEnd(`DMA-${indexProfessions.name}`);
+        console.timeEnd(`DMA-${importMethodsBlizzardAPI.name}`);
     } catch (error) {
-        console.error(`DMA-${indexProfessions.name}`, error)
+        console.error(`DMA-${importMethodsBlizzardAPI.name}`, error)
     }
 }
 
-indexProfessions();
+importMethodsBlizzardAPI();

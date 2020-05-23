@@ -1,7 +1,36 @@
-const pricing_methods = require("../../db/pricing_methods_db");
-const {connection} = require('mongoose');
+/**
+ * Connection with DB
+ */
 
-async function indexPricingMethods() {
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
+const pricing_methods = require("../../db/pricing_methods_db");
+
+/**
+ * TODO as setter or something like that
+ * This function add reagent_items field
+ * @returns {Promise<void>}
+ */
+
+async function indexMethodsReagentItems() {
     try {
         let cursor = await pricing_methods.aggregate([
             {
@@ -59,4 +88,4 @@ async function indexPricingMethods() {
     }
 }
 
-indexPricingMethods();
+indexMethodsReagentItems();

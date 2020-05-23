@@ -1,9 +1,35 @@
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const items = require("../../db/items_db");
 const pricing_methods = require("../../db/pricing_methods_db");
-const {connection} = require('mongoose');
+
 
 /***
- * TODO as migrations
+ * Fixes vendor sell quantity problem for some items (Boralus vendor)
+ * FIXME EXPL horde_item_id & alliance_item_id
+ * Add methods for EXPL
  * @returns {Promise<void>}
  */
 

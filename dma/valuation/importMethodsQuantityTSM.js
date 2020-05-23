@@ -1,7 +1,35 @@
-const fs = require('fs');
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const items_db = require("../../db/items_db");
 const pricing_methods = require("../../db/pricing_methods_db");
-const {connection} = require('mongoose');
+
+/**
+ * Modules
+ */
+
+const fs = require('fs');
 
 /***
  *
@@ -13,7 +41,7 @@ const {connection} = require('mongoose');
  * @returns {Promise<void>}
  */
 
-async function fromLua (path, expr) {
+async function importMethodsQuantityTSM (path, expr) {
     try {
         let item_id, name, itemID, item_quantity, stringArray, lua;
         switch (expr) {
@@ -46,8 +74,8 @@ async function fromLua (path, expr) {
                                     reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'INSC',
                                     type: `primary`,
-                                    createdBy: `DMA-${fromLua.name}`,
-                                    updatedBy: `DMA-${fromLua.name}`
+                                    createdBy: `DMA-${importMethodsQuantityTSM.name}`,
+                                    updatedBy: `DMA-${importMethodsQuantityTSM.name}`
                                 }, {
                                     upsert : true,
                                     new: true,
@@ -90,8 +118,8 @@ async function fromLua (path, expr) {
                                     reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'JWLC',
                                     type: `primary`,
-                                    createdBy: `DMA-${fromLua.name}`,
-                                    updatedBy: `DMA-${fromLua.name}`
+                                    createdBy: `DMA-${importMethodsQuantityTSM.name}`,
+                                    updatedBy: `DMA-${importMethodsQuantityTSM.name}`
                                 }, {
                                     upsert : true,
                                     new: true,
@@ -134,8 +162,8 @@ async function fromLua (path, expr) {
                                     reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'TRANSFORM',
                                     type: `primary`,
-                                    createdBy: `DMA-${fromLua.name}`,
-                                    updatedBy: `DMA-${fromLua.name}`
+                                    createdBy: `DMA-${importMethodsQuantityTSM.name}`,
+                                    updatedBy: `DMA-${importMethodsQuantityTSM.name}`
                                 }, {
                                     upsert : true,
                                     new: true,
@@ -177,8 +205,8 @@ async function fromLua (path, expr) {
                                     reagents: [{_id: itemID, quantity: Number((1/item_quantity).toFixed(3))}],
                                     profession: 'TRANS',
                                     type: `primary`,
-                                    createdBy: `DMA-${fromLua.name}`,
-                                    updatedBy: `DMA-${fromLua.name}`
+                                    createdBy: `DMA-${importMethodsQuantityTSM.name}`,
+                                    updatedBy: `DMA-${importMethodsQuantityTSM.name}`
                                 });
                             }
                         }
@@ -193,4 +221,4 @@ async function fromLua (path, expr) {
     }
 }
 
-fromLua('C:\\', 'transform');
+importMethodsQuantityTSM('C:\\', 'transform');

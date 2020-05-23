@@ -1,14 +1,37 @@
-const battleNetWrapper = require('battlenet-api-wrapper');
-const moment = require('moment');
-const guild_db = require("../db/guilds_db");
-const {toSlug} = require("../db/setters");
+/**
+ * Model importing
+ */
 
+const guild_db = require("../db/guilds_db");
 const characters_db = require("../db/characters_db");
+
+/**
+ * B.net wrapper
+ */
+
+const battleNetWrapper = require('battlenet-api-wrapper');
+
+/**
+ * Modules
+ */
+
+const moment = require('moment');
+const {toSlug} = require("../db/setters");
 const getCharacter = require('./getCharacter');
 const updateCharacterLogsRank = require('./updateCharacterLogsRank');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
+
+/**
+ * Request guild from Blizzard API and add it to OSINT-DB (guilds)
+ * (if we found a new character from guild-members, then adding it to OSINT-DB (characters))
+ * @param realmSlug
+ * @param nameSlug
+ * @param token
+ * @param updatedBy
+ * @returns {Promise<*>}
+ */
 
 async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${getGuild.name}`) {
     try {

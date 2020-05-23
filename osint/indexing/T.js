@@ -43,7 +43,7 @@ async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, b
     try {
         console.time(`OSINT-${T.name}`);
         let {token} = await keys_db.findOne(queryKeys);
-        await characters_old.find(queryFind).sort({updatedAt: 1}).limit(1000).lean().cursor({batchSize: bulkSize}).eachAsync(async (c) => {
+        await characters_old.find(queryFind).sort({updatedAt: 1}).lean().cursor({batchSize: bulkSize}).eachAsync(async (c) => {
             const [characterName, realmSlug] = c._id.split('@');
             let createdBy = ''
             if ("createdBy" in c) {

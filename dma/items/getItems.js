@@ -32,6 +32,7 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 
 /***
  * TODO with new Model
+ * This function parse items across B.net API with wrapper
  * @param queryKeys {object}
  * @param isNew {boolean}
  * @returns {Promise<void>}

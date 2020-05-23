@@ -31,8 +31,14 @@ const items_db = require("../../db/items_db");
 const csv = require('csv');
 const fs = require('fs');
 
+/***
+ * This function allows Taxonomy to be imported up to the DMA-DB
+ * @param path
+ * @param expr
+ * @returns {Promise<void>}
+ */
 
-async function fromCSV (path, expr) {
+async function importTaxonomy (path, expr) {
     try {
         let eva = fs.readFileSync(path,'utf8');
         csv.parse(eva, async function(err, data) {
@@ -70,4 +76,4 @@ async function fromCSV (path, expr) {
     }
 }
 
-fromCSV('C:\\SHDW.csv', 'production');
+importTaxonomy('C:\\SHDW.csv', 'production');

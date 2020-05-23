@@ -26,8 +26,10 @@ const items_db = require("../../db/items_db");
 const auctions_db = require("../../db/auctions_db");
 
 /**
- *  TODO Map for of and CASE SWITCH
- *  TODO build.yaml?
+ * TODO Map for of and CASE SWITCH
+ * IDEA build.yaml?
+ * IDEA asset_classes build
+ * indexItems add is_auction, is_commdty and is_derivative properties to items
  * @param arg
  * @returns {Promise<void>}
  */

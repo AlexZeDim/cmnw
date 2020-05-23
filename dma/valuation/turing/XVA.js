@@ -78,6 +78,4 @@ async function XVA (connected_realm_id = 1602) {
     }
 }
 
-XVA(1602);
-
-module.exports = XVA;
+XVA(parseInt(process.argv[process.argv.findIndex(arg => arg === 'connected_realm_id') + 1])).then(r => r);

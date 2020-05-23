@@ -1,6 +1,34 @@
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const golds_db = require("./../db/golds_db");
 const realms_db = require("./../db/realms_db");
-const {connection} = require('mongoose');
+
+/**
+ * Modules
+ */
+
 const moment = require('moment');
 const Xray = require('x-ray');
 const makeDriver = require('request-x-ray');
@@ -10,6 +38,11 @@ const driver = makeDriver({
 });
 const x = Xray();
 x.driver(driver);
+
+/***
+ * This function updates gold market data on every connected realm
+ * @returns {Promise<void>}
+ */
 
 async function getGoldData () {
     try {
@@ -28,6 +61,7 @@ async function getGoldData () {
         if (goldOrders.length !== 0) {
             const realms = await realms_db.find();
             for (let i = 0; i < goldOrders.length; i++) {
+                //FIXME ????
                 let realm = realms.find(({name, connected_realm_id}) => {
                     if (name === goldOrders[i].realm) return connected_realm_id
                 });
@@ -54,4 +88,4 @@ async function getGoldData () {
     }
 }
 
-getGoldData();
+getGoldData().then(r => r);

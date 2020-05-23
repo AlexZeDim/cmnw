@@ -83,7 +83,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> { //TODO unlocked_battle_pet_slots
                 let pets_array = [];
                 let active_pets = [];
-                if (pets.length) {
+                if (pets && pets.length) {
                     for (let pet of pets) {
                         if ("is_active" in pet) {
                             if ("name" in pet) {
@@ -126,7 +126,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         //FIXME remove later
         Object.assign(character, characterObject)
         if (character.statusCode !== 200) {
-            if (Object.keys(characterObject).length) {
+            if (characterObject && Object.keys(characterObject).length) {
                 /**
                  * If request about certain character isn't successful
                  * but we already have provided values, then we use it.

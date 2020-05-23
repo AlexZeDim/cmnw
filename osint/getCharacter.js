@@ -24,7 +24,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let character = new characters_db({
-            _id: `${characterName}-${realmSlug}-0`,
+            _id: `${characterName}@${realmSlug}`,
             name: characterName,
             realm: realmSlug,
             statusCode: 100,
@@ -35,7 +35,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         await Promise.all([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(async (
                 { id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode }) => {
-                    character._id = `${name}-${realm}-${id}`;
                     character.id = id;
                     character.name = name;
                     character.gender = gender.name;
@@ -55,9 +54,8 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     if (guild) {
                         character.guild = guild.name;
                         if (guildRank) {
-                            //TODO
-                            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, toSlug(guild.name));
-                            const {rank} = members.find(({ character }) => character.name === name );
+                            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, guild.name);
+                            const {rank} = members.find(({ character }) => character.id === id );
                             character.guild_rank = rank;
                         }
                     } else {
@@ -120,7 +118,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             characters_db.findById(`${characterName}@${realmSlug}`).lean(),
             characters_db.findOne({
                 realm: realmSlug,
-                character_class: character.character_class,
                 id: character.id
             }).lean()
         ])
@@ -145,6 +142,8 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     })
                     if (!character_created) {
                         character.logs = character_byId.logs
+                    } else {
+                        //TODO delete old, copy to new or shadow
                     }
                 }
                 if (character_byId.race !== character.race) {

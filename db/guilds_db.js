@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {toSlug, fromSlug} = require('./setters');
 mongoose.Promise = global.Promise;
 
-require('dotenv').config();
+/*require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -12,7 +12,7 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     useCreateIndex: true,
     w: "majority",
     family: 4
-});
+});*/
 
 let schema = new mongoose.Schema({
     _id: {

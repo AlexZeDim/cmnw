@@ -1,10 +1,51 @@
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const logs_db = require("../../db/logs_db");
 const realms_db = require("../../db/realms_db");
 const characters_db = require("../../db/characters_db");
 const keys_db = require("../../db/keys_db");
-const getCharacter = require('../getCharacter');
-const {connection} = require('mongoose');
+
+/**
+ * Modules
+ */
+
 const axios = require('axios');
+
+/**
+ * getGuild indexing
+ */
+
+const getCharacter = require('../getCharacter');
+
+/**
+ * Parse all open logs from Kihra's WCL API (https://www.warcraftlogs.com/) for new characters for OSINT-DB (characters)
+ * @param queryInput
+ * @param bulkSize
+ * @param queryKeys
+ * @returns {Promise<void>}
+ */
 
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 

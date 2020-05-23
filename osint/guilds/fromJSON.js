@@ -1,8 +1,34 @@
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const realms_db = require("../../db/realms_db");
 const guild_db = require("../../db/guilds_db");
 const keys_db = require("../../db/keys_db");
-const getGuild = require('../getGuild');
-const {connection} = require('mongoose');
+
+/**
+ * Modules
+ */
 
 const axios = require('axios');
 const zlib = require('zlib');
@@ -14,6 +40,24 @@ const {promisify} = require('util');
 const readDir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const removeDir = promisify(fs.rmdir);
+
+/**
+ * getGuild indexing
+ */
+
+const getGuild = require('../getGuild');
+
+/***
+ * We takes every gzip archive from Kernel's WoWProgress (https://www.wowprogress.com/export/ranks/
+ * Unzipping it, and parse the received JSON files for new guild names for OSINT-DB (guilds)
+ *
+ * @param queryFind
+ * @param path_
+ * @param raidTier
+ * @param region
+ * @param queryKeys
+ * @returns {Promise<void>}
+ */
 
 async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTier = 26, region = 'eu', queryKeys = { tags: `OSINT-indexGuilds` }) {
     try {

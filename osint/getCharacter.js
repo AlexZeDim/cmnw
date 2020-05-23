@@ -1,5 +1,19 @@
-const battleNetWrapper = require('battlenet-api-wrapper');
+/**
+ * Model importing
+ */
+
 const characters_db = require("../db/characters_db");
+
+/**
+ * B.net wrapper
+ */
+
+const battleNetWrapper = require('battlenet-api-wrapper');
+
+/**
+ * Modules
+ */
+
 const {toSlug} = require("../db/setters");
 const crc32 = require('fast-crc32c');
 const moment = require('moment');
@@ -8,7 +22,7 @@ const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 /**
- *
+ * Request characters from Blizzard API and add it to OSINT-DB (guilds)
  * @param realmSlug
  * @param characterName
  * @param characterObject
@@ -96,6 +110,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 character.hash.b = crc32.calculate(Buffer.from(mount_array)).toString(16);
             }).catch(e =>(e)),
             bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).then(({avatar_url, bust_url, render_url}) => {
+                //TODO add data for id
                 character.media = {
                     avatar_url: avatar_url,
                     bust_url: bust_url,
@@ -118,10 +133,13 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             characters_db.findById(`${characterName}@${realmSlug}`).lean(),
             characters_db.findOne({
                 realm: realmSlug,
-                id: character.id
+                id: character.id | 0
             }).lean()
         ])
         if (character_created) {
+            if (character_created.statusCode === 200 && character.statusCode !== 200) {
+                //TODO inactive char or error
+            }
             delete character.createdBy
             //TODO check timestamp && dont return probably other things are changed
         }

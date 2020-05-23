@@ -1,7 +1,40 @@
-const battleNetWrapper = require('battlenet-api-wrapper');
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const realms_db = require("../../db/realms_db");
 const keys_db = require("../../db/keys_db");
-const {connection} = require('mongoose');
+
+/**
+ * B.net wrapper
+ */
+
+const battleNetWrapper = require('battlenet-api-wrapper');
+
+/**
+ * Index every realm in certain region and add it to OSINT-DB (realms)
+ * @returns {Promise<void>}
+ */
 
 async function indexRealms () {
     try {

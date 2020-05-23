@@ -1,11 +1,39 @@
+/**
+ * Connection with DB
+ */
+
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+
+/**
+ * Model importing
+ */
+
 const logs_db = require("../../db/logs_db");
 const realms_db = require("../../db/realms_db");
-const {connection} = require('mongoose');
+
+/**
+ * Modules
+ */
+
 const Xray = require('x-ray');
 let x = Xray();
 
 /**
- *
+ * Add all open logs from Kihra's WCL (https://www.warcraftlogs.com/) to OSINT-DB (logs)
  * @returns {Promise<void>}
  */
 
@@ -75,4 +103,4 @@ async function fromLogs (queryFind = {locale: 'ru_RU'}, delay = 10, startPage = 
     }
 }
 
-fromLogs();
+fromLogs().then(r => r);

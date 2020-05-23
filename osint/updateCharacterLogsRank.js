@@ -10,7 +10,7 @@ async function updateCharacterLogsRank (arrayMembers=[], guild_id, guild_name, g
              * This should never trigger, but anyway it's a failsafe
              */
             if (!character) {
-                character = await characters_db.findOne({id: id, realm: guild_realm})
+                character = await characters_db.findOne({realm: guild_realm, id: id})
             }
             if (character) {
                 switch (action) {

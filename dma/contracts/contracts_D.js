@@ -1,12 +1,38 @@
+/**
+ * Connection with DB
+ */
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+/**
+ * Model importing
+ */
 const realms_db = require("../../db/realms_db");
 const items_db = require("../../db/items_db");
 const auctions_db = require("../../db/auctions_db");
 const golds_db = require("../../db/golds_db");
 const contracts_db = require("../../db/contracts_db");
-const Contract = require('../contracts/classContracts_D.js');
-const moment = require('moment');
-const {connection} = require('mongoose');
 
+/**
+ * TODO DayContractSchema
+ * @type {Contract}
+ */
+const Contract = require('../contracts/classContracts_D.js');
+
+/**
+ * Moment monthsShort =>  Financial Format
+ */
+const moment = require('moment');
 moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });

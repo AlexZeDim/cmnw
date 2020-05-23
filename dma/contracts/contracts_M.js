@@ -1,10 +1,30 @@
-const Contract = require('./classContracts_M.js');
+/**
+ * Connection with DB
+ */
+const {connect, connection} = require('mongoose');
+require('dotenv').config();
+connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: "majority",
+    family: 4
+});
+
+/**
+ * Model importing
+ */
 const contracts_db = require("../../db/contracts_db");
 const realms_db = require("../../db/realms_db");
 const items_db = require("../../db/items_db");
-const moment = require('moment');
-const {connection} = require('mongoose');
 
+
+const Contract = require('./classContracts_M.js');
+
+const moment = require('moment');
 moment.updateLocale('en', {
     monthsShort : ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"]
 });

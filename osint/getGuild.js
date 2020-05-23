@@ -40,8 +40,8 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
         let [guild_created, guild_byId] = await Promise.all([
             guild_db.findById(`${nameSlug}@${realmSlug}`).lean(),
             guild_db.findOne({
-                id: guild.id,
-                realm: guild.realm
+                realm: guild.realm,
+                id: guild.id
             }).lean()
         ])
         /** Check request status is OK */
@@ -97,10 +97,10 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `DMA-${get
                     let {character, rank} = member
                     if (character && rank) {
                         /** Is every guild member is in OSINT-DB? */
-                        let character_OSINT = await characters_db.findById(`${character.name}-${guild.realm}-${character.id}`);
+                        let character_OSINT = await characters_db.findById(`${character.name}@${guild.realm}`);
                         /** guild_member object for array.push */
                         let guild_member = {
-                            _id: `${character.name}-${guild.realm}-${character.id}`,
+                            _id: `${character.name}@${guild.realm}`,
                             id: parseInt(character.id),
                             rank: parseInt(rank),
                         };

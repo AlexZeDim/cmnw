@@ -18,7 +18,7 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 const moment = require('moment');
 const {toSlug} = require("../db/setters");
 const getCharacter = require('./getCharacter');
-const updateCharacterLogsRank = require('./updateCharacterLogsRank');
+const indexMembers = require('./indexMembers');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
@@ -41,8 +41,6 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let guild = new guild_db({
             _id: `${nameSlug}@${realmSlug}`,
-            name: nameSlug,
-            realm: realmSlug,
             statusCode: 100,
             createdBy: updatedBy,
             updatedBy: updatedBy,
@@ -52,7 +50,11 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
             guild.id = id;
             guild.name = name;
             guild.faction = faction.name;
-            guild.realm = realm.name;
+            guild.realm = {
+                id: realm.id,
+                name: realm.name,
+                slug: realm.slug
+            };
             guild.crest = crest;
             guild.achievement_points = achievement_points;
             guild.member_count = member_count;
@@ -61,7 +63,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
             guild.statusCode = statusCode;
         })
         let [guild_created, guild_byId] = await Promise.all([
-            guild_db.findById(`${nameSlug}@${realmSlug}`),
+            guild_db.findById(toSlug(`${nameSlug}@${realmSlug}`)),
             guild_db.findOne({
                 realm: guild.realm,
                 id: guild.id
@@ -72,29 +74,29 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
             /**
              * Detective:IndexDB
              */
+            if (guild_byId) {
+                /***
+                 * If guild was renamed, then inherit all guild properties
+                 * TODO and delete copy?
+                 */
+                if (guild_byId.name !== guild.name) {
+                    guild_created = Object.assign({}, guild_byId);
+                    guild.logs = [...guild_byId.logs]
+                }
+            }
             if (guild_created) {
                 if (guild_created.faction !== guild.faction) {
-                    guild.logs.push({
+                    guild.logs = [... guild_created.logs, ...[{
                         old_value: guild_created.faction,
                         new_value: guild.faction,
                         action: `faction`,
                         message: `${guild.name}@${guild.realm} changed faction from ${guild_created.faction} to ${guild.faction}`,
                         after: moment(guild_created.lastModified).toISOString(true),
                         before: moment(guild.lastModified).toISOString(true)
-                    })
+                    }]]
                 }
                 delete guild.createdBy;
                 //TODO check timestamp
-            } else {
-                if (guild_byId) {
-                    /***
-                     * If guild was renamed, then inherit all guild properties
-                     */
-                    if (guild_byId.name !== guild.name) {
-                        guild_created = Object.assign({}, guild_byId);
-                    }
-                }
-                guild.createdBy = updatedBy;
             }
             /**
              * Request membership list of this guild
@@ -120,23 +122,41 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                     let {character, rank} = member
                     if (character && rank) {
                         /** Is every guild member is in OSINT-DB? */
-                        let character_OSINT = await characters_db.findById(`${character.name}@${guild.realm}`);
+                        let character_OSINT = await characters_db.findById(toSlug(`${character.name}@${guild.realm.slug}`));
                         /** guild_member object for array.push */
                         let guild_member = {
-                            _id: `${character.name}@${guild.realm}`,
+                            _id: `${character.name}@${guild.realm.name}`,
                             id: parseInt(character.id),
                             rank: parseInt(rank),
                         };
                         /** Check if data from guild roster > current character */
                         if (character_OSINT) {
-                            /** If current character guild_name != guild name from OSINT and new data upcoming update guild_data */
-                            if (character_OSINT.guild !== guild.name && moment(character_OSINT.lastModified).isSameOrBefore(guild.lastModified)) {
-                                character_OSINT.guild = guild.name;
-                                character_OSINT.save();
-                            }
-                            /** If current character guild_name === guild => update rank */
-                            if (character_OSINT.guild === guild.name) {
-                                character_OSINT.rank = guild.rank;
+                            /** If current character.guild.id != guild.id update character */
+                            if ("lastModified" in character_OSINT) {
+                                if ("guild" in character_OSINT) {
+                                    if (character_OSINT.guild.id !== guild.id && moment(character_OSINT.lastModified).isSameOrBefore(guild.lastModified)) {
+                                        character_OSINT.guild = {
+                                            id: guild.id,
+                                            name: guild.name,
+                                            slug: guild.name,
+                                            rank: rank
+                                        }
+                                        character_OSINT.save();
+                                    }
+                                    /** If current character.guild.id === guild.id => update rank */
+                                    if (character_OSINT.guild.id === guild.id) {
+                                        character_OSINT.guild.rank = rank;
+                                        character_OSINT.save();
+                                    }
+                                }
+                            } else {
+                                character_OSINT.guild = {
+                                    id: guild.id,
+                                    name: guild.name,
+                                    slug: guild.name,
+                                    rank: rank
+                                }
+                                character_OSINT.lastModified = moment(guild.lastModified).toISOString(true);
                                 character_OSINT.save();
                             }
                         } else  {
@@ -148,9 +168,17 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                             let character_Object = {
                                 id: character.id,
                                 name: character.name,
-                                realm: guild.realm,
-                                guild: guild.name,
-                                guild_rank: rank,
+                                realm: {
+                                    id: guild.realm.id,
+                                    name: guild.realm.name,
+                                    slug: guild.realm.slug
+                                },
+                                guild: {
+                                    id: guild.id,
+                                    name: guild.name,
+                                    slug: guild.name,
+                                    rank: rank
+                                },
                                 faction: guild.faction,
                                 level: character.level
                             }
@@ -168,63 +196,16 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
             /**
              * Guild_log
              */
-            if (guild.members.length && guild_created.members.length) {
-                /**
-                 * All those who leaves the guild
-                 * If member is not in latest, but still in old
-                 */
-                let leave = guild_created.members.filter(({id: id1}) => !guild.members.some(({id: id2}) => id1 === id2));
-                if (leave.length) {
-                    console.info(`LEAVE: ${leave.length} => ${guild_created.guild_log.leave.length}`);
-                    guild.guild_log.leave = [...guild_created.guild_log.leave, ...leave];
-                    await updateCharacterLogsRank(leave, [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'leaves');
+            if (guild && guild_created) {
+                let {leaves, promoted, demoted, joins, guild_masters} = await indexMembers(guild, guild_created);
+                guild.guild_log = {
+                    joins: [...guild_created.guild_log.joins, ...joins],
+                    leaves: [...guild_created.guild_log.leaves, ...leaves],
+                    promoted: [...guild_created.guild_log.promoted, ...promoted],
+                    demoted: [...guild_created.guild_log.demoted, ...demoted]
                 }
-                /**
-                 * If in old_members character_id rank was lower then in latest_members then you have been promoted
-                 */
-                let promote = guild.members.filter(({id: id1, rank: rank1}) => guild_created.members.some(({id: id2, rank: rank2}) => id1 === id2 && rank1 < rank2))
-                if (promote.length) {
-                    console.info(`PROMOTED: ${promote.length} => ${guild_created.guild_log.promote.length}`);
-                    guild.guild_log.promote = [...guild_created.guild_log.promote, ...promote];
-                    await updateCharacterLogsRank(promote, guild_created.members, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'promoted');
-                }
-                /**
-                 * If in latest_members character_id rank was lower then in old_members then you have been demoted
-                 */
-                let demote = guild.members.filter(({id: id1, rank: rank1}) => guild_created.members.some(({id: id2, rank: rank2}) => id1 === id2 && rank1 > rank2))
-                if (demote.length) {
-                    console.info(`DEMOTED: ${demote.length} => ${guild_created.guild_log.demote.length}`);
-                    guild.guild_log.demote = [...guild_created.guild_log.demote, ...demote];
-                    await updateCharacterLogsRank(demote, guild_created.members, guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'demoted');
-                }
-                /**
-                 * If latest_members have character_id rank and old_members don't have the same id, then it's a newcomer
-                 */
-                let join = guild.members.filter(({id: id1}) => !guild_created.members.some(({id: id2}) => id1 === id2))
-                if (join.length) {
-                    console.info(`JOIN: ${join.length} => ${guild_created.guild_log.join.length}`);
-                    guild.guild_log.join = [...guild.guild_log.join, ...join];
-                    await updateCharacterLogsRank(join, [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'joins');
-                }
-                /**
-                 * Transfer title || ownership
-                 */
-                let ownership_old = guild_created.members.find(gm => gm.rank === 0);
-                let ownership_new = guild.members.find( gm => gm.rank === 0);
-                if (ownership_old.id !== ownership_new.id) {
-                    let [GM_old, GM_new] = await Promise.all([
-                        characters_db.findOne({id: ownership_old.id, realm: guild.realm}),
-                        characters_db.findOne({id: ownership_new.id, realm: guild.realm}),
-                    ])
-                    if (GM_old && GM_new) {
-                        if (GM_old.hash.a === GM_new.hash.a) {
-                            /** title transfer */
-                            await updateCharacterLogsRank([ownership_old, ownership_new], [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'transfer title');
-                        } else {
-                            /** transfer ownership */
-                            await updateCharacterLogsRank([ownership_old, ownership_new], [], guild.id, guild.name, guild.realm, guild.lastModified, guild_created.lastModified, 'transfer ownership');
-                        }
-                    }
+                if (guild_masters.length) {
+                    guild.log = [...guild_created.log, ...guild_masters];
                 }
             }
             /** End of request status */

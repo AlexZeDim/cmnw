@@ -1,3 +1,12 @@
 # we need this file to build
 # static data or update it
 # on first launch or patch day
+apps:
+  - script: ./dma/items/getItems.js
+    name: 'DMA-getItems'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '0 12 * */6 *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000

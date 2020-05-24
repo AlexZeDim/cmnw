@@ -81,7 +81,6 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
                     script: `${path.dirname(require.main.filename) + '/valuation/turing/XVA.js'}`,
                     exec_mode: 'fork',
                     instances: 1,
-                    max_memory_restart: '100M',
                     autorestart: false,
                 }, function(err, apps) {
                     pm2.disconnect();

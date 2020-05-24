@@ -44,10 +44,10 @@ async function itemValuationAdjustment (
         }
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
-        if (moment(pricing.lastModified).isSame(lastModified)) {
-            return pricing
-        }
         if (pricing) {
+            if (moment(pricing.lastModified).isSame(lastModified)) {
+                return pricing
+            }
             if ("lastModified" in pricing.market) {
                 if (moment(pricing.market.lastModified).isSame(lastModified)) {
                     return pricing

@@ -3,6 +3,7 @@
  */
 
 const characters_db = require("../db/characters_db");
+const realms_db = require("../db/realms_db");
 
 /**
  * B.net wrapper
@@ -39,8 +40,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
         let character = new characters_db({
             _id: `${characterName}@${realmSlug}`,
-            name: characterName,
-            realm: realmSlug,
             statusCode: 100,
             createdBy: updatedBy,
             updatedBy: updatedBy,
@@ -56,7 +55,11 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     character.race = race.name;
                     character.character_class = character_class.name;
                     character.spec = active_spec.name;
-                    character.realm = realm.name;
+                    character.realm = {
+                        id: realm.id,
+                        name: realm.name,
+                        slug: realm.slug
+                    };
                     character.level = level;
                     character.lastOnline = moment(last_login_timestamp).toISOString(true);
                     character.lastModified = moment(lastModified).toISOString(true);
@@ -66,15 +69,16 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         avg: equipped_item_level
                     };
                     if (guild) {
-                        character.guild = guild.name;
+                        character.guild.id = guild.id;
+                        character.guild.name = guild.name;
+                        character.guild.slug = guild.name;
                         if (guildRank) {
                             const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, guild.name);
                             const {rank} = members.find(({ character }) => character.id === id );
-                            character.guild_rank = rank;
+                            character.guild.guild_rank = rank;
                         }
                     } else {
                         delete character.guild;
-                        delete character.guild_rank;
                     }
                 }
             ).catch(e => {
@@ -118,36 +122,78 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     bust_url: bust_url,
                     render_url: render_url
                 };
-            }).catch(e =>(e)),
+            }).catch(e =>(e))
         ]);
+        if (!character.hasOwnProperty('id')) {
+            let {id} = await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName)
+            character.id = id;
+        }
         /**
          * isCreated and createdBy
          */
+        let [character_created, character_byId] = await Promise.all([
+            characters_db.findById(toSlug(`${characterName}@${realmSlug}`)),
+            characters_db.findOne({
+                realm: realmSlug,
+                id: character.id || 0
+            })
+        ])
+        if (character_created) {
+            //TODO inactive char or error, check lastModified for that
+            if (character_created.statusCode === 200 && character.statusCode !== 200) {
+
+            }
+            delete character.createdBy
+            //TODO check timestamp && dont return probably other things are changed
+        } else {
+
+        }
         //FIXME remove later
         Object.assign(character, characterObject)
         if (character.statusCode !== 200) {
+            //TODO add id request
+            character.name = characterName
+            let {id, name, slug} = await realms_db.findOne({
+                $or: [
+                    { slug: realmSlug },
+                    { slug_locale: realmSlug }
+                ]
+            })
+            character.realm = {
+                id: id,
+                name: name,
+                slug: slug,
+            }
             if (characterObject && Object.keys(characterObject).length) {
                 /**
                  * If request about certain character isn't successful
                  * but we already have provided values, then we use it.
+                 * FIXME it's bad
                  */
                 Object.assign(character, characterObject)
             }
         }
-        let [character_created, character_byId] = await Promise.all([
-            characters_db.findById(`${characterName}@${realmSlug}`),
-            characters_db.findOne({
-                realm: realmSlug,
-                id: character.id
-            })
-        ])
-        if (character_created) {
-            if (character_created.statusCode === 200 && character.statusCode !== 200) {
-                //TODO inactive char or error, check lastModified for that
+
+        if (character_byId && character_created) {
+            /**
+             * Renamed character on inactive
+             * make shadow_copy of character_created and delete it
+             * then inherit all from character_byId to character!
+             */
+            if ((character.name !== character_byId.name) && (character_created.id !== character_byId.id)) {
+
             }
-            delete character.createdBy
-            //TODO check timestamp && dont return probably other things are changed
         }
+        if (character_byId && !character_created) {
+            /**
+             * Renamed character
+             */
+            if (character.name !== character_byId.name) {
+
+            }
+        }
+
+
         if (character.statusCode === 200) {
             /**
              * Detective:IndexDB
@@ -169,7 +215,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                          * then make shadow copy of already existed character and then create it
                          */
                         await characters_db.findByIdAndUpdate({
-                                _id: `${characterName}@${realmSlug}-${character_created.id}}`
+                                _id: `${characterName}@${realmSlug}`
                             },
                             character_created.toObject(),
                             {
@@ -233,7 +279,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             let hash_ex = [character.id, character.character_class]
             character.hash.ex = crc32.calculate(Buffer.from(hash_ex)).toString(16);
         }
-        console.info(`U:${character.name}@${character.realm}#${character.id || 0}:${character.statusCode} `)
+        console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode} `)
         return await characters_db.findByIdAndUpdate({
             _id: character._id
         },

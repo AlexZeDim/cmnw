@@ -55,7 +55,7 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}, queryKeys = { tags
             const { token } = await keys_db.findOne(queryKeys);
             if ("slug" in realm) {
                 let realm_slug = realm.slug;
-                let guild_names = await characters_db.distinct('guild', { realm_slug: realm_slug }).lean();
+                let guild_names = await characters_db.distinct("guild.name", { "realm.slug": realm_slug }).lean();
                 for (let guild_name of guild_names) {
                     /**
                      * Check guild before insert

@@ -17,20 +17,21 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 let schema = new mongoose.Schema({
     _id: {
         type: String,
-        set: toSlug
     },
     id: {
         type: Number
     },
+    /** CAPS LOCK NAMES */
     name: {
         type: String,
-        set: toSlug,
-        get: fromSlug
     },
     realm: {
-        type: String,
-        set: toSlug,
-        get: fromSlug
+        id: Number,
+        name: String,
+        slug: {
+            type: String,
+            set: toSlug,
+        },
     },
     faction: {
         type: String
@@ -41,8 +42,8 @@ let schema = new mongoose.Schema({
         background: Object
     },
     logs: [{
-        old_value: String,
-        new_value: String,
+        old_value: mongoose.Mixed,
+        new_value: mongoose.Mixed,
         action: String,
         message: String,
         after: Date,
@@ -71,7 +72,10 @@ let schema = new mongoose.Schema({
         }],
     },
     members: [{
-        _id: String,
+        _id: {
+            type: String,
+            set: toSlug,
+        },
         id: Number,
         rank: Number,
     }],
@@ -103,7 +107,8 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-schema.index({ name: 1 },{name: 'Name'});
+schema.index({ "name": 1 },{name: 'Name'});
+schema.index({ "realm.slug": 1 } ,{name: 'RealmSlug'});
 
 let guild_db = mongoose.model('guilds', schema);
 

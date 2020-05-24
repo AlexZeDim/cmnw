@@ -27,25 +27,29 @@ let schema = new mongoose.Schema({
     },
     name: {
         type: String,
+        set: fromSlug,
         get: fromSlug,
-        set: toSlug,
     },
     realm: {
-        type: String,
-        get: fromSlug,
-        set: toSlug,
+        id: Number,
+        name: String,
+        slug: {
+            type: String,
+            set: toSlug,
+        },
     },
     guild: {
-        type: String,
-        get: fromSlug,
-        set: toSlug,
-    },
-    guild_rank: {
-        type: Number
+        id: Number,
+        name: String,
+        slug: {
+            type: String,
+            set: toSlug,
+        },
+        rank: Number,
     },
     logs: [{
-        old_value: String,
-        new_value: String,
+        old_value: mongoose.Mixed,
+        new_value: mongoose.Mixed,
         action: String,
         message: String,
         after: Date,
@@ -105,24 +109,27 @@ let schema = new mongoose.Schema({
     updatedBy: {
       type: String
     },
+    isActive: {
+        type: Boolean,
+        default: false,
+    },
     isWatched: {
-        type: Boolean
+        type: Boolean,
+        default: false,
     }
 },{
     timestamps: true
 });
 
-schema.index({ name: 1 },{name: 'Name'});
-schema.index({ realm: 1, name: 1 },{name: 'OSINT-IndexLogs'});
-schema.index({ guild: 1 },{name: 'Guild'});
-schema.index({ id: 1 },{name: 'ID'});
+schema.index({ "name": 1 },{name: 'Name'});
+schema.index({ "guild": 1 },{name: 'Guild'});
+schema.index({ "id": 1 },{name: 'ID'});
 schema.index({ "hash.a": 1 },{name: 'Hash A'});
 schema.index({ "hash.b": 1 },{name: 'Hash B'});
 schema.index({ "hash.c": 1 },{name: 'Hash C'});
 schema.index({ "hash.ex": 1 },{name: 'Hash EX'});
-schema.index({ updatedAt: 1 },{name: 'OSINT-IndexCharacters'});
-schema.index({ realm: 1, id: 1 },{name: 'ByGUID'});
-
+schema.index({ "updatedAt": 1 },{name: 'OSINT-IndexCharacters'});
+schema.index({ "realm.slug": 1, "id": 1 },{name: 'ByGUID'});
 
 let characters_db = mongoose.model('characters', schema);
 

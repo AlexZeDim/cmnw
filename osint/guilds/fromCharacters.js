@@ -34,6 +34,12 @@ const guilds_db = require("../../db/guilds_db");
 const getGuild = require('../getGuild');
 
 /**
+ * Modules
+ */
+
+const {toSlug} = require("../../db/setters");
+
+/**
  * This function takes every unique guild name from OSINT-DB (characters) and
  * compares it with current OSINT-DB (guilds), adding new names to DB
  * @param queryFind
@@ -54,7 +60,7 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}, queryKeys = { tags
                     /**
                      * Check guild before insert
                      */
-                    let guild = guilds_db.findById(`${guild_name}@${realm_slug}`)
+                    let guild = guilds_db.findById(toSlug(`${guild_name}@${realm_slug}`))
                     if (!guild) {
                         await getGuild(realm_slug, guild_name, token, `OSINT-${fromCharacters.name}`);
                     }

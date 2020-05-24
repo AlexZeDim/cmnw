@@ -47,6 +47,12 @@ const removeDir = promisify(fs.rmdir);
 
 const getGuild = require('../getGuild');
 
+/**
+ * Modules
+ */
+
+const {toSlug} = require("../../db/setters");
+
 /***
  * We takes every gzip archive from Kernel's WoWProgress (https://www.wowprogress.com/export/ranks/
  * Unzipping it, and parse the received JSON files for new guild names for OSINT-DB (guilds)
@@ -116,7 +122,7 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
                     if (guildsJSON.length) {
                         for (let guild of guildsJSON) {
                             if (!guild.name.includes('[raid]')) {
-                                let guild_ = await guild_db.findById(`${guild.name}@${realms[indexOfRealms].slug}`);
+                                let guild_ = await guild_db.findById(toSlug(`${guild.name}@${realms[indexOfRealms].slug}`));
                                 if (!guild_) {
                                     await getGuild(realms[indexOfRealms].slug, guild.name, token, `OSINT-${fromJSON.name}`)
                                 }

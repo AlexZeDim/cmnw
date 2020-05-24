@@ -32,6 +32,7 @@ const keys_db = require("../../db/keys_db");
  */
 
 const axios = require('axios');
+const {toSlug} = require("../../db/setters");
 
 /**
  * getGuild indexing
@@ -77,7 +78,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1, queryKey
                                         ]
                                 }).lean()
                                 if (slug) {
-                                    let character_OSINT = await characters_db.findOne({realm: slug, name: character.name });
+                                    let character_OSINT = await characters_db.findById(toSlug(`${character.name}@${slug}`));
                                     if (!character_OSINT) {
                                         await getCharacter(slug, character.name, {}, token, `OSINT-${indexLogs.name}`)
                                     }

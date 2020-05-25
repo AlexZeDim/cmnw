@@ -71,21 +71,23 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
                     auctions[i].connected_realm_id = connected_realm_id;
                     auctions[i].lastModified = moment(lastModified).toISOString(true);
                 }
-                await auctions_db.insertMany(auctions).then(auctions => console.info(`U,${auctions.length}`))
-                /**
-                 * Launch evaluation process (XVA) as a separate task in PM2
-                 */
-                await pm2.start({
-                    name: `DMA-XVA-${connected_realm_id}`,
-                    args: `connected_realm_id ${connected_realm_id}`,
-                    script: `${path.dirname(require.main.filename) + '/valuation/turing/XVA.js'}`,
-                    exec_mode: 'fork',
-                    instances: 1,
-                    autorestart: false,
-                }, function(err, apps) {
-                    pm2.disconnect();
-                    if (err) throw err
-                });
+                await auctions_db.insertMany(auctions).then(auctions => {
+                    console.info(`U,${auctions.length}`)
+                    /**
+                     * Launch evaluation process (XVA) as a separate task in PM2
+                     */
+                    pm2.start({
+                        name: `DMA-XVA-${connected_realm_id}`,
+                        args: `connected_realm_id ${connected_realm_id}`,
+                        script: `${path.dirname(require.main.filename) + '/valuation/turing/XVA.js'}`,
+                        exec_mode: 'fork',
+                        instances: 1,
+                        autorestart: false,
+                    }, function(err, apps) {
+                        pm2.disconnect();
+                        if (err) throw err
+                    });
+                })
             }
         }
         connection.close();

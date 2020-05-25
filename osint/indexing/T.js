@@ -39,7 +39,7 @@ const getCharacter = require('../getCharacter');
  * @returns {Promise<void>}
  */
 
-async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, bulkSize = 10) {
+async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-indexCharacters`}, bulkSize = 10) {
     try {
         console.time(`OSINT-${T.name}`);
         let {token} = await keys_db.findOne(queryKeys);
@@ -52,7 +52,7 @@ async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, b
             let character_Object = {
                 logs: []
             }
-            if (c.guild_history.length > 0) {
+            if (c.guild_history && c.guild_history.length > 0) {
                 for (let guid_log of c.guild_history) {
                     switch (guid_log.action) {
                         case 'leaves':
@@ -60,9 +60,9 @@ async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, b
                                 old_value: guid_log.name,
                                 new_value: '',
                                 action: guid_log.action,
-                                message: `${c.name}@${c.realm} leaves ${guid_log.name} //  Rank: ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                message: `${c.name}@${c.realm} leaves ${guid_log.name} // Rank: ${guid_log.rank}`,
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         case 'promoted':
@@ -71,8 +71,8 @@ async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, b
                                 new_value: guid_log.rank,
                                 action: guid_log.action,
                                 message: `${c.name}@${c.realm}#${guid_log.name}:${guid_log.id} was promoted from Rank ${guid_log.rank+1} to Rank ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         case 'demoted':
@@ -81,8 +81,8 @@ async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, b
                                 new_value: guid_log.rank,
                                 action: guid_log.action,
                                 message: `${c.name}@${c.realm}#${guid_log.name}:${guid_log.id} was demoted from Rank: ${guid_log.rank-1} to Rank: ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         case 'joins':
@@ -90,9 +90,9 @@ async function T (queryFind = {}, queryKeys = {tags: `OSINT-indexCharacters`}, b
                                 old_value: '',
                                 new_value: guid_log.name,
                                 action: guid_log.action,
-                                message: `${c.name}@${c.realm} joins ${guid_log.name} //  Rank: ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                message: `${c.name}@${c.realm} joins ${guid_log.name} // Rank: ${guid_log.rank}`,
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         default:

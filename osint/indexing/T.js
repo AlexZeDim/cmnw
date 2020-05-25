@@ -52,7 +52,7 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
             let character_Object = {
                 logs: []
             }
-            if (c.guild_history.length > 0) {
+            if (c.guild_history && c.guild_history.length > 0) {
                 for (let guid_log of c.guild_history) {
                     switch (guid_log.action) {
                         case 'leaves':

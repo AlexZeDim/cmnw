@@ -60,7 +60,7 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
                                 old_value: guid_log.name,
                                 new_value: '',
                                 action: guid_log.action,
-                                message: `${c.name}@${c.realm} leaves ${guid_log.name} //  Rank: ${guid_log.rank}`,
+                                message: `${c.name}@${c.realm} leaves ${guid_log.name} // Rank: ${guid_log.rank}`,
                                 before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
                                 after: moment(guid_log.date).toISOString(true),
                             })
@@ -90,7 +90,7 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
                                 old_value: '',
                                 new_value: guid_log.name,
                                 action: guid_log.action,
-                                message: `${c.name}@${c.realm} joins ${guid_log.name} //  Rank: ${guid_log.rank}`,
+                                message: `${c.name}@${c.realm} joins ${guid_log.name} // Rank: ${guid_log.rank}`,
                                 before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
                                 after: moment(guid_log.date).toISOString(true),
                             })

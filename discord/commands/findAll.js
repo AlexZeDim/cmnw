@@ -22,12 +22,12 @@ module.exports = {
                 embed.setTitle(_id.toUpperCase());
                 embed.setURL('https://discord.js.org/');
                 for (let i = 0; i < match.length; i++) {
-                    let {guild, guild_rank} = match[i];
+                    let {guild} = match[i];
                     embed.addField(`┌─────────────┐`, `
                     Name: [${match[i].name}](https://discordapp.com)
-                    ${("realm" in match[i]) ? `Realm: ${match[i].realm}` : ``} 
-                    ${guild ? `Guild: [${guild}](https://discordapp.com)` : ``} 
-                    ${guild ? `Rank: ${guild_rank === 0 ? 'GM' : `R${guild_rank}`}` : ``} 
+                    ${("realm" in match[i]) ? `Realm: ${match[i].realm.name}` : ``} 
+                    ${guild ? `Guild: [${guild.name}](https://discordapp.com)` : ``} 
+                    ${guild ? `Rank: ${Number(guild.rank) === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
                     ${("faction" in match[i]) ? `Faction: ${match[i].faction}` : ``} 
                     └─────────────┘
                     `, true);

@@ -7,9 +7,9 @@ module.exports = {
     description: 'PH',
     args: true,
     async execute(message, args) {
-        const params = args.split('@');
+        const [item, realm] = args.split('@');
         let embed = new MessageEmbed();
-        let valuation = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/eva/${params[0]}@${params[1]}`)).then(({data}) => {
+        let valuation = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/eva/${item}@${realm}`)).then(({data}) => {
             let {
                 _id,
                 lastModified,

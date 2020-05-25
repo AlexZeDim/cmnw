@@ -61,8 +61,8 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
                                 new_value: '',
                                 action: guid_log.action,
                                 message: `${c.name}@${c.realm} leaves ${guid_log.name} //  Rank: ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         case 'promoted':
@@ -71,8 +71,8 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
                                 new_value: guid_log.rank,
                                 action: guid_log.action,
                                 message: `${c.name}@${c.realm}#${guid_log.name}:${guid_log.id} was promoted from Rank ${guid_log.rank+1} to Rank ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         case 'demoted':
@@ -81,8 +81,8 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
                                 new_value: guid_log.rank,
                                 action: guid_log.action,
                                 message: `${c.name}@${c.realm}#${guid_log.name}:${guid_log.id} was demoted from Rank: ${guid_log.rank-1} to Rank: ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         case 'joins':
@@ -91,8 +91,8 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
                                 new_value: guid_log.name,
                                 action: guid_log.action,
                                 message: `${c.name}@${c.realm} joins ${guid_log.name} //  Rank: ${guid_log.rank}`,
-                                before: moment(c.date).subtract(2, 'hours').toISOString(true),
-                                after: moment(c.date).toISOString(true),
+                                before: moment(guid_log.date).subtract(2, 'hours').toISOString(true),
+                                after: moment(guid_log.date).toISOString(true),
                             })
                             break;
                         default:

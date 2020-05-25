@@ -36,8 +36,6 @@ const battleNetWrapper = require('battlenet-api-wrapper');
  */
 
 const moment = require('moment');
-const pm2 = require('pm2');
-const path = require('path');
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
@@ -76,6 +74,8 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
                     /**
                      * Launch evaluation process (XVA) as a separate task in PM2
                      */
+                    const pm2 = require('pm2');
+                    const path = require('path');
                     pm2.start({
                         name: `DMA-XVA-${connected_realm_id}`,
                         args: `connected_realm_id ${connected_realm_id}`,

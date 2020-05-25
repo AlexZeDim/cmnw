@@ -63,6 +63,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     character.level = level;
                     character.lastOnline = moment(last_login_timestamp).toISOString(true);
                     character.lastModified = moment(lastModified).toISOString(true);
+                    character.isActive = true;
                     character.statusCode = statusCode;
                     character.ilvl = {
                         eq: average_item_level,
@@ -127,6 +128,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         if (!character.hasOwnProperty('id')) {
             let {id} = await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName)
             character.id = id;
+            character.isActive = true;
         }
         /**
          * isCreated and createdBy

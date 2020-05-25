@@ -17,12 +17,12 @@ router.get('/:i@:r', async function(req, res) {
             let iva = await itemValuationAdjustment(item, realm.connected_realm_id);
             Object.assign(iva, {item: item});
             Object.assign(iva, {realm: realm});
-            res.status(200).json(iva);
+            await res.status(200).json(iva);
         } else {
-            res.status(404).json({error:"not found"});
+            await res.status(404).json({error:"not found"});
         }
     } catch (e) {
-        res.status(500).json(e);
+        await res.status(500).json(e);
     }
 });
 

@@ -133,4 +133,6 @@ schema.index({ "realm.slug": 1, "id": 1 },{name: 'ByGUID'});
 
 let characters_db = mongoose.model('characters', schema);
 
+//mongoose.connection.close()
+
 module.exports = characters_db;

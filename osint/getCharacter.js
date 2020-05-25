@@ -15,7 +15,7 @@ const battleNetWrapper = require('battlenet-api-wrapper');
  * Modules
  */
 
-const {toSlug} = require("../db/setters");
+const {toSlug, fromSlug} = require("../db/setters");
 const crc32 = require('fast-crc32c');
 const moment = require('moment');
 
@@ -141,20 +141,21 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             })
         ])
         if (character_created) {
-            //TODO inactive char or error, check lastModified for that
-            if (character_created.statusCode === 200 && character.statusCode !== 200) {
-
-            }
             delete character.createdBy
             //TODO check timestamp && dont return probably other things are changed
-        } else {
-
         }
-        //FIXME remove later
-        Object.assign(character, characterObject)
+        if (character_byId) {
+            //TODO inactive char or error, check lastMo dified for that
+            if (character_byId.statusCode === 200 && character.statusCode !== 200) {
+
+            }
+        }
+        if (characterObject.logs && characterObject.logs.length) {
+            character.logs = [...characterObject.logs]
+        }
         if (character.statusCode !== 200) {
             //TODO add id request
-            character.name = characterName
+            character.name = fromSlug(characterName);
             let {id, name, slug} = await realms_db.findOne({
                 $or: [
                     { slug: realmSlug },
@@ -183,95 +184,86 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * then inherit all from character_byId to character!
              */
             if ((character.name !== character_byId.name) && (character_created.id !== character_byId.id)) {
-
+                /*** Shadow Copy of inactive character */
+                let character_shadowCopy = Object.assign({}, character_created.toObject())
+                character_shadowCopy._id = `${character_shadowCopy._id}#${character_shadowCopy.id || 0}`;
+                character_shadowCopy.createdBy = `OSINT-shadowCopy`;
+                await characters_db.findByIdAndDelete(character_created._id)
+                await characters_db.create(character_shadowCopy);
+                character_created = null;
+                /** Inherit character logs by ID */
+                character.logs = [...character_byId.logs]
+                /** Add info to logs about rename */
+                character.logs.push({
+                    old_value: character_byId.name,
+                    new_value: character.name,
+                    action: 'rename',
+                    message: `${character_byId.name}@${character.realm} now known as ${character.name}`,
+                    before: character.lastModified,
+                    after: character_byId.lastModified
+                })
+                character.createdBy = updatedBy;
+                /** Delete duplicate (byID) because we create new document */
+                await characters_db.findByIdAndDelete(character_byId._id)
             }
         }
         if (character_byId && !character_created) {
             /**
-             * Renamed character
+             * Renamed character w/o on_inactive
              */
             if (character.name !== character_byId.name) {
-
+                /** Inherit character logs by ID */
+                character.logs = [...character_byId.logs]
+                /** Add info to logs about rename */
+                character.logs.push({
+                    old_value: character_byId.name,
+                    new_value: character.name,
+                    action: 'rename',
+                    message: `${character_byId.name}@${character.realm} now known as ${character.name}`,
+                    before: character.lastModified,
+                    after: character_byId.lastModified
+                })
+                /** Delete duplicate (byID) because we create new document */
+                await characters_db.findByIdAndDelete(character_byId._id)
             }
         }
-
-
-        if (character.statusCode === 200) {
+        /**
+         * Detective:IndexDB
+         */
+        if (character_byId && character.statusCode === 200) {
             /**
-             * Detective:IndexDB
+             * If statusCode to API is 200 && character_byId exists,
+             * but name of character_byId not equal to requested B.net character
+             * then it's rename
              */
-            if (character_byId) {
-                /**
-                 * If statusCode to API is 200 && character_byId exists,
-                 * but name of character_byId not equal to requested B.net character
-                 * then it's rename
-                 */
-                if (character_byId.name !== character.name) {
-                    /**
-                     * Clone character.logs from characterByID to newly created character
-                     */
-                    character.logs = character_byId.logs
-                    if (character_created) {
-                        /**
-                         * And it characterByID exits, but character with the same name already existed (cause inactive)
-                         * then make shadow copy of already existed character and then create it
-                         */
-                        await characters_db.findByIdAndUpdate({
-                                _id: `${characterName}@${realmSlug}`
-                            },
-                            character_created.toObject(),
-                            {
-                                upsert : true,
-                                new: true,
-                                lean: true
-                            });
-                        /**
-                         * Delete the existing (inactive) character
-                         * FIXME not sure that it's a good pattern
-                         */
-                        await characters_db.findByIdAndDelete(`${characterName}@${realmSlug}`)
-                    }
-                    /**
-                     * Add info to logs about rename
-                     */
-                    character.logs.push({
-                        old_value: character_byId.name,
-                        new_value: character.name,
-                        action: 'rename',
-                        message: `${character_byId.name}@${character.realm} now known as ${character.name}`,
-                        before: character.lastModified,
-                        after: character_byId.lastModified
-                    })
-                }
-                if (character_byId.race !== character.race) {
-                    character.logs.push({
-                        old_value: character_byId.race,
-                        new_value: character.race,
-                        action: 'race',
-                        message: `${character.name}@${character.realm} changed race from ${character_byId.race} to ${character.race}`,
-                        before: character.lastModified,
-                        after: character_byId.lastModified
-                    })
-                }
-                if (character_byId.gender !== character.gender) {
-                    character.logs.push({
-                        old_value: character_byId.gender,
-                        new_value: character.gender,
-                        action: 'gender',
-                        message: `${character.name}@${character.realm} swap gender from ${character_byId.gender} to ${character.gender}`,
-                        before: character.lastModified,
-                        after: character_byId.lastModified
-                    })
-                }
-                if (character_byId.faction !== character.faction) {
-                    character.logs.push({
-                        old_value: character_byId.faction,
-                        new_value: character.faction,
-                        action: `${character.name}@${character.realm} changed faction from ${character_byId.faction} to ${character.faction}`,
-                        before: character.lastModified,
-                        after: character_byId.lastModified
-                    })
-                }
+            if (character_byId.race !== character.race) {
+                character.logs.push({
+                    old_value: character_byId.race,
+                    new_value: character.race,
+                    action: 'race',
+                    message: `${character.name}@${character.realm} changed race from ${character_byId.race} to ${character.race}`,
+                    before: character.lastModified,
+                    after: character_byId.lastModified
+                })
+            }
+            if (character_byId.gender !== character.gender) {
+                character.logs.push({
+                    old_value: character_byId.gender,
+                    new_value: character.gender,
+                    action: 'gender',
+                    message: `${character.name}@${character.realm} swap gender from ${character_byId.gender} to ${character.gender}`,
+                    before: character.lastModified,
+                    after: character_byId.lastModified
+                })
+            }
+            if (character_byId.faction !== character.faction) {
+                character.logs.push({
+                    old_value: character_byId.faction,
+                    new_value: character.faction,
+                    action: `${character.name}@${character.realm} changed faction from ${character_byId.faction} to ${character.faction}`,
+                    before: character.lastModified,
+                    after: character_byId.lastModified
+                })
             }
         }
         /**
@@ -292,7 +284,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             lean: true
         });
     } catch (error) {
-        console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
+        console.error(`E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(realmSlug)},${error}`);
     }
 }
 

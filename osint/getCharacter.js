@@ -282,7 +282,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             lean: true
         });
     } catch (error) {
-        console.error(`E,${getCharacter.name},${fromSlug(`${characterName}@${realmSlug}`)},${error}`);
+        console.error(`E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(realmSlug)},${error}`);
     }
 }
 

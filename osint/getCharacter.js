@@ -139,14 +139,15 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             })
         ])
         if (character_created) {
-            //TODO inactive char or error, check lastModified for that
-            if (character_created.statusCode === 200 && character.statusCode !== 200) {
-
-            }
             delete character.createdBy
             //TODO check timestamp && dont return probably other things are changed
         }
-        //FIXME remove later
+        if (character_byId) {
+            //TODO inactive char or error, check lastMo dified for that
+            if (character_byId.statusCode === 200 && character.statusCode !== 200) {
+
+            }
+        }
         if (characterObject.logs && characterObject.logs.length) {
             character.logs = [...characterObject.logs]
         }
@@ -199,6 +200,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     before: character.lastModified,
                     after: character_byId.lastModified
                 })
+                character.createdBy = updatedBy;
                 /** Delete duplicate (byID) because we create new document */
                 await characters_db.findByIdAndDelete(character_byId._id)
             }
@@ -280,7 +282,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             lean: true
         });
     } catch (error) {
-        console.error(`E,${getCharacter.name},${characterName}@${realmSlug},${error}`);
+        console.error(`E,${getCharacter.name},${fromSlug(`${characterName}@${realmSlug}`)},${error}`);
     }
 }
 

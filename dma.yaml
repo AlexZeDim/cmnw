@@ -1,4 +1,12 @@
 apps:
+  - script: ./dma/getValuationsData.js
+    name: 'DMA-getValuationsData'
+    instances: 1
+    watch: true
+    autorestart: true
+    cron_restart: '*/5 * * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000
   - script: ./dma/getAuctionsData.js
     name: 'DMA-getAuctionsData'
     instances: 1

@@ -27,10 +27,13 @@ module.exports = {
 
             let descriptionString = '';
 
-            if (derivative.length) {
+            if (market.orders && market.orders.length) {
+                descriptionString = descriptionString.concat(`*Market pricing is based on ${market.orders.length} ${market.orders.length === 1 ? 'order' : 'orders'}*\n _ _`)
+            }
+            if (derivative && derivative.length) {
                 descriptionString = descriptionString.concat(`*Derivative pricing is based on ${derivative.length} ${derivative.length === 1 ? 'method' : 'methods'}*\n _ _`)
             }
-            if (reagent.premium.length) {
+            if (reagent.premium && reagent.premium.length) {
                 descriptionString = descriptionString.concat(`*Premium pricing is based on ${reagent.premium.length} ${reagent.premium.length === 1 ? 'method' : 'methods'}*\n _ _`)
             }
             embed.setDescription(descriptionString);

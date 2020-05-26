@@ -65,6 +65,8 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ lastModified: -1 },{name: 'TTL'});
+
 let valuations_db = mongoose.model('valuations', schema);
 
 module.exports = valuations_db;

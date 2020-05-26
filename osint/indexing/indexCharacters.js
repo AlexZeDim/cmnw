@@ -39,7 +39,7 @@ const getCharacter = require('../getCharacter');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters (queryFind = {}, queryKeys = {tags: `OSINT-${indexCharacters.name}`}, bulkSize = 10) {
+async function indexCharacters (queryFind = {}, queryKeys = {tags: `OSINT-${indexCharacters.name}`}, bulkSize = 1) {
     try {
         console.time(`OSINT-${indexCharacters.name}`);
         let {token} = await keys_db.findOne(queryKeys);

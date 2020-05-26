@@ -39,7 +39,7 @@ const getGuild = require('../getGuild');
  * @returns {Promise<void>}
  */
 
-async function G (queryFind = {name:"Депортация"}, queryKeys = { tags: `OSINT-indexGuilds` }, bulkSize = 2) {
+async function G (queryFind = {}, queryKeys = { tags: `OSINT-indexGuilds` }, bulkSize = 2) {
     try {
         console.time(`OSINT-${G.name}`);
         const { token } = await keys_db.findOne(queryKeys);

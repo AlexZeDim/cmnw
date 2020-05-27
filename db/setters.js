@@ -4,7 +4,7 @@
  */
 
 exports.toSlug = (string) => {
-    return string.toString().replace(/-+/g, "").replace(/\s+/g, "-").replace(/'+/g, "").toLowerCase();
+    return string.toString().replace(/\s+/g, "-").replace(/'+/g, "").toLowerCase();
 }
 
 /**

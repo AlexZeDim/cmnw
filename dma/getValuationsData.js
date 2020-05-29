@@ -22,15 +22,9 @@ connection.once('open', () => console.log('Connected to database on ' + process.
  * Model importing
  */
 
-const keys_db = require("./../db/keys_db");
 const realms_db = require("./../db/realms_db");
 const auctions_db = require("./../db/auctions_db");
 const valuations_db = require("./../db/valuations_db");
-
-/**
- * B.net wrapper
- */
-const battleNetWrapper = require('battlenet-api-wrapper');
 
 /**
  * Modules
@@ -41,18 +35,14 @@ const XVA = require('./valuation/turing/XVA')
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
- * @param queryKeys
  * @param realmQuery
  * @param bulkSize
  * @returns {Promise<void>}
  */
 
-async function getValuationsData (queryKeys = { tags: `DMA` }, realmQuery = { 'locale': 'ru_RU' }, bulkSize = 10) {
+async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize = 10) {
     try {
         console.time(`DMA-${getValuationsData.name}`);
-        const { _id, secret, token } = await keys_db.findOne(queryKeys);
-        const bnw = new battleNetWrapper();
-        await bnw.init(_id, secret, token, 'eu', 'en_GB');
         await realms_db.aggregate([
             {
                 $match: realmQuery

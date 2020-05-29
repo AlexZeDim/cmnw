@@ -194,9 +194,7 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                     }
                 }
                 if (!guild.members.some(({id}) => id === member.id)) {
-                    console.log(guild.realm.slug, member.id)
                     let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
-                    console.log(character)
                     character.logs.push({
                         old_value: guild.id,
                         action: 'leaves',

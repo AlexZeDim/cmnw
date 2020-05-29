@@ -89,14 +89,14 @@ const VaR = (portfolioEquityCurve, alpha) => {
  * @returns {Promise<void>}
  */
 
-async function contracts_M (arg_realm = 'ru_RU') {
+async function contracts_W (arg_realm = 'ru_RU') {
     try {
-        console.time(`DMA-${contracts_M.name}`);
+        console.time(`DMA-${contracts_W.name}`);
         let [realms, items] = await Promise.all([
             realms_db.distinct('connected_realm_id', {$or: [
-                { 'slug': arg_realm },
-                { 'locale': arg_realm },
-            ]}).lean(),
+                    { 'slug': arg_realm },
+                    { 'locale': arg_realm },
+                ]}).lean(),
             items_db.find({
                 $or: [
                     { _id: 1 },
@@ -110,20 +110,19 @@ async function contracts_M (arg_realm = 'ru_RU') {
             for (let connected_realm_id of realms) {
                 let contract_data = await contracts_db.find({
                     date: {
-                        month: moment().get('month')+1,
+                        week: moment().get('week'),
                     },
                     type: 'D',
                     connected_realm_id: connected_realm_id,
                     item_id: _id
                 }).sort("updatedAt").lean();
                 if (contract_data && contract_data.length) {
-
                     /**
                      * Create new Month contract
                      */
                     let contract = new contracts_db({
-                        _id: `${code}-${moment().format('MMM.YY')}@${connected_realm_id}`,
-                        code: `${code}-${moment().format('MMM.YY')}`,
+                        _id: `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
+                        code: `${code}-${moment().format('WW.YY')}`,
                         item_id: _id,
                         connected_realm_id: connected_realm_id,
                         date: {
@@ -132,7 +131,7 @@ async function contracts_M (arg_realm = 'ru_RU') {
                             month: moment().get('month')+1,
                             year: moment().get('year'),
                         },
-                        type: `M`,
+                        type: `W`,
                     });
 
                     /**
@@ -199,11 +198,11 @@ async function contracts_M (arg_realm = 'ru_RU') {
                         /** Sellers for GOLD (FUNPAY) */
                         if (sellers) {
                             Object.assign(contract_day, {sellers: {
-                                open: sellers.open,
-                                change: sellers.change,
-                                close: sellers.close,
-                                total: sellers.total
-                            }});
+                                    open: sellers.open,
+                                    change: sellers.change,
+                                    close: sellers.close,
+                                    total: sellers.total
+                                }});
                         }
                         /** Data from every Day contract to M Data */
                         data.map(({price, price_size, sellers, orders}) => {
@@ -297,7 +296,7 @@ async function contracts_M (arg_realm = 'ru_RU') {
 
                     await contracts_db.findOneAndUpdate(
                         {
-                            _id: `${code}-${moment().format('MMM.YY')}@${connected_realm_id}`,
+                            _id: `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
                         },
                         contract.toObject(),
                         {
@@ -308,15 +307,15 @@ async function contracts_M (arg_realm = 'ru_RU') {
                         }
                     ).then(i => console.info(`C,${i._id}`))
                 } else {
-                    console.error(`E,${code}-${moment().format('MMM.YY')}@${connected_realm_id}`);
+                    console.error(`E,${code}-${moment().format('WW.YY')}@${connected_realm_id}`);
                 }
             }
         }
         connection.close();
-        console.timeEnd(`DMA-${contracts_M.name}`);
+        console.timeEnd(`DMA-${contracts_W.name}`);
     } catch (err) {
-        console.error(`${contracts_M.name}${err}`);
+        console.error(`${contracts_W.name}${err}`);
     }
 }
 
-contracts_M();
+contracts_W();

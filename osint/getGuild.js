@@ -120,7 +120,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                 /** Members loop */
                 for (let member of members) {
                     let {character, rank} = member
-                    if (character && rank) {
+                    if (member) {
                         /** Is every guild member is in OSINT-DB? */
                         let character_OSINT = await characters_db.findById(toSlug(`${character.name}@${guild.realm.slug}`));
                         /** guild_member object for array.push */

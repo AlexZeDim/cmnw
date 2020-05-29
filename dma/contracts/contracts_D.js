@@ -54,7 +54,6 @@ const standardDeviation = (arr, usePopulation = true) => {
 async function contracts_D (arg_realm = 'ru_RU') {
     try {
         console.time(`DMA-${contracts_D.name}`);
-        let query;
         let [realms, items] = await Promise.all([
             realms_db.distinct('connected_realm_id', {$or: [
                     { 'slug': arg_realm },
@@ -71,6 +70,7 @@ async function contracts_D (arg_realm = 'ru_RU') {
             let code = name.en_GB;
             (ticker) ? (code = ticker) : ('');
             for (let connected_realm_id of realms) {
+                let query;
                 if (ticker === 'GOLD') {
                     query = golds_db.aggregate([
                         {

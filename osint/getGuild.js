@@ -199,12 +199,12 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
             if (guild && guild_created) {
                 let {leaves, promoted, demoted, joins, guild_masters} = await indexMembers(guild, guild_created);
                 guild.guild_log = {
-                    joins: [...guild_created.guild_log.joins, ...joins],
-                    leaves: [...guild_created.guild_log.leaves, ...leaves],
-                    promoted: [...guild_created.guild_log.promoted, ...promoted],
-                    demoted: [...guild_created.guild_log.demoted, ...demoted]
+                    join: [...guild_created.guild_log.join, ...joins],
+                    leave: [...guild_created.guild_log.leave, ...leaves],
+                    promote: [...guild_created.guild_log.promote, ...promoted],
+                    demote: [...guild_created.guild_log.demote, ...demoted]
                 }
-                if (guild_masters.length) {
+                if (guild_masters && guild_masters.length) {
                     guild.log = [...guild_created.log, ...guild_masters];
                 }
             }

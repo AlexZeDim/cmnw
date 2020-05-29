@@ -25,6 +25,12 @@ let schema = new mongoose.Schema({
     item_id: {
         type: Number,
     },
+    date: {
+        day: Number,
+        week: Number,
+        month: Number,
+        year: Number,
+    },
     connected_realm_id: {
         type: Number,
         required: true,

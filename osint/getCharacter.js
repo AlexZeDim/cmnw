@@ -127,7 +127,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             }).catch(e =>(e))
         ]);
         if (!character.hasOwnProperty('id')) {
-            let {id} = await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName)
+            let {id} = await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName).catch(e=>(e))
             character.id = id;
             character.isActive = true;
         }
@@ -177,7 +177,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 Object.assign(character, characterObject)
             }
         }
-
         if (character_byId && character_created) {
             /**
              * Renamed character on inactive

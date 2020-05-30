@@ -34,6 +34,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 async function getCharacter (realmSlug, characterName, characterObject = {}, token= '', updatedBy = 'OSINT-getCharacter', guildRank = false) {
     try {
+        const character_Object = Object.assign({}, characterObject)
         realmSlug = toSlug(realmSlug);
         characterName = toSlug(characterName);
         const bnw = new battleNetWrapper();
@@ -85,26 +86,26 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             ).catch(e => {
                 if (/\d/g.test(e.toString())) character.statusCode = parseFloat(e.toString().match(/[0-9]+/g)[0]);
             }),
-            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> { //TODO unlocked_battle_pet_slots
+            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> {
                 let pets_array = [];
                 let active_pets = [];
                 if (pets && pets.length) {
                     for (let pet of pets) {
                         if ("is_active" in pet) {
                             if ("name" in pet) {
-                                active_pets.push(pet.name)
-                            } else {
-                                active_pets.push(pet.species.name)
+                                active_pets.push(`__${pet.name}`)
                             }
+                            active_pets.push(pet.species.name)
+                            pets_array.push(pet.level)
                         }
                         if ("name" in pet) {
-                            pets_array.push(pet.name)
-                        } else {
-                            pets_array.push(pet.species.name)
+                            pets_array.push(`__${pet.name}`)
                         }
+                        pets_array.push(pet.species.name)
+                        pets_array.push(pet.level)
                     }
-                    character.hash.c = crc32.calculate(Buffer.from(active_pets)).toString(16);
-                    character.hash.a = crc32.calculate(Buffer.from(pets_array)).toString(16);
+                    character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
+                    character.hash.a = crc32.calculate(Buffer.from(pets_array.toString())).toString(16);
                 }
             }).catch(e =>(e)),
             bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).then(({mounts}) => {
@@ -112,7 +113,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 for (let mount of mounts) {
                     mount_array.push(mount.id)
                 }
-                character.hash.b = crc32.calculate(Buffer.from(mount_array)).toString(16);
+                character.hash.b = crc32.calculate(Buffer.from(mount_array.toString())).toString(16);
             }).catch(e =>(e)),
             bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).then(({avatar_url, bust_url, render_url}) => {
                 if (!character.id) {
@@ -150,8 +151,8 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
 
             }
         }
-        if (characterObject.logs && characterObject.logs.length) {
-            character.logs = [...characterObject.logs]
+        if (character_Object.logs && character_Object.logs.length) {
+            character.logs = [...character_Object.logs]
         }
         if (character.statusCode !== 200) {
             //TODO add id request
@@ -167,13 +168,13 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 name: name,
                 slug: slug,
             }
-            if (characterObject && Object.keys(characterObject).length) {
+            if (character_Object && Object.keys(character_Object).length) {
                 /**
                  * If request about certain character isn't successful
                  * but we already have provided values, then we use it.
                  * FIXME it's bad
                  */
-                Object.assign(character, characterObject)
+                Object.assign(character, character_Object)
             }
         }
         if (character_byId && character_created) {
@@ -270,7 +271,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
          */
         if (character.id && character.character_class) {
             let hash_ex = [character.id, character.character_class]
-            character.hash.ex = crc32.calculate(Buffer.from(hash_ex)).toString(16);
+            character.hash.ex = crc32.calculate(Buffer.from(hash_ex.toString())).toString(16);
         }
         console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode} `)
         return await characters_db.findByIdAndUpdate({

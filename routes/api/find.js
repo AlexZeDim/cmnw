@@ -11,7 +11,6 @@ router.get('/:type/:query', async function(req, res) {
         let result = {};
 
         const queryToHash = async (type, query) => {
-            let key = `hash.${type}`
             if (query.includes('@')) {
                 const [n, r] = query.split('@');
                 const { slug } = await realms_db.findOne({$text:{$search: r}});
@@ -26,9 +25,42 @@ router.get('/:type/:query', async function(req, res) {
                     }
                 }
                 let {hash} = character;
-                return {[key]: hash[type]}
+                if (type === 'all') {
+                    delete hash.ex
+                    let and = [];
+                    for (const [key, value] of Object.entries(hash)) {
+                        and.push({[`hash.${key}`]: value})
+                    }
+                    return { $and: and }
+                }
+                if (type === 'any') {
+                    delete hash.ex
+                    let or = [];
+                    for (const [key, value] of Object.entries(hash)) {
+                        or.push({[`hash.${key}`]: value})
+                    }
+                    return { $or: or }
+                }
+                return {[`hash.${type}`]: hash[type]}
             } else {
-                return {[key]: query}
+                if (type === 'and') {
+                    return {
+                        $and: [
+                            {"hash.a": query},
+                            {"hash.b": query},
+                            {"hash.c": query},
+                        ]
+                    }
+                }
+                if (type === 'any') {
+                    const hash_types = ['a', 'b', 'c'];
+                    let or = [];
+                    for (let ht of hash_types) {
+                        or.push({[`hash.${ht}`]: query})
+                    }
+                    return { $or: or }
+                }
+                return {[`hash.${type}`]: query}
             }
         }
 
@@ -54,30 +86,14 @@ router.get('/:type/:query', async function(req, res) {
                 /**
                  * Only character can match all hashes
                  */
-                if (query.includes('@')) {
-                    search = {
-                        $and: [
-                            {"hash.a": query},
-                            {"hash.b": query},
-                            {"hash.c": query},
-                        ]
-                    }
-                }
-                result.match = await characters_db.find({hash: search}).limit(50).lean();
+                search = await queryToHash(type, query);
+                result.match = await characters_db.find(search).limit(50).lean();
                 break;
             case 'any':
                 /**
                  * Only hash can match any hash fields
                  */
-                if (!query.includes('@')) {
-                    search = {
-                        $or: [
-                            {"hash.a": query},
-                            {"hash.b": query},
-                            {"hash.c": query},
-                        ]
-                    }
-                }
+                search = await queryToHash(type, query);
                 result.match = await characters_db.find({hash: search}).limit(50).lean();
                 break;
             default:

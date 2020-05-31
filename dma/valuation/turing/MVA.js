@@ -1,3 +1,8 @@
+/**
+ * Modules
+ */
+const {Round2} = require("../../../db/setters")
+
 /***
  * TODO RECURSIVE CONTROL
  * @param method
@@ -64,7 +69,7 @@ async function methodValuationAdjustment (
                         if ("value" in iva.reagent) {
                             Object.assign(reagent_item, {
                                 price: iva.reagent.value,
-                                value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
+                                value: Round2(iva.reagent.value * reagent_item.quantity)
                             });
                         } else {
                             /** failsafe */
@@ -72,7 +77,7 @@ async function methodValuationAdjustment (
                                 const {value} = iva.reagent.premium.reduce((p, c) => p.wi > c.wi ? p : c);
                                 Object.assign(reagent_item, {
                                     price: value,
-                                    value: parseFloat((value * reagent_item.quantity).toFixed(2))
+                                    value: Round2(value * reagent_item.quantity)
                                 });
                             } else {
                                 /** failsafe */
@@ -107,9 +112,9 @@ async function methodValuationAdjustment (
                 if ("reagent" in iva) {
                     Object.assign(reagent_item, {
                         price: iva.reagent.value,
-                        value: parseFloat((iva.reagent.value * reagent_item.quantity).toFixed(2))
+                        value: Round2(iva.reagent.value * reagent_item.quantity)
                     });
-                    queue_cost += Number((iva.reagent.value * reagent_item.quantity).toFixed(2));
+                    queue_cost += Round2(iva.reagent.value * reagent_item.quantity);
                 } else {
                     /** failsafe */
                     Object.assign(reagent_item, {
@@ -124,15 +129,15 @@ async function methodValuationAdjustment (
          * End of loop
          * Proc chance
          */
-        let n_value = Number((queue_cost / method.item_quantity).toFixed(2));
+        let n_value = Round2(queue_cost / method.item_quantity);
         if (method.expansion === 'BFA' && method.profession === 'ALCH' && method.rank === 3) {
-            n_value = Number(((queue_cost / method.item_quantity) * 0.6).toFixed(2));
+            n_value = Round2((queue_cost / method.item_quantity) * 0.6);
         }
         return {
             _id: method._id,
             rank: method.rank || 0,
-            queue_cost: Number(queue_cost.toFixed(2)),
-            queue_quantity: Number(method.item_quantity),
+            queue_cost: Round2(queue_cost),
+            queue_quantity: parseInt(method.item_quantity),
             nominal_value: n_value,
             lastModified: lastModified,
             reagent_items: reagent_items,

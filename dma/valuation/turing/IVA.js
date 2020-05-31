@@ -220,7 +220,7 @@ async function itemValuationAdjustment (
                         reagentArray.push({name: 'market', value: pricing.market.price_size});
                         break;
                     case 'derivative':
-                        let ctd = {min: Number(pricing.derivative[0].nominal_value), index: 0};
+                        let ctd = {min: pricing.derivative[0].nominal_value, index: 0};
                         pricing.derivative.forEach(({nominal_value, rank}, i) => {
                             if (nominal_value < ctd.min) {
                                 ctd.min = nominal_value;

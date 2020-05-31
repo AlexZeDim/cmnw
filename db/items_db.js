@@ -113,7 +113,7 @@ schema.index(
     },
     {
         weights: {
-            "ticker": 10,
+            "ticker": 1,
             "name.en_GB": 1,
             "name.ru_RU": 1
         },

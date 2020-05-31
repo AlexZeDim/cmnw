@@ -76,13 +76,13 @@ async function itemValuationAdjustment (
             _id: `${item._id}@${connected_realm_id}`,
             item_id: item._id,
             connected_realm_id: connected_realm_id,
-            asset_class: item.v_class,
+            asset_class: item.v_class || [],
             lastModified: lastModified
         });
         /***
          * Vendor Valuation Adjustment
          */
-        if (item.v_class.some(v_class => v_class === 'VENDOR') || item.v_class.some(v_class => v_class === 'CONST')) {
+        if (pricing.asset_class.some(v_class => v_class === 'VENDOR') || pricing.asset_class.some(v_class => v_class === 'CONST')) {
             /** check vendor price in*/
             pricing.vendor.buy_price = item.purchase_price;
         }

@@ -14,51 +14,38 @@ const valuations_db = require("../../db/valuations_db");
  * Modules
  */
 
-const charts = require("../../dma/charts.js");
-const auctionsData = require("../../dma/auctions/auctionsQuotes.js");
+const clusterChartData = require("../../dma/getClusterChartData.js");
+const auctionsQuotes = require("../../dma/auctions/auctionsQuotes.js");
+const itemValuationAdjustment = require("../../dma/valuation/turing/IVA");
 
 
 router.get('/:i@:r', async function(req, res) {
     try {
         const {i, r} = req.params;
-        let api = {};
+        let response = {};
         let requestPromises = [];
-        let asyncPromises = [];
         isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}},{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).lean().exec())) : (requestPromises.push(items_db.findById(i).lean().exec()));
         isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));
-        let [item, {connected_realm_id}] = await Promise.all(requestPromises);
-        let {_id, is_auctionable, is_commdty, expansion} = item;
-        if (is_auctionable && connected_realm_id) {
-            asyncPromises.push(auctionsData(_id, connected_realm_id).then(d => { return {quotes: d[0] , market: d[1]} }));
-            /**
-             * Chart for commodities
-             */
-            if (is_commdty === true) {
-                asyncPromises.push(charts(_id, connected_realm_id).then(r => { return {chart: r} }));
-            } else {
-                //TODO chart for non commodity
-            }
-            /**
-             * Contracts and Valuations
-             */
-            if (is_commdty === true && expansion === 'BFA') {
-                asyncPromises.push(
-                    contracts_db.find({item_id: _id, connected_realm_id: connected_realm_id, type: 'D'},{
-                        "_id": 1,
-                        "code": 1
-                    }).sort({updatedAt: -1}).limit(5).lean().then(c => { return {contracts_d: c}} ),
-                    valuations_db.findById(`${_id}@${connected_realm_id}`).lean().then(v => { return {valuation: v}} )
-                );
-
-            }
-            for await (let promise of asyncPromises) {
-                Object.assign(api, promise)
-            }
+        let [item, realm] = await Promise.all(requestPromises);
+        if (item && realm) {
+            Object.assign(response, {item: item})
+            Object.assign(response, {realm: realm})
+            await Promise.allSettled([
+                itemValuationAdjustment(item, realm.connected_realm_id).then(iva => Object.assign(response, {valuation: iva})),
+                clusterChartData(item._id, realm.connected_realm_id).then(chart => Object.assign(response, {chart: chart})),
+                auctionsQuotes(item._id, realm.connected_realm_id).then(quotes => Object.assign(response, {quotes: quotes})),
+                contracts_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, type: 'D'},{
+                    "_id": 1,
+                    "code": 1,
+                    "connected_realm_id": 1
+                }).sort({updatedAt: -1}).limit(5).lean().then(contracts => Object.assign(response, {contracts_day: contracts}))
+            ])
+            await res.status(200).json(response);
+        } else {
+            await res.status(404).json({error: "not found"});
         }
-        Object.assign(api, {item: item});
-        await res.status(200).json(api);
     } catch (e) {
-        await res.status(404).json(e);
+        await res.status(500).json(e);
     }
 });
 

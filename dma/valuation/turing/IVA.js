@@ -1,8 +1,18 @@
+/**
+ * Model importing
+ */
+
 const valuations = require("../../../db/valuations_db");
+
+/**
+ * Modules
+ */
+
+const moment = require('moment');
 const getPricingMethods = require("../getPricingMethods");
 const premiumSingleName = require("./premiumSingleName");
 const auctionsData  = require('../../auctions/auctionsData');
-const moment = require('moment');
+const {Round2} = require("../../../db/setters")
 
 /**
  *
@@ -60,7 +70,7 @@ async function itemValuationAdjustment (
             }
         }
         /**
-         * If not valuation found then start evaluation process
+         * If no valuation found then start evaluation process
          */
         pricing = new valuations({
             _id: `${item._id}@${connected_realm_id}`,
@@ -121,9 +131,9 @@ async function itemValuationAdjustment (
                     if (mva.premium_items.length) {
                         /** For all premium reagents without valuation in method.. */
                         let w_premium = {
-                            premium: Number(((pricing.market.price_size * 0.95) - (mva.nominal_value)).toFixed(2)),
-                            queue_cost: Number(((pricing.market.price_size * 0.95) * mva.queue_quantity).toFixed(2)),
-                            nominal_value: Number((pricing.market.price_size * 0.95).toFixed(2)),
+                            premium: Round2((pricing.market.price_size * 0.95) - (mva.nominal_value)),
+                            queue_cost: Round2((pricing.market.price_size * 0.95) * mva.queue_quantity),
+                            nominal_value: Round2(pricing.market.price_size * 0.95),
                         };
                         Object.assign(mva, w_premium);
                     }
@@ -165,8 +175,8 @@ async function itemValuationAdjustment (
                         /** If premium have PRVA */
                         pricing.reagent.premium.push({
                             _id: single_premium._id,
-                            value: Number((((min_size * 0.95) * single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity).toFixed(2)),
-                            wi: Number(((single_premium.premium_items[0].quantity / single_premium.queue_quantity) * quantity).toFixed(3))
+                            value: Round2(((min_size * 0.95) * single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity),
+                            wi: Round2((single_premium.premium_items[0].quantity / single_premium.queue_quantity) * quantity)
                         });
                     }
                 }
@@ -295,14 +305,14 @@ async function itemValuationAdjustment (
                 if (in_ === 'derivative') {
                     if (k !== 'yieldReagent') {
                         pricing.derivative.map(method => {
-                            Object.assign(method, {[k]: Number((((y_out - method.nominal_value) / method.nominal_value) * 100).toFixed(2))});
+                            Object.assign(method, {[k]: Round2(((y_out - method.nominal_value) / method.nominal_value) * 100)});
                         });
                     }
                 }
                 if (out_ === 'reagent') {
                     y_out = pricing.reagent.value
                 }
-                pricing[in_][k] = Number((((y_out - y_delimiter) / y_delimiter) * 100).toFixed(2));
+                pricing[in_][k] = Round2(((y_out - y_delimiter) / y_delimiter) * 100);
             }
         }
         /** END of YVA */

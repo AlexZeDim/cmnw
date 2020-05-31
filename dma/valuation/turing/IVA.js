@@ -317,13 +317,14 @@ async function itemValuationAdjustment (
         }
         /** END of YVA */
         return await valuations.findByIdAndUpdate({
-                _id: pricing._id
-            },
-            pricing.toObject(), {
-                upsert : true,
-                new: true,
-                lean: true
-            });
+            _id: pricing._id
+        },
+        pricing.toObject(),
+        {
+            upsert : true,
+            new: true,
+            lean: true
+        });
     } catch (e) {
         console.log(e);
     }

@@ -52,6 +52,9 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
             let character_Object = {
                 logs: []
             }
+            if ("id" in c) {
+                character_Object.id = c.id
+            }
             if (c.guild_history && c.guild_history.length > 0) {
                 c.guild_history.shift()
                 for (let guid_log of c.guild_history) {

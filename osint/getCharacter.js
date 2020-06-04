@@ -151,6 +151,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
 
             }
         }
+        //TODO only for migrations
         if (character_Object.logs && character_Object.logs.length) {
             character.logs = [...character_Object.logs]
         }

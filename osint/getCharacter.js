@@ -146,7 +146,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             //TODO check timestamp && dont return probably other things are changed
         }
         if (character_byId) {
-            //TODO inactive char or error, check lastMo dified for that
+            //TODO inactive char or error, check lastModified for that
             if (character_byId.statusCode === 200 && character.statusCode !== 200) {
 
             }

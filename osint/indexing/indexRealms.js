@@ -42,38 +42,72 @@ async function indexRealms () {
         const { _id, secret, token } = await keys_db.findOne({ tags: `Depo` });
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', 'en_GB');
+
+        const realmsTicker = new Map([
+            ["Gordunni", 'GRDNNI'],
+            ["Lich King", 'LCHKNG'],
+            ["Soulflayer", 'SLFLYR'],
+            ["Deathguard", 'DTHGRD'],
+            ["Deepholm", 'DEPHLM'],
+            ["Greymane", 'GREYMN'],
+            ["Galakrond", 'GLKRND'],
+            ["Howling Fjord", 'HWFJRD'],
+            ["Razuvious", 'RAZUVS'],
+            ["Deathweaver", 'DTHWVR'],
+            ["Fordragon", 'FRDRGN'],
+            ["Borean Tundra", 'BRNTND'],
+            ["Azuregos", 'AZURGS'],
+            ["Booty Bay", 'BTYBAY'],
+            ["Thermaplugg", 'TRMPLG'],
+            ["Grom", 'GROM'],
+            ["Goldrinn", 'GLDRNN'],
+            ["Blackscar", 'BLKSCR'],
+        ]);
+
         let {realms} = await bnw.WowGameData.getRealmsIndex();
-        for (const {slug} of realms) {
+        for (const {id, slug} of realms) {
             await bnw.init(_id, secret, token, 'eu', 'en_GB');
-            let realm = await bnw.WowGameData.getRealm(slug);
-            delete realm["_links"];
-            realm.region = realm.region.name;
-            realm.type = realm.type.name;
-            realm.locale = realm.locale.match(/../g).join('_');
-            let connected = await bnw.WowGameData.getConnectedRealm(parseInt(realm["connected_realm"].href.replace(/\D/g, "")));
-            realm.connected_realm_id = connected.id;
-            realm.has_queue = connected.has_queue;
-            realm.status = connected.status.name;
-            realm.population = connected.population.name;
-            realm.connected_realm = connected["realms"].map(({slug}) => {
-                return slug
-            });
-            if (realm.locale !== 'en_GB') {
-                await bnw.init(_id, secret, token, 'eu', realm.locale);
-                let {name} = await bnw.WowGameData.getRealm(slug);
-                realm.name_locale = name;
-                realm.slug_locale = name;
-            } else {
-                realm.name_locale = realm.name;
-                realm.slug_locale = realm.name;
-            }
+            let realm = new realms_db({
+                _id: id,
+            })
+            await bnw.WowGameData.getRealm(slug).then(async r => {
+                let connected = await bnw.WowGameData.getConnectedRealm(parseInt(realm["connected_realm"].href.replace(/\D/g, "")));
+                realm.name = r.name;
+                realm.category = r.category;
+                realm.timezone = r.timezone;
+                realm.is_tournament = r.is_tournament
+
+                if (realmsTicker.has(r.name)) {
+                    realm.ticker = realmsTicker.get(r.name)
+                }
+
+                realm.region = r.region.name;
+                realm.type = r.type.name;
+                realm.locale = r.locale.match(/../g).join('_');
+
+                realm.connected_realm_id = connected.id;
+                realm.has_queue = connected.has_queue;
+                realm.status = connected.status.name;
+                realm.population = connected.population.name;
+                realm.connected_realm = connected["realms"].map(({slug}) => slug);
+
+                if (r.locale !== 'enGB') {
+                    await bnw.init(_id, secret, token, 'eu', realm.locale);
+                    let {name} = await bnw.WowGameData.getRealm(slug);
+                    realm.name_locale = name;
+                    realm.slug_locale = name;
+                } else {
+                    realm.name_locale = realm.name;
+                    realm.slug_locale = realm.name;
+                }
+
+            })
             await realms_db.findByIdAndUpdate(realm.id,
-                realm,
+                realm.toObject(),
             {
                 upsert : true,
                 new: true,
                 runValidators: true,
-                setDefaultsOnInsert: true,
                 lean: true
             }).then(rl => console.info(`C,${rl._id},${rl.slug}`));
         }

@@ -45,7 +45,12 @@ async function T (queryFind = {statusCode: 200}, queryKeys = {tags: `OSINT-index
         let {token} = await keys_db.findOne(queryKeys);
         await characters_old.find(queryFind).sort({updatedAt: 1}).lean().cursor({batchSize: bulkSize}).eachAsync(async (c) => {
             const [characterName, realmSlug] = c._id.split('@');
-            let createdBy = ''
+            let createdBy;
+            if (c.createdBy) {
+                createdBy = c.createdBy
+            } else {
+                createdBy = 'OSINT-indexCharacters'
+            }
             if ("createdBy" in c) {
                 createdBy = c.createdBy.replace(/VOLUSPA/gi, 'OSINT')
             }

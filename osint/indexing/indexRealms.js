@@ -71,7 +71,7 @@ async function indexRealms () {
                 _id: id,
             })
             await bnw.WowGameData.getRealm(slug).then(async r => {
-                let connected = await bnw.WowGameData.getConnectedRealm(parseInt(realm["connected_realm"].href.replace(/\D/g, "")));
+                let connected = await bnw.WowGameData.getConnectedRealm(parseInt(r["connected_realm"].href.replace(/\D/g, "")));
                 realm.name = r.name;
                 realm.category = r.category;
                 realm.timezone = r.timezone;

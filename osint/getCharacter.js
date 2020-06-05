@@ -274,7 +274,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             let hash_ex = [character.id, character.character_class]
             character.hash.ex = crc32.calculate(Buffer.from(hash_ex.toString())).toString(16);
         }
-        console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode} `)
+        console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`)
         return await characters_db.findByIdAndUpdate({
             _id: character._id
         },

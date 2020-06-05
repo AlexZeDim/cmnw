@@ -208,6 +208,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                     guild.log = [...guild_created.log, ...guild_masters];
                 }
             }
+            console.info(`U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${guild.statusCode}`)
             /** End of request status */
             return await guild_db.findByIdAndUpdate({
                     _id: guild._id

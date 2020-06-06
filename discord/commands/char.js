@@ -17,6 +17,7 @@ module.exports = {
                 guild,
                 character_class,
                 level,
+                realm,
                 ilvl,
                 spec,
                 gender,
@@ -31,8 +32,8 @@ module.exports = {
             if (guild) {
                 embed.setTitle(`${guild.name.toUpperCase()} // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`);
             }
-            embed.setAuthor(_id.toUpperCase(), '', 'https://discord.js.org')
-            embed.setURL('https://discord.js.org/');
+            embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${realm.slug}/${name}`))
+            embed.setURL(encodeURI(`https://${process.env.domain}/guild/${realm.slug}/${guild.name}`));
             if (media) {
                 embed.setThumbnail(media.avatar_url);
             }

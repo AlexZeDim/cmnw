@@ -12,6 +12,9 @@ async function indexMembers (guild = {}, guildCreated = {}) {
         }
         if ((guild.members && guild.members.length) && (guildCreated.members && guildCreated.members.length)) {
             for (let member of guild.members) {
+                /**
+                 * If member exists in OSINT-DB data
+                 */
                 if (guildCreated.members.some(({id}) => id === member.id)) {
                     let member_old = guildCreated.members.find(({id}) => id === member.id)
                     if (member.rank > member_old.rank) {
@@ -20,15 +23,17 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                          */
                         if (member_old.rank !== 0) {
                             let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
-                            character.logs.push({
-                                old_value: member_old.rank,
-                                new_value: member.rank,
-                                action: 'demoted',
-                                message: `${character.name}@${character.realm.name}#${guild.name}:${guild.id} was demoted from Rank: ${member_old.rank} to Rank: ${member.rank}`,
-                                after: moment(guild.lastModified).toISOString(true),
-                                before: moment(guildCreated.lastModified).toISOString(true),
-                            })
-                            character.save();
+                            if (character) {
+                                character.logs.push({
+                                    old_value: member_old.rank,
+                                    new_value: member.rank,
+                                    action: 'demoted',
+                                    message: `${character.name}@${character.realm.name}#${guild.name}:${guild.id} was demoted from Rank: ${member_old.rank} to Rank: ${member.rank}`,
+                                    after: moment(guild.lastModified).toISOString(true),
+                                    before: moment(guildCreated.lastModified).toISOString(true),
+                                })
+                                character.save();
+                            }
                             /**
                              * RETURN demoted
                              */
@@ -38,15 +43,17 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                     if (member.rank < member_old.rank) {
                         if (member.rank !== 0) {
                             let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
-                            character.logs.push({
-                                old_value: member_old.rank,
-                                new_value: member.rank,
-                                action: 'promoted',
-                                message: `${character.name}@${character.realm.name}#${guild.name}:${guild.id} was promoted from Rank: ${member_old.rank} to Rank: ${member.rank}`,
-                                after: moment(guild.lastModified).toISOString(true),
-                                before: moment(guildCreated.lastModified).toISOString(true),
-                            })
-                            character.save();
+                            if (character) {
+                                character.logs.push({
+                                    old_value: member_old.rank,
+                                    new_value: member.rank,
+                                    action: 'promoted',
+                                    message: `${character.name}@${character.realm.name}#${guild.name}:${guild.id} was promoted from Rank: ${member_old.rank} to Rank: ${member.rank}`,
+                                    after: moment(guild.lastModified).toISOString(true),
+                                    before: moment(guildCreated.lastModified).toISOString(true),
+                                })
+                                character.save();
+                            }
                             /**
                              * RETURN promoted
                              */
@@ -55,14 +62,16 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                     }
                 } else {
                     let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
-                    character.logs.push({
-                        new_value: guild.id,
-                        action: 'joins',
-                        message: `${character.name}@${character.realm.name} joins ${guild.name} //  Rank: ${member.rank}`,
-                        after: moment(guild.lastModified).toISOString(true),
-                        before: moment(guildCreated.lastModified).toISOString(true),
-                    })
-                    character.save();
+                    if (character) {
+                        character.logs.push({
+                            new_value: guild.id,
+                            action: 'joins',
+                            message: `${character.name}@${character.realm.name} joins ${guild.name} //  Rank: ${member.rank}`,
+                            after: moment(guild.lastModified).toISOString(true),
+                            before: moment(guildCreated.lastModified).toISOString(true),
+                        })
+                        character.save();
+                    }
                     /**
                      * RETURN joins
                      */
@@ -195,14 +204,16 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                 }
                 if (!guild.members.some(({id}) => id === member.id)) {
                     let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
-                    character.logs.push({
-                        old_value: guild.id,
-                        action: 'leaves',
-                        message: `${character.name}@${character.realm} leaves ${guild.name} // Rank: ${member.rank}`,
-                        after: moment(guild.lastModified).toISOString(true),
-                        before: moment(guildCreated.lastModified).toISOString(true),
-                    })
-                    character.save();
+                    if (character) {
+                        character.logs.push({
+                            old_value: guild.id,
+                            action: 'leaves',
+                            message: `${character.name}@${character.realm} leaves ${guild.name} // Rank: ${member.rank}`,
+                            after: moment(guild.lastModified).toISOString(true),
+                            before: moment(guildCreated.lastModified).toISOString(true),
+                        })
+                        character.save();
+                    }
                     /**
                      * RETURN leaves
                      */

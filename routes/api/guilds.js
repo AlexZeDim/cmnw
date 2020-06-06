@@ -20,7 +20,7 @@ router.get('/:g@:r', async function(req, res) {
         let { slug } = await realms_db.findOne({$text:{$search: r}});
         if (g && slug) {
             let guildData = await guilds_db.findById(`${g.toLowerCase()}@${slug}`).lean();
-            if (!guildData || moment(guildData.lastModified).isBefore(moment().subtract(5, 'days'))) {
+            if (!guildData || moment(guildData.lastModified).isBefore(moment().subtract(32, 'days'))) {
                 const getGuild = require('../../osint/getGuild');
                 const keys_db = require("../../db/keys_db");
                 const { token } = await keys_db.findOne({tags: `OSINT-indexGuilds`});

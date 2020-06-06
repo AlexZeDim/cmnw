@@ -3,7 +3,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 module.exports = {
-    name: 'findAll',
+    name: 'findA',
     description: 'This command will find out all twinks for characters',
     args: true,
     async execute(message, args) {
@@ -13,21 +13,21 @@ module.exports = {
         let embed = new MessageEmbed();
         let endpoint;
         if (query) {
-            endpoint = `http://${process.env.localhost}:3030/api/findAll/${query}`
+            endpoint = `http://${process.env.localhost}:3030/api/find/a/${query}`
             if (realm_arg) {
                 endpoint = endpoint.concat(`@${realm_arg}`)
             }
             await axios.get(encodeURI(endpoint)).then(({data}) => {
                 let { _id, match } = data;
                 embed.setTitle(_id.toUpperCase());
-                embed.setURL('https://discord.js.org/');
+                embed.setURL(`https://${process.env.domain}/find/a/${query}`);
                 for (let i = 0; i < match.length; i++) {
                     let {guild} = match[i];
                     embed.addField(`┌─────────────┐`, `
-                    Name: [${match[i].name}](https://discordapp.com)
+                    Name: [${match[i].name}](https://${process.env.domain}/character/${match[i].realm.slug}/${match[i].name})
                     ${("realm" in match[i]) ? `Realm: ${match[i].realm.name}` : ``} 
-                    ${guild ? `Guild: [${guild.name}](https://discordapp.com)` : ``} 
-                    ${guild ? `Rank: ${Number(guild.rank) === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
+                    ${guild ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${match[i].realm.slug}/${guild.slug})` : ``} 
+                    ${guild ? `Rank: ${guild.rank === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
                     ${("faction" in match[i]) ? `Faction: ${match[i].faction}` : ``} 
                     └─────────────┘
                     `, true);

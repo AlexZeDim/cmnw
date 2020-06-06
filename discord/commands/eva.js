@@ -37,8 +37,7 @@ module.exports = {
                 descriptionString = descriptionString.concat(`*Premium pricing is based on ${reagent.premium.length} ${reagent.premium.length === 1 ? 'method' : 'methods'}*\n _ _`)
             }
             embed.setDescription(descriptionString);
-            //embed.setURL('https://discord.js.org/');
-            //embed.setColor('#333333');
+            embed.setURL(encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB}`));
             if ("icon" in item) {
                 embed.setThumbnail(item.icon);
             }

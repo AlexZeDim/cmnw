@@ -100,7 +100,7 @@ async function contracts_M (arg_realm = 'ru_RU') {
             items_db.find({
                 $or: [
                     { _id: 1 },
-                    { expansion:'BFA', asset_class: 'COMMDTY', is_commdty: true }
+                    { expansion: 'BFA', is_commdty: true }
                 ]
             }).lean()
         ]);
@@ -109,9 +109,7 @@ async function contracts_M (arg_realm = 'ru_RU') {
             (ticker) ? (code = ticker) : ('');
             for (let connected_realm_id of realms) {
                 let contract_data = await contracts_db.find({
-                    date: {
-                        month: moment().get('month')+1,
-                    },
+                    "date.month": moment().get('month')+1,
                     type: 'D',
                     connected_realm_id: connected_realm_id,
                     item_id: _id

@@ -121,6 +121,8 @@ schema.index(
     }
 );
 
+schema.index({ expansion: 1, is_commdty: 1 },{name: 'Contracts'});
+
 let items_db = mongoose.model('items', schema);
 
 module.exports = items_db;

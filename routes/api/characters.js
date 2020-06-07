@@ -23,7 +23,7 @@ router.get('/:n@:r', async function(req, res) {
                 "name": n.toLowerCase(),
                 "realm.slug": slug
             }).lean();
-            if (!characterData || moment(characterData.lastModified).isBefore(moment().subtract(3, 'days'))) {
+            if (!characterData || moment(characterData.lastModified).isBefore(moment().subtract(30, 'days'))) {
                 const getCharacter = require('../../osint/getCharacter');
                 const keys_db = require("../../db/keys_db");
                 const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});

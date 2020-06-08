@@ -23,7 +23,7 @@ router.get('/:i-:dwm.:my@:r', async (req, res) => {
                         item_id: _id
                     }
                 ]}).lean();
-            contract.realmName = realm.name;
+            contract.realm = realm;
             await res.status(200).json(contract);
         }
     } catch (e) {

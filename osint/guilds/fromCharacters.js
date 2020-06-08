@@ -60,7 +60,7 @@ async function fromCharacters (queryFind = {locale: "ru_RU"}, queryKeys = { tags
                     /**
                      * Check guild before insert
                      */
-                    let guild = guilds_db.findById(toSlug(`${guild_name}@${realm_slug}`))
+                    let guild = guilds_db.findById(toSlug(`${guild_name}@${realm_slug}`)).lean()
                     if (!guild) {
                         await getGuild(realm_slug, guild_name, token, `OSINT-${fromCharacters.name}`);
                     }

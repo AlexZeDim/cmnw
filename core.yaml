@@ -2,7 +2,6 @@ apps:
   - script: ./bin/getTokens.js
     name: 'CORE-getToken'
     instances: 1
-    watch: true
     autorestart: true
     max_memory_restart: '100M'
     cron_restart: '*/1 * * * *'

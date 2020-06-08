@@ -2,7 +2,6 @@ apps:
   - script: ./dma/getValuationsData.js
     name: 'DMA-getValuationsData'
     instances: 1
-    watch: true
     autorestart: true
     cron_restart: '*/5 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -10,7 +9,6 @@ apps:
   - script: ./dma/getAuctionsData.js
     name: 'DMA-getAuctionsData'
     instances: 1
-    watch: true
     autorestart: true
     cron_restart: '*/10 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -18,7 +16,6 @@ apps:
   - script: ./dma/getGoldData.js
     name: 'DMA-getGoldData'
     instances: 1
-    watch: true
     autorestart: true
     cron_restart: '00 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -26,7 +23,6 @@ apps:
   - script: ./dma/contracts/contracts_D.js
     name: 'DMA-contracts_D'
     instances: 1
-    watch: true
     autorestart: true
     cron_restart: '*/30 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -34,7 +30,6 @@ apps:
   - script: ./dma/contracts/contracts_W.js
     name: 'DMA-contracts_W'
     instances: 1
-    watch: true
     autorestart: true
     cron_restart: '00 */6 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -42,7 +37,6 @@ apps:
   - script: ./dma/contracts/contracts_M.js
     name: 'DMA-contracts_M'
     instances: 1
-    watch: true
     autorestart: true
     cron_restart: '00 00 01 */1 *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

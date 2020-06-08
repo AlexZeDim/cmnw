@@ -23,6 +23,7 @@ router.get('/:i@:r', async function(req, res) {
     try {
         const {i, r} = req.params;
         let response = {};
+        let contracts = [];
         let requestPromises = [];
         isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}},{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).lean().exec())) : (requestPromises.push(items_db.findById(i).lean().exec()));
         isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));
@@ -37,9 +38,23 @@ router.get('/:i@:r', async function(req, res) {
                 contracts_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, type: 'D'},{
                     "_id": 1,
                     "code": 1,
+                    "type": 1,
                     "connected_realm_id": 1
-                }).sort({updatedAt: -1}).limit(5).lean().then(contracts => Object.assign(response, {contracts_day: contracts}))
+                }).sort({updatedAt: -1}).limit(3).lean().then(contracts_day => contracts = [...contracts, ...contracts_day]),
+                contracts_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, type: 'W'},{
+                    "_id": 1,
+                    "code": 1,
+                    "type": 1,
+                    "connected_realm_id": 1
+                }).sort({updatedAt: -1}).limit(1).lean().then(contracts_week => contracts = [...contracts, ...contracts_week]),
+                contracts_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, type: 'M'},{
+                    "_id": 1,
+                    "code": 1,
+                    "type": 1,
+                    "connected_realm_id": 1
+                }).sort({updatedAt: -1}).limit(1).lean().then(contracts_month => contracts = [...contracts, ...contracts_month])
             ])
+            Object.assign(response, {contracts: contracts})
             await res.status(200).json(response);
         } else {
             await res.status(404).json({error: "not found"});

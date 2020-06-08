@@ -24,10 +24,10 @@ router.get('/:i-:dwm.:my@:r', async (req, res) => {
                     }
                 ]}).lean();
             contract.realmName = realm.name;
-            res.status(200).json(contract);
+            await res.status(200).json(contract);
         }
     } catch (e) {
-        res.status(404).json(e);
+        await res.status(404).json(e);
     }
 });
 

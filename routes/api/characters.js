@@ -21,6 +21,7 @@ router.get('/:n@:r', async function(req, res) {
         if (n && slug) {
             let characterData = await characters_db.findOne({
                 "name": n.toLowerCase(),
+
                 "realm.slug": slug
             }).lean();
             if (!characterData || moment(characterData.lastModified).isBefore(moment().subtract(30, 'days'))) {

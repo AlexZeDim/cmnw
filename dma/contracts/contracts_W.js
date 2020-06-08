@@ -59,7 +59,7 @@ const arithmeticReturns = portfolioEquityCurve => {
     let returns = new Array(portfolioEquityCurve.length);
     returns[0] = 0;
     for (let i = 1; i < portfolioEquityCurve.length; ++i) {
-        returns[i] = Number((portfolioEquityCurve[i] - portfolioEquityCurve[i-1])/portfolioEquityCurve[i-1]);
+        returns[i] = ((portfolioEquityCurve[i] - portfolioEquityCurve[i-1])/portfolioEquityCurve[i-1]);
     }
     return returns;
 };

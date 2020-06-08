@@ -215,10 +215,6 @@ async function contracts_M (arg_realm = 'ru_RU') {
                             if (sellers) sellers.map(x => sellersArray.add(x))
                         });
                         dataArray.push(contract_day);
-                        /** Clear contract_data Object{} */
-                        for (let key in contract_day) {
-                            delete contract_day[key];
-                        }
                     });
 
                     contract.price = {

@@ -68,7 +68,9 @@ async function contracts_D (arg_realm = 'ru_RU') {
         ]);
         for (let {_id, ticker, name} of items) {
             let code = name.en_GB;
-            (ticker) ? (code = ticker) : ('');
+            if (ticker) {
+                code = ticker
+            }
             for (let connected_realm_id of realms) {
                 let query;
                 if (ticker === 'GOLD') {

@@ -106,7 +106,9 @@ async function contracts_W (arg_realm = 'ru_RU') {
         ]);
         for (let {_id, ticker, name} of items) {
             let code = name.en_GB;
-            (ticker) ? (code = ticker) : ('');
+            if (ticker) {
+                code = ticker
+            }
             for (let connected_realm_id of realms) {
                 let contract_data = await contracts_db.find({
                     "date.week": moment().get('week'),

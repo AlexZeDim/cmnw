@@ -99,7 +99,8 @@ async function contracts_W (arg_realm = 'ru_RU') {
                 ]}).lean(),
             items_db.find({
                 $or: [
-                    { _id: 1 }
+                    { _id: 1 },
+                    { expansion: 'BFA', is_commdty: true }
                 ]
             }).lean()
         ]);

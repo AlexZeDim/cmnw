@@ -162,7 +162,7 @@ async function contracts_W (arg_realm = 'ru_RU') {
                     /**
                      * Data from every Day contract
                      */
-                    contract_data.map(({price, quantity, open_interest, orders, sellers, data}) => {
+                    contract_data.map(({price, quantity, open_interest, orders, sellers, data, date}) => {
                         let contract_day = {};
                         /** Price for x1 item */
                         if (price) {
@@ -198,11 +198,15 @@ async function contracts_W (arg_realm = 'ru_RU') {
                         /** Sellers for GOLD (FUNPAY) */
                         if (sellers) {
                             Object.assign(contract_day, {sellers: {
-                                    open: sellers.open,
-                                    change: sellers.change,
-                                    close: sellers.close,
-                                    total: sellers.total
-                                }});
+                                open: sellers.open,
+                                change: sellers.change,
+                                close: sellers.close,
+                                total: sellers.total
+                            }});
+                        }
+                        /** Date */
+                        if (date) {
+                            Object.assign(contract_day, {date: moment().date(date.day).format()});
                         }
                         /** Data from every Day contract to M Data */
                         data.map(({price, price_size, sellers, orders}) => {

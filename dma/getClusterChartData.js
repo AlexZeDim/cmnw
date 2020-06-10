@@ -21,7 +21,7 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
             auctions_db.distinct('unit_price', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean(),
             auctions_db.distinct('lastModified', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean()
         ]);
-        if (quotes && timestamp) {
+        if (quotes.length && timestamp.length) {
             for (let i = 1; i < quotes.length; i++) {
                 if (i > 1) sampleVariable_prev = sampleVariable; else sampleVariable_prev = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
                 sampleVariable = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));

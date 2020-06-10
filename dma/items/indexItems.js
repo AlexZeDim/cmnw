@@ -38,21 +38,21 @@ async function indexItems (arg) {
     try {
         console.time(`DMA-${indexItems.name}`);
         let queries = [
-            {
+/*            {
                 key: "is_commdty",
                 distinct: { unit_price: { $exists: true}},
                 query: {is_commdty: true},
-            },
+            },*/
             {
                 key: "is_auctionable",
                 distinct: {},
                 query: {is_auctionable: true},
             },
-            {
+/*            {
                 key: "is_derivative",
                 distinct: {},
                 query: { $or:[ { asset_class:"VANILLA" }, { asset_class:"INDX" }, { asset_class:"PREMIUM" } ]},
-            }
+            }*/
         ];
         let items, key, distinct, query;
         switch (arg) {

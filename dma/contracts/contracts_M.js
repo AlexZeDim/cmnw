@@ -207,7 +207,7 @@ async function contracts_M (arg_realm = 'ru_RU') {
                         }
                         /** Date */
                         if (date) {
-                            Object.assign(contract_day, {date: moment().date(date.day).format()});
+                            Object.assign(contract_day, {_id: moment().date(date.day).format()});
                         }
                         /** Data from every Day contract to M Data */
                         data.map(({price, price_size, sellers, orders}) => {

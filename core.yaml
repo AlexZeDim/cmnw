@@ -9,12 +9,10 @@ apps:
   - script: ./bin/www.js
     name: 'CORE-api'
     instances: 1
-    watch: true
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./discord/bluratella.js
     name: 'CORE-discord'
     instances: 1
-    watch: true
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'

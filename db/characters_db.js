@@ -131,7 +131,7 @@ schema.index({ "hash.ex": 1 },{name: 'Hash EX'});
 schema.index({ "updatedAt": 1 },{name: 'OSINT-IndexCharacters'});
 schema.index({ "realm.slug": 1, "id": 1 },{name: 'ByGUID'});
 
-let characters_db = mongoose.model('characters', schema);
+let characters_db = mongoose.model('characters', schema, 'characters');
 
 //mongoose.connection.close()
 

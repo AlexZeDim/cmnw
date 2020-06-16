@@ -30,9 +30,9 @@ module.exports = {
                 statusCode,
             } = data;
             if (guild) {
-                let guild_string = guild.name.toUpperCase().toString()
-                if ("rank" in guild) {
-                    guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`.toString())
+                let guild_string = guild.name.toUpperCase()
+                if (guild.rank) {
+                    guild_string = guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`)
                 }
                 embed.setTitle(guild_string);
             }

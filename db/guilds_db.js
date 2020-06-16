@@ -110,6 +110,6 @@ let schema = new mongoose.Schema({
 schema.index({ "name": 1 },{name: 'Name'});
 schema.index({ "realm.slug": 1 } ,{name: 'RealmSlug'});
 
-let guild_db = mongoose.model('guilds', schema);
+let guild_db = mongoose.model('guilds', schema, 'guilds');
 
 module.exports = guild_db;

@@ -123,6 +123,6 @@ schema.index(
 
 schema.index({ expansion: 1, is_commdty: 1 },{name: 'Contracts'});
 
-let items_db = mongoose.model('items', schema);
+let items_db = mongoose.model('items', schema, 'items');
 
 module.exports = items_db;

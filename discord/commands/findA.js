@@ -26,9 +26,9 @@ module.exports = {
                     embed.addField(`┌─────────────┐`, `
                     Name: [${match[i].name}](https://${process.env.domain}/character/${match[i].realm.slug}/${match[i].name})
                     ${("realm" in match[i]) ? `Realm: ${match[i].realm.name}` : ``} 
-                    ${guild ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${match[i].realm.slug}/${guild.slug})` : ``} 
-                    ${guild ? `Rank: ${guild.rank === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
                     ${("faction" in match[i]) ? `Faction: ${match[i].faction}` : ``} 
+                    ${guild ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${match[i].realm.slug}/${guild.slug})` : ``} 
+                    ${(guild && typeof guild.rank !== 'undefined') ? `Rank: ${guild.rank === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
                     └─────────────┘
                     `, true);
                 }

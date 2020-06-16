@@ -68,33 +68,33 @@ router.get('/:type/:query', async function(req, res) {
         switch (type) {
             case 'a':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(50).lean();
+                result.match = await characters_db.find(search).limit(15).lean();
                 break;
             case 'b':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(50).lean();
+                result.match = await characters_db.find(search).limit(15).lean();
                 break;
             case 'c':
-                search =    await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(50).lean();
+                search = await queryToHash(type, query);
+                result.match = await characters_db.find(search).limit(15).lean();
                 break;
             case 'ex':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(50).lean();
+                result.match = await characters_db.find(search).limit(15).lean();
                 break;
             case 'all':
                 /**
                  * Only character can match all hashes
                  */
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(50).lean();
+                result.match = await characters_db.find(search).limit(15).lean();
                 break;
             case 'any':
                 /**
                  * Only hash can match any hash fields
                  */
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find({hash: search}).limit(50).lean();
+                result.match = await characters_db.find({hash: search}).limit(15).lean();
                 break;
             default:
                 await res.status(404).json({error: "not found"});

@@ -30,7 +30,11 @@ module.exports = {
                 statusCode,
             } = data;
             if (guild) {
-                embed.setTitle(`${guild.name.toUpperCase()} // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`);
+                let guild_string = guild.name.toUpperCase()
+                if ("rank" in guild) {
+                    guild_string.concat(`// ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`)
+                }
+                embed.setTitle(guild_string);
             }
             embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${realm.slug}/${name}`))
             embed.setURL(encodeURI(`https://${process.env.domain}/guild/${realm.slug}/${guild.name}`));

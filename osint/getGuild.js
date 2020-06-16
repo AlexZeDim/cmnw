@@ -141,13 +141,12 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                                             slug: guild.name,
                                             rank: rank
                                         }
-                                        character_OSINT.save();
                                     }
                                     /** If current character.guild.id === guild.id => update rank */
                                     if (character_OSINT.guild.id === guild.id) {
                                         character_OSINT.guild.rank = rank;
-                                        character_OSINT.save();
                                     }
+                                    character_OSINT.save();
                                 }
                             } else {
                                 character_OSINT.guild = {

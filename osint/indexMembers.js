@@ -24,7 +24,8 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                         if (member_old.rank !== 0) {
                             let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
                             if (character) {
-                                character.logs.push({
+                                let characterLogArray = [...character.logs];
+                                characterLogArray.push({
                                     old_value: member_old.rank,
                                     new_value: member.rank,
                                     action: 'demoted',
@@ -32,6 +33,7 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     after: moment(guild.lastModified).toISOString(true),
                                     before: moment(guildCreated.lastModified).toISOString(true),
                                 })
+                                character.logs = characterLogArray;
                                 character.save();
                             }
                             /**
@@ -44,7 +46,8 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                         if (member.rank !== 0) {
                             let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
                             if (character) {
-                                character.logs.push({
+                                let characterLogArray = [...character.logs];
+                                characterLogArray.push({
                                     old_value: member_old.rank,
                                     new_value: member.rank,
                                     action: 'promoted',
@@ -52,6 +55,7 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     after: moment(guild.lastModified).toISOString(true),
                                     before: moment(guildCreated.lastModified).toISOString(true),
                                 })
+                                character.logs = characterLogArray;
                                 character.save();
                             }
                             /**
@@ -63,13 +67,15 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                 } else {
                     let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
                     if (character) {
-                        character.logs.push({
+                        let characterLogArray = [...character.logs];
+                        characterLogArray.push({
                             new_value: guild.id,
                             action: 'joins',
                             message: `${character.name}@${character.realm.name} joins ${guild.name} //  Rank: ${member.rank}`,
                             after: moment(guild.lastModified).toISOString(true),
                             before: moment(guildCreated.lastModified).toISOString(true),
                         })
+                        character.logs = characterLogArray;
                         character.save();
                     }
                     /**
@@ -88,7 +94,8 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                     if (GM_old.id !== GM_new.id) {
                         if ((GM_new.hash && GM_new.hash.a) && (GM_old.hash && GM_old.hash.a)) {
                             if (GM_new.hash.a === GM_old.hash.a ) {
-                                GM_old.logs.push({
+                                let GM_oldLogArray = [...GM_old.logs];
+                                GM_oldLogArray.push({
                                     old_value: GM_old._id,
                                     new_value: GM_new._id,
                                     action: 'transfer title',
@@ -96,8 +103,10 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     after: moment(guild.lastModified).toISOString(true),
                                     before: moment(guildCreated.lastModified).toISOString(true),
                                 })
+                                GM_old.logs = GM_oldLogArray;
                                 GM_old.save()
-                                GM_new.logs.push({
+                                let GM_newLogArray = [...GM_new.logs];
+                                GM_newLogArray.push({
                                     old_value: GM_old._id,
                                     new_value: GM_new._id,
                                     action: 'transfer title',
@@ -105,6 +114,7 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     after: moment(guild.lastModified).toISOString(true),
                                     before: moment(guildCreated.lastModified).toISOString(true),
                                 })
+                                GM_new.logs = GM_newLogArray;
                                 GM_new.save()
                                 result.guild_masters.push(
                                     {
@@ -125,7 +135,8 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     }
                                 )
                             } else {
-                                GM_old.logs.push({
+                                let GM_oldLogArray = [...GM_old.logs];
+                                GM_oldLogArray.push({
                                     old_value: GM_old._id,
                                     new_value: GM_new._id,
                                     action: 'transfer ownership',
@@ -133,8 +144,10 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     after: moment(guild.lastModified).toISOString(true),
                                     before: moment(guildCreated.lastModified).toISOString(true),
                                 })
+                                GM_old.logs = GM_oldLogArray;
                                 GM_old.save()
-                                GM_new.logs.push({
+                                let GM_newLogArray = [...GM_new.logs];
+                                GM_newLogArray.push({
                                     old_value: GM_old._id,
                                     new_value: GM_new._id,
                                     action: 'transfer ownership',
@@ -142,6 +155,7 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                     after: moment(guild.lastModified).toISOString(true),
                                     before: moment(guildCreated.lastModified).toISOString(true),
                                 })
+                                GM_new.logs = GM_newLogArray;
                                 GM_new.save()
                                 result.guild_masters.push(
                                     {
@@ -163,7 +177,9 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                 )
                             }
                         } else {
-                            GM_old.logs.push({
+
+                            let GM_oldLogArray = [...GM_old.logs];
+                            GM_oldLogArray.push({
                                 old_value: GM_old._id,
                                 new_value: GM_new._id,
                                 action: 'transfer ownership',
@@ -171,8 +187,10 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                 after: moment(guild.lastModified).toISOString(true),
                                 before: moment(guildCreated.lastModified).toISOString(true),
                             })
+                            GM_old.logs = GM_oldLogArray;
                             GM_old.save()
-                            GM_new.logs.push({
+                            let GM_newLogArray = [...GM_new.logs];
+                            GM_newLogArray.push({
                                 old_value: GM_old._id,
                                 new_value: GM_new._id,
                                 action: 'transfer ownership',
@@ -180,7 +198,9 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                                 after: moment(guild.lastModified).toISOString(true),
                                 before: moment(guildCreated.lastModified).toISOString(true),
                             })
+                            GM_new.logs = GM_newLogArray;
                             GM_new.save()
+
                             result.guild_masters.push(
                                 {
                                     old_value: GM_old._id,
@@ -205,13 +225,16 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                 if (!guild.members.some(({id}) => id === member.id)) {
                     let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
                     if (character) {
-                        character.logs.push({
+
+                        let characterLogArray = [...character.logs];
+                        characterLogArray.push({
                             old_value: guild.id,
                             action: 'leaves',
                             message: `${character.name}@${character.realm} leaves ${guild.name} // Rank: ${member.rank}`,
                             after: moment(guild.lastModified).toISOString(true),
                             before: moment(guildCreated.lastModified).toISOString(true),
                         })
+                        character.logs = characterLogArray;
                         character.save();
                     }
                     /**

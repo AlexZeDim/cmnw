@@ -39,37 +39,12 @@ router.get('/:g@:r', async function(req, res) {
                         },
                         pipeline: [
                             {
-                                $match: { "$guild.slug": toSlug(guildData.name) }
-                            },
-                            {
                                 $match: {
                                     $expr: {
                                         $in: [
                                             "$_id",
                                             "$$members._id"
                                         ]
-                                    }
-                                }
-                            },
-                            {
-                                $addFields: {
-                                    rank: {
-                                        $reduce: {
-                                            input: "$$members",
-                                            initialValue: null,
-                                            in: {
-                                                $cond: [
-                                                    {
-                                                        $eq: [
-                                                            "$$this._id",
-                                                            "$_id"
-                                                        ]
-                                                    },
-                                                    "$$this.rank",
-                                                    "$$value"
-                                                ]
-                                            }
-                                        }
                                     }
                                 }
                             }

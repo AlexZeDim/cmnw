@@ -39,9 +39,7 @@ router.get('/:g@:r', async function(req, res) {
                         },
                         pipeline: [
                             {
-                                $match: {
-                                    $expr: { "$guild.slug": toSlug(g) }
-                                }
+                                $match: { "$guild.slug": toSlug(guildData.name) }
                             },
                             {
                                 $match: {

@@ -36,7 +36,7 @@ router.get('/:g@:r', async function(req, res) {
                         from: "characters",
                         localField: "members._id",
                         foreignField: "_id",
-                        as: "member"
+                        as: "members"
                     }
                 },
             ])

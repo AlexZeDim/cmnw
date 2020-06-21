@@ -225,7 +225,6 @@ async function indexMembers (guild = {}, guildCreated = {}) {
                 if (!guild.members.some(({id}) => id === member.id)) {
                     let character = await characters_db.findOne({"realm.slug": guild.realm.slug, id: member.id})
                     if (character) {
-
                         let characterLogArray = [...character.logs];
                         characterLogArray.push({
                             old_value: guild.id,

@@ -46,7 +46,7 @@ async function XVA (query = {expansion: "BFA"}, connected_realm_id = 1602) {
             let cursor = await items_db.find(query).cursor({batchSize: 10})
             for (let item = await cursor.next(); item != null; item = await cursor.next()) {
                 console.time(`DMA-${item._id}-${connected_realm_id}:${item.name.en_GB}`)
-                await itemValuationAdjustment(item, connected_realm_id, null , 0, 0, allowCap)
+                await itemValuationAdjustment(item, connected_realm_id, null, 0, 0, allowCap)
                 console.timeEnd(`DMA-${item._id}-${connected_realm_id}:${item.name.en_GB}`)
             }
             console.timeEnd(`DMA-${XVA.name}-${connected_realm_id}-${k}:${v.toString()}`);

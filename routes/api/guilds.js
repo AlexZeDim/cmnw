@@ -34,22 +34,9 @@ router.get('/:g@:r', async function(req, res) {
                 {
                     $lookup: {
                         from: "characters",
-                        let: {
-                            members: "$members"
-                        },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $in: [
-                                            "$_id",
-                                            "$$members._id"
-                                        ]
-                                    }
-                                }
-                            }
-                        ],
-                        as: "members"
+                        localField: "members._id",
+                        foreignField: "_id",
+                        as: "member"
                     }
                 },
             ])

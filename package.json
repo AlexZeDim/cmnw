@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "tokens": "node bin/getTokens.js",
-    "start": "node discord/bluratella.js",
+    "start": "node discord/bot.js",
     "core": "node ./bin/www.js"
   },
   "dependencies": {

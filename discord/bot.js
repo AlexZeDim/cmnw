@@ -3,21 +3,21 @@ const path = require('path');
 const fs = require('fs');
 const Discord = require('discord.js');
 
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
+const bot = new Discord.Client();
+bot.commands = new Discord.Collection();
 
 const commandFiles = fs.readdirSync(path.normalize(`${__dirname}/commands/`)).filter(file => file.endsWith('.js'));
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+bot.on('ready', () => {
+    console.log(`Logged in as ${bot.user.tag}!`);
 });
 
 for (const file of commandFiles) {
     const command = require(path.normalize(`${__dirname}/commands/${file}`));
-    client.commands.set(command.name, command);
+    bot.commands.set(command.name, command);
 }
 
-client.on('message', async message => {
+bot.on('message', async message => {
     if (message.author.bot) return;
     let command = '';
     let args = '';
@@ -28,13 +28,13 @@ client.on('message', async message => {
         command = message.content.split(/(?<=^\S+)\s/)[0];
         args = message.content.split(/(?<=^\S+)\s/)[1];
     }
-    if (!client.commands.has(command)) return;
+    if (!bot.commands.has(command)) return;
     try {
-        client.commands.get(command).execute(message, args, client);
+        bot.commands.get(command).execute(message, args, bot);
     } catch (error) {
         console.error(error);
-        await message.reply('there was an error trying to execute that command!');
+        await message.reply('There was an error trying to execute that command!');
     }
 });
 
-client.login(process.env.bluratella);
+bot.login(process.env.bluratella);

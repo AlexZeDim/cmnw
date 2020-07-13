@@ -23,15 +23,15 @@ connection.once('open', () => console.log('Connected to database on ' + process.
  * Model importing
  */
 
-const wowtoken_db = require("../../db/wowtoken_db");
-const keys_db = require("../../db/keys_db");
+const wowtoken_db = require("../db/wowtoken_db");
+const keys_db = require("../db/keys_db");
 
 /**
  * Modules
  */
 
 const battleNetWrapper = require('battlenet-api-wrapper');
-const {Round2} = require("../../db/setters")
+const {Round2} = require("../db/setters")
 
 /**
  * @param queryKeys

@@ -10,6 +10,7 @@ const items = require('./routes/api/items');
 const find = require('./routes/api/find');
 const contracts = require('./routes/api/contracts');
 const eva = require('./routes/api/eva');
+const realms = require('./routes/api/realms');
 const app = express();
 
 app.use(logger('dev'));
@@ -25,5 +26,6 @@ app.use('/api/items', items);
 app.use('/api/find', find);
 app.use('/api/contracts', contracts);
 app.use('/api/eva', eva);
+app.use('/api/realms', realms);
 
 module.exports = app;

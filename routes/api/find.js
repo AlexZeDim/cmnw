@@ -96,9 +96,6 @@ router.get('/:type/:query', async function(req, res) {
                 search = await queryToHash(type, query);
                 result.match = await characters_db.find({hash: search}).limit(15).lean();
                 break;
-            default:
-                await res.status(404).json({error: "not found"});
-                break;
         }
         result._id = query;
         await res.status(200).json(result);

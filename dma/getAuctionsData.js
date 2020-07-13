@@ -36,6 +36,7 @@ const battleNetWrapper = require('battlenet-api-wrapper');
  */
 
 const moment = require('moment');
+const {Round2} = require("../db/setters")
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
@@ -63,9 +64,9 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
             let {auctions, lastModified} = await bnw.WowGameData.getAuctionHouse(connected_realm_id, header_lastModified).catch(e=> {console.info(`E,${connected_realm_id}:${e}`); return (e)});
             if (auctions && auctions.length) {
                 for (let i = 0; i < auctions.length; i++) {
-                    if ("bid" in auctions[i]) auctions[i].bid = parseFloat((auctions[i].bid/10000).toFixed(2));
-                    if ("buyout" in auctions[i]) auctions[i].buyout = parseFloat((auctions[i].buyout/10000).toFixed(2));
-                    if ("unit_price" in auctions[i]) auctions[i].unit_price = parseFloat((auctions[i].unit_price/10000).toFixed(2));
+                    if ("bid" in auctions[i]) auctions[i].bid = Round2(auctions[i].bid/10000);
+                    if ("buyout" in auctions[i]) auctions[i].buyout = Round2(auctions[i].buyout/10000);
+                    if ("unit_price" in auctions[i]) auctions[i].unit_price = Round2(auctions[i].unit_price/10000);
                     auctions[i].connected_realm_id = connected_realm_id;
                     auctions[i].lastModified = moment(lastModified).toISOString(true);
                 }

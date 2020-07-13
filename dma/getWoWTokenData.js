@@ -54,7 +54,6 @@ async function getWoWTokenData (queryKeys = { tags: `DMA` }) {
                 lastModified: lastModified
             });
             if (wt) {
-                console.log(last_updated_timestamp, wt._id)
                 if (last_updated_timestamp > wt._id) {
                     await wowtoken.save()
                 }

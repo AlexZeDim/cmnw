@@ -1,13 +1,19 @@
 const auctions_db = require("../../db/auctions_db");
 
+/**
+ * @param item_id
+ * @param connected_realm_id
+ * @returns {Promise<*>}
+ */
+
 async function auctionsQuotes (item_id = 168487, connected_realm_id = 1602) {
     try {
-        const latest_lot = await auctions_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).sort({lastModified: -1});
-        if (latest_lot && latest_lot.lastModified) {
+        const t = await auctions_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).select('lastModified').lean().sort({lastModified: -1});
+        if (t) {
             return await auctions_db.aggregate([
                 {
                     $match: {
-                        lastModified: latest_lot.lastModified,
+                        lastModified: t.lastModified,
                         "item.id": item_id,
                         connected_realm_id: connected_realm_id,
                     }

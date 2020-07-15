@@ -1,0 +1,47 @@
+const golds_db = require("../../db/golds_db");
+
+/**
+ * @param item_id
+ * @param connected_realm_id
+ * @returns {Promise<*>}
+ */
+
+async function goldsQuotes (item_id = 168487, connected_realm_id = 1602) {
+    try {
+        const t = await golds_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).select('lastModified').lean().sort({lastModified: -1});
+        if (t) {
+            return await golds_db.aggregate([
+                {
+                    $match: {
+                        status: "Online",
+                        connected_realm_id: connected_realm_id,
+                        lastModified: t.lastModified,
+                    }
+                },
+                {
+                    $project: {
+                        id: "$id",
+                        quantity: "$quantity",
+                        price: "$price",
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$price",
+                        quantity: {$sum: "$quantity"},
+                        open_interest: {$sum: { $multiply: [ "$price", "$quantity" ] }},
+                    }
+                },
+                {
+                    $sort : { "_id": 1 }
+                }
+            ]);
+        } else {
+            return void 0
+        }
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+module.exports = goldsQuotes;

@@ -12,6 +12,7 @@ const contracts = require('./routes/api/contracts');
 const eva = require('./routes/api/eva');
 const realms = require('./routes/api/realms');
 const wowtoken = require('./routes/api/wowtoken');
+const golds = require('./routes/api/golds');
 const app = express();
 
 app.use(logger('dev'));
@@ -29,5 +30,6 @@ app.use('/api/contracts', contracts);
 app.use('/api/eva', eva);
 app.use('/api/realms', realms);
 app.use('/api/wowtoken', wowtoken);
+app.use('/api/golds', golds);
 
 module.exports = app;

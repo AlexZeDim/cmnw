@@ -8,7 +8,6 @@ const router = express.Router();
 const items_db = require("../../db/items_db");
 const realms_db = require("../../db/realms_db");
 const contracts_db = require("../../db/contracts_db");
-const valuations_db = require("../../db/valuations_db");
 
 /**
  * Modules

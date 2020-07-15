@@ -16,16 +16,16 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
         let chartArray = [];
         let priceArray = [];
         let round;
-        let sampleVariable, sampleVariable_prev = 0;
+        let sampleVariable = 0, sampleVariable_prev = 0;
         let [quotes, timestamp] = await Promise.all([
             auctions_db.distinct('unit_price', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean(),
             auctions_db.distinct('lastModified', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean()
         ]);
         if (quotes.length && timestamp.length) {
             for (let i = 1; i < quotes.length; i++) {
-                if (i > 1) sampleVariable_prev = sampleVariable; else sampleVariable_prev = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
-                sampleVariable = (1/quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1/quotes.length*quotes[i]),2));
-                if (sampleVariable_prev*1.3 < sampleVariable) break; else priceArray.push(quotes[i]);
+                if (i > 1) sampleVariable_prev = sampleVariable; else sampleVariable_prev = (1 / quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1 / quotes.length*quotes[i]),2));
+                sampleVariable = (1 / quotes.length*(Math.pow(quotes[i],2)))-(Math.pow((1 / quotes.length*quotes[i]),2));
+                if (sampleVariable_prev * 1.3 < sampleVariable) break; else priceArray.push(quotes[i]);
             }
             let start = Math.floor(priceArray[0]);
             let stop = Math.round(priceArray[priceArray.length-1]);
@@ -90,7 +90,7 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
                 priceRange_array = priceRange_array.map(p => p.toFixed(2));
             }
             timestamp = timestamp.map(ts => ts.toLocaleString('en-GB'));
-            return {price_range: priceRange_array, timestamps: timestamp, dataset: chartArray}
+            return { price_range: priceRange_array, timestamps: timestamp, dataset: chartArray }
         } else {
             return void 0
         }

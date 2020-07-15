@@ -34,7 +34,7 @@ let schema = new mongoose.Schema({
 });
 
 schema.index({ lastModified: -1 },{name: 'TTL', expireAfterSeconds: 604800});
-schema.index({ connected_realm_id: 1, lastModified: -1 },{name: 'TimestampCheck'});
+schema.index({ status: 1, connected_realm_id: 1, lastModified: -1 },{name: 'GoldsQuotes'});
 
 let golds_db = mongoose.model('golds', schema, 'golds');
 

@@ -280,9 +280,10 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         },
         character.toObject(),
         {
-            upsert : true,
+            upsert: true,
             new: true,
-            lean: true
+            lean: true,
+            overwrite: true
         });
     } catch (error) {
         console.error(`E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(realmSlug)},${error}`);

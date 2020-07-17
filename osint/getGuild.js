@@ -216,7 +216,8 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                 {
                     upsert : true,
                     new: true,
-                    lean: true
+                    lean: true,
+                    overwrite: true
                 });
         } else {
             return void 0

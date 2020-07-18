@@ -34,6 +34,12 @@ let schema = new mongoose.Schema({
         type: String,
         set: toSlug,
     },
+    auctions: {
+        type: Number
+    },
+    valuations: {
+        type: Number
+    },
     category: {
         type: String
     },

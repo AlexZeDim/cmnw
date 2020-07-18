@@ -8,7 +8,6 @@ const valuations = require("../../../db/valuations_db");
  * Modules
  */
 
-const moment = require('moment');
 const getPricingMethods = require("../getPricingMethods");
 const premiumSingleName = require("./premiumSingleName");
 const auctionsData  = require('../../auctions/auctionsData');
@@ -76,13 +75,13 @@ async function itemValuationAdjustment (
             _id: `${item._id}@${connected_realm_id}`,
             item_id: item._id,
             connected_realm_id: connected_realm_id,
-            asset_class: item.v_class || [],
+            asset_class: item.asset_class || [],
             last_modified: last_modified
         });
         /***
          * Vendor Valuation Adjustment
          */
-        if (pricing.asset_class.some(v_class => v_class === 'VENDOR') || pricing.asset_class.some(v_class => v_class === 'CONST')) {
+        if (pricing.asset_class.some(asset_class => asset_class === 'VENDOR') || pricing.asset_class.some(asset_class => asset_class === 'CONST')) {
             /** check vendor price in*/
             pricing.vendor.buy_price = item.purchase_price;
         }
@@ -96,9 +95,9 @@ async function itemValuationAdjustment (
          * Auction Valuation Adjustment
          */
         if (item.is_auctionable) {
-            /** Request for Quotes*/
+            /** Request for Quotes */
             let [{min, min_size, _id, quantity, open_interest, orders}] = await auctionsData(item._id, connected_realm_id);
-            /** If price found, then => market*/
+            /** If price found, then => market */
             if (min && min_size) {
                 pricing.market = {
                     price: min,
@@ -115,7 +114,7 @@ async function itemValuationAdjustment (
         /***
          * Derivative Valuation Adjustment
          */
-        if (pricing.asset_class.some(v_class => v_class === 'DERIVATIVE')) {
+        if (pricing.asset_class.some(asset_class => asset_class === 'DERIVATIVE')) {
             /** Request all Pricing Methods */
             let primary_methods = await getPricingMethods(item._id, false);
             /** Iterate over it one by one */
@@ -150,7 +149,7 @@ async function itemValuationAdjustment (
          * (only direct!)
          */
         if (method_depth === 0 && item_depth === 0) {
-            if (pricing.asset_class.some(v_class => v_class === 'REAGENT') && pricing.asset_class.some(v_class => v_class === 'PREMIUM')) {
+            if (pricing.asset_class.some(asset_class => asset_class === 'REAGENT') && pricing.asset_class.some(asset_class => asset_class === 'PREMIUM')) {
                 /** Request list of all single names methods */
                 let SingleNames = await premiumSingleName(item._id);
                 /**
@@ -209,7 +208,7 @@ async function itemValuationAdjustment (
          *
          * Cheapest-to-Delivery
          */
-        if ((pricing.asset_class.some(v_class => v_class === 'REAGENT') || allowCap === true)) {
+        if ((pricing.asset_class.some(asset_class => asset_class === 'REAGENT') || allowCap === true)) {
             let reagentArray = [];
             for (let source_in of count_in) {
                 switch (source_in) {

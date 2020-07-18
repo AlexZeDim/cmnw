@@ -43,7 +43,7 @@ async function methodValuationAdjustment (
         /**
          * Sort reagent_items according to map
          */
-        method.reagent_items.sort((a, b) => assetClassMap.get(a.v_class) - assetClassMap.get(b.v_class));
+        method.reagent_items.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
         /**
          * Init production cost and premium
          */
@@ -55,7 +55,7 @@ async function methodValuationAdjustment (
              * Check Reagent.value, if there is not add to cost 0 but premium
              * premium += (Price market (if exist) - quene_cost)
              * */
-            if (reagent_item.v_class.some(v_class => v_class === 'PREMIUM')) {
+            if (reagent_item.asset_class.some(asset_class => asset_class === 'PREMIUM')) {
                 /**
                  * if iva has value then for premium
                  */

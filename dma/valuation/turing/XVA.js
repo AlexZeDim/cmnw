@@ -13,8 +13,6 @@ const itemValuationAdjustment = require('./IVA');
 
 /**
  * This function evaluate any item with asset_classes property on certain realm
- * TODO refactor v_class to tags
- * TODO EachAsync cursor
  * @param query
  * @param connected_realm_id
  * @returns {Promise<void>}
@@ -38,20 +36,20 @@ async function XVA (query = {expansion: "BFA"}, connected_realm_id = 1602) {
             [7, ['CAP','MARKET','DERIVATIVE']],
             [8, ['CAP','PREMIUM','DERIVATIVE']],
         ]);
-        for (let [k, v] of assetClassMap) {
+        for (let [k, ac] of assetClassMap) {
             let allowCap = false
-            console.time(`DMA-${XVA.name}-${connected_realm_id}-${k}:${v.toString()}`); //v_class: ['REAGENT', 'MARKET', 'DERIVATIVE'], profession_class: "INSC",
+            console.time(`DMA-${XVA.name}-${connected_realm_id}-${k}:${ac.toString()}`);
             if (k === 2 ||k === 3 || k === 4) {
                 allowCap = true
             }
-            Object.assign(query, {v_class: v})
-            let cursor = await items_db.find(query).cursor({batchSize: 10})
-            for (let item = await cursor.next(); item != null; item = await cursor.next()) {
+            Object.assign(query, {asset_class: { "$all": ac }})
+            console.log(query)
+            await items_db.find(query).cursor({batchSize: 10}).eachAsync(async (item) => {
                 console.time(`DMA-${item._id}-${connected_realm_id}:${item.name.en_GB}`)
                 await itemValuationAdjustment(item, connected_realm_id, null, 0, 0, allowCap)
                 console.timeEnd(`DMA-${item._id}-${connected_realm_id}:${item.name.en_GB}`)
-            }
-            console.timeEnd(`DMA-${XVA.name}-${connected_realm_id}-${k}:${v.toString()}`);
+            }, { parallel: 10 })
+            console.timeEnd(`DMA-${XVA.name}-${connected_realm_id}-${k}:${ac.toString()}`);
         }
     } catch (err) {
         console.error(`${XVA.name},${err}`);

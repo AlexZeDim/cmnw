@@ -17,7 +17,7 @@ const {Round2} = require("../../../db/setters")
  *
  * @param item {Object}
  * @param connected_realm_id {Number}
- * @param last_modified {Date}
+ * @param last_modified {Number}
  * @param item_depth {Number}
  * @param method_depth {Number}
  * @param allowCap
@@ -36,12 +36,12 @@ async function itemValuationAdjustment (
     try {
         if ("quantity" in item) {
             /***
+             * IDEA check is recursive 3 more in line and so on
              * IF quantity =>
              * return derivative.reagent items xQuantity
              */
         }
-        /***
-         * IDEA check is recursive 3 more in line and so on
+        /**
          * check existing valuation based on timestamp
          */
         if (!last_modified) {
@@ -138,7 +138,7 @@ async function itemValuationAdjustment (
                     }
                     delete mva.premium_items;
                 }
-                pricing.derivative.push(mva);
+                pricing.derivative.addToSet(mva);
                 /** END of MVA */
             }
         }
@@ -172,7 +172,7 @@ async function itemValuationAdjustment (
                     /** If market data exists and premium_item just one */
                     if (min_size && quantity) {
                         /** If premium have PRVA */
-                        pricing.reagent.premium.push({
+                        pricing.reagent.premium.addToSet({
                             _id: single_premium._id,
                             value: Round2(((min_size * 0.95) * single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity),
                             wi: Round2((single_premium.premium_items[0].quantity / single_premium.queue_quantity) * quantity)

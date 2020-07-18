@@ -50,6 +50,7 @@ async function migrations() {
         let refactoring = await items.updateMany({},{ $rename: { "v_class": "asset_class" } });
         console.log(refactoring)
         */
+
         /**
          * FIX BFA vendor price, cause it's for a full quantity, not x1
          * @type {({quantity: number, _id: number})[]}

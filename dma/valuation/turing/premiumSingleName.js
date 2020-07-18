@@ -77,7 +77,7 @@ async function premiumSingleName (item_id) {
             $group: {
                 _id: {
                     reagent_item_id: "$reagent_items._id",
-                    v_class: "$reagent_items.v_class",
+                    asset_class: "$reagent_items.asset_class",
                     recipe_id: "$_id",
                     item_id: "$item_id_v"
                 },
@@ -85,11 +85,11 @@ async function premiumSingleName (item_id) {
             }
         },
         {
-            $unwind: "$_id.v_class"
+            $unwind: "$_id.asset_class"
         },
         {
             $match: {
-                "_id.v_class": "PREMIUM"
+                "_id.asset_class": "PREMIUM"
             }
         },
         {

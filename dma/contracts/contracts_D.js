@@ -77,14 +77,14 @@ async function contracts_D (arg_realm = 'ru_RU') {
                     query = golds_db.aggregate([
                         {
                             $match: {
-                                createdAt: {$gt:moment.utc().subtract(1, 'day').toDate(), $lt:moment.utc().toDate()},
+                                createdAt: {$gt: moment.utc().subtract(1, 'day').toDate(), $lt: moment.utc().toDate()},
                                 status: 'Online',
                                 connected_realm_id: connected_realm_id
                             }
                         },
                         {
                             $group: {
-                                _id: "$lastModified",
+                                _id: "$last_modified",
                                 open_interest: {$sum: { $multiply: [ "$price", {$divide: ["$quantity", 1000]} ] }},
                                 quantity: {$sum: "$quantity"},
                                 price: {$min: "$price"},
@@ -106,7 +106,7 @@ async function contracts_D (arg_realm = 'ru_RU') {
                         },
                         {
                             $group: {
-                                _id: "$lastModified",
+                                _id: "$last_modified",
                                 open_interest: {$sum: { $multiply: [ "$unit_price", "$quantity" ] }},
                                 quantity: {$sum: "$quantity" },
                                 price: {$min: "$unit_price"},

@@ -47,7 +47,7 @@ x.driver(driver);
 async function getGoldData () {
     try {
         console.time(`DMA-${getGoldData.name}`);
-        const t = moment().format();
+        const t = moment().format('X');
         let goldData = [];
         let goldOrders = await x('https://funpay.ru/chips/2/', '.tc-item', [
             {
@@ -75,7 +75,7 @@ async function getGoldData () {
                             status: goldOrders[i].status ? 'Online' : 'Offline',
                             owner: goldOrders[i].owner,
                             price: +(goldOrders[i].price.replace(/ ₽/g,"")),
-                            lastModified: t
+                            last_modified: t
                         });
                     }
                 }

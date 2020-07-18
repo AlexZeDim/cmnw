@@ -17,7 +17,7 @@ async function getClusterGoldData (connected_realm_id = 1602) {
         let sampleVariable = 0, sampleVariable_prev = 0;
         let [quotes, timestamp] = await Promise.all([
             gold_db.distinct('price', { status: "Online", connected_realm_id: connected_realm_id }).lean(),
-            gold_db.distinct('lastModified', { status: "Online", connected_realm_id: connected_realm_id }).lean()
+            gold_db.distinct('last_modified', { status: "Online", connected_realm_id: connected_realm_id }).lean()
         ]);
         if (quotes.length && timestamp.length) {
             for (let i = 1; i < quotes.length; i++) {
@@ -66,9 +66,9 @@ async function getClusterGoldData (connected_realm_id = 1602) {
                     chartArray.push({x: x_, y: y_, value: 0, oi: 0, orders: 0});
                 }
             }
-            await gold_db.find({ connected_realm_id: connected_realm_id }).lean().cursor({batchSize: 20}).eachAsync(async ({price, quantity, lastModified}) => {
+            await gold_db.find({ connected_realm_id: connected_realm_id }).lean().cursor({batchSize: 20}).eachAsync(async ({price, quantity, last_modified}) => {
                 let x, y = 0;
-                x = timestamp.map(Number).indexOf(+lastModified);
+                x = timestamp.map(Number).indexOf(+last_modified);
                 if (priceRange_array.indexOf(round(price, step)) === -1) {
                     if (round(price, step) < start) {y = 0;}
                     if (round(price, step) > stop) {y = priceRange_array.length-1;}

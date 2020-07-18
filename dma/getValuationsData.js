@@ -23,14 +23,11 @@ connection.once('open', () => console.log('Connected to database on ' + process.
  */
 
 const realms_db = require("./../db/realms_db");
-const auctions_db = require("./../db/auctions_db");
-const valuations_db = require("./../db/valuations_db");
 
 /**
  * Modules
  */
 
-const moment = require('moment');
 const XVA = require('./valuation/turing/XVA')
 
 /**
@@ -54,9 +51,12 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
             }
         ]).cursor({batchSize: 10}).exec().eachAsync(async ({_id}) => {
             const t = await realms_db.findOne({connected_realm_id: _id}).select('auctions valuations').lean();
-            if (t.auctions === t.valuations) {
+            if (!t.valuations) {
+                await realms_db.updateMany({connected_realm_id: _id}, {valuations: 0})
+            }
+            if (t.auctions > t.valuations) {
                 await XVA({expansion: "BFA"}, _id)
-                await realms_db.updateMany({connected_realm_id: _id}, {auctions: t.auctions})
+                await realms_db.updateMany({connected_realm_id: _id}, {valuations: t.auctions})
             }
         }, {parallel: bulkSize});
         connection.close();

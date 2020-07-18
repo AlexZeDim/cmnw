@@ -8,14 +8,14 @@ const golds_db = require("../../db/golds_db");
 
 async function goldsQuotes (item_id = 168487, connected_realm_id = 1602) {
     try {
-        const t = await golds_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).select('lastModified').lean().sort({lastModified: -1});
+        const t = await golds_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).select('last_modified').lean().sort({last_modified: -1});
         if (t) {
             return await golds_db.aggregate([
                 {
                     $match: {
                         status: "Online",
                         connected_realm_id: connected_realm_id,
-                        lastModified: t.lastModified,
+                        last_modified: t.last_modified,
                     }
                 },
                 {

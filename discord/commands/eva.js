@@ -12,7 +12,7 @@ module.exports = {
         let valuation = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/eva/${item}@${realm}`)).then(({data}) => {
             let {
                 _id,
-                lastModified,
+                last_modified,
                 asset_class,
                 derivative,
                 market,
@@ -50,7 +50,7 @@ module.exports = {
                     { name: 'Yield to Reagent', value: `${vendor.yieldReagent} %`, inline: true },
                 );
             }
-            if ("lastModified" in market) {
+            if ("last_modified" in market) {
                 embed.addField('\u200B', '\u200B');
                 embed.addField('Price', `${market.price} g`, true);
                 embed.addField('Price Size', `${market.price_size} g`, true);
@@ -106,7 +106,7 @@ module.exports = {
                     embed.addField('\u200B', '\u200B', true);
                 }
             }
-            embed.setTimestamp(lastModified);
+            embed.setTimestamp(last_modified);
             embed.setFooter(`DMA-XVA`);
             return embed
         });

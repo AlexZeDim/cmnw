@@ -1,4 +1,5 @@
 const auctions_db = require("../../db/auctions_db");
+const realms_db = require("../../db/realms_db");
 
 /**
  * @param item_id
@@ -8,19 +9,19 @@ const auctions_db = require("../../db/auctions_db");
 
 async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
     try {
-        const t = await auctions_db.findOne({ "item.id": item_id, connected_realm_id: connected_realm_id}).select('lastModified').lean().sort({lastModified: -1});
+        const t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions').lean();
         if (t) {
             return await auctions_db.aggregate([
                 {
                     $match: {
-                        lastModified: t.lastModified,
+                        last_modified: t.auctions,
                         "item.id": item_id,
                         connected_realm_id: connected_realm_id,
                     }
                 },
                 {
                     $project: {
-                        _id: "$lastModified",
+                        _id: "$last_modified",
                         id: "$id",
                         quantity: "$quantity",
                         price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },

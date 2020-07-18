@@ -18,7 +18,7 @@ const {Round2} = require("../../../db/setters")
  *
  * @param item {Object}
  * @param connected_realm_id {Number}
- * @param lastModified {Date}
+ * @param last_modified {Date}
  * @param item_depth {Number}
  * @param method_depth {Number}
  * @param allowCap
@@ -28,7 +28,7 @@ const {Round2} = require("../../../db/setters")
 async function itemValuationAdjustment (
         item = {},
         connected_realm_id = 1602,
-        lastModified,
+        last_modified,
         item_depth = 0,
         method_depth = 0,
         allowCap = false
@@ -45,26 +45,26 @@ async function itemValuationAdjustment (
          * IDEA check is recursive 3 more in line and so on
          * check existing valuation based on timestamp
          */
-        if (!lastModified) {
-            const auctions_db = require("../../../db/auctions_db");
-            let t = await auctions_db.findOne({connected_realm_id: connected_realm_id}).sort('-lastModified').select('lastModified').lean();
+        if (!last_modified) {
+            const realms_db = require("../../../db/realms_db");
+            let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions').lean();
             if (t) {
-                lastModified = t.lastModified
+                last_modified = t.auctions
             }
         }
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
         if (pricing) {
-            if (moment(pricing.lastModified).isSame(lastModified)) {
+            if (pricing.last_modified === last_modified) {
                 return pricing
             }
-            if ("lastModified" in pricing.market) {
-                if (moment(pricing.market.lastModified).isSame(lastModified)) {
+            if ("last_modified" in pricing.market) {
+                if (pricing.market.last_modified === last_modified) {
                     return pricing
                 }
             }
             if ("derivative" in pricing && pricing.derivative.length) {
-                if (moment(pricing.derivative[0].lastModified).isSame(lastModified)) {
+                if (pricing.derivative[0].last_modified === last_modified) {
                     return pricing
                 }
             }
@@ -77,7 +77,7 @@ async function itemValuationAdjustment (
             item_id: item._id,
             connected_realm_id: connected_realm_id,
             asset_class: item.v_class || [],
-            lastModified: lastModified
+            last_modified: last_modified
         });
         /***
          * Vendor Valuation Adjustment
@@ -106,7 +106,7 @@ async function itemValuationAdjustment (
                     quantity: quantity,
                     open_interest: Math.round(open_interest),
                     orders: orders,
-                    lastModified: _id
+                    last_modified: _id
                 };
             }
         }
@@ -124,7 +124,7 @@ async function itemValuationAdjustment (
                 /***
                  * Method Valuation Adjustment
                  */
-                let mva = await methodValuationAdjustment(price_method, connected_realm_id, lastModified, item_depth, method_depth);
+                let mva = await methodValuationAdjustment(price_method, connected_realm_id, last_modified, item_depth, method_depth);
 
                 /** If MVA returns at least one premium reagent and IVA item has market price */
                 if ("premium_items" in mva && pricing.price_size) {
@@ -163,7 +163,7 @@ async function itemValuationAdjustment (
                     let single_premium = await methodValuationAdjustment(
                         method,
                         connected_realm_id,
-                        lastModified,
+                        last_modified,
                         item_depth,
                         method_depth,
                         true
@@ -196,7 +196,7 @@ async function itemValuationAdjustment (
         if (pricing.vendor.sell_price) {
             count_out.push('vendor');
         }
-        if (pricing.market.lastModified) {
+        if (pricing.market.last_modified) {
             count_in.push('market');
             count_out.push('market')
         }

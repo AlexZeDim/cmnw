@@ -19,7 +19,7 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
         let sampleVariable = 0, sampleVariable_prev = 0;
         let [quotes, timestamp] = await Promise.all([
             auctions_db.distinct('unit_price', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean(),
-            auctions_db.distinct('lastModified', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean()
+            auctions_db.distinct('last_modified', { "item.id": item_id, connected_realm_id: connected_realm_id}).lean()
         ]);
         if (quotes.length && timestamp.length) {
             for (let i = 1; i < quotes.length; i++) {
@@ -71,7 +71,7 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
             let cursor = await auctions_db.find({ "item.id": item_id, connected_realm_id: connected_realm_id}).lean().cursor({batchSize: 20});
             for (let order = await cursor.next(); order != null; order = await cursor.next()) {
                 let x, y = 0;
-                x = timestamp.map(Number).indexOf(+order.lastModified);
+                x = timestamp.map(Number).indexOf(+order.last_modified);
                 if (priceRange_array.indexOf(round(order.unit_price, step)) === -1) {
                     if (round(order.unit_price, step) < start) {y = 0;}
                     if (round(order.unit_price, step) > stop) {y = priceRange_array.length-1;}
@@ -89,6 +89,7 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
             if (step < 1) {
                 priceRange_array = priceRange_array.map(p => p.toFixed(2));
             }
+            //FIXME rework
             timestamp = timestamp.map(ts => ts.toLocaleString('en-GB'));
             return { price_range: priceRange_array, timestamps: timestamp, dataset: chartArray }
         } else {

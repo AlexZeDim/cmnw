@@ -67,6 +67,7 @@ async function getGoldData () {
                     if (name === goldOrders[i].realm) return connected_realm_id
                 });
                 if (realm) {
+                    await realms_db.updateMany({connected_realm_id: realm.connected_realm_id}, {golds: t})
                     if (parseFloat(goldOrders[i].quantity.replace(/\s/g,"")) < 15000000) {
                         goldData.push({
                             connected_realm_id: realm.connected_realm_id,

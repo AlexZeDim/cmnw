@@ -68,19 +68,13 @@ let schema = new mongoose.Schema({
         type: String
     },
     asset_class: {
-        type: String,
-        default: 'u/r'
-    },
-    v_class: {
         type: Array,
     },
     expansion: {
         type: String,
-        default: 'u/r'
     },
     ticker: {
         type: String,
-        default: 'u/r'
     },
     /**
      * IndexItems

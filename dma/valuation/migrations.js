@@ -35,6 +35,25 @@ const pricing_methods = require("../../db/pricing_methods_db");
 
 async function migrations() {
     try {
+        /**
+         * Remove field via $unset
+         */
+        /*
+        let unset = await items.updateMany({}, {$unset:{"asset_class":1}});
+        console.log(unset)
+        */
+
+        /**
+         * Rename field in a collection
+         */
+        /*
+        let refactoring = await items.updateMany({},{ $rename: { "v_class": "asset_class" } });
+        console.log(refactoring)
+        */
+        /**
+         * FIX BFA vendor price, cause it's for a full quantity, not x1
+         * @type {({quantity: number, _id: number})[]}
+         */
         let array_of_vendor = [
             {_id: 160398, quantity: 10},
             {_id: 160399, quantity: 10},
@@ -46,12 +65,19 @@ async function migrations() {
             {_id: 158186, quantity: 20},
         ];
         for (let item of array_of_vendor) {
-            let {purchase_price} = await items.findById(item._id);
-            console.log(purchase_price);
+            let i = await items.findById(item._id);
+            console.log(i);
             //await items.findByIdAndUpdate(item._id, {purchase_price: purchase_price/item.quantity});
         }
+        /**
+         * Enchanting recipes has quantity 0, but actually they gave us one scroll
+         */
         let enchant = await pricing_methods.updateMany({ profession: "ENCH", item_quantity: 0 },{ item_quantity: 1 });
         console.info(enchant);
+        /**
+         * Destroying expulsom as a pricing_method
+         * @type {({profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number})[]}
+         */
         let expulsom_methods = [
             {
                 _id: 'P38737:1',

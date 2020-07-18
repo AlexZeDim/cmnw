@@ -38,15 +38,15 @@ let schema = new mongoose.Schema({
     time_left: {
         type: String
     },
-    lastModified: {
-        type: Date
+    last_modified: {
+        type: Number
     }
 },{
     timestamps: true
 });
 
-schema.index({ lastModified: -1 },{name: 'TTL', expireAfterSeconds: 86400});
-schema.index({ connected_realm_id: 1, lastModified: -1 },{name: 'TimestampCheck'});
+schema.index({ last_modified: -1 },{name: 'TTL', expireAfterSeconds: 86400});
+schema.index({ connected_realm_id: 1, last_modified: -1 },{name: 'TimestampCheck'});
 schema.index({ "item.id": -1, connected_realm_id: 1 },{name: 'PriceLevel'});
 
 let auctions_db = mongoose.model('auctions', schema, 'auctions');

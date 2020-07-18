@@ -53,12 +53,10 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                 }
             }
         ]).cursor({batchSize: 10}).exec().eachAsync(async ({_id}) => {
-            let [latest_lot, latest_value] = await Promise.all([
-                await auctions_db.findOne({connected_realm_id: _id}).select('lastModified').sort('-lastModified'),
-                await valuations_db.findOne({connected_realm_id: _id}).select('lastModified').sort('-lastModified')
-            ])
-            if (moment(latest_lot.lastModified).isAfter(latest_value.lastModified)) {
+            const t = await realms_db.findOne({connected_realm_id: _id}).select('auctions valuations').lean();
+            if (t.auctions === t.valuations) {
                 await XVA({expansion: "BFA"}, _id)
+                await realms_db.updateMany({connected_realm_id: _id}, {auctions: t.auctions})
             }
         }, {parallel: bulkSize});
         connection.close();

@@ -20,7 +20,7 @@ let schema = new mongoose.Schema({
     item_id: Number,
     asset_class: Array,
     connected_realm_id: Number,
-    lastModified: Date,
+    last_modified: Number,
     vendor: {
         sell_price: Number,
         buy_price: Number,
@@ -28,7 +28,7 @@ let schema = new mongoose.Schema({
         yieldReagent: Number, /** if buy_price buy_price / market.price */
     },
     market: {
-        lastModified: Date,
+        last_modified: Number,
         price: Number,
         quantity: Number,
         open_interest: Number,
@@ -38,16 +38,16 @@ let schema = new mongoose.Schema({
         yieldVendor: Number, /** price / market.vendorSellPrice */
     },
     derivative: [{
-        lastModified: Date,
+        _id: String,
         rank: Number,
         reagent_items: Array, /**IDEA ...add? */
-        _id: String,
         queue_cost: Number, /** Cost of production quene*/
         queue_quantity: Number,
         nominal_value: Number, /** Cost/Q = for x1*/
         premium: Number,
         yieldMarket: Number, /** nominal_value / market.price */
         yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
+        last_modified: Number,
     }],
     reagent: {
         name: String,
@@ -65,7 +65,7 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-schema.index({ lastModified: -1 },{name: 'TTL'});
+schema.index({ last_modified: -1 },{name: 'LastModified'});
 
 let valuations_db = mongoose.model('valuations', schema, 'valuations');
 

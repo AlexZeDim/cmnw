@@ -8,7 +8,7 @@ const {Round2} = require("../../../db/setters")
  * TODO RECURSIVE CONTROL
  * @param method
  * @param connected_realm_id
- * @param lastModified
+ * @param last_modified
  * @param item_depth
  * @param method_depth
  * @param single_name
@@ -18,7 +18,7 @@ const {Round2} = require("../../../db/setters")
 async function methodValuationAdjustment (
         method = {},
         connected_realm_id = 1602,
-        lastModified,
+        last_modified,
         item_depth = 0,
         method_depth = 0,
         single_name = false
@@ -65,7 +65,7 @@ async function methodValuationAdjustment (
                         value: 0
                     });
                 } else {
-                    let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1);
+                    let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, last_modified, item_depth+1, method_depth+1);
                     if ("reagent" in iva) {
                         if ("value" in iva.reagent) {
                             Object.assign(reagent_item, {
@@ -109,7 +109,7 @@ async function methodValuationAdjustment (
                 if (method.item_id === 152668) {
                     allowCap = true;
                 }
-                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, lastModified, item_depth+1, method_depth+1, allowCap);
+                let iva = await itemValuationAdjustment(reagent_item, connected_realm_id, last_modified, item_depth+1, method_depth+1, allowCap);
                 if ("reagent" in iva) {
                     Object.assign(reagent_item, {
                         price: iva.reagent.value,
@@ -140,7 +140,7 @@ async function methodValuationAdjustment (
             queue_cost: Round2(queue_cost),
             queue_quantity: parseInt(method.item_quantity),
             nominal_value: n_value,
-            lastModified: lastModified,
+            last_modified: last_modified,
             reagent_items: reagent_items,
             premium_items: premium_items
         };

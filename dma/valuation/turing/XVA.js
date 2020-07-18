@@ -43,7 +43,6 @@ async function XVA (query = {expansion: "BFA"}, connected_realm_id = 1602) {
                 allowCap = true
             }
             Object.assign(query, {asset_class: { "$all": ac }})
-            console.log(query)
             await items_db.find(query).cursor({batchSize: 10}).eachAsync(async (item) => {
                 console.time(`DMA-${item._id}-${connected_realm_id}:${item.name.en_GB}`)
                 await itemValuationAdjustment(item, connected_realm_id, null, 0, 0, allowCap)

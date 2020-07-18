@@ -40,6 +40,9 @@ let schema = new mongoose.Schema({
     valuations: {
         type: Number
     },
+    golds: {
+        type: Number
+    },
     category: {
         type: String
     },

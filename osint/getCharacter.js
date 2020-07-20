@@ -4,20 +4,16 @@
 
 const characters_db = require("../db/characters_db");
 const realms_db = require("../db/realms_db");
-
-/**
- * B.net wrapper
- */
-
-const battleNetWrapper = require('battlenet-api-wrapper');
+const osint_logs_db = require("../db/osint_logs_db");
 
 /**
  * Modules
  */
 
-const {toSlug, fromSlug} = require("../db/setters");
 const crc32 = require('fast-crc32c');
-const moment = require('moment');
+const battleNetWrapper = require('battlenet-api-wrapper');
+const {toSlug, fromSlug} = require("../db/setters");
+const indexDetective = require("./indexing/indexDetective");
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
@@ -34,129 +30,124 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 async function getCharacter (realmSlug, characterName, characterObject = {}, token= '', updatedBy = 'OSINT-getCharacter', guildRank = false) {
     try {
-        const character_Object = Object.assign({}, characterObject)
+
+        /**
+         * Convert to Slug
+         */
         realmSlug = toSlug(realmSlug);
         characterName = toSlug(characterName);
+
+        /**
+         * B.net wrapper
+         */
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
-        let character = new characters_db({
-            _id: `${characterName}@${realmSlug}`,
-            statusCode: 100,
-            createdBy: updatedBy,
-            updatedBy: updatedBy,
-            isWatched: false
-        });
-        await Promise.all([
-            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName).then(async (
-                { id, name, gender, faction, race, character_class, active_spec, realm, guild, level, last_login_timestamp, average_item_level, equipped_item_level, lastModified, statusCode }) => {
-                    character.id = id;
-                    character.name = name;
-                    character.gender = gender.name;
-                    character.faction = faction.name;
-                    character.race = race.name;
-                    character.character_class = character_class.name;
-                    character.spec = active_spec.name;
-                    character.realm = {
-                        id: realm.id,
-                        name: realm.name,
-                        slug: realm.slug
-                    };
-                    character.level = level;
-                    character.lastOnline = moment(last_login_timestamp).toISOString(true);
-                    character.lastModified = moment(lastModified).toISOString(true);
-                    character.isActive = true;
-                    character.statusCode = statusCode;
-                    character.ilvl = {
-                        eq: average_item_level,
-                        avg: equipped_item_level
-                    };
-                    if (guild) {
-                        character.guild.id = guild.id;
-                        character.guild.name = guild.name;
-                        character.guild.slug = guild.name;
-                        if (guildRank === true) {
-                            const {members} = await bnw.WowProfileData.getGuildRoster(guild.realm.slug, toSlug(guild.name));
-                            const {rank} = members.find(({ character }) => character.id === id );
-                            character.guild.rank = rank;
-                        }
-                    } else {
-                        delete character.guild;
-                    }
-                }
-            ).catch(e => {
-                if (/\d/g.test(e.toString())) character.statusCode = parseFloat(e.toString().match(/[0-9]+/g)[0]);
-            }),
-            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName).then(({pets})=> {
-                let pets_array = [];
-                let active_pets = [];
-                if (pets && pets.length) {
-                    for (let pet of pets) {
-                        if ("is_active" in pet) {
-                            if ("name" in pet) {
-                                active_pets.push(`__${pet.name}`)
-                            }
-                            active_pets.push(pet.species.name)
-                            pets_array.push(pet.level)
-                        }
-                        if ("name" in pet) {
-                            pets_array.push(`__${pet.name}`)
-                        }
-                        pets_array.push(pet.species.name)
-                        pets_array.push(pet.level)
-                    }
-                    character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
-                    character.hash.a = crc32.calculate(Buffer.from(pets_array.toString())).toString(16);
-                }
-            }).catch(e =>(e)),
-            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName).then(({mounts}) => {
-                let mount_array = [];
-                for (let mount of mounts) {
-                    mount_array.push(mount.id)
-                }
-                character.hash.b = crc32.calculate(Buffer.from(mount_array.toString())).toString(16);
-            }).catch(e =>(e)),
-            bnw.WowProfileData.getCharacterMedia(realmSlug, characterName).then(({avatar_url, bust_url, render_url}) => {
-                if (!character.id) {
-                    character.id = parseInt(avatar_url.split('/').pop(-1).match(/([0-9]+)/g)[0]);
-                }
-                character.media = {
-                    avatar_url: avatar_url,
-                    bust_url: bust_url,
-                    render_url: render_url
-                };
-            }).catch(e =>(e))
-        ]);
-        if (!character.hasOwnProperty('id')) {
-            let {id} = await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName).catch(e=>(e))
-            character.id = id;
-            character.isActive = true;
-        }
-        /**
-         * isCreated and createdBy
-         */
-        let [character_created, character_byId] = await Promise.all([
-            characters_db.findById(toSlug(`${characterName}@${realmSlug}`)),
-            characters_db.findOne({
-                realm: realmSlug,
-                id: character.id || 0
-            })
-        ])
-        if (character_created) {
-            delete character.createdBy
-            //TODO check timestamp && dont return probably other things are changed
-        }
-        if (character_byId) {
-            //TODO inactive char or error, check lastModified for that
-            if (character_byId.statusCode === 200 && character.statusCode !== 200) {
 
+        /**
+         * Check if character exists
+         */
+        let character = await characters_db.findById(`${characterName}@${realmSlug}`)
+
+        /**
+         * TODO optional await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName).catch(e=>(e))
+         */
+
+        const [characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
+            bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName),
+            bnw.WowProfileData.getCharacterMedia(realmSlug, characterName)
+        ]);
+
+        if (character) {
+            if (characterData.value) {
+                let detectiveCheck = ["race", "gender", "faction"];
+                for (let check of detectiveCheck) {
+                    indexDetective(character._id, "character", character[check], characterData.value[check].name, check, new Date(character.lastModified), new Date(characterData.value.last_login_timestamp))
+                }
+            }
+        } else {
+            if (!character) {
+                character = new characters_db({
+                    _id: `${characterName}@${realmSlug}`,
+                    statusCode: 100,
+                    createdBy: updatedBy,
+                    updatedBy: updatedBy,
+                    isWatched: false
+                });
             }
         }
-        //TODO only for migrations
-        if (character_Object.logs && character_Object.logs.length) {
-            character.logs = [...character_Object.logs]
-        }
-        if (character.statusCode !== 200) {
-            //TODO add id request
+
+        /**
+         * Character Data
+         */
+        if (characterData.value) {
+            character.id = characterData.value.id
+            character.name = characterData.value.name;
+            character.faction = characterData.value.faction.name
+            character.gender = characterData.value.gender.name
+            character.race = characterData.value.race.name;
+            character.character_class = characterData.value.character_class.name;
+            character.level = characterData.value.level;
+            character.statusCode = characterData.value.statusCode;
+
+            /**
+             * Timestamp
+             */
+            if ("last_login_timestamp" in characterData.value) {
+                character.lastModified = characterData.value.last_login_timestamp;
+            }
+
+            /**
+             * Realm
+             */
+            character.realm = {
+                id: characterData.value.realm.id,
+                name: characterData.value.realm.name,
+                slug: characterData.value.realm.slug
+            };
+
+            /**
+             * Active spec
+             */
+            if ("active_spec" in characterData.value) {
+                character.spec = characterData.value.active_spec.name;
+            }
+
+            /**
+             * Item Level
+             */
+            if ("average_item_level" in characterData.value && "equipped_item_level" in characterData.value) {
+                character.ilvl = {
+                    eq: characterData.value.average_item_level,
+                    avg: characterData.value.equipped_item_level
+                };
+            }
+
+            /**
+             * Active title
+             * Hash T
+             */
+            if ("active_title" in characterData.value) {
+                character.hash.t = parseInt(characterData.value.active_title.id, 16);
+            }
+
+            /**
+             * Guild
+             */
+            if (characterData.value.guild) {
+                character.guild.id = characterData.value.guild.id;
+                character.guild.name = characterData.value.guild.name;
+                character.guild.slug = characterData.value.guild.name;
+                if (guildRank === true) {
+                    const {members} = await bnw.WowProfileData.getGuildRoster(characterData.value.realm.slug, toSlug(characterData.value.name));
+                    const {rank} = members.find(({ character }) => character.id === characterData.value.id );
+                    character.guild.rank = rank;
+                }
+            } else {
+                character.guild = undefined;
+            }
+        } else {
             character.name = fromSlug(characterName);
             let {id, name, slug} = await realms_db.findOne({
                 $or: [
@@ -169,104 +160,70 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 name: name,
                 slug: slug,
             }
-            if (character_Object && Object.keys(character_Object).length) {
-                /**
-                 * If request about certain character isn't successful
-                 * but we already have provided values, then we use it.
-                 * FIXME it's bad
-                 */
-                Object.assign(character, character_Object)
+            if (characterObject && Object.keys(characterObject).length) {
+                console.log(characterObject);
             }
+            character.statusCode = 400;
         }
-        if (character_byId && character_created) {
-            /**
-             * Renamed character on inactive
-             * make shadow_copy of character_created and delete it
-             * then inherit all from character_byId to character!
-             */
-            if ((character.name !== character_byId.name) && (character_created.id !== character_byId.id)) {
-                /*** Shadow Copy of inactive character */
-                let character_shadowCopy = Object.assign({}, character_created.toObject())
-                character_shadowCopy._id = `${character_shadowCopy._id}#${character_shadowCopy.id || 0}`;
-                character_shadowCopy.createdBy = `OSINT-shadowCopy`;
-                await characters_db.findByIdAndDelete(character_created._id)
-                await characters_db.create(character_shadowCopy);
-                character_created = null;
-                /** Inherit character logs by ID */
-                character.logs = [...character_byId.logs]
-                /** Add info to logs about rename */
-                character.logs.push({
-                    old_value: character_byId.name,
-                    new_value: character.name,
-                    action: 'rename',
-                    message: `${character_byId.name}@${character.realm} now known as ${character.name}`,
-                    before: character.lastModified,
-                    after: character_byId.lastModified
-                })
-                character.createdBy = updatedBy;
-                /** Delete duplicate (byID) because we create new document */
-                await characters_db.findByIdAndDelete(character_byId._id)
-            }
-        }
-        if (character_byId && !character_created) {
-            /**
-             * Renamed character w/o on_inactive
-             */
-            if (character.name !== character_byId.name) {
-                /** Inherit character logs by ID */
-                character.logs = [...character_byId.logs]
-                /** Add info to logs about rename */
-                character.logs.push({
-                    old_value: character_byId.name,
-                    new_value: character.name,
-                    action: 'rename',
-                    message: `${character_byId.name}@${character.realm} now known as ${character.name}`,
-                    before: character.lastModified,
-                    after: character_byId.lastModified
-                })
-                /** Delete duplicate (byID) because we create new document */
-                await characters_db.findByIdAndDelete(character_byId._id)
-            }
-        }
+
         /**
-         * Detective:IndexDB
+         * Character Pets
+         * Hash A & Hash C
          */
-        if (character_byId && character.statusCode === 200) {
-            /**
-             * If statusCode to API is 200 && character_byId exists,
-             * but name of character_byId not equal to requested B.net character
-             * then it's rename
-             */
-            if (character_byId.race !== character.race) {
-                character.logs.push({
-                    old_value: character_byId.race,
-                    new_value: character.race,
-                    action: 'race',
-                    message: `${character.name}@${character.realm} changed race from ${character_byId.race} to ${character.race}`,
-                    before: character.lastModified,
-                    after: character_byId.lastModified
-                })
-            }
-            if (character_byId.gender !== character.gender) {
-                character.logs.push({
-                    old_value: character_byId.gender,
-                    new_value: character.gender,
-                    action: 'gender',
-                    message: `${character.name}@${character.realm} swap gender from ${character_byId.gender} to ${character.gender}`,
-                    before: character.lastModified,
-                    after: character_byId.lastModified
-                })
-            }
-            if (character_byId.faction !== character.faction) {
-                character.logs.push({
-                    old_value: character_byId.faction,
-                    new_value: character.faction,
-                    action: `${character.name}@${character.realm} changed faction from ${character_byId.faction} to ${character.faction}`,
-                    before: character.lastModified,
-                    after: character_byId.lastModified
-                })
+        if (characterPets.value) {
+            let pets_array = [];
+            let active_pets = [];
+            if (characterPets.value.pets && characterPets.value.pets.length) {
+                let pets = characterPets.value.pets;
+                for (let pet of pets) {
+                    if ("is_active" in pet) {
+                        if ("name" in pet) {
+                            active_pets.push(`${pet.name}`)
+                        }
+                        active_pets.push(pet.species.name)
+                        pets_array.push(pet.level)
+                    }
+                    if ("name" in pet) {
+                        pets_array.push(`${pet.name}`)
+                    }
+                    pets_array.push(pet.species.name)
+                    pets_array.push(pet.level)
+                }
+                character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
+                character.hash.a = crc32.calculate(Buffer.from(pets_array.toString())).toString(16);
             }
         }
+
+        /**
+         * Character Mounts
+         * Hash B
+         */
+        if (characterMount.value) {
+            let mount_array = [];
+            if (characterMount.value.mounts && characterMount.value.mounts.length) {
+                let mounts = characterMount.value.mounts;
+                for (let mount of mounts) {
+                    mount_array.push(mount.id)
+                }
+                character.hash.b = crc32.calculate(Buffer.from(mount_array.toString())).toString(16);
+            }
+        }
+
+        /**
+         * Character Media
+         * ID
+         */
+        if (characterMedia.value) {
+            if (!character.id) {
+                character.id = parseInt((characterMedia.value.avatar_url).toString().split('/').pop(-1).match(/([0-9]+)/g)[0]);
+            }
+            character.media = {
+                avatar_url: characterMedia.value.avatar_url,
+                bust_url: characterMedia.value.bust_url,
+                render_url: characterMedia.value.render_url
+            };
+        }
+
         /**
          * Hash.ex
          */
@@ -274,17 +231,45 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             let hash_ex = [character.id, character.character_class]
             character.hash.ex = crc32.calculate(Buffer.from(hash_ex.toString())).toString(16);
         }
+
+        /**
+         * Check ShadowCopy
+         */
+        if (character.isNew) {
+            //TODO check for shadow copy?
+            let shadowCopy, renamedCopy;
+
+            /**
+             * If we found rename and anything else
+             */
+            renamedCopy = await characters_db.findOne({
+                "realm.slug": realmSlug,
+                "id": character.id,
+            })
+            if (renamedCopy) {
+                let renameCheck = ["name", "race", "gender", "faction"];
+                for (let check of renameCheck) {
+                    indexDetective(character._id, "character", character[check], renamedCopy[check], check, new Date(character.lastModified), new Date(renamedCopy.lastModified))
+                }
+                /** Update all osint logs */
+                await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id});
+            }
+
+            /**
+             * Shadow copy
+             */
+            if (!renamedCopy) {
+                shadowCopy = await characters_db.findOne({
+                    "hash.a": character.hash.a,
+                    "hash.b": character.hash.b,
+                    "hash.c": character.hash.c,
+                    "hash.t": character.hash.t
+                })
+            }
+        }
+
+        await character.save()
         console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`)
-        return await characters_db.findByIdAndUpdate({
-            _id: character._id
-        },
-        character.toObject(),
-        {
-            upsert: true,
-            new: true,
-            lean: true,
-            overwrite: true
-        });
     } catch (error) {
         console.error(`E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(realmSlug)},${error}`);
     }

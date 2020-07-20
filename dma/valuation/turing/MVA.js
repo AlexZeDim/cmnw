@@ -25,34 +25,40 @@ async function methodValuationAdjustment (
     ) {
     const itemValuationAdjustment = require('./IVA');
     try {
-        /**
-         * Asset Class hierarchy map
-         * @type {Map<string, number>}
-         */
-        const assetClassMap = new Map([
-            ['VENDOR,REAGENT,ITEM', 0],
-            ['CONST,REAGENT,ITEM', 1],
-            ['REAGENT,MARKET,ITEM', 2],
-            ['REAGENT,MARKET,DERIVATIVE', 3],
-            ['CAP,MARKET,DERIVATIVE', 4],
-            ['CAP,PREMIUM,DERIVATIVE', 5],
-            ['PREMIUM,REAGENT,DERIVATIVE', 6],
-            ['PREMIUM,MARKET,ITEM', 7],
-            ['PREMIUM,REAGENT,ITEM', 8],
-        ]);
+        const assetClass_index = async (asset = []) => {
+            try {
+                const assetClassMap = new Map([
+                    [0, ['VENDOR','REAGENT','ITEM']],
+                    [1, ['CONST','REAGENT','ITEM']],
+                    [2, ['PREMIUM','REAGENT','DERIVATIVE']],
+                    [3, ['PREMIUM','MARKET','ITEM']],
+                    [4, ['PREMIUM','REAGENT','ITEM']],
+                    [5, ['REAGENT','MARKET','ITEM']],
+                    [6, ['REAGENT','MARKET','DERIVATIVE']],
+                    [7, ['CAP','MARKET','DERIVATIVE']],
+                    [8, ['CAP','PREMIUM','DERIVATIVE']],
+                ]);
+                for (let [k, ac] of assetClassMap) {
+                    let match = ac.every(i => asset.includes(i));
+                    if (match) return k
+                }
+            } catch (e) {
+                console.error(e)
+            }
+        };
         /**
          * Sort reagent_items according to map
          */
-        method.reagent_items.sort((a, b) => assetClassMap.get(a.asset_class) - assetClassMap.get(b.asset_class));
+        method.reagent_items.sort((a, b) => assetClass_index(a.asset_class) - assetClass_index(b.asset_class));
         /**
-         * Init production cost and premium
+         * Init queue_cost cost and premium
          */
         let queue_cost = 0;
         let premium_items = [];
         let reagent_items = [];
         for (let reagent_item of method.reagent_items) {
             /**
-             * Check Reagent.value, if there is not add to cost 0 but premium
+             * Check Reagent.value, if there is not add to cost 0, but premium
              * premium += (Price market (if exist) - quene_cost)
              * */
             if (reagent_item.asset_class.some(asset_class => asset_class === 'PREMIUM')) {
@@ -96,6 +102,10 @@ async function methodValuationAdjustment (
                         });
                     }
                 }
+                /**
+                 * Add to reagent_items successfully evaluated premium item
+                 * and to premium_items as well
+                 */
                 premium_items.push(reagent_item);
                 reagent_items.push(reagent_item);
             } else {
@@ -106,6 +116,12 @@ async function methodValuationAdjustment (
                  * IDEA item_id premium allow cap?
                  */
                 let allowCap = false;
+                /**
+                 * This exception for 152668:Expulsom
+                 *
+                 * wtf? EXPL is premium it can't be here!
+                 * WE EVALUATE EXPULSOM, NOT AS REAGENT!
+                 */
                 if (method.item_id === 152668) {
                     allowCap = true;
                 }
@@ -123,12 +139,15 @@ async function methodValuationAdjustment (
                         value: 0
                     })
                 }
+                /**
+                 * Add to reagent_items successfully evaluated item
+                 */
                 reagent_items.push(reagent_item);
             }
         }
         /**
          * End of loop
-         * Proc chance
+         * Proc chance exception
          */
         let n_value = Round2(queue_cost / method.item_quantity);
         if (method.expansion === 'BFA' && method.profession === 'ALCH' && method.rank === 3) {

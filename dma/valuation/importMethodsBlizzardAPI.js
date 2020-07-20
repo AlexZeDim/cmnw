@@ -92,7 +92,7 @@ async function importMethodsBlizzardAPI () {
                             result.updatedBy = `DMA-${importMethodsBlizzardAPI.name}`;
                             for (let recipe of recipes) {
                                 await Promise.all([
-                                    bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents}) => {
+                                    bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents, crafted_quantity}) => {
                                         result._id = `P${id}`;
                                         result.recipe_id = parseInt(id);
                                         result.name = name;
@@ -116,6 +116,9 @@ async function importMethodsBlizzardAPI () {
                                         }
                                         if (rank) {
                                             result.rank = rank;
+                                        }
+                                        if (crafted_quantity) {
+                                            result.item_quantity = crafted_quantity.value;
                                         }
                                         result.reagents = reagents.map(({reagent, quantity}) => {return {_id: parseInt(reagent.id) , quantity: parseInt(quantity)}});
                                     }).catch(e=>e),

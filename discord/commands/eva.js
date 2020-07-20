@@ -41,7 +41,7 @@ module.exports = {
             if ("icon" in item) {
                 embed.setThumbnail(item.icon);
             }
-            if (asset_class.some(v_class => v_class === 'VENDOR') || asset_class.some(v_class => v_class === 'CONST')) {
+            if (asset_class.some(ac => ac === 'VENDOR') || asset_class.some(ac => ac === 'CONST')) {
                 embed.addFields(
                     { name: 'Sell', value: `${vendor.sell_price} g`, inline: true },
                     { name: 'Buy', value: `${vendor.buy_price} g`, inline: true },

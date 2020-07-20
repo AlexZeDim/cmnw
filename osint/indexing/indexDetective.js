@@ -18,10 +18,48 @@
  * TODO if not new created the timestamp once more
  */
 
-async function f() {
-    try {
+const osint_logs_db = require("../../db/osint_logs_db");
 
-    } catch (e) {
-
+function indexDetective (root_id, type, original_value, new_value, action, before, after) {
+    /**
+     * Find change
+     */
+    if (original_value === new_value) {
+        return { fieldName: action, status: true }
+    } else {
+        /**
+         * Log evidence of change // logger message
+         */
+        let message;
+        switch (action) {
+            case (action === "race"):
+                message = `${root_id} changed race from ${original_value} to ${new_value}`;
+                break;
+            case (action === "gender"):
+                message = `${root_id} swap gender from ${original_value} to ${new_value}`;
+                break;
+            case (action === "faction"):
+                message = `${root_id} changed faction from ${original_value} to ${new_value}`;
+                break;
+            case (action === "name"):
+                message = `${root_id} changed name from ${original_value} to ${new_value}`;
+                break;
+            default:
+                message = "";
+        }
+        let event = new osint_logs_db({
+            root_id: root_id,
+            type: type,
+            original_value: original_value,
+            new_value: new_value,
+            message: message,
+            action: action,
+            before: before,
+            after: after
+        });
+        event.save()
+        return { fieldName: action, status: false }
     }
 }
+
+module.exports = indexDetective;

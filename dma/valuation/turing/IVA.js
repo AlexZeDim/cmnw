@@ -10,7 +10,7 @@ const valuations = require("../../../db/valuations_db");
 
 const getPricingMethods = require("../getPricingMethods");
 const premiumSingleName = require("./premiumSingleName");
-const auctionsData  = require('../../auctions/auctionsData');
+const auctionsQuotes  = require('../../auctions/auctionsQuotes');
 const {Round2} = require("../../../db/setters")
 
 /**
@@ -20,7 +20,7 @@ const {Round2} = require("../../../db/setters")
  * @param last_modified {Number}
  * @param item_depth {Number}
  * @param method_depth {Number}
- * @param allowCap
+ * @param allowCap TODO rename to allow destroy and check it somehow
  * @returns {Promise<void>}
  */
 
@@ -42,7 +42,7 @@ async function itemValuationAdjustment (
              */
         }
         /**
-         * check existing valuation based on timestamp
+         * Getting timestamp to check existing valuation
          */
         if (!last_modified) {
             const realms_db = require("../../../db/realms_db");
@@ -53,7 +53,7 @@ async function itemValuationAdjustment (
         }
         let pricing;
         pricing = await valuations.findById(`${item._id}@${connected_realm_id}`).lean();
-        if (pricing) {
+/*        if (pricing) {
             if (pricing.last_modified === last_modified) {
                 return pricing
             }
@@ -67,7 +67,7 @@ async function itemValuationAdjustment (
                     return pricing
                 }
             }
-        }
+        }*/
         /**
          * If no valuation found then start evaluation process
          */
@@ -85,7 +85,7 @@ async function itemValuationAdjustment (
             /** check vendor price in*/
             pricing.vendor.buy_price = item.purchase_price;
         }
-        if (item.sell_price > 0) {
+        if (item.sell_price) {
             /** check vendor price out*/
             pricing.vendor.sell_price = item.sell_price;
         }
@@ -96,9 +96,9 @@ async function itemValuationAdjustment (
          */
         if (item.is_auctionable) {
             /** Request for Quotes */
-            let [{min, min_size, _id, quantity, open_interest, orders}] = await auctionsData(item._id, connected_realm_id);
+            let {min, min_size, _id, quantity, open_interest, orders} = await auctionsQuotes(item._id, connected_realm_id);
             /** If price found, then => market */
-            if (min && min_size) {
+            if (min) {
                 pricing.market = {
                     price: min,
                     price_size: min_size,
@@ -126,13 +126,15 @@ async function itemValuationAdjustment (
                 let mva = await methodValuationAdjustment(price_method, connected_realm_id, last_modified, item_depth, method_depth);
 
                 /** If MVA returns at least one premium reagent and IVA item has market price */
-                if ("premium_items" in mva && pricing.price_size) {
+                if ("premium_items" in mva && pricing.price) {
                     if (mva.premium_items.length) {
-                        /** For all premium reagents without valuation in method.. */
+                        /** For all premium reagents without valuation in method..
+                         * TODO not sure that 5% should be here and wtf queue_cost on proc?
+                         * */
                         let w_premium = {
-                            premium: Round2((pricing.market.price_size * 0.95) - (mva.nominal_value)),
-                            queue_cost: Round2((pricing.market.price_size * 0.95) * mva.queue_quantity),
-                            nominal_value: Round2(pricing.market.price_size * 0.95),
+                            premium: Round2((pricing.market.price * 0.95) - (mva.nominal_value)),
+                            queue_cost: Round2((pricing.market.price * 0.95) * mva.queue_quantity),
+                            nominal_value: Round2(pricing.market.price * 0.95),
                         };
                         Object.assign(mva, w_premium);
                     }
@@ -158,25 +160,24 @@ async function itemValuationAdjustment (
                  * !We evaluate every method not items!
                  * Iterate over every single name one by one..
                  */
-                for (let method of SingleNames) {
-                    let single_premium = await methodValuationAdjustment(
-                        method,
-                        connected_realm_id,
-                        last_modified,
-                        item_depth,
-                        method_depth,
-                        true
-                    );
+                if (SingleNames.leading) {
+                    for (let method of SingleNames) {
 
-                    let [{min_size, quantity}] = await auctionsData(method.item_id, connected_realm_id);
-                    /** If market data exists and premium_item just one */
-                    if (min_size && quantity) {
-                        /** If premium have PRVA */
-                        pricing.reagent.premium.addToSet({
-                            _id: single_premium._id,
-                            value: Round2(((min_size * 0.95) * single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity),
-                            wi: Round2((single_premium.premium_items[0].quantity / single_premium.queue_quantity) * quantity)
-                        });
+                        /** Request MVA for quene_cost & queue_quantity */
+                        let single_premium = await methodValuationAdjustment(method, connected_realm_id, last_modified, item_depth, method_depth, true);
+
+                        /** Request market quote of a single premium item for future evaluation */
+                        let {min, quantity} = await auctionsQuotes(method.item_id, connected_realm_id);
+
+                        /** If market data exists and premium_item just one */
+                        if (min && quantity) {
+                            /** If premium have PRVA */
+                            pricing.reagent.premium.addToSet({
+                                _id: single_premium._id,
+                                value: Round2(((min * 0.95) * single_premium.queue_quantity - single_premium.queue_cost) / single_premium.premium_items[0].quantity),
+                                wi: Round2((single_premium.premium_items[0].quantity / single_premium.queue_quantity) * quantity)
+                            });
+                        }
                     }
                 }
                 /** END of MVA */

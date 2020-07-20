@@ -13,6 +13,7 @@ const itemValuationAdjustment = require('./IVA');
 
 /**
  * This function evaluate any item with asset_classes property on certain realm
+ * TODO XVA last_modified for IVA
  * @param query
  * @param connected_realm_id
  * @returns {Promise<void>}

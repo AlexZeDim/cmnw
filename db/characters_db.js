@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {toSlug, fromSlug} = require('./setters');
+const { toSlug, fromSlug } = require('./setters');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -47,14 +47,6 @@ let schema = new mongoose.Schema({
         },
         rank: Number,
     },
-    logs: [{
-        old_value: mongoose.Mixed,
-        new_value: mongoose.Mixed,
-        action: String,
-        message: String,
-        after: Date,
-        before: Date
-    }],
     ilvl: {
         eq: Number,
         avg: Number,
@@ -64,12 +56,14 @@ let schema = new mongoose.Schema({
      * B - mount collection,
      * C - pet slots,
      * EX - id + class
+     * T - active title
      */
     hash: {
         a: String,
         b: String,
         c: String,
         ex: String,
+        t: String,
     },
     race: {
         type: String
@@ -90,10 +84,7 @@ let schema = new mongoose.Schema({
         type: Number
     },
     lastModified: {
-        type: Date
-    },
-    lastOnline: {
-        type: Date
+        type: Number
     },
     statusCode: {
         type: Number
@@ -109,10 +100,6 @@ let schema = new mongoose.Schema({
     updatedBy: {
       type: String
     },
-    isActive: {
-        type: Boolean,
-        default: false,
-    },
     isWatched: {
         type: Boolean,
         default: false,
@@ -122,17 +109,20 @@ let schema = new mongoose.Schema({
 });
 
 schema.index({ "name": 1 },{name: 'Name'});
-schema.index({ "guild": 1 },{name: 'Guild'});
+schema.index({ "guild.name": 1 },{name: 'Guild'});
 schema.index({ "id": 1 },{name: 'ID'});
+
 schema.index({ "hash.a": 1 },{name: 'Hash A'});
 schema.index({ "hash.b": 1 },{name: 'Hash B'});
 schema.index({ "hash.c": 1 },{name: 'Hash C'});
 schema.index({ "hash.ex": 1 },{name: 'Hash EX'});
+schema.index({ "hash.t": 1 },{name: 'Hash T'});
+
 schema.index({ "updatedAt": 1 },{name: 'OSINT-IndexCharacters'});
 schema.index({ "realm.slug": 1, "id": 1 },{name: 'ByGUID'});
 
 let characters_db = mongoose.model('characters', schema, 'characters');
 
-//mongoose.connection.close()
+mongoose.connection.close()
 
 module.exports = characters_db;

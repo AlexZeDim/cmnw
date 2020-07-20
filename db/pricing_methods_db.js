@@ -38,21 +38,23 @@ let schema = new mongoose.Schema({
     item_id: {
         type: Number
     },
-    /** LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
-     *  SkillLineAbility.lua
-     * */
     item_quantity: {
         type: Number
     },
+    /**
+     * LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
+     * SkillLineAbility.lua
+     */
     recipe_id: {
         type: Number
     },
     spell_id: {
         type: Number
     },
-    /** API or LOCAL
-     *  {id: Number, Quantity: Number}
-     * */
+    /**
+     * API or LOCAL
+     * {id: Number, Quantity: Number}
+     */
     reagents: {
         type: [
             {
@@ -61,7 +63,7 @@ let schema = new mongoose.Schema({
             }
         ]
     },
-    /** if Local then Convert from SkillLine*/
+    /** if Local then Convert from SkillLine */
     profession: {
         type: String
     },
@@ -90,10 +92,10 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-schema.index({ item_id: -1, type: 1 },{name: 'gPM'});
+schema.index({ item_id: -1, type: 1 },{name: 'getPricingMethod'});
 schema.index({ item_id: -1 },{name: 'itemID'});
-schema.index({ horde_item_id: -1 },{name: 'HitemID'});
-schema.index({ alliance_item_id: -1 },{name: 'AitemID'});
+schema.index({ horde_item_id: -1 },{name: 'Horde_itemID'});
+schema.index({ alliance_item_id: -1 },{name: 'Alliance_itemID'});
 schema.index({ spell_id: -1 },{name: 'spellID'});
 
 let pricing_methods_db = mongoose.model('pricing_methods', schema, 'pricing_methods');

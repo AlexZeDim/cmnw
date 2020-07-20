@@ -45,7 +45,7 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-schema.index({ last_modified: -1 },{name: 'TTL', expireAfterSeconds: 86400});
+schema.index({ createdAt: -1 },{name: 'TTL', expireAfterSeconds: 86400});
 schema.index({ connected_realm_id: 1, last_modified: -1 },{name: 'TimestampCheck'});
 schema.index({ "item.id": -1, connected_realm_id: 1 },{name: 'PriceLevel'});
 

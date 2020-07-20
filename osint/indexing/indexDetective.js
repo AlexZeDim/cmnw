@@ -44,6 +44,9 @@ function indexDetective (root_id, type, original_value, new_value, action, befor
             case (action === "name"):
                 message = `${root_id} changed name from ${original_value} to ${new_value}`;
                 break;
+            case (action === "realm"):
+                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                break;
             default:
                 message = "";
         }

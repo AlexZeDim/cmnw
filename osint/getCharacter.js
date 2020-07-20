@@ -160,6 +160,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 name: name,
                 slug: slug,
             }
+            //TODO
             if (characterObject && Object.keys(characterObject).length) {
                 console.log(characterObject);
             }
@@ -237,7 +238,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
          */
         if (character.isNew) {
             //TODO check for shadow copy?
-            let shadowCopy, renamedCopy;
+            let shadowCopy, renamedCopy, transferCopy;
 
             /**
              * If we found rename and anything else
@@ -245,6 +246,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             renamedCopy = await characters_db.findOne({
                 "realm.slug": realmSlug,
                 "id": character.id,
+                "character_class": character.character_class
             })
             if (renamedCopy) {
                 let renameCheck = ["name", "race", "gender", "faction"];
@@ -253,18 +255,71 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 }
                 /** Update all osint logs */
                 await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id});
+                renamedCopy.deleteOne()
             }
 
             /**
              * Shadow copy
              */
             if (!renamedCopy) {
-                shadowCopy = await characters_db.findOne({
-                    "hash.a": character.hash.a,
-                    "hash.b": character.hash.b,
-                    "hash.c": character.hash.c,
-                    "hash.t": character.hash.t
-                })
+                /**
+                 * Transfer without rename
+                 * allows us to find yourself
+                 */
+                let transfer_query = {
+                    "realm.slug": { $ne: realmSlug },
+                    "name": character.name,
+                    "character_class": character.character_class,
+                    "level": character.level,
+                };
+                if (character.hash.a && character.hash.c) {
+                    transfer_query["hash.a"] = character.hash.a;
+                    transfer_query["hash.c"] = character.hash.c;
+                }
+                if (character.hash.b) {
+                    transfer_query["hash.b"] = character.hash.b;
+                }
+                transferCopy = await characters_db.findOne(transfer_query);
+                if (transferCopy) {
+                    //TODO check 404
+                    let renameCheck = ["race", "gender", "faction"];
+                    for (let check of renameCheck) {
+                        indexDetective(character._id, "character", character[check], transferCopy[check], check, new Date(character.lastModified), new Date(transferCopy.lastModified))
+                    }
+                    indexDetective(character._id, "character", character["realm"].slug, transferCopy["realm"].slug, "realm", new Date(character.lastModified), new Date(transferCopy.lastModified))
+                    /** Update all osint logs */
+                    await osint_logs_db.updateMany({root_id: transferCopy._id}, {root_id: character._id});
+                    transferCopy.deleteOne()
+                }
+
+                /**
+                 * Transferred with rename
+                 */
+                let shadow_query = {
+                    "realm.slug": { $ne: realmSlug },
+                    "name": { $ne: character.name },
+                    "character_class": character.character_class,
+                    "level": character.level,
+                };
+                if (character.hash.a && character.hash.c) {
+                    shadow_query["hash.a"] = character.hash.a;
+                    shadow_query["hash.c"] = character.hash.c;
+                }
+                if (character.hash.b) {
+                    shadow_query["hash.b"] = character.hash.b;
+                }
+                if (Object.keys(shadow_query).length) {
+                    shadowCopy = await characters_db.findOne(shadow_query)
+                    if (shadowCopy) {
+                        let renameCheck = ["name", "race", "gender", "faction"];
+                        for (let check of renameCheck) {
+                            indexDetective(character._id, "character", character[check], shadowCopy[check], check, new Date(character.lastModified), new Date(shadowCopy.lastModified))
+                        }
+                        /** Update all osint logs */
+                        await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id});
+                        shadowCopy.deleteOne()
+                    }
+                }
             }
         }
 

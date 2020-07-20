@@ -40,7 +40,7 @@ let schema = new mongoose.Schema({
     derivative: [{
         _id: String,
         rank: Number,
-        reagent_items: Array, /**IDEA ...add? */
+        reagent_items: Array,
         queue_cost: Number, /** Cost of production quene*/
         queue_quantity: Number,
         nominal_value: Number, /** Cost/Q = for x1*/

@@ -14,7 +14,7 @@ const contracts_db = require("../../db/contracts_db");
  */
 
 const clusterChartData = require("../../dma/getClusterChartData.js");
-const auctionsQuotes = require("../../dma/auctions/auctionsQuotes.js");
+const auctionsQuotes = require("../../dma/auctions/auctionsData.js");
 const itemValuationAdjustment = require("../../dma/valuation/turing/IVA");
 
 

@@ -4,7 +4,7 @@ const realms_db = require("../../db/realms_db");
 /**
  * @param item_id
  * @param connected_realm_id
- * @returns {Promise<{quantity: number, min: number, open_interest: number, min_size: number, orders: [], _id: number}[]|*>}
+ * @returns {Promise<*>}
  */
 
 async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
@@ -21,7 +21,6 @@ async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
                 },
                 {
                     $project: {
-                        _id: "$last_modified",
                         id: "$id",
                         quantity: "$quantity",
                         price: { $ifNull: [ "$buyout", { $ifNull: [ "$bid", "$unit_price" ] } ] },
@@ -29,24 +28,18 @@ async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
                 },
                 {
                     $group: {
-                        _id: "$_id",
+                        _id: "$price",
                         quantity: {$sum: "$quantity"},
                         open_interest: {$sum: { $multiply: [ "$price", "$quantity" ] }},
-                        min: {$min: "$price"},
-                        min_size: {$min: {$cond: [{$gte: ["$quantity", 200]}, "$price", {$min: "$price"}]}},
                         orders: {$addToSet: "$id"},
                     }
+                },
+                {
+                    $sort : { "_id": 1 }
                 }
             ]);
         } else {
-            return [{
-                _id: item_id,
-                quantity: 0,
-                open_interest: 0,
-                min: 0,
-                min_size: 0,
-                orders: []
-            }]
+            return void 0
         }
     } catch (error) {
         console.error(error)

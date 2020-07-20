@@ -28,7 +28,6 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
-
 let identity_db = mongoose.model('identities', schema, 'identities');
 
 module.exports = identity_db;

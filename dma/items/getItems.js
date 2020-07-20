@@ -24,6 +24,7 @@ connection.once('open', () => console.log('Connected to database on ' + process.
 
 const keys_db = require("../../db/keys_db");
 const items_db = require("../../db/items_db");
+const { Round2 } = require("../../db/setters");
 
 /**
  * B.net API wrapper
@@ -63,8 +64,8 @@ async function getItems (queryKeys = { tags: `DMA` }, isNew = true) {
                         item_class: item_class.name.en_GB,
                         item_subclass: item_subclass.name.en_GB,
                         inventory_type: inventory_type.name.en_GB,
-                        purchase_price: parseFloat((purchase_price/10000).toFixed(2)),
-                        sell_price: parseFloat((sell_price/10000).toFixed(2)),
+                        purchase_price: Round2(purchase_price/10000),
+                        sell_price: Round2(sell_price/10000),
                         max_count: max_count,
                         is_equippable: is_equippable,
                         is_stackable: is_stackable,
@@ -80,6 +81,7 @@ async function getItems (queryKeys = { tags: `DMA` }, isNew = true) {
                 console.info(`E,${item_id}`)
             }
         };
+
         if (isNew) {
             for (let item_id = 0; item_id < 250000; item_id++) {
                 await getItemById(item_id)
@@ -97,4 +99,4 @@ async function getItems (queryKeys = { tags: `DMA` }, isNew = true) {
     }
 }
 
-getItems({ tags: `DMA` }, false);
+getItems({ tags: `DMA` }, true);

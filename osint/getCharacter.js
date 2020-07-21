@@ -64,7 +64,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             if (characterData.value) {
                 let detectiveCheck = ["race", "gender", "faction"];
                 for (let check of detectiveCheck) {
-                    indexDetective(character._id, "character", character[check], characterData.value[check].name, check, new Date(character.lastModified), new Date(characterData.value.last_login_timestamp))
+                    indexDetective(character._id, "character", character[check], characterData.value[check].name, check, new Date(characterData.value.last_login_timestamp), new Date(character.lastModified), )
                 }
             }
         } else {

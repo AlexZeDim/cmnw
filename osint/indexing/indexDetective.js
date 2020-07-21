@@ -52,6 +52,7 @@ function indexDetective (root_id, type, original_value, new_value, action, befor
         }
         let event = new osint_logs_db({
             root_id: root_id,
+            root_history: [root_id],
             type: type,
             original_value: original_value,
             new_value: new_value,

@@ -20,6 +20,9 @@ let schema = new mongoose.Schema({
         set: toSlug,
         get: toSlug
     },
+    root_history: {
+        type: Array,
+    },
     type: {
         type: String,
         enum: ["character", "guild"]

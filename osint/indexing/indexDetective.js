@@ -32,19 +32,32 @@ function indexDetective (root_id, type, original_value, new_value, action, befor
          */
         let message;
         switch (action) {
-            case (action === "race"):
+            case "race":
                 message = `${root_id} changed race from ${original_value} to ${new_value}`;
                 break;
-            case (action === "gender"):
+            case "gender":
                 message = `${root_id} swap gender from ${original_value} to ${new_value}`;
                 break;
-            case (action === "faction"):
+            case "faction":
                 message = `${root_id} changed faction from ${original_value} to ${new_value}`;
                 break;
-            case (action === "name"):
+            case "name":
                 message = `${root_id} changed name from ${original_value} to ${new_value}`;
                 break;
-            case (action === "realm"):
+            case "realm":
+                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                break;
+            //TODO
+            case "join":
+                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                break;
+            case "leave":
+                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                break;
+            case "promote":
+                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                break;
+            case "demote":
                 message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
                 break;
             default:

@@ -49,7 +49,8 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         let character = await characters_db.findById(`${characterName}@${realmSlug}`)
 
         /**
-         * TODO optional await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName).catch(e=>(e))
+         * TODO optional
+         * await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName).catch(e=>(e))
          */
 
         const [characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
@@ -149,21 +150,36 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             }
         } else {
             character.name = fromSlug(characterName);
-            let {id, name, slug} = await realms_db.findOne({
+            /**
+             * Find realm from slug is it's not provided
+             */
+            let realm = await realms_db.findOne({
                 $or: [
                     { slug: realmSlug },
                     { slug_locale: realmSlug }
                 ]
-            })
-            character.realm = {
-                id: id,
-                name: name,
-                slug: slug,
+            }).lean();
+            /**
+             * If realm exists, add it
+             */
+            if (realm) {
+                character.realm = {
+                    id: realm.id,
+                    name: realm.name,
+                    slug: realm.slug,
+                }
             }
-            //TODO
+            /**
+             * Upload other fields from imported values
+             */
             if (characterObject && Object.keys(characterObject).length) {
-                console.log(characterObject);
+                character.faction = characterObject.faction
+                character.character_class = characterObject.character_class
+                character.level = characterObject.level
             }
+            /**
+             * Status Code, received, but no updated
+             */
             character.statusCode = 400;
         }
 
@@ -237,7 +253,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
          * Check ShadowCopy
          */
         if (character.isNew) {
-            //TODO check for shadow copy?
             let shadowCopy, renamedCopy, transferCopy;
 
             /**
@@ -354,6 +369,8 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                                 for (let check of renameCheck) {
                                     indexDetective(character._id, "character", character[check], shadow_character[check], check, new Date(character.lastModified), new Date(shadow_character.lastModified))
                                 }
+                                indexDetective(character._id, "character", character["realm"].slug, shadow_character["realm"].slug, "realm", new Date(character.lastModified), new Date(shadow_character.lastModified))
+
                                 /** Update all osint logs */
                                 await osint_logs_db.updateMany(
                                     {

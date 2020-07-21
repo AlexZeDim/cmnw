@@ -254,7 +254,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     indexDetective(character._id, "character", character[check], renamedCopy[check], check, new Date(character.lastModified), new Date(renamedCopy.lastModified))
                 }
                 /** Update all osint logs */
-                await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id});
+                await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id,  $push: {root_history: character._id}});
                 renamedCopy.deleteOne()
             }
 
@@ -264,13 +264,14 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             if (!renamedCopy) {
                 /**
                  * Transfer without rename
-                 * allows us to find yourself
+                 * allows us to find yourself in past
                  */
                 let transfer_query = {
                     "realm.slug": { $ne: realmSlug },
                     "name": character.name,
                     "character_class": character.character_class,
                     "level": character.level,
+                    "statusCode": 200
                 };
                 if (character.hash.a && character.hash.c) {
                     transfer_query["hash.a"] = character.hash.a;
@@ -279,50 +280,98 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 if (character.hash.b) {
                     transfer_query["hash.b"] = character.hash.b;
                 }
-                transferCopy = await characters_db.findOne(transfer_query);
-                if (transferCopy) {
-                    //TODO check 404
-                    let renameCheck = ["race", "gender", "faction"];
-                    for (let check of renameCheck) {
-                        indexDetective(character._id, "character", character[check], transferCopy[check], check, new Date(character.lastModified), new Date(transferCopy.lastModified))
+                /***
+                 * If criteria is >6 i.e. 7
+                 */
+                if (Object.keys(transfer_query).length > 6) {
+                    transferCopy = await characters_db.find(transfer_query);
+                }
+                /**
+                 * If we found character(s) with exactly the
+                 * same name and hash on other realm
+                 */
+                if (transferCopy && transferCopy.length) {
+                    for (let transfer_character of transferCopy) {
+                        /**
+                         * Request for every character that has been found by query
+                         * and check it on 404 status, if 404 - transfer has been made
+                         * @type {Object}
+                         */
+                        const transfer_ex = await bnw.WowProfileData.getCharacterStatus(transfer_character.realm.slug, transfer_character.name)
+
+                        if (!transfer_ex) {
+                            let renameCheck = ["race", "gender", "faction"];
+                            for (let check of renameCheck) {
+                                indexDetective(character._id, "character", character[check], transfer_character[check], check, new Date(character.lastModified), new Date(transfer_character.lastModified))
+                            }
+                            indexDetective(character._id, "character", character["realm"].slug, transfer_character["realm"].slug, "realm", new Date(character.lastModified), new Date(transfer_character.lastModified))
+                            /** Update all osint logs */
+                            await osint_logs_db.updateMany({root_id: transfer_character._id}, {root_id: character._id,  $push: {root_history: character._id}});
+                            transfer_character.deleteOne()
+                        }
+
                     }
-                    indexDetective(character._id, "character", character["realm"].slug, transferCopy["realm"].slug, "realm", new Date(character.lastModified), new Date(transferCopy.lastModified))
-                    /** Update all osint logs */
-                    await osint_logs_db.updateMany({root_id: transferCopy._id}, {root_id: character._id});
-                    transferCopy.deleteOne()
+                } else {
+                    /**
+                     * If transfer has been made rename, then
+                     * search via shadow_query
+                     */
+                    let shadow_query = {
+                        "realm.slug": { $ne: realmSlug },
+                        "name": { $ne: character.name },
+                        "character_class": character.character_class,
+                        "level": character.level,
+                        "statusCode": 200
+                    };
+                    if (character.hash.a && character.hash.c) {
+                        shadow_query["hash.a"] = character.hash.a;
+                        shadow_query["hash.c"] = character.hash.c;
+                    }
+                    if (character.hash.b) {
+                        shadow_query["hash.b"] = character.hash.b;
+                    }
+                    /***
+                     * If criteria is >7 i.e. 8
+                     */
+                    if (Object.keys(shadow_query).length > 7) {
+                        shadowCopy = await characters_db.find(shadow_query)
+                    }
+                    /**
+                     * If we found shadowCopy characters with have the same
+                     * hashed, level, statusCode and class
+                     */
+                    if (shadowCopy && shadowCopy.length) {
+                        for (let shadow_character of shadowCopy) {
+                            /**
+                             * Request for every character that has been found by query
+                             * and check it on 404 status, if 404 - transfer has been made
+                             * @type {Object}
+                             */
+                            const transfer_ex = await bnw.WowProfileData.getCharacterStatus(shadow_character.realm.slug, shadow_character.name)
+
+                            if (!transfer_ex) {
+                                let renameCheck = ["name", "race", "gender", "faction"];
+                                for (let check of renameCheck) {
+                                    indexDetective(character._id, "character", character[check], shadow_character[check], check, new Date(character.lastModified), new Date(shadow_character.lastModified))
+                                }
+                                /** Update all osint logs */
+                                await osint_logs_db.updateMany(
+                                    {
+                                        root_id: shadow_character._id
+                                    },
+                                    {
+                                        root_id: character._id,
+                                        $push: {root_history: character._id}
+                                    }
+                                );
+                                shadow_character.deleteOne()
+                            }
+                        }
+                    }
                 }
 
-                /**
-                 * Transferred with rename
-                 */
-                let shadow_query = {
-                    "realm.slug": { $ne: realmSlug },
-                    "name": { $ne: character.name },
-                    "character_class": character.character_class,
-                    "level": character.level,
-                };
-                if (character.hash.a && character.hash.c) {
-                    shadow_query["hash.a"] = character.hash.a;
-                    shadow_query["hash.c"] = character.hash.c;
-                }
-                if (character.hash.b) {
-                    shadow_query["hash.b"] = character.hash.b;
-                }
-                if (Object.keys(shadow_query).length) {
-                    shadowCopy = await characters_db.findOne(shadow_query)
-                    if (shadowCopy) {
-                        let renameCheck = ["name", "race", "gender", "faction"];
-                        for (let check of renameCheck) {
-                            indexDetective(character._id, "character", character[check], shadowCopy[check], check, new Date(character.lastModified), new Date(shadowCopy.lastModified))
-                        }
-                        /** Update all osint logs */
-                        await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id});
-                        shadowCopy.deleteOne()
-                    }
-                }
             }
         }
-
         await character.save()
         console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`)
     } catch (error) {

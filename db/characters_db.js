@@ -84,7 +84,7 @@ let schema = new mongoose.Schema({
         type: Number
     },
     lastModified: {
-        type: Number
+        type: Date
     },
     statusCode: {
         type: Number

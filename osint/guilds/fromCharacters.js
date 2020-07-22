@@ -50,23 +50,21 @@ const {toSlug} = require("../../db/setters");
 async function fromCharacters (queryFind = {locale: "ru_RU"}, queryKeys = { tags: `OSINT-indexGuilds` }) {
     try {
         console.time(`OSINT-${fromCharacters.name}`);
-        let realms = await realms_db.find(queryFind).lean().cursor();
-        for (let realm = await realms.next(); realm != null; realm = await realms.next()) {
-            const { token } = await keys_db.findOne(queryKeys);
-            if ("slug" in realm) {
-                let realm_slug = realm.slug;
-                let guild_names = await characters_db.distinct("guild.name", { "realm.slug": realm_slug }).lean();
-                for (let guild_name of guild_names) {
+        await realms_db.find(queryFind).lean().cursor().eachAsync(async (realm) => {
+            if (realm.slug) {
+                const { token } = await keys_db.findOne(queryKeys);
+                let guild_slugs = await characters_db.distinct("guild.slug", { "realm.slug": realm.slug }).lean();
+                for (let guild_slug of guild_slugs) {
                     /**
                      * Check guild before insert
                      */
-                    let guild = guilds_db.findById(toSlug(`${guild_name}@${realm_slug}`)).lean()
+                    let guild = guilds_db.findById(toSlug(`${guild_slug}@${realm.slug}`)).lean()
                     if (!guild) {
-                        await getGuild(realm_slug, guild_name, token, `OSINT-${fromCharacters.name}`);
+                        await getGuild(realm.slug, guild_slug, token, `OSINT-${fromCharacters.name}`);
                     }
                 }
             }
-        }
+        }, { parallel: 1 });
         connection.close();
         console.timeEnd(`OSINT-${fromCharacters.name}`);
     } catch (err) {

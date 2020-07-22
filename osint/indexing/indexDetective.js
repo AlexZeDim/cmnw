@@ -47,18 +47,53 @@ function indexDetective (root_id, type, original_value, new_value, action, befor
             case "realm":
                 message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
                 break;
-            //TODO
             case "join":
-                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                if (type === "guild") {
+                    message = `${new_value} joins to ${root_id}`;
+                }
+                if (type === "character") {
+                    message = `${root_id} joins to ${new_value}`;
+                }
                 break;
             case "leave":
-                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                if (type === "guild") {
+                    message = `${original_value} leaves ${root_id}`;
+                }
+                if (type === "character") {
+                    message = `${root_id} leaves ${original_value}`;
+                }
                 break;
             case "promote":
-                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                if (type === "guild") {
+                    message = `In ${root_id} member ${original_value} was promoted to ${new_value}`;
+                }
+                if (type === "character") {
+                    message = `${root_id} was promoted in ${original_value} to ${new_value}`;
+                }
                 break;
             case "demote":
-                message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
+                if (type === "guild") {
+                    message = `In ${root_id} member ${original_value} was demoted to ${new_value}`;
+                }
+                if (type === "character") {
+                    message = `${root_id} was demoted in ${original_value} to ${new_value}`;
+                }
+                break;
+            case "title":
+                if (type === "guild") {
+                    message = `${root_id} GM title was transferred from ${original_value} to ${new_value}`;
+                }
+                if (type === "character") {
+                    message = `${original_value} has transferred GM title to ${new_value}`;
+                }
+                break;
+            case "ownership":
+                if (type === "guild") {
+                    message = `${root_id} GM ownership was transferred from ${original_value} to ${new_value}`;
+                }
+                if (type === "character") {
+                    message = `${original_value} has GM ownership to ${new_value}`;
+                }
                 break;
             default:
                 message = "";

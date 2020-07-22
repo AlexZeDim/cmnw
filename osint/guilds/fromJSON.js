@@ -118,13 +118,15 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
                 if (indexOfRealms !== -1) {
                     console.info(`Parsing: ${file}`);
                     let stringJSON = await readFile(`${path_}/${file}`, {encoding: 'utf8'});
-                    const guildsJSON = JSON.parse(stringJSON);
-                    if (guildsJSON.length) {
-                        for (let guild of guildsJSON) {
-                            if (!guild.name.includes('[raid]')) {
-                                let guild_ = await guild_db.findById(toSlug(`${guild.name}@${realms[indexOfRealms].slug}`));
-                                if (!guild_) {
-                                    await getGuild(realms[indexOfRealms].slug, guild.name, token, `OSINT-${fromJSON.name}`)
+                    if (stringJSON) {
+                        const guildsJSON = JSON.parse(stringJSON);
+                        if (guildsJSON.length) {
+                            for (let guild of guildsJSON) {
+                                if (!guild.name.includes('[raid]')) {
+                                    let guild_ = await guild_db.findById(toSlug(`${guild.name}@${realms[indexOfRealms].slug}`));
+                                    if (!guild_) {
+                                        await getGuild(realms[indexOfRealms].slug, guild.name, token, `OSINT-${fromJSON.name}`)
+                                    }
                                 }
                             }
                         }

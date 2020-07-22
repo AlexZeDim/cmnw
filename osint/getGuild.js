@@ -14,6 +14,7 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 const getCharacter = require('./getCharacter');
 const indexDetective = require("./indexing/indexDetective");
 const {toSlug} = require("../db/setters");
+const {differenceBy}  = require("lodash");
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
@@ -352,16 +353,19 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                         }
                     }
                     /** End of Members loop */
-                    for (let member_old of members) {
-                        if (!new_guild_roster.some(({id}) => id === member_old)) {
-                            /**
-                             * If old member not in a new_roster
-                             * then LEAVE
-                             */
+
+                    /**
+                     * If old member not in a new_roster
+                     * then LEAVE
+                     */
+                    const leaves = differenceBy(members, new_guild_roster, 'id')
+
+                    if (leaves && leaves.length) {
+                        for (let character_left of leaves) {
                             indexDetective(
-                                member_old._id,
+                                character_left._id,
                                 "character",
-                                `${guild._id}#${guild.id} // R:${member_old.rank}`,
+                                `${guild._id}#${guild.id} // R:${character_left.rank}`,
                                 ``,
                                 "leave",
                                 new Date(guildData.value.lastModified),
@@ -370,7 +374,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                             indexDetective(
                                 `${guild._id}`,
                                 "guild",
-                                `${member_old._id} // R:${member_old.rank}`,
+                                `${character_left._id} // R:${character_left.rank}`,
                                 ``,
                                 "leave",
                                 new Date(guildData.value.lastModified),
@@ -378,6 +382,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                             )
                         }
                     }
+                    /** Update old guild roster with a new roster */
                     guild.members = new_guild_roster;
                 }
             }

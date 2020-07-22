@@ -398,38 +398,43 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
         }
 
         if (guild.isNew) {
+            /** Check was guild renamed */
             let renamed_guild = await guild_db.findOne({id: guildData.value.id, "realm.slug": guildData.value.realm.slug})
-            indexDetective(
-                renamed_guild._id,
-                "guild",
-                renamed_guild.name,
-                guildData.value.name,
-                "name",
-                new Date(guildData.value.lastModified),
-                new Date(renamed_guild.lastModified)
-            )
 
-            indexDetective(
-                renamed_guild._id,
-                "guild",
-                renamed_guild.faction,
-                guildData.value.faction.name,
-                "faction",
-                new Date(guildData.value.lastModified),
-                new Date(guild.lastModified)
-            )
+            if (renamed_guild) {
+                /** If yes, log rename */
+                indexDetective(
+                    renamed_guild._id,
+                    "guild",
+                    renamed_guild.name,
+                    guildData.value.name,
+                    "name",
+                    new Date(guildData.value.lastModified),
+                    new Date(renamed_guild.lastModified)
+                )
+                /** And check faction change */
+                indexDetective(
+                    renamed_guild._id,
+                    "guild",
+                    renamed_guild.faction,
+                    guildData.value.faction.name,
+                    "faction",
+                    new Date(guildData.value.lastModified),
+                    new Date(guild.lastModified)
+                )
 
-            /** Update all osint logs */
-            await osint_logs_db.updateMany(
-                {
-                    root_id: renamed_guild._id
-                },
-                {
-                    root_id: guild._id,
-                    $push: {root_history: guild._id}
-                }
-            );
-            renamed_guild.deleteOne()
+                /** Update all osint logs */
+                await osint_logs_db.updateMany(
+                    {
+                        root_id: renamed_guild._id
+                    },
+                    {
+                        root_id: guild._id,
+                        $push: {root_history: guild._id}
+                    }
+                );
+                renamed_guild.deleteOne()
+            }
         }
 
         if (guildData.value) {

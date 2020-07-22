@@ -11,13 +11,6 @@
  * @returns {Promise<void>}
  */
 
-/***
- * TODO if character with _id not found, but have the same id & class
- * TODO then check lastModified
- * TODO if all YES and new character is created, then inherit guild_history and character_history and delete original
- * TODO if not new created the timestamp once more
- */
-
 const osint_logs_db = require("../../db/osint_logs_db");
 
 function indexDetective (root_id, type, original_value, new_value, action, before, after) {

@@ -176,6 +176,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 character.faction = characterObject.faction
                 character.character_class = characterObject.character_class
                 character.level = characterObject.level
+                character.lastModified = characterObject.lastModified || new Date(Date.now())
             }
             /**
              * Status Code, received, but no updated

@@ -21,7 +21,6 @@ let schema = new mongoose.Schema({
     id: {
         type: Number
     },
-    /** CAPS LOCK NAMES */
     name: {
         type: String,
     },
@@ -40,36 +39,6 @@ let schema = new mongoose.Schema({
         emblem: Object,
         border: Object,
         background: Object
-    },
-    logs: [{
-        old_value: mongoose.Mixed,
-        new_value: mongoose.Mixed,
-        action: String,
-        message: String,
-        after: Date,
-        before: Date
-    }],
-    guild_log: {
-        join: [{
-            _id: String,
-            id: Number,
-            rank: Number,
-        }],
-        promote: [{
-            _id: String,
-            id: Number,
-            rank: Number,
-        }],
-        demote: [{
-            _id: String,
-            id: Number,
-            rank: Number,
-        }],
-        leave: [{
-            _id: String,
-            id: Number,
-            rank: Number,
-        }],
     },
     members: [{
         _id: {
@@ -111,5 +80,7 @@ schema.index({ "name": 1 },{name: 'Name'});
 schema.index({ "realm.slug": 1 } ,{name: 'RealmSlug'});
 
 let guild_db = mongoose.model('guilds', schema, 'guilds');
+
+//mongoose.connection.close()
 
 module.exports = guild_db;

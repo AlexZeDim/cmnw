@@ -38,7 +38,7 @@ let schema = new mongoose.Schema({
 });
 
 schema.index({ "root_id": 1 },{name: 'RootID'});
-schema.index({ "type": 1, "character_id": 1 },{name: 'Search'});
+schema.index({ "type": 1, "root_id": 1 },{name: 'Search'});
 
 let osint_logs_db = mongoose.model('osint_logs', schema, 'osint_logs');
 

@@ -162,7 +162,8 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                                         rank: member.rank
                                     },
                                     faction: guildData.value.faction,
-                                    level: member.character.level
+                                    level: member.character.level,
+                                    lastModified: new Date(guildData.value.lastModified)
                                 }
                                 if (member.character.hasOwnProperty('playable_class')) {
                                     Object.assign(character_Object, {character_class: playable_class.get(member.character.playable_class.id)})

@@ -64,7 +64,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             if (characterData.value) {
                 let detectiveCheck = ["race", "gender", "faction"];
                 for (let check of detectiveCheck) {
-                    indexDetective(character._id, "character", character[check], characterData.value[check].name, check, new Date(characterData.value.last_login_timestamp), new Date(character.lastModified), )
+                    indexDetective(character._id, "character", character[check], characterData.value[check].name, check, new Date(characterData.value.last_login_timestamp), new Date(character.lastModified))
                 }
             }
         } else {
@@ -96,7 +96,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * Timestamp
              */
             if ("last_login_timestamp" in characterData.value) {
-                character.lastModified = characterData.value.last_login_timestamp;
+                character.lastModified = new Date(characterData.value.last_login_timestamp);
             }
 
             /**
@@ -269,7 +269,15 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     indexDetective(character._id, "character", character[check], renamedCopy[check], check, new Date(character.lastModified), new Date(renamedCopy.lastModified))
                 }
                 /** Update all osint logs */
-                await osint_logs_db.updateMany({root_id: renamedCopy._id}, {root_id: character._id,  $push: {root_history: character._id}});
+                await osint_logs_db.updateMany(
+                    {
+                        root_id: renamedCopy._id
+                    },
+                    {
+                        root_id: character._id,
+                        $push: {root_history: character._id}
+                    }
+                );
                 renamedCopy.deleteOne()
             }
 
@@ -321,7 +329,15 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                             }
                             indexDetective(character._id, "character", character["realm"].slug, transfer_character["realm"].slug, "realm", new Date(character.lastModified), new Date(transfer_character.lastModified))
                             /** Update all osint logs */
-                            await osint_logs_db.updateMany({root_id: transfer_character._id}, {root_id: character._id,  $push: {root_history: character._id}});
+                            await osint_logs_db.updateMany(
+                                {
+                                    root_id: transfer_character._id
+                                },
+                                {
+                                    root_id: character._id,
+                                    $push: {root_history: character._id}
+                                }
+                            );
                             transfer_character.deleteOne()
                         }
 
@@ -386,7 +402,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         }
                     }
                 }
-
             }
         }
         await character.save()

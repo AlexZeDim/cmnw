@@ -281,14 +281,14 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         indexDetective(
                             character._id,
                             "character",
-                            character[check],
                             renamedCopy[check],
+                            character[check],
                             check, new Date(character.lastModified),
                             new Date(renamedCopy.lastModified)
                         )
                     }
                 }
-                indexDetective(character._id, "character", character.name, renamedCopy.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
+                indexDetective(character._id, "character", renamedCopy.name, character.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
                 /** Update all osint logs */
                 await osint_logs_db.updateMany(
                     {
@@ -347,11 +347,18 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                             let renameCheck = ["race", "gender", "faction"];
                             for (let check of renameCheck) {
                                 if (check in character && check in transfer_character) {
-                                    indexDetective(character._id, "character", character[check], transfer_character[check], check, new Date(character.lastModified), new Date(transfer_character.lastModified))
+                                    indexDetective(
+                                        character._id,
+                                        "character",
+                                        transfer_character[check],
+                                        character[check],
+                                        check,
+                                        new Date(character.lastModified),
+                                        new Date(transfer_character.lastModified)
+                                    )
                                 }
                             }
-                            indexDetective(character._id, "character", character.name, renamedCopy.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
-                            indexDetective(character._id, "character", character["realm"].slug, transfer_character["realm"].slug, "realm", new Date(character.lastModified), new Date(transfer_character.lastModified))
+                            indexDetective(character._id, "character", transfer_character["realm"].slug, character["realm"].slug, "realm", new Date(character.lastModified), new Date(transfer_character.lastModified))
                             /** Update all osint logs */
                             await osint_logs_db.updateMany(
                                 {
@@ -408,10 +415,18 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                                 let renameCheck = ["name", "race", "gender", "faction"];
                                 for (let check of renameCheck) {
                                     if (check in character && check in shadow_character) {
-                                        indexDetective(character._id, "character", character[check], shadow_character[check], check, new Date(character.lastModified), new Date(shadow_character.lastModified))
+                                        indexDetective(
+                                            character._id,
+                                            "character",
+                                            shadow_character[check],
+                                            character[check],
+                                            check, new Date(character.lastModified),
+                                            new Date(shadow_character.lastModified)
+                                        )
                                     }
                                 }
-                                indexDetective(character._id, "character", character["realm"].slug, shadow_character["realm"].slug, "realm", new Date(character.lastModified), new Date(shadow_character.lastModified))
+                                indexDetective(character._id, "character", shadow_character.name, character.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
+                                indexDetective(character._id, "character", shadow_character["realm"].slug, character["realm"].slug, "realm", new Date(character.lastModified), new Date(shadow_character.lastModified))
 
                                 /** Update all osint logs */
                                 await osint_logs_db.updateMany(

@@ -265,10 +265,11 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 "character_class": character.character_class
             })
             if (renamedCopy) {
-                let renameCheck = ["name", "race", "gender", "faction"];
+                let renameCheck = ["race", "gender", "faction"];
                 for (let check of renameCheck) {
-                    indexDetective(character._id, "character", character[check], renamedCopy[check], check, new Date(character.lastModified), new Date(renamedCopy.lastModified))
+                    indexDetective(character._id, "character", character[check], renamedCopy[check].name, check, new Date(character.lastModified), new Date(renamedCopy.lastModified))
                 }
+                indexDetective(character._id, "character", character.name, renamedCopy.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
                 /** Update all osint logs */
                 await osint_logs_db.updateMany(
                     {
@@ -328,6 +329,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                             for (let check of renameCheck) {
                                 indexDetective(character._id, "character", character[check], transfer_character[check], check, new Date(character.lastModified), new Date(transfer_character.lastModified))
                             }
+                            indexDetective(character._id, "character", character.name, renamedCopy.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
                             indexDetective(character._id, "character", character["realm"].slug, transfer_character["realm"].slug, "realm", new Date(character.lastModified), new Date(transfer_character.lastModified))
                             /** Update all osint logs */
                             await osint_logs_db.updateMany(

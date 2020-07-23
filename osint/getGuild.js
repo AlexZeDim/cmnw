@@ -115,10 +115,11 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
 
                                 if (character.guild) {
                                     /**
-                                     * Is character guild is the same as requested guild
+                                     * Is character guild is the same
+                                     * as requested guild we update rank
                                      */
-                                    if (character.guild.slug === nameSlug) {
-                                        character.guild.slug = member.rank;
+                                    if (character.guild.name === guild.name) {
+                                        character.guild.rank = member.rank;
                                     } else {
                                         guildExist = true
                                     }
@@ -133,7 +134,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                                     character.guild = {
                                         id: guild.id,
                                         name: guild.name,
-                                        slug: guild.name,
+                                        slug: nameSlug,
                                         rank: member.rank
                                     }
                                 }
@@ -158,7 +159,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                                     guild: {
                                         id: guild.id,
                                         name: guild.name,
-                                        slug: guild.name,
+                                        slug: nameSlug,
                                         rank: member.rank
                                     },
                                     faction: guildData.value.faction.name,

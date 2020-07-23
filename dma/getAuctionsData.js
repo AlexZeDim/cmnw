@@ -40,7 +40,6 @@ const {Round2} = require("../db/setters")
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
- * TODO refactor it with aggregation cursor
  * @param queryKeys
  * @param realmQuery
  * @returns {Promise<void>}
@@ -80,7 +79,7 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
                         auctions[i].last_modified = moment(new Date(lastModified)).format('X');
                     }
                     await auctions_db.insertMany(auctions).then(auctions => {
-                        console.info(`U,${auctions.length}`)
+                        console.info(`U,${_id.connected_realm_id},${auctions.length}`)
                     })
                     await realms_db.updateMany({connected_realm_id: _id.connected_realm_id}, {auctions: moment(new Date(lastModified)).format('X')})
                 }

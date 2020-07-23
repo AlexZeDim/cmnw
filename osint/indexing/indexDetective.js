@@ -13,6 +13,18 @@
 
 const osint_logs_db = require("../../db/osint_logs_db");
 
+/**
+ *
+ * @param root_id
+ * @param type
+ * @param original_value Old value
+ * @param new_value New value
+ * @param action
+ * @param before New timestamp
+ * @param after Old timestamp
+ * @returns {{fieldName: *, status: boolean}}
+ */
+
 function indexDetective (root_id, type, original_value, new_value, action, before, after) {
     /**
      * Find change

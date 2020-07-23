@@ -135,7 +135,6 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
             }
         }
         console.timeEnd(`Parsing JSON files`);
-
         await removeDir(`${path_}`, { recursive: true });
         connection.close();
         console.timeEnd(`OSINT-${fromJSON.name}`);

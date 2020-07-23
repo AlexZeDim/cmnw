@@ -43,7 +43,6 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
         const bnw = new battleNetWrapper();
         await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
 
-
         /**
          * Check if character exists
          */

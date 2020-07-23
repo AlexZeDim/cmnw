@@ -181,7 +181,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * Upload other fields from imported values
              */
             if (characterObject && Object.keys(characterObject).length) {
-                let character_fields = ["id", "faction", "character_class", "level", "lastModified"];
+                let character_fields = ["id", "guild", "faction", "character_class", "level", "lastModified"];
                 for (let field of character_fields) {
                     if (field in characterObject) {
                         character[field] = characterObject[field]

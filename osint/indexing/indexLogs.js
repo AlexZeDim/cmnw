@@ -71,7 +71,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1, queryKey
                                     {'name': character.server},
                                 ]
                         }).lean()
-                        if (realm.slug) {
+                        if (realm && realm.slug) {
                             let character_OSINT = await characters_db.findById(toSlug(`${character.name}@${realm.slug}`));
                             if (!character_OSINT) {
                                 await getCharacter(realm.slug, character.name, {}, token, `OSINT-${indexLogs.name}`)

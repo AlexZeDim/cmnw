@@ -23,7 +23,8 @@ let schema = new mongoose.Schema({
         type: String,
     },
     id: {
-        type: Number
+        type: Number,
+        default: Date.now
     },
     name: {
         type: String,

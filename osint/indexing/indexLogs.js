@@ -57,12 +57,12 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1, queryKey
         await logs_db.find(queryInput).cursor({batchSize: bulkSize}).eachAsync(async (log) => {
             try {
                 /** Request WCL log by it's _id from API */
-                let { exportedCharacters } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${pub_key}`).then(res => {
-                    return res.data;
-                }).catch(e => console.error(`${indexLogs.name},${e.response.status},${e.response.config.url.match(/(.{16})\s*$/g)[0]}`));
+                let wcl_log = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${pub_key}`).then(res => {
+                    return res.data || {exportedCharacters: []};
+                })
                 /** Only if exportedCharacters found in logs */
-                if (exportedCharacters.length) {
-                    for (let character of exportedCharacters) {
+                if (wcl_log && wcl_log.exportedCharacters && wcl_log.exportedCharacters.length) {
+                    for (let character of wcl_log.exportedCharacters) {
                         let realm = await realms_db.findOne({
                             $or:
                                 [

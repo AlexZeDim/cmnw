@@ -78,15 +78,13 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 }
             }
         } else {
-            if (!character) {
-                character = new characters_db({
-                    _id: `${characterName}@${realmSlug}`,
-                    statusCode: 100,
-                    createdBy: updatedBy,
-                    updatedBy: updatedBy,
-                    isWatched: false
-                });
-            }
+            character = new characters_db({
+                _id: `${characterName}@${realmSlug}`,
+                statusCode: 100,
+                createdBy: updatedBy,
+                updatedBy: updatedBy,
+                isWatched: false
+            });
         }
 
         /**
@@ -183,10 +181,12 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * Upload other fields from imported values
              */
             if (characterObject && Object.keys(characterObject).length) {
-                character.faction = characterObject.faction
-                character.character_class = characterObject.character_class
-                character.level = characterObject.level
-                character.lastModified = characterObject.lastModified || new Date(Date.now())
+                let character_fields = ["id", "faction", "character_class", "level", "lastModified"];
+                for (let field of character_fields) {
+                    if (field in characterObject) {
+                        character[field] = characterObject[field]
+                    }
+                }
             }
             /**
              * Status Code, received, but no updated

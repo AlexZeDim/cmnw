@@ -88,6 +88,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1, queryKey
             }
         }, { parallel: bulkSize });
         connection.close();
+        console.timeEnd(`OSINT-${indexLogs.name}`);
     } catch (error) {
         console.error(`${indexLogs.name},${error}`)
     }

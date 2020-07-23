@@ -60,7 +60,7 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1, queryKey
                 let { exportedCharacters } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${pub_key}`).then(res => {
                     return res.data;
                 }).catch(e => console.error(`${indexLogs.name},${e.response.status},${e.response.config.url.match(/(.{16})\s*$/g)[0]}`));
-
+                /** Only if exportedCharacters found in logs */
                 if (exportedCharacters.length) {
                     for (let character of exportedCharacters) {
                         let realm = await realms_db.findOne({
@@ -78,10 +78,11 @@ async function indexLogs (queryInput = {isIndexed:false}, bulkSize = 1, queryKey
                             }
                         }
                     }
-                    log.isIndexed = true;
-                    log.save()
-                    console.info(`U,${log._id}`)
                 }
+                /** But even if not, we update logs status to avoid stockpiling */
+                log.isIndexed = true;
+                log.save()
+                console.info(`U,${log._id}`)
             } catch (error) {
                 console.error(`E,OSINT-${indexLogs.name},${error}`);
             }

@@ -64,7 +64,17 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             if (characterData.value) {
                 let detectiveCheck = ["race", "gender", "faction"];
                 for (let check of detectiveCheck) {
-                    indexDetective(character._id, "character", character[check], characterData.value[check].name, check, new Date(characterData.value.last_login_timestamp), new Date(character.lastModified))
+                    if (check in character) {
+                        indexDetective(
+                            character._id,
+                            "character",
+                            character[check],
+                            characterData.value[check].name,
+                            check,
+                            new Date(characterData.value.last_login_timestamp),
+                            new Date(character.lastModified)
+                        )
+                    }
                 }
             }
         } else {
@@ -267,7 +277,16 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
             if (renamedCopy) {
                 let renameCheck = ["race", "gender", "faction"];
                 for (let check of renameCheck) {
-                    indexDetective(character._id, "character", character[check], renamedCopy[check].name, check, new Date(character.lastModified), new Date(renamedCopy.lastModified))
+                    if (check in character && check in renamedCopy) {
+                        indexDetective(
+                            character._id,
+                            "character",
+                            character[check],
+                            renamedCopy[check],
+                            check, new Date(character.lastModified),
+                            new Date(renamedCopy.lastModified)
+                        )
+                    }
                 }
                 indexDetective(character._id, "character", character.name, renamedCopy.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
                 /** Update all osint logs */
@@ -327,7 +346,9 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                         if (!transfer_ex) {
                             let renameCheck = ["race", "gender", "faction"];
                             for (let check of renameCheck) {
-                                indexDetective(character._id, "character", character[check], transfer_character[check], check, new Date(character.lastModified), new Date(transfer_character.lastModified))
+                                if (check in character && check in transfer_character) {
+                                    indexDetective(character._id, "character", character[check], transfer_character[check], check, new Date(character.lastModified), new Date(transfer_character.lastModified))
+                                }
                             }
                             indexDetective(character._id, "character", character.name, renamedCopy.name, "name", new Date(character.lastModified), new Date(renamedCopy.lastModified))
                             indexDetective(character._id, "character", character["realm"].slug, transfer_character["realm"].slug, "realm", new Date(character.lastModified), new Date(transfer_character.lastModified))
@@ -386,7 +407,9 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                             if (!transfer_ex) {
                                 let renameCheck = ["name", "race", "gender", "faction"];
                                 for (let check of renameCheck) {
-                                    indexDetective(character._id, "character", character[check], shadow_character[check], check, new Date(character.lastModified), new Date(shadow_character.lastModified))
+                                    if (check in character && check in shadow_character) {
+                                        indexDetective(character._id, "character", character[check], shadow_character[check], check, new Date(character.lastModified), new Date(shadow_character.lastModified))
+                                    }
                                 }
                                 indexDetective(character._id, "character", character["realm"].slug, shadow_character["realm"].slug, "realm", new Date(character.lastModified), new Date(shadow_character.lastModified))
 

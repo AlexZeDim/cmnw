@@ -161,7 +161,7 @@ async function getGuild (realmSlug, nameSlug, token = '', updatedBy = `OSINT-${g
                                         slug: guild.name,
                                         rank: member.rank
                                     },
-                                    faction: guildData.value.faction,
+                                    faction: guildData.value.faction.name,
                                     level: member.character.level,
                                     lastModified: new Date(guildData.value.lastModified)
                                 }

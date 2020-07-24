@@ -30,34 +30,15 @@ const pricing_methods_db = require("../../db/pricing_methods_db");
  * IDEA build.yaml?
  * indexItems add is_auction, is_commdty and is_derivative properties to items
  * @param arg
+ * @param bulkSize
  * @returns {Promise<void>}
  */
 
-async function indexAssetClass (arg) {
+async function indexAssetClass (arg, bulkSize = 10) {
     try {
         console.time(`DMA-${indexAssetClass.name}`);
-        let queries = [
-            {
-                key: "is_commdty",
-                distinct: { unit_price: { $exists: true}},
-                query: { is_commdty: true },
-            },
-            {
-                key: "is_auctionable",
-                distinct: {},
-                query: { is_auctionable: true },
-            },
-            {
-                key: "is_derivative",
-                distinct: {},
-                query: { $or:[ { asset_class:"VANILLA" }, { asset_class:"INDX" }, { asset_class:"PREMIUM" } ]},
-            }
-        ];
-        let items, key, distinct, query;
         switch (arg) {
-            case 'is_commdty':
-                /** TODO we could do it is_auctionable/is_commdty */
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
+            case 'auctions':
                 await auctions_db.aggregate([
                     {
                         $group: {
@@ -88,15 +69,8 @@ async function indexAssetClass (arg) {
                     }
                 }, { parallel: 10 });
                 break;
-            case 'is_auctionable':
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
-                items = await auctions_db.distinct('item.id', distinct).lean();
-                for (let _id of items) {
-                    await items_db.findByIdAndUpdate(_id, query, {new: true}).then(({_id}) => console.info(`U,${_id},${key}`)).catch(e=>console.error(e));
-                }
-                break;
-            case 'is_derivative':
-                await pricing_methods_db.find({}).limit(10).cursor({batchSize: 1}).eachAsync( async (method) => {
+            case 'pricing_methods':
+                await pricing_methods_db.find({}).cursor({batchSize: bulkSize}).eachAsync( async (method) => {
                     try {
                         /** Derivative Asset Class */
                         if (method.item_id) {
@@ -125,20 +99,19 @@ async function indexAssetClass (arg) {
                     } catch (e) {
                         console.error(e)
                     }
-                })
+                }, { parallel: bulkSize })
+                break;
+            case 'items':
+                await items_db.find({asset_class: "REAGENT", loot_type: "ON_ACQUIRE"}).limit(100).cursor({batchSize: bulkSize}).eachAsync( async (item) => {
+                    try {
+                        item.asset_class.addToSet("PREMIUM")
+                        await item.save()
+                    } catch (e) {
+                        console.error(e)
+                    }
+                }, { parallel: bulkSize })
                 break;
             default:
-                /**
-                 * If item is reagent is reagent and bop loot_type then gg it's premium
-                 */
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
-                let cursor = await items_db.find(query).cursor();
-                cursor.on('data', async item => {
-                    cursor.pause();
-                    item.is_derivative = true;
-                    item.save();
-                    cursor.resume();
-                });
                 break;
         }
         connection.close();
@@ -148,4 +121,4 @@ async function indexAssetClass (arg) {
     }
 }
 
-indexAssetClass("is_commdty");
+indexAssetClass("items");

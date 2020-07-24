@@ -1,6 +1,6 @@
 const path = require('path');
 
-const t = async (p, a) => {
+const t = async (p, a = 1) => {
     try {
         console.log(`process.env.import`)
         console.log(process.env.import)
@@ -20,4 +20,4 @@ const t = async (p, a) => {
     }
 }
 
-t(process.env.import, process.env.a)
+t(process.argv.slice(2)[0], process.argv.slice(2)[1])

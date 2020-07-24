@@ -2,4 +2,4 @@ apps:
   - script: ./uploads/path.js
     name: 'T'
     instances: 1
-    args: '{tags:`DMA`} 12'
+    args: 'true 12'

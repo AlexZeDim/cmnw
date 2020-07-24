@@ -38,42 +38,44 @@ const fs = require('fs');
  * @returns {Promise<void>}
  */
 
-async function importTaxonomy (path, expr) {
+async function importTaxonomy_CSV (path, expr) {
     try {
         let eva = fs.readFileSync(path,'utf8');
         csv.parse(eva, async function(err, data) {
             switch (expr) {
                 case 'production':
                     for (let i = 1; i < data.length; i++) {
-                        await items_db.findOneAndUpdate(
-                            {
-                                _id: parseFloat(data[i][0])
-                            },
-                            {
-                                ticker: data[i][2],
-                                profession_class: data[i][3],
-                                expansion: data[i][4],
-                                v_class: [data[i][5], data[i][6], data[i][7]]
-                            }
-                        ).exec((err, item) => {
-                            if (err) console.error(err);
-                            console.info(item);
-                        });
+                        let item = await items_db.findById(parseInt(data[i][0]))
+                        item.ticker = data[i][2];
+                        item.profession_class = data[i][3];
+                        item.asset_class.addToSet()
+                        await item.save()
                     }
                     break;
-                case 'dev':
-                    console.info(data[0]);
-                    for (let i = 1; i < 100; i++) {
-                        console.info(data[i])
+                case 'itemsparse':
+                    const expansionTicker = new Map([
+                        [8, 'SHDW'],
+                        [7, 'BFA'],
+                        [6, 'LGN'],
+                        [5, 'WOD'],
+                        [4, 'MOP'],
+                        [3, 'CATA'],
+                        [2, 'WOTLK'],
+                        [1, 'TBC'],
+                        [0, 'CLSC']
+                    ]);
+                    for (let i = 1; i < data.length; i++) {
+                        await items_db.findByIdAndUpdate(parseFloat(data[i][0]), { expansion: expansionTicker.get(parseInt(data[i][68])) })
                     }
                     break;
                 default:
                     console.info('Sorry, we got nothing');
             }
+            connection.close();
         });
     } catch (error) {
         console.error(error);
     }
 }
 
-importTaxonomy('C:\\SHDW.csv', 'production');
+importTaxonomy_CSV('C:\\itemsparse.csv', 'itemsparse');

@@ -2,4 +2,4 @@ apps:
   - script: ./uploads/path.js
     name: 'T'
     instances: 1
-    args: 'true 12'
+    args: 'false 12'

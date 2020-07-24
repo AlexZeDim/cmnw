@@ -93,19 +93,9 @@ let schema = new mongoose.Schema({
     },
     is_auctionable: {
         type: Boolean
-    },
-    is_derivative: {
-        type: Boolean,
-        default: false
-    },
-    is_reagent: {
-        type: Boolean,
-        default: false
-    },
-    is_const: {
-        type: Boolean,
-        default: false
     }
+},{
+    timestamps: true
 });
 
 schema.index(

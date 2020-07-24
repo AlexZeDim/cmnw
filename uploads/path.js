@@ -8,9 +8,16 @@ const t = async (p, a = 1) => {
         console.log(__dirname)
         console.log(`path.normalize(__dirname)`)
         console.log(path.normalize(__dirname))
-        console.log(`p as process.env.import`)
+        console.log(`p as arg`)
         console.log(p)
-        console.log(`a as process.env.a`)
+        if (p === false) {
+            console.log('Boolean')
+        }
+        if (p) {
+            console.log('Exists')
+        }
+        console.log(typeof p)
+        console.log(`a as arg`)
         console.log(a)
         console.log(`process.argv`)
         const args = process.argv.slice(2);

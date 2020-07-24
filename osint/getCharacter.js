@@ -80,6 +80,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         } else {
             character = new characters_db({
                 _id: `${characterName}@${realmSlug}`,
+                id: Date.now(),
                 statusCode: 100,
                 createdBy: updatedBy,
                 updatedBy: updatedBy,

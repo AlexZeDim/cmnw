@@ -27,71 +27,105 @@ const items_db = require("../../db/items_db");
 const { Round2 } = require("../../db/setters");
 
 /**
- * B.net API wrapper
+ *  Modules
  */
 const battleNetWrapper = require('battlenet-api-wrapper');
 
-/***
- * TODO with new Model
+/**
  * This function parse items across B.net API with wrapper
  * @param queryKeys {object}
- * @param isNew {boolean}
+ * @param update {boolean}
  * @returns {Promise<void>}
  */
 
-async function getItems (queryKeys = { tags: `DMA` }, isNew = true) {
+async function getItems (queryKeys = { tags: `DMA` }, update = true) {
     try {
         console.time(`DMA-${getItems.name}`);
+
+        const locale = "en_GB"
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
+
+        /**
+         * B.net API wrapper
+         */
         const bnw = new battleNetWrapper();
         await bnw.init(_id, secret, token, 'eu', '');
 
         const getItemById = async (item_id = 25) => {
-            const [{id, name, quality, level, required_level, item_class, item_subclass, inventory_type, purchase_price, sell_price, max_count, is_equippable, is_stackable}, {assets}] = await Promise.all([
+
+            /** Check is exits */
+            let item = await items_db.findById(item_id)
+
+            /** Request item data */
+            const [getItem, getMedia] = await Promise.allSettled([
                 bnw.WowGameData.getItem(item_id).catch(e => (e)),
                 bnw.WowGameData.getItemMedia(item_id).catch(e => (e)),
             ]);
-            if (id && assets && quality.name && item_class.name && item_subclass.name && inventory_type.name) {
-                await items_db.findByIdAndUpdate(
-                    {
-                        _id: id
-                    }, {
-                        _id: id,
-                        name: name,
-                        quality: quality.name.en_GB,
-                        ilvl: level,
-                        level: required_level,
-                        item_class: item_class.name.en_GB,
-                        item_subclass: item_subclass.name.en_GB,
-                        inventory_type: inventory_type.name.en_GB,
-                        purchase_price: Round2(purchase_price/10000),
-                        sell_price: Round2(sell_price/10000),
-                        max_count: max_count,
-                        is_equippable: is_equippable,
-                        is_stackable: is_stackable,
-                        icon: assets[0].value
-                    },
-                    {
-                        upsert: true,
-                        new: true,
-                        lean: true
+
+            /** If not, create */
+            if (!item) {
+                item = new items_db({
+                    _id: item_id,
+                });
+            }
+
+            if (getItem.value) {
+
+                /** Schema fields */
+                const fields = [
+                    "quality",
+                    "item_class",
+                    "item_subclass",
+                    "inventory_type",
+                ];
+                const gold = [
+                    "purchase_price",
+                    "sell_price"
+                ];
+
+                /** key value */
+                for (const [key] of Object.entries(getItem.value)) {
+                    /** Loot type */
+                    if (key === "preview_item") {
+                        if ("binding" in getItem.value[key]) {
+                            item.loot_type = getItem.value[key].binding.type;
+                        }
                     }
-                ).then(i => console.info(`C,${i._id}`)).catch(e=>(e))
-            } else {
-                console.info(`E,${item_id}`)
+
+                    if (fields.some(f => f === key)) {
+                        item[key] = getItem.value[key].name[locale]
+                    } else {
+                        item[key] = getItem.value[key]
+                    }
+                    if (gold.some(f => f === key)) {
+                        if (key === "sell_price") {
+                            item.asset_class.addToSet("VSP")
+                        }
+                        item[key] = Round2(getItem.value[key]/10000)
+                    }
+                }
+
+                /** Icon media */
+                if (getMedia.value && getMedia.value.assets && getMedia.value.assets.length) {
+                    item.icon = getMedia.value.assets[0].value
+                }
+
+                await item.save();
             }
         };
 
-        if (isNew) {
-            for (let item_id = 0; item_id < 250000; item_id++) {
+        if (update) {
+            for (let item_id = 25; item_id < 230000; item_id++) {
                 await getItemById(item_id)
             }
         } else {
-            const items = items_db.find({}).lean().cursor();
-            for (let item = await items.next(); item != null; item = await items.next()) {
-                await getItemById(item._id)
-            }
+            await items_db.find({}).lean().cursor({batchSize: 10}).eachAsync(async ({_id}) => {
+                await getItemById(_id)
+            }, { parallel: 10 })
         }
+        /**
+         * TODO After updateMany purchase_price/purchase_quantity
+         */
         connection.close();
         console.timeEnd(`DMA-${getItems.name}`);
     } catch (err) {

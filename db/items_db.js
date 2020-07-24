@@ -14,6 +14,9 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 });*/
 
 let schema = new mongoose.Schema({
+    /**
+     * Blizzard API
+     */
     _id: {
         type: Number
     },
@@ -59,6 +62,12 @@ let schema = new mongoose.Schema({
         type: Boolean
     },
     inventory_type: {
+        type: String
+    },
+    purchase_quantity: {
+        type: Number
+    },
+    loot_type: {
         type: String
     },
     /**

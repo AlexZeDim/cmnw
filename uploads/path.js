@@ -12,8 +12,9 @@ const t = async (p, a) => {
         console.log(p)
         console.log(`a as process.env.a`)
         console.log(a)
-        console.log(`process.env`)
-        console.log(process.env)
+        console.log(`process.argv`)
+        const args = process.argv;
+        console.log(args);
     } catch (e) {
         console.error(e)
     }

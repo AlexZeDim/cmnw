@@ -34,15 +34,6 @@ let schema = new mongoose.Schema({
         type: String,
         set: toSlug,
     },
-    auctions: {
-        type: Number
-    },
-    valuations: {
-        type: Number
-    },
-    golds: {
-        type: Number
-    },
     category: {
         type: String
     },
@@ -76,9 +67,26 @@ let schema = new mongoose.Schema({
     ticker: {
         type: String
     },
+    /**
+     * Kihra's WarcraftLogs realm ids
+     * for parsing logs via fromLogs
+     */
     wcl_id: {
         type: Number
-    }
+    },
+    /**
+     * String lastModified timestamp for auctions, gold and valuations
+     * Required for valuations, getAuctionData, getGold
+     */
+    auctions: {
+        type: Number
+    },
+    valuations: {
+        type: Number
+    },
+    golds: {
+        type: Number
+    },
 },{
     timestamps: true
 });

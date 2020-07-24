@@ -78,6 +78,7 @@ let schema = new mongoose.Schema({
 
 schema.index({ "name": 1 },{name: 'Name'});
 schema.index({ "realm.slug": 1 } ,{name: 'RealmSlug'});
+schema.index({ "id": 1, "realm.slug": 1 } ,{name: 'RenameGuild'});
 
 let guild_db = mongoose.model('guilds', schema, 'guilds');
 

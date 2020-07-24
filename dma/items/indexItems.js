@@ -22,72 +22,40 @@ connection.once('open', () => console.log('Connected to database on ' + process.
  * Model importing
  */
 
+const keys_db = require("../../db/keys_db");
 const items_db = require("../../db/items_db");
-const auctions_db = require("../../db/auctions_db");
+
 
 /**
- * TODO Map for of and CASE SWITCH
- * IDEA build.yaml?
- * IDEA asset_classes build
- * indexItems add is_auction, is_commdty and is_derivative properties to items
- * @param arg
+ * Modules
+ */
+const getItem = require("./getItem");
+
+/**
+ * This function parse items across B.net API with wrapper
+ * @param queryKeys {object}
+ * @param update {boolean}
  * @returns {Promise<void>}
  */
 
-async function indexItems (arg) {
+async function indexItems (queryKeys = { tags: `DMA` }, update = true) {
     try {
         console.time(`DMA-${indexItems.name}`);
-        let queries = [
-/*            {
-                key: "is_commdty",
-                distinct: { unit_price: { $exists: true}},
-                query: {is_commdty: true},
-            },*/
-            {
-                key: "is_auctionable",
-                distinct: {},
-                query: {is_auctionable: true},
-            },
-/*            {
-                key: "is_derivative",
-                distinct: {},
-                query: { $or:[ { asset_class:"VANILLA" }, { asset_class:"INDX" }, { asset_class:"PREMIUM" } ]},
-            }*/
-        ];
-        let items, key, distinct, query;
-        switch (arg) {
-            case 'is_commdty':
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
-                items = await auctions_db.distinct('item.id', distinct).lean();
-                for (let _id of items) {
-                    await items_db.findByIdAndUpdate(_id, query, {new: true}).then(({_id}) => console.info(`U,${_id},${key}`)).catch(e=>console.error(e));
-                }
-                break;
-            case 'is_auctionable':
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
-                items = await auctions_db.distinct('item.id', distinct).lean();
-                for (let _id of items) {
-                    await items_db.findByIdAndUpdate(_id, query, {new: true}).then(({_id}) => console.info(`U,${_id},${key}`)).catch(e=>console.error(e));
-                }
-                break;
-            case 'is_derivative':
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
-                items = await auctions_db.distinct('item.id', distinct).lean();
-                for (let _id of items) {
-                    await items_db.findByIdAndUpdate(_id, query, {new: true}).then(({_id}) => console.info(`U,${_id},${key}`)).catch(e=>console.error(e));
-                }
-                break;
-            default:
-                ({key, distinct, query} = queries.find(({key}) => key === arg));
-                let cursor = await items_db.find(query).cursor();
-                cursor.on('data', async item => {
-                    cursor.pause();
-                    item.is_derivative = true;
-                    item.save();
-                    cursor.resume();
-                });
-                break;
+
+        const { token } = await keys_db.findOne(queryKeys);
+
+        if (update) {
+            await items_db.find({}).lean().cursor({batchSize: 10}).eachAsync(async ({_id}) => {
+                await getItem(_id, token)
+            }, { parallel: 10 })
+        } else {
+            for (let _id = 25; _id < 230000; _id++) {
+                await getItem(_id, token)
+            }
         }
+        /**
+         * TODO After updateMany purchase_price/purchase_quantity
+         */
         connection.close();
         console.timeEnd(`DMA-${indexItems.name}`);
     } catch (err) {
@@ -95,4 +63,4 @@ async function indexItems (arg) {
     }
 }
 
-indexItems(arg = 'is_auctionable');
+indexItems({ tags: `DMA` }, true);

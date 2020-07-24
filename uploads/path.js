@@ -13,7 +13,7 @@ const t = async (p, a) => {
         console.log(`a as process.env.a`)
         console.log(a)
         console.log(`process.argv`)
-        const args = process.argv;
+        const args = process.argv.slice(2);
         console.log(args);
     } catch (e) {
         console.error(e)

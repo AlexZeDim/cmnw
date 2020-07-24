@@ -1,0 +1,9 @@
+apps:
+  - script: ./uploads/path.js
+    name: 'T'
+    instances: 1
+    args: '-a 13 -b 12'
+    env:
+      NODE_ENV: development
+    env_production:
+      NODE_ENV: production

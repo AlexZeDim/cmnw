@@ -111,17 +111,18 @@ async function getItems (queryKeys = { tags: `DMA` }, update = true) {
                 }
 
                 await item.save();
+                console.info(`U,${item._id}`)
             }
         };
 
         if (update) {
-            for (let item_id = 25; item_id < 230000; item_id++) {
-                await getItemById(item_id)
-            }
-        } else {
             await items_db.find({}).lean().cursor({batchSize: 10}).eachAsync(async ({_id}) => {
                 await getItemById(_id)
             }, { parallel: 10 })
+        } else {
+            for (let item_id = 25; item_id < 230000; item_id++) {
+                await getItemById(item_id)
+            }
         }
         /**
          * TODO After updateMany purchase_price/purchase_quantity

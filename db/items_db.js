@@ -76,18 +76,22 @@ let schema = new mongoose.Schema({
     profession_class: {
         type: String
     },
-    asset_class: {
-        type: Array,
-    },
     expansion: {
         type: String,
     },
     ticker: {
         type: String,
     },
+    stackable: {
+        type: Number,
+    },
     /**
+     * TODO refactoring rename
      * IndexItems
      */
+    asset_class: {
+        type: Array,
+    },
     is_commdty: {
         type: Boolean
     },

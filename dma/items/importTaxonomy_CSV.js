@@ -40,6 +40,7 @@ const { basename, normalize } = require('path');
 
 async function importTaxonomy_CSV (path = 'C:\\itemsparse.csv') {
     try {
+        console.time(`DMA-${importTaxonomy_CSV.name}`)
         let path_, file_;
 
         if (path.endsWith(".csv")) {
@@ -89,6 +90,7 @@ async function importTaxonomy_CSV (path = 'C:\\itemsparse.csv') {
             }
             connection.close();
         });
+        console.time(`DMA-${importTaxonomy_CSV.name}`)
     } catch (error) {
         console.error(error);
     }

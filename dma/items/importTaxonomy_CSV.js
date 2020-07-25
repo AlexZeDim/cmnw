@@ -30,19 +30,34 @@ const items_db = require("../../db/items_db");
 
 const csv = require('csv');
 const fs = require('fs');
+const { basename, normalize } = require('path');
 
 /***
  * This function allows Taxonomy to be imported up to the DMA-DB
- * @param path
- * @param expr
+ * @param path String path to csv file
  * @returns {Promise<void>}
  */
 
-async function importTaxonomy_CSV (path, expr) {
+async function importTaxonomy_CSV (path = 'C:\\itemsparse.csv') {
     try {
-        let eva = fs.readFileSync(path,'utf8');
-        csv.parse(eva, async function(err, data) {
-            switch (expr) {
+        let path_, file_;
+
+        if (path.endsWith(".csv")) {
+            file_ = path
+            path = path.slice(0, -4)
+        } else {
+            file_ = path + '.csv'
+        }
+
+        if (process.env.PWD) {
+            path_ = normalize(`${process.env.PWD}/uploads/${file_}`)
+        } else {
+            path_ = file_
+        }
+
+        let fileSync = fs.readFileSync(path_,'utf8');
+        csv.parse(fileSync, async function(err, data) {
+            switch (basename(path, '.csv')) {
                 case 'production':
                     for (let i = 1; i < data.length; i++) {
                         let item = await items_db.findById(parseInt(data[i][0]))
@@ -65,7 +80,8 @@ async function importTaxonomy_CSV (path, expr) {
                         [0, 'CLSC']
                     ]);
                     for (let i = 1; i < data.length; i++) {
-                        await items_db.findByIdAndUpdate(parseFloat(data[i][0]), { expansion: expansionTicker.get(parseInt(data[i][68])) })
+                        await items_db.findByIdAndUpdate(parseFloat(data[i][0]), { expansion: expansionTicker.get(parseInt(data[i][68])), stackable: parseInt(data[i][32]) })
+                        console.info(`U, ${parseFloat(data[i][0])}, ${expansionTicker.get(parseInt(data[i][68]))}, ${parseInt(data[i][32])}`);
                     }
                     break;
                 default:
@@ -78,4 +94,4 @@ async function importTaxonomy_CSV (path, expr) {
     }
 }
 
-importTaxonomy_CSV('C:\\itemsparse.csv', 'itemsparse');
+importTaxonomy_CSV(process.env.PWD);

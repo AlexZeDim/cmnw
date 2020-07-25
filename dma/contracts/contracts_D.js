@@ -62,7 +62,7 @@ async function contracts_D (arg_realm = 'ru_RU') {
             items_db.find({
                 $or: [
                     { _id: 1 },
-                    { expansion: 'BFA', is_commdty: true }
+                    { expansion: 'BFA', asset_class: { $all: [ "MARKET" , "COMMDTY" ] } }
                 ]
             }).lean()
         ]);

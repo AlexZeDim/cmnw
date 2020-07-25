@@ -94,4 +94,4 @@ async function importTaxonomy_CSV (path = 'C:\\itemsparse.csv') {
     }
 }
 
-importTaxonomy_CSV(process.env.PWD);
+importTaxonomy_CSV(process.argv.slice(2)[0]);

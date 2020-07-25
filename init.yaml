@@ -2,11 +2,17 @@
 # static data or update it
 # on first launch or patch day
 apps:
-  - script: ./dma/items/getItems.js
+  - script: ./dma/items/indexItems.js
     name: 'DMA-getItems'
     instances: 1
+    args: 'DMA update'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./osint/indexing/indexRealms.js
     name: 'OSINT-indexRealms'
     instances: 1
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+  - script: ./dma/items/importTaxonomy_CSV.js
+    name: 'DMA-importTaxonomy_CSV'
+    instances: 1
+    args: 'itemsparse'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

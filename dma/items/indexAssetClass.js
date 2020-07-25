@@ -101,7 +101,7 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                             }
                         }
                     }
-                ]).cursor({batchSize: bulkSize }).exec().eachAsync(async ({_id, is_commdty}) => {
+                ]).cursor({ batchSize: bulkSize }).exec().eachAsync(async ({_id, is_commdty}) => {
                     let item = await items_db.findById(_id);
                     if (item) {
                         if (is_commdty) {

@@ -33,36 +33,49 @@ const pricing_methods_db = require("../../db/pricing_methods_db");
  * @returns {Promise<void>}
  */
 
-async function indexAssetClass (arg = "items", bulkSize = 10) {
+async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
     try {
         console.time(`DMA-${indexAssetClass.name}`);
         switch (arg) {
             case 'pricing_methods':
-                console.info(`pricing_methods`)
-                await pricing_methods_db.find({}).cursor({batchSize: bulkSize}).eachAsync( async (method) => {
+                console.info(`Stage: pricing_methods`)
+                await pricing_methods_db.find({}).limit(100).cursor({batchSize: bulkSize}).eachAsync( async (method) => {
                     try {
                         /** Derivative Asset Class */
                         if (method.item_id) {
                             let item = await items_db.findById(method.item_id);
-                            item.asset_class.addToSet("DERIVATIVE")
-                            await item.save()
+                            if (item.asset_class) {
+                                item.asset_class.addToSet("DERIVATIVE")
+                                await item.save()
+                                console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                            }
                         }
                         if (method.alliance_item_id) {
-                            let item = await items_db.findById(method.item_id);
-                            item.asset_class.addToSet("DERIVATIVE")
-                            await item.save()
+                            console.log()
+                            let item = await items_db.findById(method.alliance_item_id);
+                            if (item) {
+                                item.asset_class.addToSet("DERIVATIVE")
+                                await item.save()
+                                console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                            }
                         }
                         if (method.horde_item_id) {
-                            let item = await items_db.findById(method.item_id);
-                            item.asset_class.addToSet("DERIVATIVE")
-                            await item.save()
+                            let item = await items_db.findById(method.horde_item_id);
+                            if (item) {
+                                item.asset_class.addToSet("DERIVATIVE")
+                                await item.save()
+                                console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                            }
                         }
                         /** Reagent Asset Class */
                         if (method.reagents && method.reagents.length) {
                             for (let {_id} of method.reagents) {
                                 let item = await items_db.findById(_id);
-                                item.asset_class.addToSet("REAGENT")
-                                await item.save()
+                                if (item) {
+                                    item.asset_class.addToSet("REAGENT")
+                                    await item.save()
+                                    console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                                }
                             }
                         }
                     } catch (e) {
@@ -70,7 +83,7 @@ async function indexAssetClass (arg = "items", bulkSize = 10) {
                     }
                 }, { parallel: bulkSize })
             case 'auctions':
-                console.info(`auctions`)
+                console.info(`Stage: auctions`)
                 await auctions_db.aggregate([
                     {
                         $group: {
@@ -98,10 +111,11 @@ async function indexAssetClass (arg = "items", bulkSize = 10) {
                         }
                         item.asset_class.addToSet("MARKET")
                         await item.save()
+                        console.info(`${item._id}, ${ item.asset_class.toString()}`)
                     }
                 }, { parallel: bulkSize });
             case 'items':
-                console.info(`items`)
+                console.info(`Stage: items`)
                 await items_db.updateMany({ asset_class: "REAGENT", loot_type: "ON_ACQUIRE" }, { $addToSet: { asset_class: "PREMIUM" } })
                 break;
             default:

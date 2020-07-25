@@ -27,14 +27,13 @@ const auctions_db = require("../../db/auctions_db");
 const pricing_methods_db = require("../../db/pricing_methods_db");
 
 /**
- * IDEA build.yaml?
  * indexItems add is_auction, is_commdty and is_derivative properties to items
  * @param arg
  * @param bulkSize
  * @returns {Promise<void>}
  */
 
-async function indexAssetClass (arg, bulkSize = 10) {
+async function indexAssetClass (arg = "items", bulkSize = 10) {
     try {
         console.time(`DMA-${indexAssetClass.name}`);
         switch (arg) {
@@ -44,7 +43,7 @@ async function indexAssetClass (arg, bulkSize = 10) {
                         $group: {
                             _id: {
                                 id: "$item.id",
-                                is_commdty: {"$ifNull": [ "$unit_price", false ]}
+                                is_commdty: { "$ifNull": [ "$unit_price", false ] }
                             }
                         }
                     },
@@ -56,7 +55,7 @@ async function indexAssetClass (arg, bulkSize = 10) {
                             }
                         }
                     }
-                ]).cursor({batchSize: 10}).exec().eachAsync(async ({_id, is_commdty}) => {
+                ]).cursor({batchSize: bulkSize }).exec().eachAsync(async ({_id, is_commdty}) => {
                     let item = await items_db.findById(_id);
                     if (item) {
                         if (is_commdty) {
@@ -67,7 +66,7 @@ async function indexAssetClass (arg, bulkSize = 10) {
                         item.asset_class.addToSet("MARKET")
                         await item.save()
                     }
-                }, { parallel: 10 });
+                }, { parallel: bulkSize });
                 break;
             case 'pricing_methods':
                 await pricing_methods_db.find({}).cursor({batchSize: bulkSize}).eachAsync( async (method) => {
@@ -102,14 +101,7 @@ async function indexAssetClass (arg, bulkSize = 10) {
                 }, { parallel: bulkSize })
                 break;
             case 'items':
-                await items_db.find({asset_class: "REAGENT", loot_type: "ON_ACQUIRE"}).limit(100).cursor({batchSize: bulkSize}).eachAsync( async (item) => {
-                    try {
-                        item.asset_class.addToSet("PREMIUM")
-                        await item.save()
-                    } catch (e) {
-                        console.error(e)
-                    }
-                }, { parallel: bulkSize })
+                await items_db.updateMany({ asset_class: "REAGENT", loot_type: "ON_ACQUIRE" }, { $addToSet: { asset_class: "PREMIUM" } })
                 break;
             default:
                 break;
@@ -121,4 +113,4 @@ async function indexAssetClass (arg, bulkSize = 10) {
     }
 }
 
-indexAssetClass("items");
+indexAssetClass(process.argv.slice(2)[0], process.argv.slice(2)[1]);

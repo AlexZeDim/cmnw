@@ -37,38 +37,8 @@ async function indexAssetClass (arg = "items", bulkSize = 10) {
     try {
         console.time(`DMA-${indexAssetClass.name}`);
         switch (arg) {
-            case 'auctions':
-                await auctions_db.aggregate([
-                    {
-                        $group: {
-                            _id: {
-                                id: "$item.id",
-                                is_commdty: { "$ifNull": [ "$unit_price", false ] }
-                            }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: "$_id.id",
-                            is_commdty: {
-                                $cond: [{$eq: [ "$_id.is_commdty", false ]}, false, true]
-                            }
-                        }
-                    }
-                ]).cursor({batchSize: bulkSize }).exec().eachAsync(async ({_id, is_commdty}) => {
-                    let item = await items_db.findById(_id);
-                    if (item) {
-                        if (is_commdty) {
-                            item.asset_class.addToSet("COMMDTY")
-                        } else {
-                            item.asset_class.addToSet("ITEM")
-                        }
-                        item.asset_class.addToSet("MARKET")
-                        await item.save()
-                    }
-                }, { parallel: bulkSize });
-                break;
             case 'pricing_methods':
+                console.info(`pricing_methods`)
                 await pricing_methods_db.find({}).cursor({batchSize: bulkSize}).eachAsync( async (method) => {
                     try {
                         /** Derivative Asset Class */
@@ -99,8 +69,39 @@ async function indexAssetClass (arg = "items", bulkSize = 10) {
                         console.error(e)
                     }
                 }, { parallel: bulkSize })
-                break;
+            case 'auctions':
+                console.info(`auctions`)
+                await auctions_db.aggregate([
+                    {
+                        $group: {
+                            _id: {
+                                id: "$item.id",
+                                is_commdty: { "$ifNull": [ "$unit_price", false ] }
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: "$_id.id",
+                            is_commdty: {
+                                $cond: [{$eq: [ "$_id.is_commdty", false ]}, false, true]
+                            }
+                        }
+                    }
+                ]).cursor({batchSize: bulkSize }).exec().eachAsync(async ({_id, is_commdty}) => {
+                    let item = await items_db.findById(_id);
+                    if (item) {
+                        if (is_commdty) {
+                            item.asset_class.addToSet("COMMDTY")
+                        } else {
+                            item.asset_class.addToSet("ITEM")
+                        }
+                        item.asset_class.addToSet("MARKET")
+                        await item.save()
+                    }
+                }, { parallel: bulkSize });
             case 'items':
+                console.info(`items`)
                 await items_db.updateMany({ asset_class: "REAGENT", loot_type: "ON_ACQUIRE" }, { $addToSet: { asset_class: "PREMIUM" } })
                 break;
             default:

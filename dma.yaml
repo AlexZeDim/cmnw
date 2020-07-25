@@ -49,7 +49,7 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/items/indexAssetClass.js
-    name: 'indexAssetClass'
+    name: 'DMA-indexAssetClass'
     instances: 1
     args: 'pricing_methods 10'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

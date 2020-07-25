@@ -33,18 +33,18 @@ const getItem = require("./getItem");
 
 /**
  * This function parse items across B.net API with wrapper
- * @param queryKeys {object}
- * @param update {boolean}
+ * @param queryKeys {string}
+ * @param operation {string}
  * @returns {Promise<void>}
  */
 
-async function indexItems (queryKeys = { tags: `DMA` }, update = true) {
+async function indexItems (queryKeys = "DMA", operation = "update") {
     try {
         console.time(`DMA-${indexItems.name}`);
 
-        const { token } = await keys_db.findOne(queryKeys);
+        const { token } = await keys_db.findOne({ tags: queryKeys });
 
-        if (update) {
+        if (operation === "update") {
             await items_db.find({}).lean().cursor({batchSize: 10}).eachAsync(async ({_id}) => {
                 await getItem(_id, token)
             }, { parallel: 10 })
@@ -63,4 +63,4 @@ async function indexItems (queryKeys = { tags: `DMA` }, update = true) {
     }
 }
 
-indexItems({ tags: `DMA` }, true);
+indexItems(process.argv.slice(2)[0], process.argv.slice(2)[1]);

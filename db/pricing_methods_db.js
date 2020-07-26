@@ -87,6 +87,12 @@ let schema = new mongoose.Schema({
     },
     reagent_items: {
         type: Array
+    },
+    /**
+     * IVA, store item_id for singleName
+     */
+    single_name: {
+        Number
     }
 },{
     timestamps: true

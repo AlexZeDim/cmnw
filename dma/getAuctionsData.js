@@ -42,10 +42,11 @@ const {Round2} = require("../db/setters")
  * This function updated auction house data on every connected realm by ID (trade hubs)
  * @param queryKeys
  * @param realmQuery
+ * @param bulkSize
  * @returns {Promise<void>}
  */
 
-async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'locale': 'ru_RU' }) {
+async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'locale': 'ru_RU' }, bulkSize = 2) {
     try {
         console.time(`DMA-${getAuctionData.name}`);
         const { _id, secret, token } = await keys_db.findOne(queryKeys);
@@ -63,7 +64,7 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
                     },
                 }
             }
-        ]).cursor({ batchSize: 10 }).exec().eachAsync(async ({_id}) => {
+        ]).cursor({ batchSize: bulkSize }).exec().eachAsync(async ({_id}) => {
             try {
                 console.info(`R,${_id.connected_realm_id}`);
                 if (_id.timestamp) {
@@ -86,7 +87,7 @@ async function getAuctionData (queryKeys = { tags: `DMA` }, realmQuery = { 'loca
             } catch (e) {
                 console.error(e)
             }
-        }, { parallel: 10 })
+        }, { parallel: bulkSize })
         connection.close();
         console.timeEnd(`DMA-${getAuctionData.name}`);
     } catch (err) {

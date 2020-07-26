@@ -15,57 +15,29 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
 
 
 let schema = new mongoose.Schema({
-    _id: String, /** item_id@connected_realm_id */
-    name: String, /** We should make it somehow */
+    name: String,
     item_id: Number,
-    asset_class: Array,
     connected_realm_id: Number,
+    type: {
+        type: String,
+        enum: ["VENDOR", "DERIVATIVE", "REAGENT", "MARKET", "PREMIUM"]
+    },
     last_modified: Number,
-    vendor: {
-        sell_price: Number,
-        buy_price: Number,
-        yieldMarket: Number, /** if buy_price buy_price / market.price */
-        yieldReagent: Number, /** if buy_price buy_price / market.price */
+    value: Number,
+    flag: {
+        type: String,
+        enum: ["BUY", "SELL"]
     },
-    market: {
-        last_modified: Number,
-        price: Number,
-        quantity: Number,
-        open_interest: Number,
-        orders: Array,
-        price_size: Number,
-        yieldReagent: Number, /** price / derivative.nominal_value */
-        yieldVendor: Number, /** price / market.vendorSellPrice */
-    },
-    derivative: [{
-        _id: String,
-        rank: Number,
-        reagent_items: Array,
-        queue_cost: Number, /** Cost of production quene*/
-        queue_quantity: Number,
-        nominal_value: Number, /** Cost/Q = for x1*/
-        premium: Number,
-        yieldMarket: Number, /** nominal_value / market.price */
-        yieldVendor: Number, /** nominal_value / market.vendorSellPrice */
-        last_modified: Number,
-    }],
-    reagent: {
-        name: String,
-        value: Number,
-        index: Number, /** Index of derivative method*/
-        p_value: Number,
-        p_index: Number,
-        premium: [{ /** Родитель оценит остатком */
-            _id: String,
-            value: Number,
-            wi: Number, /** premiumItem_Q x quantity */
-        }],
-    },
+    details: Object
 },{
     timestamps: true
 });
 
-schema.index({ last_modified: -1 },{name: 'LastModified'});
+//TODO index
+schema.index({ item_id: -1, last_modified: -1, connected_realm_id: 1 },{name: 'IVA'});
+schema.index({ type: -1 },{name: 'LastModified'});
+schema.index({ flag: -1 },{name: 'Flag'});
+schema.index({ value: -1 },{name: 'Sorting'});
 
 let valuations_db = mongoose.model('valuations', schema, 'valuations');
 

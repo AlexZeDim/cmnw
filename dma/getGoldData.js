@@ -60,13 +60,9 @@ async function getGoldData () {
             }
         ]).then((res) => res);
         if (goldOrders.length !== 0) {
-            const realms = await realms_db.find();
             for (let i = 0; i < goldOrders.length; i++) {
-                //FIXME ????
-                let realm = realms.find(({name, connected_realm_id}) => {
-                    if (name === goldOrders[i].realm) return connected_realm_id
-                });
-                if (realm) {
+                let realm = await realms_db.findOne({$text:{$search: goldOrders[i].realm}}).select("connected_realm_id").lean()
+                if (realm.connected_realm_id) {
                     await realms_db.updateMany({connected_realm_id: realm.connected_realm_id}, {golds: t})
                     if (parseFloat(goldOrders[i].quantity.replace(/\s/g,"")) < 15000000) {
                         goldData.push({

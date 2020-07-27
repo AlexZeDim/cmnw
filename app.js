@@ -13,6 +13,7 @@ const realms = require('./routes/api/realms');
 const wowtoken = require('./routes/api/wowtoken');
 const golds = require('./routes/api/golds');
 const xrs = require('./routes/api/xrs');
+const test = require('./routes/api/test');
 const app = express();
 
 app.use(logger('dev'));
@@ -31,5 +32,6 @@ app.use('/api/realms', realms);
 app.use('/api/wowtoken', wowtoken);
 app.use('/api/golds', golds);
 app.use('/api/xrs', xrs);
+app.use('/api/test', test);
 
 module.exports = app;

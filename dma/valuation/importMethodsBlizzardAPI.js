@@ -22,7 +22,7 @@ connection.once('open', () => console.log('Connected to database on ' + process.
  * Model importing
  */
 
-const pricing_methods = require("../../db/pricing_methods_db");
+const pricing_methods_db = require("../../db/pricing_methods_db");
 const keys_db = require("../../db/keys_db");
 
 /**
@@ -81,64 +81,60 @@ async function importMethodsBlizzardAPI () {
                     let {categories} = await bnw.WowGameData.getProfessionSkillTier(profession.id, tier.id);
                     if (categories) {
                         for (let category of categories) {
-                            /***
-                             * IDEA category.name => ticker for item
-                             * IDEA ENC fix quantity
-                             */
                             let {recipes} = category;
-                            let result = {};
-                            result.type = `primary`;
-                            result.createdBy = `DMA-${importMethodsBlizzardAPI.name}`;
-                            result.updatedBy = `DMA-${importMethodsBlizzardAPI.name}`;
+
                             for (let recipe of recipes) {
-                                await Promise.all([
-                                    bnw.WowGameData.getRecipe(recipe.id).then(({alliance_crafted_item, description, crafted_item, horde_crafted_item, id, name, rank, reagents, crafted_quantity}) => {
-                                        result._id = `P${id}`;
-                                        result.recipe_id = parseInt(id);
-                                        result.name = name;
-                                        if (description) {
-                                            result.description = description;
-                                        }
-                                        if (alliance_crafted_item) {
-                                            result.alliance_item_id = parseInt(alliance_crafted_item.id)
-                                        }
-                                        if (horde_crafted_item) {
-                                            result.horde_item_id = parseInt(horde_crafted_item.id)
-                                        }
-                                        if (crafted_item) {
-                                            result.item_id = parseInt(crafted_item.id)
-                                        }
-                                        if (professionsTicker.has(profession.id)) {
-                                            result.profession = professionsTicker.get(profession.id)
-                                        }
-                                        if (expansion_ticker) {
-                                            result.expansion = expansion_ticker;
-                                        }
-                                        if (rank) {
-                                            result.rank = rank;
-                                        }
-                                        if (crafted_quantity) {
-                                            result.item_quantity = crafted_quantity.value;
-                                        }
-                                        result.reagents = reagents.map(({reagent, quantity}) => {return {_id: parseInt(reagent.id) , quantity: parseInt(quantity)}});
-                                    }).catch(e=>e),
-                                    bnw.WowGameData.getRecipeMedia(recipe.id).then(({assets}) => {
-                                        result.media = assets[0].value
-                                    }).catch(e=>e)
+
+                                const [RecipeData, RecipeMedia] = await Promise.allSettled([
+                                    bnw.WowGameData.getRecipe(recipe.id),
+                                    bnw.WowGameData.getRecipeMedia(recipe.id)
                                 ]);
-                                if (result) {
-                                    await pricing_methods.findByIdAndUpdate(
-                                    {
-                                        _id: result._id
-                                    },
-                                    result,
-                                    {
-                                        upsert: true,
-                                        new: true,
-                                        lean: true
-                                    })
-                                    .then(({_id, name, profession, expansion}) => console.info(`F:U,${expansion}:${profession}:${_id},${name.en_GB}`))
-                                    .catch(e => console.error(e));
+
+                                if (RecipeData.value) {
+                                    const recipe_data = RecipeData.value;
+
+                                    let pricing_method = await pricing_methods_db.findById(recipe_data.id);
+
+                                    if (!pricing_method) {
+                                        pricing_method = new pricing_methods_db({
+                                            _id: `P${recipe_data.id}`,
+                                            recipe_id: parseInt(recipe_data.id),
+                                            name: recipe_data.name,
+                                            type: `primary`,
+                                            createdBy: `DMA-${importMethodsBlizzardAPI.name}`,
+                                            updatedBy: `DMA-${importMethodsBlizzardAPI.name}`,
+                                        });
+                                    }
+
+                                    if (recipe_data.description) {
+                                        pricing_method.description = recipe_data.description
+                                    }
+                                    if ("alliance_crafted_item" in recipe_data) {
+                                        pricing_method.alliance_item_id = parseInt(recipe_data.alliance_crafted_item.id)
+                                    }
+                                    if ("horde_crafted_item" in recipe_data) {
+                                        pricing_method.horde_item_id = parseInt(recipe_data.horde_crafted_item.id)
+                                    }
+                                    if (recipe_data.profession && professionsTicker.has(recipe_data.profession.id)) {
+                                        pricing_method.profession = professionsTicker.get(recipe_data.profession.id)
+                                    }
+                                    if (expansion_ticker) {
+                                        pricing_method.expansion = expansion_ticker;
+                                    }
+                                    if (recipe_data.rank) {
+                                        pricing_method.rank = recipe_data.rank;
+                                    }
+                                    if ("crafted_quantity" in recipe_data) {
+                                        pricing_method.item_quantity = recipe_data.crafted_quantity.value;
+                                    }
+                                    pricing_method.reagents = recipe_data.reagents.map(({reagent, quantity}) => {return {_id: parseInt(reagent.id) , quantity: parseInt(quantity)}});
+
+                                    if (RecipeMedia.value) {
+                                        pricing_method.media = RecipeMedia.value.assets[0].value
+                                    }
+
+                                    await pricing_method.save()
+                                    console.info(`F:U,${pricing_method.expansion}:${pricing_method.profession}:${pricing_method._id},${pricing_method.name.en_GB}`)
                                 }
                             }
                         }

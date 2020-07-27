@@ -15,20 +15,13 @@ module.exports = {
                 realm,
                 valuations
             } = data;
-            embed.setTitle(asset_class.toString().replace(/,/g, ' '));
+            embed.setTitle(item.asset_class.toString().replace(/,/g, ' '));
             embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB}`));
 
             let descriptionString = '';
             let market_counter = 0;
             let derivative_counter = 0;
             let premium_counter = 0;
-
-            if (derivative && derivative.length) {
-                descriptionString = descriptionString.concat(`*Derivative pricing is based on ${derivative.length} ${derivative.length === 1 ? 'method' : 'methods'}*\n _ _`)
-            }
-            if (reagent.premium && reagent.premium.length) {
-                descriptionString = descriptionString.concat(`*Premium pricing is based on ${reagent.premium.length} ${reagent.premium.length === 1 ? 'method' : 'methods'}*\n _ _`)
-            }
 
             embed.setURL(encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB}`));
             if ("icon" in item) {

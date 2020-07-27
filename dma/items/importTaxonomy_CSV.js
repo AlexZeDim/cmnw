@@ -89,7 +89,7 @@ async function importTaxonomy_CSV (path = 'C:\\taxonomy.csv') {
             }
             connection.close();
         });
-        console.time(`DMA-${importTaxonomy_CSV.name}`)
+        console.timeEnd(`DMA-${importTaxonomy_CSV.name}`)
     } catch (error) {
         console.error(error);
     }

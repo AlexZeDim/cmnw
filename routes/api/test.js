@@ -13,7 +13,7 @@ const valuations_db = require("../../db/valuations_db");
  * Modules
  */
 
-const iva = require("../../dma/valuation/eva/IVA");
+const iva = require("../../dma/valuation/eva/iva.js");
 
 router.get('/:i@:r', async function(req, res) {
     try {

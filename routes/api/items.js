@@ -15,7 +15,7 @@ const contracts_db = require("../../db/contracts_db");
 
 const clusterChartData = require("../../dma/getClusterChartData.js");
 const auctionsQuotes = require("../../dma/auctions/auctionsData.js");
-const itemValuationAdjustment = require("../../dma/valuation/eva/IVA");
+const itemValuationAdjustment = require("../../dma/valuation/eva/iva.js");
 
 
 router.get('/:i@:r', async function(req, res) {

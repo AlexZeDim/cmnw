@@ -15,7 +15,6 @@ module.exports = {
                 realm,
                 valuations
             } = data;
-            embed.setTitle(item.asset_class.toString().replace(/,/g, ' '));
             embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB}`));
 
             let descriptionString = '';

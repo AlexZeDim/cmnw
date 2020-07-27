@@ -104,9 +104,9 @@ async function iva (
                             connected_realm_id: connected_realm_id,
                             type: "MARKET",
                             last_modified: _id,
-                            value: price,
+                            value: Round2(price),
                             details: {
-                                price_size: price_size,
+                                price_size: Round2(price_size),
                                 quantity: quantity,
                                 open_interest: Math.round(open_interest),
                                 orders: orders,

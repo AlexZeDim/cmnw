@@ -1,5 +1,0 @@
-apps:
-  - script: ./uploads/path.js
-    name: 'T'
-    instances: 1
-    args: 'nest'

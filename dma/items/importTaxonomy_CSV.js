@@ -38,7 +38,7 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-async function importTaxonomy_CSV (path = 'C:\\itemsparse.csv') {
+async function importTaxonomy_CSV (path = 'C:\\taxonomy.csv') {
     try {
         console.time(`DMA-${importTaxonomy_CSV.name}`)
         let path_, file_;
@@ -59,13 +59,12 @@ async function importTaxonomy_CSV (path = 'C:\\itemsparse.csv') {
         let fileSync = fs.readFileSync(path_,'utf8');
         csv.parse(fileSync, async function(err, data) {
             switch (basename(path, '.csv')) {
-                case 'production':
+                case 'taxonomy':
                     for (let i = 1; i < data.length; i++) {
                         let item = await items_db.findById(parseInt(data[i][0]))
-                        item.ticker = data[i][2];
-                        item.profession_class = data[i][3];
-                        item.asset_class.addToSet()
+                        item.asset_class.addToSet(data[i][5])
                         await item.save()
+                        console.info(`U, ${parseFloat(data[i][0])}`);
                     }
                     break;
                 case 'itemsparse':

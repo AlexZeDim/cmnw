@@ -2,7 +2,7 @@ const pricing_methods = require("../../db/pricing_methods_db");
 
 async function getPricingMethods (id = 15389, derivative = false) {
     try {
-        let query = [{type: 'primary'}];
+        let query = [{type: 'primary', item_quantity: { $ne: 0 }}];
         if (derivative) {
             query.push({type: 'derivative'})
         }
@@ -26,6 +26,39 @@ async function getPricingMethods (id = 15389, derivative = false) {
                 }
             },
             {
+                $addFields: {
+                    item_id: {
+                        $filter: {
+                            input: [
+                                "$item_id",
+                                "$horde_item_id",
+                                "$alliance_item_id"
+                            ],
+                            as: "d",
+                            cond: {
+                                $ne: [
+                                    "$$d",
+                                    null
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $unset: [
+                    "alliance_item_id",
+                    "horde_item_id",
+
+                ]
+            },
+            {
+                $unwind: {
+                    path: "$item_id",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
                 $group: {
                     _id: "$item_id",
                     max: {
@@ -43,16 +76,16 @@ async function getPricingMethods (id = 15389, derivative = false) {
                 $match: {
                     $expr: {
                         $or: [
-                            {
-                                $eq: [
+                            { $eq:
+                                [
                                     {
                                         $type: "$data.rank"
                                     },
                                     "missing"
                                 ]
                             },
-                            {
-                                $eq: [
+                            { $eq:
+                                [
                                     "$data.rank",
                                     "$max"
                                 ]

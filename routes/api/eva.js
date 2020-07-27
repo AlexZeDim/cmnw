@@ -24,10 +24,10 @@ router.get('/:i@:r', async function(req, res) {
         isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));
         let [item, realm] = await Promise.all(requestPromises);
         if (item && realm) {
-            let valuations = await valuations_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, last_modified: realm.auctions}).sort("-value").limit(30)
+            let valuations = await valuations_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, last_modified: realm.auctions}).sort("value").limit(30)
             if (!valuations.length) {
                 await iva(item, realm.connected_realm_id, realm.auctions, 0, 0)
-                valuations = await valuations_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, last_modified: realm.auctions}).sort("-value").limit(30)
+                valuations = await valuations_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, last_modified: realm.auctions}).sort("value").limit(30)
             }
             Object.assign(response, {valuations: valuations})
             Object.assign(response, {item: item});

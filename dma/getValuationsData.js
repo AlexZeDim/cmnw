@@ -29,7 +29,7 @@ const items_db = require("./../db/items_db");
  * Modules
  */
 
-const itemValuationAdjustment = require('./valuation/turing/IVA');
+const iva = require('./valuation/eva/iva');
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
@@ -61,20 +61,15 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                 if (t.auctions > t.valuations) {
                     /**
                      * Asset Class for items
-                     * @type {Map<number, string[]>}
+                     * @type {Map<number, string{}>}
                      */
                     const assetClassMap = new Map([
                         [0, {"expansion": "BFA", "asset_class": "VENDOR"}],
-                        [1, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE", "PREMIUM" ] } }, { "$all": [ "REAGENT" , "MARKET", "COMMDTY" ] } ] }],
-                        [2, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "$all": [ "REAGENT" , "PREMIUM" ] } ] }],
-                        [3, { "$and": [ { "expansion": "BFA" }, { "$all": [ "REAGENT" , "DERIVATIVE" ] } ] }],
-                        [4, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "$all": [ "REAGENT" , "PREMIUM" ] } ] }],
-                        [5, {"expansion": "BFA", "asset_class": { "$all": [ "REAGENT" , "DERIVATIVE" ] } }],
-                        [4, ['PREMIUM','REAGENT','ITEM']],
-                        [5, ['REAGENT','MARKET','ITEM']],
-                        [6, ['REAGENT','MARKET','DERIVATIVE']],
-                        [7, ['CAP','MARKET','DERIVATIVE']],
-                        [8, ['CAP','PREMIUM','DERIVATIVE']],
+                        [1, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE", "PREMIUM" ] } },  { "asset_class": { "$all": [ "REAGENT" , "MARKET", "COMMDTY" ] } } ] }],
+                        [2, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class": { "$all": [ "REAGENT" , "PREMIUM" ] } } ] }],
+                        [3, { "$and": [ { "expansion": "BFA" }, { "asset_class":  { "$all": [ "REAGENT" , "DERIVATIVE" ] } } ] }],
+                        [4, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class":  { "$all": [ "REAGENT" , "PREMIUM" ] } } ] }],
+                        [5, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "REAGENT" ] } }, { "asset_class":  "DERIVATIVE" } ] }]
                     ]);
                     /**
                      * Start to evaluate every item class with selected item_db query
@@ -83,13 +78,13 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                         /**
                          * Starting IVA as 10 streams
                          */
-                        console.time(`DMA-XVA-${_id}-${k}:${ac.toString()}`);
+                        console.time(`DMA-XVA-${_id}-${k}`);
                         await items_db.find(ac).cursor({batchSize: 10}).eachAsync(async (item) => {
                             console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`)
-                            await itemValuationAdjustment(item, _id, null, 0, 0)
+                            await iva(item, _id, t.valuations, 0, 0)
                             console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`)
                         }, { parallel: 10 })
-                        console.timeEnd(`DMA-XVA-${_id}-${k}:${ac.toString()}`);
+                        console.timeEnd(`DMA-XVA-${_id}-${k}`);
                     }
                     /** Update timestamp for valuations */
                     await realms_db.updateMany({connected_realm_id: _id}, {valuations: t.auctions})

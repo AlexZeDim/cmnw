@@ -28,7 +28,6 @@ const pricing_methods = require("../../db/pricing_methods_db");
 
 /***
  * Fixes vendor sell quantity problem for some items (Boralus vendor)
- * FIXME EXPL horde_item_id & alliance_item_id
  * Add methods for EXPL
  * @returns {Promise<void>}
  */
@@ -103,7 +102,7 @@ async function migrations() {
                     { _id: 161887, quantity: 6.5 }
                 ]
             },
-/*            {
+            {
                 _id: 'P38737:2',
                 description: {
                     en_GB: 'Scrap Monel-Hardened Armguards into Expulsom',
@@ -125,7 +124,7 @@ async function migrations() {
                 reagents: [
                     { _id: 152809, quantity: 6.5 }
                 ]
-            },*/
+            },
             {
                 _id: 'P39083:1',
                 description: {
@@ -149,7 +148,7 @@ async function migrations() {
                     { _id: 161984, quantity: 6.5 }
                 ]
             },
-/*            {
+            {
                 _id: 'P39083:2',
                 description: {
                     en_GB: 'Scrap Tidespray Linen Bracers into Expulsom',
@@ -171,7 +170,7 @@ async function migrations() {
                 reagents: [
                     { _id: 154692, quantity: 6.5 }
                 ]
-            },*/
+            },
             {
                 _id: 'P39045:1',
                 description: {
@@ -195,7 +194,7 @@ async function migrations() {
                     { _id: 161960, quantity: 6.5 }
                 ]
             },
-/*            {
+            {
                 _id: 'P39045:2',
                 description: {
                     en_GB: 'Scrap Shimmerscale Armguards into Expulsom',
@@ -217,7 +216,7 @@ async function migrations() {
                 reagents: [
                     { _id: 154153, quantity: 6.5 }
                 ]
-            },*/
+            },
             {
                 _id: 'P39031:1',
                 description: {
@@ -241,7 +240,7 @@ async function migrations() {
                     { _id: 161945, quantity: 6.5 }
                 ]
             },
-/*            {
+            {
                 _id: 'I39031:2',
                 description: {
                     en_GB: 'Scrap Coarse Leather Armguards into Expulsom',
@@ -263,7 +262,7 @@ async function migrations() {
                 reagents: [
                     { _id: 154145, quantity: 6.5 }
                 ]
-            },*/
+            },
             {
                 _id: 'P39538:1',
                 description: {
@@ -287,7 +286,7 @@ async function migrations() {
                     { _id: 161925, quantity: 5 }
                 ]
             },
-/*            {
+            {
                 _id: 'P39538:2',
                 description: {
                     en_GB: 'Scrap Coarse Leather Armguards into Expulsom',
@@ -309,7 +308,7 @@ async function migrations() {
                 reagents: [
                     { _id: 152872, quantity: 5 }
                 ]
-            },*/
+            },
         ];
        for (let expulsom_method of expulsom_methods) {
             await pricing_methods.findByIdAndUpdate(

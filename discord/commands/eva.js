@@ -41,11 +41,11 @@ module.exports = {
                     premium_counter += 1;
                 }
 
-                embed.addField(`┌─────────────┐`, `
+                embed.addField(`─────────────`, `
                     Name: ${valuation.name}
                     Type: ${valuation.type}
                     Value: ${valuation.value}
-                    └─────────────┘
+                    ─────────────
                     `, true);
             }
 

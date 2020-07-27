@@ -89,8 +89,7 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
             if (step < 1) {
                 priceRange_array = priceRange_array.map(p => p.toFixed(2));
             }
-            //FIXME rework
-            timestamp = timestamp.map(ts => ts.toLocaleString('en-GB'));
+            timestamp = timestamp.map(ts => new Date(ts*1000).toLocaleString('en-GB'));
             return { price_range: priceRange_array, timestamps: timestamp, dataset: chartArray }
         } else {
             return void 0

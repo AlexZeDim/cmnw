@@ -4,7 +4,7 @@ require('dotenv').config();
 
 module.exports = {
     name: 'eva',
-    description: 'PH',
+    description: `This command shows the 30 cheapest valuation for any item available in the game, based on it's asset class.`,
     args: true,
     async execute(message, args) {
         const [item, realm] = args.split('@');

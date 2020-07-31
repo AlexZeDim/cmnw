@@ -6,11 +6,11 @@ const Discord = require('discord.js');
 const bot = new Discord.Client();
 bot.commands = new Discord.Collection();
 
-const commandFiles = fs.readdirSync(path.normalize(`${__dirname}/commands/`)).filter(file => file.endsWith('.js'));
-
 bot.on('ready', () => {
     console.log(`Logged in as ${bot.user.tag}!`);
 });
+
+const commandFiles = fs.readdirSync(path.normalize(`${__dirname}/commands/`)).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
     const command = require(path.normalize(`${__dirname}/commands/${file}`));

@@ -10,23 +10,36 @@ router.get('/:type/:query', async function(req, res) {
 
         let result = {};
 
+        /**
+         * Function covert request query to MongoDB query
+         * @param type
+         * @param query
+         * @returns {Promise<{$and: []}|{[p: string]: *}|{$or: []}|{[p: string]: *}|{$and: [{"hash.a": *}, {"hash.b": *}, {"hash.c": *}]}>}
+         */
+
         const queryToHash = async (type, query) => {
+            /** If query has realm argument */
             if (query.includes('@')) {
                 const [n, r] = query.split('@');
                 const { slug } = await realms_db.findOne({$text:{$search: r}});
+                /** Find realm and character itself */
                 let character = await characters_db.findById(`${n.toLowerCase()}@${slug}`).lean();
                 if (!character) {
+                    /** If character is not in OSINT-DB, then add it */
                     const getCharacter = require('../../osint/getCharacter');
                     const keys_db = require("../../db/keys_db");
                     const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});
                     character = await getCharacter(slug, n.toLowerCase(), {}, token, `OSINT-userInput`,true);
                     if (!character) {
+                        /** Return 404, if still no character found */
                         await res.status(404).json({error: "not found"});
                     }
                 }
-                let {hash} = character;
+                let { hash } = character;
+                /** Remove hash ex and t */
                 if (type === 'all') {
                     delete hash.ex
+                    delete hash.t
                     let and = [];
                     for (const [key, value] of Object.entries(hash)) {
                         and.push({[`hash.${key}`]: value})
@@ -35,6 +48,7 @@ router.get('/:type/:query', async function(req, res) {
                 }
                 if (type === 'any') {
                     delete hash.ex
+                    delete hash.t
                     let or = [];
                     for (const [key, value] of Object.entries(hash)) {
                         or.push({[`hash.${key}`]: value})

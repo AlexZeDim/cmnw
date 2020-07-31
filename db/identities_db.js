@@ -17,13 +17,15 @@ let schema = new mongoose.Schema({
         type: String,
         enum: ['persona', 'guild'],
     },
-    aliases: [{
-        type: {
-            type: String,
-            enum: ['discord', 'battle.tag', 'twitter', 'name', 'character'],
-        },
-        value: String,
-    }]
+    aliases: [
+        {
+            type: {
+                type: String,
+                enum: ['discord', 'battle.tag', 'twitter', 'name', 'character'],
+            },
+            value: String,
+        }
+    ]
 },{
     timestamps: true
 });

@@ -1,6 +1,6 @@
 module.exports = {
     name: 'members',
-    description: 'Ping!',
+    description: 'Returns a JSON file with all the guild / discord channel members name and IDs',
     args: true,
     guildOnly: true,
     execute(message) {
@@ -9,7 +9,7 @@ module.exports = {
             let {user} = message.guild.members.cache.array()[u];
             members.push({id: user.id, name: user.username})
         }
-        let file_buffer = Buffer.from(JSON.stringify(members), null, 4);
+        const file_buffer = Buffer.from(JSON.stringify(members), null, 4);
         message.channel.send(`Name: ${message.guild.name}\nTotal members: ${message.guild.memberCount}`, {
             files: [{
                 attachment: file_buffer,

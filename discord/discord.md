@@ -17,7 +17,7 @@ Shows your discord username and ID.
 
 ```text
 User: whoami
-Bot: Your username: AlexZeDim. Your ID: 6456456456456456
+Bot: Your username: AlexZeDim. Your ID: 6456456456456456.
 ```
 
 ### MEMBERS
@@ -26,7 +26,7 @@ Returns a pretty print JSON file with all guild / discord channel's member names
 
 ```text
 User: members
-Bot: Name: Depo. Total members: 254.
+Bot: Name: Depo. Total members: 254. Attached files: members.json
 ```
 
 ### EVA [item]@[realm]
@@ -40,7 +40,7 @@ EVA FLASK.INT@GORDUNNI
 
 ### FIND A || B || C || ALL || ANY [query]
 
-Allows you to find all (*available*) alternative characters (twinks) in OSINT-DB across different realms. 
+Allows you to find no more than 15 (*available*) alternative characters (twinks) in OSINT-DB across different realms. 
 
 Requires a query parameter, which can be a hash string `f97efc28` or a character's name and realm `блюрателла@гордунни`
 

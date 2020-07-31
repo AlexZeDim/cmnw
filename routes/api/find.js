@@ -6,7 +6,7 @@ const characters_db = require("../../db/characters_db");
 
 router.get('/:type/:query', async function(req, res) {
     try {
-        const {type, query} = req.params;
+        const { type, query } = req.params;
 
         let result = {};
 
@@ -14,14 +14,14 @@ router.get('/:type/:query', async function(req, res) {
          * Function covert request query to MongoDB query
          * @param type
          * @param query
-         * @returns {Promise<{$and: []}|{[p: string]: *}|{$or: []}|{[p: string]: *}|{$and: [{"hash.a": *}, {"hash.b": *}, {"hash.c": *}]}>}
+         * @returns {Object}
          */
 
         const queryToHash = async (type, query) => {
             /** If query has realm argument */
             if (query.includes('@')) {
                 const [n, r] = query.split('@');
-                const { slug } = await realms_db.findOne({$text:{$search: r}});
+                const { slug } = await realms_db.findOne({$text: {$search: r}});
                 /** Find realm and character itself */
                 let character = await characters_db.findById(`${n.toLowerCase()}@${slug}`).lean();
                 if (!character) {

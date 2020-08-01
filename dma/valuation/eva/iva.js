@@ -19,18 +19,13 @@ const {Round2} = require("../../../db/setters")
  * @param connected_realm_id {Number}
  * @param last_modified {Number}
  * @param item_depth {Number}
- * @param method_depth {Number}
  * @returns {Promise<void>}
  */
 
-async function iva (
-        item = {},
-        connected_realm_id = 1602,
-        last_modified,
-        item_depth = 0,
-        method_depth = 0,
-    ) {
+async function iva (item, connected_realm_id = 1602, last_modified, item_depth = 0) {
     try {
+        console.info(`DMA-${iva.name},${item.ticker ? (item.ticker) : (item.name.en_GB)}@${connected_realm_id},${item_depth}`)
+
         /**
          * Getting timestamps
          */
@@ -155,8 +150,8 @@ async function iva (
                                 let ctd = await valuations.findOne({item_id: reagent_item._id, last_modified: last_modified, connected_realm_id: connected_realm_id, flag: "BUY"}).sort('value')
                                 /** If CTD not found.. */
                                 if (!ctd) {
-                                    /** ..then IVA on reagent_item */
-                                    await iva(reagent_item, connected_realm_id, last_modified, item_depth+1, method_depth+1);
+                                    /** ..then cast IVA on reagent_item */
+                                    await iva(reagent_item, connected_realm_id, last_modified, item_depth+1);
                                     /** CTD once again.. */
                                     ctd = await valuations.findOne({item_id: reagent_item._id, last_modified: last_modified, connected_realm_id: connected_realm_id, flag: "BUY"}).sort('value')
                                     /** ..if no, then unsorted_item */
@@ -242,7 +237,7 @@ async function iva (
                                     /** If CTD not found.. */
                                     if (!ctd) {
                                         /** ..then IVA on premium_item */
-                                        await iva(premium_item, connected_realm_id, last_modified, item_depth+1, method_depth+1);
+                                        await iva(premium_item, connected_realm_id, last_modified, item_depth+1);
                                         /** CTD once again.. */
                                         let ctd = await valuations.findOne({item_id: premium_item._id, last_modified: last_modified, connected_realm_id: connected_realm_id, type: "DERIVATIVE"}).sort('value')
                                         /** ..if no, then unsorted_item */

@@ -122,22 +122,24 @@ async function contracts_D (arg_realm = 'ru_RU') {
                 const contract_data = await query;
                 if (contract_data && contract_data.length) {
 
-                    /**
-                     * Create new Day contract
-                     */
-                    let contract = new contracts_db({
-                        _id: `${code}-${moment().format('DD.MMM')}@${connected_realm_id}`,
-                        code: `${code}-${moment().format('DD.MMM')}`,
-                        item_id: _id,
-                        connected_realm_id: connected_realm_id,
-                        date: {
-                            day: moment().get('date'),
-                            week: moment().get('week'),
-                            month: moment().get('month')+1,
-                            year: moment().get('year'),
-                        },
-                        type: `D`,
-                    });
+                    /** Create new Day contract */
+                    let contract = await contracts_db.findById(`${code}-${moment().format('DD.MMM')}@${connected_realm_id}`);
+
+                    if (!contract) {
+                        contract = new contracts_db({
+                            _id: `${code}-${moment().format('DD.MMM')}@${connected_realm_id}`,
+                            code: `${code}-${moment().format('DD.MMM')}`,
+                            item_id: _id,
+                            connected_realm_id: connected_realm_id,
+                            date: {
+                                day: moment().get('date'),
+                                week: moment().get('week'),
+                                month: moment().get('month')+1,
+                                year: moment().get('year'),
+                            },
+                            type: `D`,
+                        });
+                    }
 
                     /**
                      * Declare new arrays
@@ -165,13 +167,11 @@ async function contracts_D (arg_realm = 'ru_RU') {
                      * Data from timestamp
                      */
                     contract_data.map(({_id, price, price_size, quantity, open_interest, orders, sellers}, i) => {
-                        /**
-                         * Form [] of price, quantity, oi
-                         */
+                        /** Form [] of price, quantity, OI */
                         price_Array.push(Round2(price));
                         quantity_Array.push(Round2(quantity));
                         open_interest_Array.push(Round2(open_interest));
-                        /** Price_size [] if exists  */
+                        /** Price_size [] if exists */
                         if (price_size) {
                             price_size_Array.push(Round2(price_size));
                         }
@@ -306,18 +306,8 @@ async function contracts_D (arg_realm = 'ru_RU') {
                     /** Store original data */
                     contract.data = contract_data
 
-                    await contracts_db.findOneAndUpdate(
-                        {
-                            _id: `${code}-${moment().format('DD.MMM')}@${connected_realm_id}`,
-                        },
-                        contract.toObject(),
-                        {
-                            upsert : true,
-                            new: true,
-                            runValidators: true,
-                            lean: true
-                        }
-                    ).then(i => console.info(`C,${i._id}`))
+                    await contract.save()
+                    console.info(`C,${contract._id}`)
                 } else {
                     console.error(`E,${code}-${moment().format('DD.MMM')}@${connected_realm_id}`);
                 }

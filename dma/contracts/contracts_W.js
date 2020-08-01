@@ -100,7 +100,7 @@ async function contracts_W (arg_realm = 'ru_RU') {
             items_db.find({
                 $or: [
                     { _id: 1 },
-                    { expansion: 'BFA', is_commdty: true }
+                    { expansion: 'BFA' }
                 ]
             }).lean()
         ]);
@@ -117,22 +117,27 @@ async function contracts_W (arg_realm = 'ru_RU') {
                     item_id: _id
                 }).sort("updatedAt").lean();
                 if (contract_data && contract_data.length) {
+
                     /**
-                     * Create new Month contract
+                     * Create new Week contract
                      */
-                    let contract = new contracts_db({
-                        _id: `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
-                        code: `${code}-${moment().format('WW.YY')}`,
-                        item_id: _id,
-                        connected_realm_id: connected_realm_id,
-                        date: {
-                            day: moment().get('date'),
-                            week: moment().get('week'),
-                            month: moment().get('month')+1,
-                            year: moment().get('year'),
-                        },
-                        type: `W`,
-                    });
+                    let contract = await contracts_db.findById(`${code}-${moment().format('WW.YY')}@${connected_realm_id}`)
+
+                    if (!contract) {
+                        contract = new contracts_db({
+                            _id: `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
+                            code: `${code}-${moment().format('WW.YY')}`,
+                            item_id: _id,
+                            connected_realm_id: connected_realm_id,
+                            date: {
+                                day: moment().get('date'),
+                                week: moment().get('week'),
+                                month: moment().get('month')+1,
+                                year: moment().get('year'),
+                            },
+                            type: `W`,
+                        });
+                    }
 
                     /**
                      * Declare new arrays
@@ -294,18 +299,8 @@ async function contracts_W (arg_realm = 'ru_RU') {
 
                     contract.data = dataArray;
 
-                    await contracts_db.findOneAndUpdate(
-                        {
-                            _id: `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
-                        },
-                        contract.toObject(),
-                        {
-                            upsert : true,
-                            new: true,
-                            runValidators: true,
-                            lean: true
-                        }
-                    ).then(i => console.info(`C,${i._id}`))
+                    await contract.save()
+                    console.info(`C,${contract._id}`)
                 } else {
                     console.error(`E,${code}-${moment().format('WW.YY')}@${connected_realm_id}`);
                 }

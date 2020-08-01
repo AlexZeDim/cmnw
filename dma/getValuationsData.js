@@ -60,14 +60,13 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                 /** Update valuations with new auctions data */
                 if (t.auctions > t.valuations) {
                     /**
-                     * Asset Class for items
-                     * @type {Map<number, string{}>}
+                     * @type {Map<number, {Object}>}
                      */
                     const assetClassMap = new Map([
                         [0, {"expansion": "BFA", "asset_class": "VENDOR"}],
                         [1, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE", "PREMIUM" ] } },  { "asset_class": { "$all": [ "REAGENT" , "MARKET", "COMMDTY" ] } } ] }],
                         [2, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class": { "$all": [ "REAGENT" , "PREMIUM" ] } } ] }],
-                        [3, { "$and": [ { "expansion": "BFA" }, { "asset_class":  { "$all": [ "REAGENT" , "DERIVATIVE" ] } } ] }],
+                        [3, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$all": [ "REAGENT" , "DERIVATIVE" ] } } ] }],
                         [4, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class":  { "$all": [ "REAGENT" , "PREMIUM" ] } } ] }],
                         [5, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "REAGENT" ] } }, { "asset_class":  "DERIVATIVE" } ] }]
                     ]);
@@ -81,7 +80,7 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                         console.time(`DMA-XVA-${_id}-${k}`);
                         await items_db.find(ac).cursor({batchSize: 10}).eachAsync(async (item) => {
                             console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`)
-                            await iva(item, _id, t.valuations, 0, 0)
+                            await iva(item, _id, t.valuations, 0)
                             console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`)
                         }, { parallel: 10 })
                         console.timeEnd(`DMA-XVA-${_id}-${k}`);

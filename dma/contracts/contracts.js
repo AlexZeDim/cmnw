@@ -43,12 +43,7 @@ async function contracts (arg_realm = 'ru_RU') {
                     { 'slug': arg_realm },
                     { 'locale': arg_realm },
                 ]}).lean(),
-            items_db.find({
-                $or: [
-                    { _id: 1 },
-                    { expansion: 'BFA', asset_class: { $all: [ "MARKET" , "COMMDTY" ] } }
-                ]
-            }).lean()
+            items_db.find({ contracts: false }).lean()
         ]);
         for (let item of items) {
             let item_name = item.name.en_GB;

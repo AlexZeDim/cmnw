@@ -4,11 +4,12 @@ Welcome aboard! Conglomerat has a module-based structure, that in case of matter
 
 Modules:
 
- - CORE
- - OSINT
- - DMA
- - DISCORD
- - VOLUSPA
+ - [CORE][1]
+ - [OSINT][2]
+ - [DMA][3]
+ - [DISCORD][4]
+ - [VOLUSPA][5]
+ - [HYBRID][6]
  
  ## CORE
  
@@ -22,12 +23,12 @@ Modules:
  ## OSINT
  
  An Open Source INTellegence database is responsible for cataloging, indexing and storing data about characters, guilds and their states. 
- This module also have a capability to watch over every race / name / gender / faction change, and even realm transfers.
+ This module also has a capability to watch over every race / name / gender / faction change, and even realm transfers.
  Among its data sources are: 
  
-  - WoWProgress
-  - WarcraftLogs
-  - Battle.net Guild Roster
+  - [WoWProgress](https://wowprogress.com)
+  - [WarcraftLogs](https://warcraftlogs.com)
+  - [Battle.net Guild Roster](https://battle.net)
  
   DB: 
   - characters_db
@@ -52,7 +53,25 @@ Modules:
   
   ## DISCORD 
   
-  Bluratella's Discord bot is relying on Conglomerat API and its data to provide a requested information to a user.
-  Its capabilities also limited, but it works  
+  Bluratella's Discord bot is relying on Conglomerat API and its data to provide requested information to a user.
+  The bot could also transfer anonymous and secured messages between every users within his discord server reach.
+  You could read more about it [here](https://ya.ru).
+  
+  ## VOLUSPA
+  
+  **[REDACTED]** Guild / Persona Identities system, which will be build on OSINT foundation.
+  Predictive. Recommendations. Analytics. Information flow control.
+  
+  ## HYBRID
+  
+  **[REDACTED]** A Hybrid project which should be build with using of [Tensorflow.js](https://ya.ru)
+  
+  [1]: #CORE
+  [2]: #OSINT
+  [3]: #DMA
+  [4]: #DISCORD
+  [5]: #VOLUSPA
+  [6]: #HYBRID
+  
   
   

@@ -206,6 +206,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                             for (let premium_item of premium_items) {
                                 /** Single Name Valuation */
                                 if (single_name) {
+                                    /** Update existing method as a single name */
                                     await pricing_methods.findByIdAndUpdate(price_method._id, {single_name: premium_item._id})
                                     let prva = await valuations.findOne({
                                         item_id: premium_item._id,
@@ -272,6 +273,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                     }
 
                     nominal_value = Round2( queue_cost / price_method.item_quantity );
+                    //FIXME divide by zero
                     if (isNaN(nominal_value)) {
                         console.log(queue_cost, price_method.item_quantity)
                     }

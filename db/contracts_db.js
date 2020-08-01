@@ -18,12 +18,17 @@ let schema = new mongoose.Schema({
         type: String,
         required: true
     },
-    code: {
-        type: String,
-        required: true
-    },
     item_id: {
         type: Number,
+        required: true,
+    },
+    connected_realm_id: {
+        type: Number,
+        required: true,
+    },
+    last_modified: {
+        type: Number,
+        required: true,
     },
     date: {
         day: Number,
@@ -31,79 +36,19 @@ let schema = new mongoose.Schema({
         month: Number,
         year: Number,
     },
-    connected_realm_id: {
-        type: Number,
-        required: true,
-    },
-    type: {
-        type: String,
-        required: true,
-        enum: ['D', 'W', 'M'],
-    },
-    price: {
-        open: Number,
-        low: Number,
-        change: Number,
-        avg: Number,
-        high: Number,
-        close: Number,
-    },
-    price_size: {
-        open: Number,
-        low: Number,
-        change: Number,
-        avg: Number,
-        high: Number,
-        close: Number,
-    },
-    quantity: {
-        open: Number,
-        low: Number,
-        change: Number,
-        high: Number,
-        close: Number,
-    },
-    open_interest: {
-        open: Number,
-        low: Number,
-        change: Number,
-        high: Number,
-        close: Number,
-    },
-    orders: {
-        open: Number,
-        low: Number,
-        change: Number,
-        high: Number,
-        close: Number,
-        orders_total: Number,
-        orders_added: Number,
-        orders_cancelled: Number,
-        orders_expired: Number,
-        ratio_added: Number,
-        ratio_cancelled: Number,
-        ratio_expired: Number,
-    },
-    risk: {
-        stdDev: Number,
-        stdDev_size: Number,
-        VaR: Number,
-        VaR_size: Number,
-    },
-    sellers: {
-        sellers: Array,
-        open: Number,
-        change: Number,
-        close: Number,
-        total: Number,
-    },
-    data: Array,
+    price: Number,
+    price_size: Number,
+    quantity: Number,
+    open_interest: Number,
+    orders: Array,
+    sellers: Array
 },{
     timestamps: true
 });
 
-schema.index({ "date.week": -1, type: 1, connected_realm_id: 1, item_id: -1 },{name: 'W'});
-schema.index({ "date.month": -1, type: 1, connected_realm_id: 1, item_id: -1 },{name: 'M'});
+schema.index({ "date.month": -1, connected_realm_id: 1, item_id: -1 },{name: 'M'});
+schema.index({ "date.week": -1, connected_realm_id: 1, item_id: -1 },{name: 'W'});
+schema.index({ "date.month": -1, connected_realm_id: 1, item_id: -1 },{name: 'M'});
 
 let contracts_db = mongoose.model('contracts', schema, 'contracts');
 

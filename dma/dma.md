@@ -4,7 +4,7 @@
  - Auctions
  - Golds
  - Contracts
- - Valuation
+ - Valuations
 
 ## Items
 
@@ -42,7 +42,7 @@ Data feed has been provided by the hugest ru-WoW gold exchange website: [FunPay.
 
 ## Contracts
 
-Contracts is name of a historical pricing data management system. Quotes are indexing every hour by `contracts.js` 
+Contracts is name of a historical pricing data management system. Quotes are indexing every hour by `tod.js` 
 This data formed only for the latest expansion `COMMODITY` items, which have `unit_price` field and gold data. The result information have been stored in `contracts` collection.
 IDs formed by `item_id-timestamp@connected_realm` pattern.
 
@@ -56,3 +56,7 @@ IDs formed by `item_id-timestamp@connected_realm` pattern.
  - LAST MONTH / LASTMONTH
  - FROM : TO / CUSTOM
 
+
+## Valuations
+
+**[Work in progress]**

@@ -5,6 +5,7 @@
  - Golds
  - Contracts
  - Valuations
+ - WoWToken
 
 ## Items
 
@@ -59,4 +60,12 @@ IDs formed by `item_id-timestamp@connected_realm` pattern.
 
 ## Valuations
 
-**[Work in progress]**
+Any item. Any realm. Any time. The crown diamond of DMA.
+
+Version 3, codename: EVA is an evaluation algorithm capable to find a cheapest-to-delivery way to be made for a derivative item and its value (quene cost, nominal prices) within a polynomial time.
+
+What else to say? You want it. We have it.
+
+ #### To be remembered:
+  - Version 2. Codename: Turing.
+  - Version 1. Codename: Brutus.

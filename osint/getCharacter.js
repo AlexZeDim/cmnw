@@ -150,8 +150,8 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                 character.guild.name = characterData.value.guild.name;
                 character.guild.slug = characterData.value.guild.name;
                 if (guildRank === true) {
-                    const {members} = await bnw.WowProfileData.getGuildRoster(characterData.value.realm.slug, toSlug(characterData.value.name));
-                    const {rank} = members.find(({ character }) => character.id === characterData.value.id );
+                    const { members } = await bnw.WowProfileData.getGuildRoster(characterData.value.realm.slug, toSlug(characterData.value.guild.name));
+                    const { rank } = members.find(({ character }) => character.id === characterData.value.id );
                     character.guild.rank = rank;
                 }
             } else {

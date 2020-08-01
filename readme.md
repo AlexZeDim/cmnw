@@ -1,79 +1,58 @@
-# Commands
+# Conglomerat Group
 
-### C || CHAR
+Welcome aboard! Conglomerat has a module-based structure, that in case of matters could be easily re-build and separated as a micro-services.  
 
-This commands allows you receive information about selected character or find all characters with exact name across all avaliable realms.
-Arguments for this command are and case and locale insensitive.
+Modules:
 
-Gives you information about selected character:
-```
-CHAR блюрателла@гордунни
-```
-
-Find all character will the exact name *Блюрателла* across all realms:
-```
-C блюрателла
-```
-
-### A || ALT || ALTS
-
-Command allows you to find all other characters of certain player via **OSINT DB** The matching pattern based on two different hash values.
-
-- Hash A match guarantees you with 100% confidence that all characters belongs to one player.
-- Hash B match ensures that characters could belong to one player with 50+ % confidence
-
-You are available to search by both parameters:
-
-Find all characters that belong to *Блюрателла* from *Gordunni-EU*
-```
-ALTS блюрателла@гордунни
-```
-
-Search for characters with hash `f97efc28` across Hash A and Hash B fields.
-```
-A f97efc28
-```
-
-*Hash values are dynamic properties. They changed on day-to-day basis. There is not reason to remember them.*
-
-### G || GUILD
-
-Allows you to receive information about guild and it's members:
-```
-G депортация@гордунни
-```
-If you want to find a guild a certain name across all realms use this command:
-```
-GUILD депортация
-```
-
-### CON || CONTRACT
-
-For more information about contracts check this *link*.
-
-Provides historical market information about **Day/Week/Month** contract with following code:
-```
-CON zin'anthid-01.J@gordunni
-```
-You could also use `TICKER` item names or `connected_realm_id` for realms if you know them for sure:
-```
-CONTRACT ZNTD@1602
-```
-
-### XSS CURVE || XRS CURVE
-
-Gives a represent vision of Cross Realm operations beetween different servers.
-
-- *in progress*
-
-### EVA
-
-Evaluate certain derivative, depends on **YLD**.
-
-- *in progress*
-
-### G || GOLD
-
-Shows gold prices on certain realm
-
-- *in progress*
+ - CORE
+ - OSINT
+ - DMA
+ - DISCORD
+ - VOLUSPA
+ 
+ ## CORE
+ 
+ A central orchestration module. A spine on which Conglomerat is build. 
+ Includes .env & yaml files, http server, back-end API endpoint and a Battle.net token refresher.
+  
+  DB: 
+   - setters
+   - keys_db
+   
+ ## OSINT
+ 
+ An Open Source INTellegence database is responsible for cataloging, indexing and storing data about characters, guilds and their states. 
+ This module also have a capability to watch over every race / name / gender / faction change, and even realm transfers.
+ Among its data sources are: 
+ 
+  - WoWProgress
+  - WarcraftLogs
+  - Battle.net Guild Roster
+ 
+  DB: 
+  - characters_db
+  - guilds_db
+  - osint_logs_db
+  - realms_db
+  - logs_db
+  
+  ## DMA
+  
+  Direct Market Access module receives up-to-date information about auction house situation on various realms or within the entire region. 
+  Historical information included as a part of DMA / contracts.
+  It also stores item data and provide their valuation, based on their asset class. The synergy effect allows to combine all this data
+  for private cased solution of commercial voyager problem / cross realm operations.
+  
+  DB: 
+  - auctions_db
+  - items_db
+  - golds_db
+  - contracts_db
+  - realms_db
+  
+  ## DISCORD 
+  
+  Bluratella's Discord bot is relying on Conglomerat API and its data to provide a requested information to a user.
+  Its capabilities also limited, but it works  
+  
+  

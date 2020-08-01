@@ -14,8 +14,8 @@ const contracts_db = require("../../db/contracts_db");
  */
 
 const clusterChartData = require("../../dma/getClusterChartData.js");
-const auctionsQuotes = require("../../dma/auctions/auctionsData.js");
-const itemValuationAdjustment = require("../../dma/valuation/eva/iva.js");
+const auctionsData = require("../../dma/auctions/auctionsData.js");
+//const itemValuationAdjustment = require("../../dma/valuation/eva/iva.js");
 
 
 router.get('/:i@:r', async function(req, res) {
@@ -31,9 +31,8 @@ router.get('/:i@:r', async function(req, res) {
             Object.assign(response, {item: item})
             Object.assign(response, {realm: realm})
             await Promise.allSettled([
-                itemValuationAdjustment(item, realm.connected_realm_id).then(iva => Object.assign(response, {valuation: iva})),
                 clusterChartData(item._id, realm.connected_realm_id).then(chart => Object.assign(response, {chart: chart})),
-                auctionsQuotes(item._id, realm.connected_realm_id).then(quotes => Object.assign(response, {quotes: quotes})),
+                auctionsData(item._id, realm.connected_realm_id).then(quotes => Object.assign(response, {quotes: quotes})),
                 contracts_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, type: 'D'},{
                     "_id": 1,
                     "code": 1,

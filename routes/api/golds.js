@@ -13,7 +13,7 @@ const contracts_db = require("../../db/contracts_db");
  */
 
 const clusterGoldData = require("../../dma/getClusterGoldData.js");
-const goldsQuotes = require("../../dma/golds/goldQuotes.js");
+const goldsData = require("../../dma/golds/goldsData.js");
 
 router.get('/:realmSlug', async function(req, res) {
     try {
@@ -25,7 +25,7 @@ router.get('/:realmSlug', async function(req, res) {
             Object.assign(response, {realm: realm})
             await Promise.allSettled([
                 clusterGoldData(realm.connected_realm_id).then(chart => Object.assign(response, {chart: chart})),
-                goldsQuotes(realm.connected_realm_id).then(quotes => Object.assign(response, {quotes: quotes})),
+                goldsData(realm.connected_realm_id).then(quotes => Object.assign(response, {quotes: quotes})),
                 contracts_db.find({item_id: 1, connected_realm_id: realm.connected_realm_id, type: 'D'},{
                     "_id": 1,
                     "code": 1,

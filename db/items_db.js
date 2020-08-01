@@ -91,6 +91,11 @@ let schema = new mongoose.Schema({
      */
     asset_class: {
         type: Array,
+    },
+    contracts: {
+        type: Boolean,
+        require: true,
+        default: false
     }
 },{
     timestamps: true

@@ -38,7 +38,8 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
         console.time(`DMA-${indexAssetClass.name}`);
         switch (arg) {
             case 'pricing_methods':
-                console.info(`Stage: pricing_methods`)
+                console.info(`Stage: pricing methods`)
+                console.time(`Stage: pricing methods`)
                 await pricing_methods_db.find({}).limit(100).cursor({batchSize: bulkSize}).eachAsync( async (method) => {
                     try {
                         /** Derivative Asset Class */
@@ -82,8 +83,10 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                         console.error(e)
                     }
                 }, { parallel: bulkSize })
+                console.timeEnd(`Stage: pricing methods`)
             case 'auctions':
                 console.info(`Stage: auctions`)
+                console.time(`Stage: auctions`)
                 await auctions_db.aggregate([
                     {
                         $group: {
@@ -114,9 +117,23 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                         console.info(`${item._id}, ${ item.asset_class.toString()}`)
                     }
                 }, { parallel: bulkSize });
+                console.timeEnd(`Stage: auctions`)
+            case 'contracts':
+                console.info(`Stage: contracts`)
+                console.time(`Stage: contracts`)
+                await items_db.updateMany({ }, { contracts: false })
+                await items_db.updateMany({
+                    $or: [
+                        { _id: 1 },
+                        { expansion: 'BFA', asset_class: { $all: [ "MARKET" , "COMMDTY" ] } }
+                    ]
+                }, { contracts: true })
+                console.timeEnd(`Stage: contracts`)
             case 'items':
                 console.info(`Stage: items`)
+                console.time(`Stage: items`)
                 await items_db.updateMany({ asset_class: "REAGENT", loot_type: "ON_ACQUIRE" }, { $addToSet: { asset_class: "PREMIUM" } })
+                console.timeEnd(`Stage: items`)
                 break;
             default:
                 break;

@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
+/**
+ * TODO refactor and remove
+ */
+
 /*require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
     useNewUrlParser: true,

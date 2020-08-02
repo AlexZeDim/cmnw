@@ -105,7 +105,10 @@ let schema = new mongoose.Schema({
     isWatched: {
         type: Boolean,
         default: false,
-    }
+    },
+    personality: {
+        type: String,
+    },
 },{
     timestamps: true
 });

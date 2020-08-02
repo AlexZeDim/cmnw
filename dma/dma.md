@@ -69,3 +69,14 @@ What else to say? You want it. We have it.
  #### To be remembered:
   - Version 2. Codename: Turing.
   - Version 1. Codename: Brutus.
+
+## WoWToken
+
+A simple script that request WoWToken price in european region, every 10 minutes.
+
+There is nothing left to say.
+
+ #### Endpoints
+ 
+ - LAST PRICE
+ - DATA FEED

@@ -16,7 +16,10 @@ Characters collection includes over **1M** active characters, most of them are a
 but there aren't any limitation within EU. New characters could come via different ways, like: guild roster, warcraft logs or via Conglomerat-OSINT addon.
 Main index character script runs at 06:00 every 2nd day. The index script could run in multiple sessions.
 
-Every character has also checked for different operations, such as name, faction, race, gender and guild change.
+Every character has an object, called `Hashes`, within it stores unique different values based on pets and mounts collection, active pet slots, class, id and title combinations.
+With the help of this data, you could always find connections between people and characters / guilds that they own.
+
+Also, characters have also checked for different operations, such as name, faction, race, gender and guild change.
 
  #### Endpoints
  
@@ -32,6 +35,28 @@ Every character has also checked for different operations, such as name, faction
   
    - guild
   
-  
+ ## Warcraft Logs
+   
+ There is a small collection, called *WarcraftLogs*. It serves one and one purpose only. 
+ Scan for new characters within Kihra's WCL reports. The collection is consist of two fields: **isIndexed:** *Boolean*
+ and **_id:** *String* report's ID. When the report has been indexed but main index script, the document has been removed from the collection via TTL index.
  
+ ## OSINT Logs
+ 
+ Every sensitive field change for any document within *guilds* and *characters* collection has also been watched and added to a special collection, called *OSINT Logs*.
+ The collected data allows to overseer any notable events within the region, connected with any character or guild.
+ 
+ The only problem is character's transfer with rename. It could not been tracked via normal way because of Blizzard `player-GUID`
+system. So we find a sophisticated way, called `shadowCopy` algorithm, for example:
+
+ - renamedCopy — when character has been renamed, but still stays on the same realm as before. Requires `id`, `class` and `realm` check.
+ - transferCopy — if character has been transferred, but don't change his original name. Requires check within all realms by the old name, class and `Hash A`.
+ - shadowCopy — when character changes both, realm and name. It requires a certain check by its `Hash A` , class and level value.
+ 
+ Not 100% sure but, even `transfwer` event could be noticed with certain level of confidence.
+   
+ #### Endpoints
+
+  - character_logs
+  - guild_logs
 

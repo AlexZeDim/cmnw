@@ -58,20 +58,20 @@ const {toSlug} = require("../../db/setters");
  * Unzipping it, and parse the received JSON files for new guild names for OSINT-DB (guilds)
  *
  * @param queryFind
- * @param path_
+ * @param path
  * @param raidTier
  * @param region
  * @param queryKeys
  * @returns {Promise<void>}
  */
 
-async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTier = 26, region = 'eu', queryKeys = { tags: `OSINT-indexGuilds` }) {
+async function fromJSON (queryFind = {locale:'ru_RU'}, path = './temp', raidTier = 26, region = 'eu', queryKeys = { tags: `OSINT-indexGuilds` }) {
     try {
         console.time(`OSINT-${fromJSON.name}`);
 
         let realms = await realms_db.find(queryFind);
 
-        if (!fs.existsSync(path_)) fs.mkdirSync(path_);
+        if (!fs.existsSync(path)) fs.mkdirSync(path);
         console.time(`Downloading stage`);
         let urls = await x(`https://www.wowprogress.com/export/ranks/`,'pre',['a@href']).then((res) => {
             return res
@@ -87,7 +87,7 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
                         url: string,
                         responseType: "stream"
                     }).then(async function (response) {
-                        return response.data.pipe(fs.createWriteStream(`${path_}/${file_name}`));
+                        return response.data.pipe(fs.createWriteStream(`${path}/${file_name}`));
                     });
                 }
             }
@@ -95,13 +95,13 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
         console.timeEnd(`Downloading stage`);
 
         console.time(`Unzipping stage`);
-        let files = await readDir(path_);
+        let files = await readDir(path);
         if (files) {
             for (let file of files) {
                 if (file.match(/gz$/g)) {
                     console.info(`Unzipping: ${file}`);
-                    const fileContents = await fs.createReadStream(`${path_}/${file}`);
-                    const writeStream = await fs.createWriteStream(`${path_}/${file.slice(0, -3)}`);
+                    const fileContents = await fs.createReadStream(`${path}/${file}`);
+                    const writeStream = await fs.createWriteStream(`${path}/${file.slice(0, -3)}`);
                     const unzip = await zlib.createGunzip();
                     await fileContents.pipe(unzip).pipe(writeStream);
                 }
@@ -110,14 +110,14 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
         console.timeEnd(`Unzipping stage`);
 
         console.time(`Parsing JSON files`);
-        files = await readDir(path_);
+        files = await readDir(path);
         for (let file of files) {
             if (file.match(/json$/g)) {
                 const { token } = await keys_db.findOne(queryKeys);
                 let indexOfRealms = realms.findIndex(r => r.slug_locale === file.match(/(?<=_)(.*?)(?=_)/g)[0]);
                 if (indexOfRealms !== -1) {
                     console.info(`Parsing: ${file}`);
-                    let stringJSON = await readFile(`${path_}/${file}`, {encoding: 'utf8'});
+                    let stringJSON = await readFile(`${path}/${file}`, {encoding: 'utf8'});
                     if (stringJSON) {
                         const guildsJSON = JSON.parse(stringJSON);
                         if (guildsJSON.length) {
@@ -135,7 +135,7 @@ async function fromJSON (queryFind = {locale:'ru_RU'}, path_ = './temp', raidTie
             }
         }
         console.timeEnd(`Parsing JSON files`);
-        await removeDir(`${path_}`, { recursive: true });
+        await removeDir(`${path}`, { recursive: true });
         connection.close();
         console.timeEnd(`OSINT-${fromJSON.name}`);
     } catch (err) {

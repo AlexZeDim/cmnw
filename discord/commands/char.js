@@ -23,8 +23,7 @@ module.exports = {
                 gender,
                 faction,
                 hash,
-                updatedAt,
-                updatedBy,
+                createdBy,
                 race,
                 media,
                 statusCode,
@@ -64,7 +63,7 @@ module.exports = {
                 embed.addField('Hash EX', hash.ex, true);
             }
             embed.setTimestamp(lastModified);
-            embed.setFooter(`OSINT-DB | Gonikon`);
+            embed.setFooter(`${createdBy} | Gonikon`);
             return embed
         });
         await message.channel.send(character);

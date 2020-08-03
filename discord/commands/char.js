@@ -63,10 +63,7 @@ module.exports = {
                 embed.addField('Hash B', hash.b, true);
                 embed.addField('Hash EX', hash.ex, true);
             }
-            if (statusCode === 200) {
-                embed.addField('Last Online', new Date(lastModified).toLocaleString('en-GB'), true);
-            }
-            embed.setTimestamp(updatedAt);
+            embed.setTimestamp(lastModified);
             embed.setFooter(`OSINT-DB | Gonikon`);
             return embed
         });

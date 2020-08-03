@@ -63,7 +63,7 @@ module.exports = {
 
             embed.setDescription(descriptionString);
             embed.setTimestamp(realm.auctions*1000);
-            embed.setFooter(`DMA-XVA`);
+            embed.setFooter(`DMA-EVA`);
             return embed
         });
         await message.channel.send(valuation);

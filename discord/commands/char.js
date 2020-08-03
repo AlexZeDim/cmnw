@@ -29,7 +29,7 @@ module.exports = {
                 statusCode,
             } = data;
             if (guild) {
-                let guild_string = guild.name.toUpperCase()
+                let guild_string = guild.name.toString().toUpperCase()
                 if (guild.rank) {
                     guild_string = guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`)
                 }

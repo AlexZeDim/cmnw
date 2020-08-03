@@ -27,25 +27,11 @@ apps:
     cron_restart: '00 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
-  - script: ./dma/contracts/contracts_D.js
-    name: 'DMA-contracts_D'
+  - script: ./dma/contracts/contracts.js
+    name: 'DMA-contracts'
     instances: 1
     autorestart: true
     cron_restart: '*/30 * * * *'
-    log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
-  - script: ./dma/contracts/contracts_W.js
-    name: 'DMA-contracts_W'
-    instances: 1
-    autorestart: true
-    cron_restart: '00 */6 * * *'
-    log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
-  - script: ./dma/contracts/contracts_M.js
-    name: 'DMA-contracts_M'
-    instances: 1
-    autorestart: true
-    cron_restart: '00 00 01 */1 *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/items/indexAssetClass.js

@@ -1,6 +1,6 @@
 # Commands
 
-**Attention! All commands name are CASE SENSITIVE!**
+**Attention! All commands names are CASE SENSITIVE!**
 
 ### CHAR [name]@[realm]
 
@@ -76,7 +76,6 @@ User: Please deliver every message here..
 User: ..and below to the Receiver
 User: -exit (afterwards)
 Bot: Connection closed with 4536546546875698. You send 2 messages.
-
 ```
 Receiver (Discord ID: 4536546546875698) will see: 
 ```text

@@ -1,7 +1,7 @@
 # OSINT
 
 Just one thing to clarify all this. Every collection has been connected with each other.  
-If a new character or guild has been added to the database, its data will be extrapolated and added to the connected database.
+If a new document has been added to the database, its values will be extrapolated and added to the connected database.
 For example: if new character has been added to the OSINT-DB (*characters* collection), and he joins the new guild, this guild will be added to the *guilds* collection, then this guild will be indexed, updated and add new characters within its roster.
 And so on, this process will never be finished.
 

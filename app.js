@@ -5,7 +5,8 @@ const logger = require('morgan');
 
 const character = require('./routes/api/characters/character');
 const character_logs = require('./routes/api/characters/character_logs');
-const guilds = require('./routes/api/guilds/guild');
+const guild = require('./routes/api/guilds/guild');
+const guild_logs = require('./routes/api/guilds/guild_logs');
 const items = require('./routes/api/items');
 const find = require('./routes/api/find');
 const contracts = require('./routes/api/contracts/tod');
@@ -33,7 +34,12 @@ app.use('/api/contracts/tod', contracts);
 app.use('/api/characters/character', character);
 app.use('/api/characters/character_logs', character_logs);
 
-app.use('/api/guilds', guilds);
+/** Guilds */
+
+app.use('/api/guilds/guild', guild);
+app.use('/api/guilds/guild_logs', guild_logs);
+
+
 app.use('/api/items', items);
 app.use('/api/find', find);
 app.use('/api/eva', eva);

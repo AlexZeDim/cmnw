@@ -3,11 +3,12 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-const characters = require('./routes/api/characters');
-const guilds = require('./routes/api/guilds');
+const character = require('./routes/api/characters/character');
+const character_logs = require('./routes/api/characters/character_logs');
+const guilds = require('./routes/api/guilds/guild');
 const items = require('./routes/api/items');
 const find = require('./routes/api/find');
-const contracts = require('./routes/api/contracts');
+const contracts = require('./routes/api/contracts/tod');
 const eva = require('./routes/api/eva');
 const realms = require('./routes/api/realms');
 const wowtoken = require('./routes/api/wowtoken');
@@ -22,11 +23,19 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/characters', characters);
+
+/** Contracts */
+
+app.use('/api/contracts/tod', contracts);
+
+/** Characters */
+
+app.use('/api/characters/character', character);
+app.use('/api/characters/character_logs', character_logs);
+
 app.use('/api/guilds', guilds);
 app.use('/api/items', items);
 app.use('/api/find', find);
-app.use('/api/contracts', contracts);
 app.use('/api/eva', eva);
 app.use('/api/realms', realms);
 app.use('/api/wowtoken', wowtoken);

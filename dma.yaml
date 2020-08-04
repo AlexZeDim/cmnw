@@ -31,7 +31,7 @@ apps:
     name: 'DMA-contracts'
     instances: 1
     autorestart: true
-    cron_restart: '*/30 * * * *'
+    cron_restart: '30 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/items/indexAssetClass.js

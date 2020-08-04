@@ -5,8 +5,8 @@ const router = express.Router();
  * Model importing
  */
 
-const realms_db = require("../../db/realms_db");
-const characters_db = require("../../db/characters_db");
+const realms_db = require("../../../db/realms_db");
+const characters_db = require("../../../db/characters_db");
 
 /**
  * Modules
@@ -22,7 +22,7 @@ router.get('/:nameSlug@:realmSlug', async function(req, res) {
         if (nameSlug && realmSlug) {
             let characterData = await characters_db.findById(`${nameSlug}@${realmSlug}`).lean();
             if (!characterData) {
-                let realm = await realms_db.findOne({ $text: { $search: realmSlug } }).sort({ score: { $meta: "textScore" } });
+                let realm = await realms_db.findOne({ $text: { $search: realmSlug } });
                 if (realm) {
                     let outdated = false;
                     characterData = await characters_db.findById(`${nameSlug}@${realm.slug}`).lean();
@@ -30,8 +30,8 @@ router.get('/:nameSlug@:realmSlug', async function(req, res) {
                         outdated = true;
                     }
                     if (!characterData || outdated) {
-                        const getCharacter = require('../../osint/getCharacter');
-                        const keys_db = require("../../db/keys_db");
+                        const getCharacter = require('../../../osint/getCharacter');
+                        const keys_db = require("../../../db/keys_db");
                         const { token } = await keys_db.findOne({tags: `OSINT-indexCharacters`});
                         await getCharacter(realm.slug, nameSlug, {}, token, `OSINT-userInput`, true);
                         characterData = await characters_db.findById(`${nameSlug}@${realm.slug}`).lean();

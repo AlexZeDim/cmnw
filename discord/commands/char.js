@@ -9,7 +9,7 @@ module.exports = {
     async execute(message, args) {
         const [name, realm] = args.split('@');
         let embed = new MessageEmbed();
-        let character = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/characters/${name}@${realm}`)).then(({data}) => {
+        let character = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/characters/character/${name}@${realm}`)).then(({data}) => {
             let {
                 _id,
                 id,

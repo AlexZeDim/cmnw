@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
+const { Round2 } = require('./setters');
+
 /*require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
     useNewUrlParser: true,
@@ -36,10 +38,22 @@ let schema = new mongoose.Schema({
         month: Number,
         year: Number,
     },
-    price: Number,
-    price_size: Number,
+    price: {
+        type: Number,
+        get: Round2,
+        set: Round2
+    },
+    price_size: {
+        type: Number,
+        get: Round2,
+        set: Round2
+    },
     quantity: Number,
-    open_interest: Number,
+    open_interest: {
+        type: Number,
+        get: Round2,
+        set: Round2
+    },
     orders: Array,
     sellers: Array
 },{

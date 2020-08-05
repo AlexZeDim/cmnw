@@ -179,10 +179,18 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                                                 for (let underlyingElement of underlyingReagentItems) {
                                                     /** Quene_quantity x underlyingElement.quantity */
                                                     if (underlyingElement.value) {
-                                                        underlyingElement.value = underlyingElement.value * reagent_item.quantity
+                                                        underlyingElement.value = Round2(underlyingElement.value * reagent_item.quantity)
                                                     }
                                                     underlyingElement.quantity = underlyingElement.quantity * reagent_item.quantity
-                                                    reagent_items.push(underlyingElement)
+                                                    /** if this item is already in reagent_items, then + quantity */
+                                                    if (reagent_items.some(ri => ri._id === underlyingElement._id)) {
+                                                        /** take in focus by arrayIndex and edit properties */
+                                                        const reagent_itemsIndex = reagent_items.findIndex(item => item._id === underlyingElement._id)
+                                                        reagent_items[reagent_itemsIndex].value += underlyingElement.value;
+                                                        reagent_items[reagent_itemsIndex].quantity += underlyingElement.quantity;
+                                                    } else {
+                                                        reagent_items.push(underlyingElement)
+                                                    }
                                                 }
                                             }
                                         } else {

@@ -5,24 +5,23 @@ const router = express.Router();
  * Model importing
  */
 
-const items_db = require("../../db/items_db");
-const realms_db = require("../../db/realms_db");
-const valuations_db = require("../../db/valuations_db");
+const valuations_db = require("../../../db/valuations_db");
 
 /**
  * Modules
  */
 
-const iva = require("../../dma/valuation/eva/iva.js");
+const itemRealmQuery = require("../../api/middleware")
+const iva = require("../../../dma/valuation/eva/iva.js");
 
-router.get('/:i@:r', async function(req, res) {
+router.get('/:itemQuery@:realmQuery', async function(req, res) {
     try {
-        const {i, r} = req.params;
         let response = {};
-        let requestPromises = [];
-        isNaN(i) ? (requestPromises.push(items_db.findOne({$text:{$search: i}},{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).lean().exec())) : (requestPromises.push(items_db.findById(i).lean().exec()));
-        isNaN(r) ? (requestPromises.push(realms_db.findOne({$text:{$search: r}}).lean().exec())) : (requestPromises.push(realms_db.findById(r).lean().exec()));
-        let [item, realm] = await Promise.all(requestPromises);
+
+        const { itemQuery, realmQuery } = req.params;
+
+        let [item, realm] = await itemRealmQuery(itemQuery, realmQuery);
+
         if (item && realm) {
             let valuations = await valuations_db.find({item_id: item._id, connected_realm_id: realm.connected_realm_id, last_modified: realm.auctions}).sort("value").limit(30)
             if (!valuations.length) {

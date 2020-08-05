@@ -18,13 +18,13 @@ const itemRealmQuery = async (item, realm) => {
         let itemQuery, realmQuery;
 
         if (isNaN(item)) {
-            itemQuery = items_db.findOne({ $text: { $search: item } }).lean();
+            itemQuery = items_db.findOne({ $text: { $search: item }}, { score: {"$meta": "textScore"}}).sort({ score: { $meta: "textScore" } }).lean();
         } else {
             itemQuery = items_db.findById(parseInt(item)).lean();
         }
 
         if (isNaN(realm)) {
-            realmQuery = realms_db.findOne({ $text: { $search: realm } }).lean();
+            realmQuery = realms_db.findOne({ $text: { $search: realm } }, { score: {"$meta": "textScore"}}).sort({ score: { $meta: "textScore" } }).lean();
         } else {
             realmQuery = realms_db.findById(parseInt(realm)).lean();
         }

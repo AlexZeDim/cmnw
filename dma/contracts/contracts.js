@@ -136,6 +136,7 @@ async function contracts () {
                     {
                         $addFields: {
                             _id: { $concat: [ { $convert: { input: "$_id.item_id", to: "string" } }, "-", { $convert: { input: "$_id.last_modified", to: "string" } }, "@", { $convert: { input: "$_id.connected_realm_id", to: "string" } }] },
+                            item_id: 1,
                             date: {
                                 day: d,
                                 week: w,

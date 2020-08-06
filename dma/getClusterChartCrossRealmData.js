@@ -19,18 +19,46 @@ async function auctionsCrossRealmData (item_id = 168487) {
         let realmsSet = new Set();
         let round;
         let sV = 0, prev_sV = 0;
+        console.time('T')
+        const p = await auctions_db.aggregate([
+            {
+                $match: { "item.id": item_id }
+            },
+            {
+                $group: {
+                    _id: {
+                        connected_realm_id: "$connected_realm_id",
+                        latest_timestamp: { $max: "$last_modified" },
+                    },
+                    price: { $addToSet: "$unit_price" },
+                }
+            },
+            {
+                $unwind: "$price"
+            },
+            {
+                $group: {
+                    _id: null,
+                    price: { $addToSet: "$price" }
+                }
+            }
+        ]).then(data => {
+            return data[0].price
+        })
+        console.log(p.sort((a, b) => a - b))
+        console.timeEnd('T')
         /**
          * IDEA there is special Mongo operator called $facet
          * IDEA and $bucket, we should take a look at this
          */
-        const time_and_prices = await auctions_db.aggregate([
+/*        const time_and_prices = await auctions_db.aggregate([
             {
                 $match: { "item.id": item_id }
             },
             {
                 $group: {
                     _id: "$connected_realm_id",
-                    latest_timestamp: { $max:"$last_modified" },
+                    latest_timestamp: { $max: "$last_modified" },
                     price: { $addToSet: "$unit_price" },
                 }
             },
@@ -41,6 +69,7 @@ async function auctionsCrossRealmData (item_id = 168487) {
                 $sort: { price: 1 }
             }
         ]).exec()
+        console.log(time_and_prices);*/
         /** Data is already sorted by price ascending */
         const L = time_and_prices.length;
         /** Sample Variance algorithm */

@@ -1,9 +1,3 @@
-/**
- * TODO exclude vendor, find by item_id and sorted by timestamp each?
- * TODO aggregate group
- * TODO passive
- */
-
 const express = require('express');
 const router = express.Router();
 
@@ -18,9 +12,6 @@ const valuations_db = require("../../../db/valuations_db");
  * Modules
  */
 
-const itemRealmQuery = require("../../api/middleware")
-const iva = require("../../../dma/valuation/eva/iva.js");
-
 router.get('/:itemQuery', async function(req, res) {
     try {
         let item, response = {};
@@ -32,13 +23,13 @@ router.get('/:itemQuery', async function(req, res) {
         ) : (
             item = await items_db.findById(itemQuery).lean()
         );
-
         if (item) {
             Object.assign(response, {item: item});
             let valuations = await valuations_db.aggregate([
                 {
                     $match: {
-                        item_id: item._id
+                        item_id: item._id,
+                        $nor: [ { type: "VENDOR" }, { type: "VSP" } ]
                     }
                 },
                 {
@@ -47,12 +38,85 @@ router.get('/:itemQuery', async function(req, res) {
                             connected_realm_id: "$connected_realm_id",
                             latest_timestamp: { $max: "$last_modified" },
                         },
+                        data: { $push: "$$ROOT" },
                     }
                 },
-
-            ]).sort("value")
-
-
+                {
+                    $lookup: {
+                        from: "realms",
+                        localField: "_id.connected_realm_id",
+                        foreignField: "connected_realm_id",
+                        as: "realms"
+                    }
+                },
+                {
+                    $addFields: {
+                        "data.connected_realm_id": {
+                            $map: {
+                                input: "$realms",
+                                as: "r",
+                                in: {
+                                    $mergeObjects: [
+                                        "$$r",
+                                        {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: "$data.connected_realm_id",
+                                                        cond: {
+                                                            $eq: [
+                                                                "$$this._id",
+                                                                "$$r._id"
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $unwind: "$data"
+                },
+                {
+                    $replaceRoot: { newRoot: "$data" }
+                },
+                {
+                    $addFields: {
+                        connected_realm_id: {
+                            $reduce: {
+                                input: "$connected_realm_id",
+                                initialValue: "",
+                                in: {
+                                    $concat: [
+                                        "$$value",
+                                        {
+                                            $cond: [
+                                                {
+                                                    $eq: [
+                                                        "$$value",
+                                                        ""
+                                                    ]
+                                                },
+                                                "",
+                                                ","
+                                            ]
+                                        },
+                                        {
+                                            $toString: "$$this.name"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            ])
             Object.assign(response, {valuations: valuations})
             await res.status(200).json(response);
         } else {

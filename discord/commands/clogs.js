@@ -4,7 +4,8 @@ require('dotenv').config();
 
 module.exports = {
     name: 'clogs',
-    description: 'Search for selected character in OSINT Logs ',
+    description: 'Search for last 20 events about certain character in OSINT Logs. Like: race, gender, faction change, etc. Realm transfers with rename are not covered. Example usage: \`clogs азгримм@soulflayer \` ',
+    aliases: ['character_logs', 'CLOGS', 'CHARACTER_LOGS'],
     args: true,
     async execute(message, args) {
         const [name, realm] = args.split('@');

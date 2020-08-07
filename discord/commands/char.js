@@ -8,7 +8,8 @@ require('dotenv').config();
  */
 module.exports = {
     name: 'char',
-    description: 'Check selected character',
+    description: 'Return information about specific character. Example usage: \`char блюрателла@гордунни\`',
+    aliases: ['character', 'CHAR', 'CHARACTER'],
     args: true,
     async execute(message, args) {
         const [name, realm] = args.split('@');

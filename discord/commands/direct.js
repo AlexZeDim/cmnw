@@ -1,6 +1,16 @@
 module.exports = {
     name: 'direct',
-    description: `Direct allows users to hide their identities during direct messaging`,
+    description: `Opens a direct channel between you and certain user, by his || her snowflake discord ID. Delivers the message, like it has been sent from the bot itself, without compromising the sender.
+    Support various arguments:
+     -m (messages) — amount of messages that should be delivered between you and receiver. By default, it equals 50
+     -t (time) — amount of seconds. For this amount of time, the message window will open with the receiver. Default value is 1 minute.
+     -d (destruction: optional) — amount of seconds. Enabling self-destruction timer for every message that would be delivered.
+     -s (secured: optional) — encode the original message with hex or base64. The receiver won't have any notification, so make sure that he will understand your message. Or intellectually capable to decode it. All messages are unsecured by default.
+     -r (reply: optional) — Allows the receiver to reply at your messages back.
+     -exit or -close — After the following command, instantly close the message window between you and the receiver.
+     Example usage: \` User: direct@240464611562881024 -m 50 -t 60 -d 10 -s hex \``,
+    aliases: ['DIRECT', 'DM', 'dm'],
+    cooldown: 10,
     args: true,
     execute(message, args, client) {
         let time = 60000;

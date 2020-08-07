@@ -1,6 +1,6 @@
 module.exports = {
     name: 'members',
-    description: 'Returns a JSON file with all the guild / discord channel members name and IDs',
+    description: 'Returns a JSON file as a result, with all the guild / discord channel members name and IDs',
     args: true,
     guildOnly: true,
     execute(message) {

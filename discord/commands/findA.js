@@ -4,7 +4,12 @@ require('dotenv').config();
 
 module.exports = {
     name: 'findA',
-    description: 'This command will find out all twinks for characters',
+    description: `Allows you to find no more than 20 (*available*) alternative characters (twinks) in OSINT-DB across different realms. Requires a query parameter, which can be a hash string \`f97efc28\` or a character's name and realm \`блюрателла@гордунни\`
+    > Remember, that match by any of this hash values separately doesn't guarantee that a selected character would belong to one identity. It only gives you a certain level of confidence. Also, OSINT-DB doesn't have all the game characters. So if you want a maximum level of confidence, please use **findAll** because only it gives you almost 100% confidence level result.
+    
+    Usage: \`findA блюрателла@гордунни\``,
+    aliases: ['finda', 'FINDA', 'FIND_A', 'find_a'],
+    cooldown: 10,
     args: true,
     async execute(message, args) {
         const params = args.split('@');

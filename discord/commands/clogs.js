@@ -27,10 +27,9 @@ module.exports = {
                     }
                     embed.addField(`─────────────`, `
                     Event: ${data[i].action}
-                    From: ${data[i].original_value}
-                    To: ${data[i].new_value}
-                    After: ${data[i].after}
-                    Before: ${data[i].before}
+                    Message: ${data[i].message}
+                    After: ${new Date(data[i].after)}
+                    Before: ${new Date(data[i].before)}
                     ─────────────
                     `, true);
                 }

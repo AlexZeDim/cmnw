@@ -93,8 +93,53 @@ async function auctionsCrossRealmData (item_id = 168487) {
             {
                 $group: {
                     _id: {
+                        connected_realm_id: "$connected_realm_id"
+                    },
+                    latest: {
+                        $max: "$last_modified"
+                    },
+                    data: {
+                        $push: "$$ROOT"
+                    }
+                }
+            },
+            {
+                $unwind: "$data"
+            },
+            {
+                $addFields: {
+                    "data.latest": {
+                        $cond: {
+                            if: {
+                                $eq: [
+                                    "$data.last_modified",
+                                    "$latest"
+                                ]
+                            },
+                            then: "$latest",
+                            else: "$false"
+                        }
+                    }
+                }
+            },
+            {
+                $replaceRoot: {
+                    "newRoot": "$data"
+                }
+            },
+            {
+                $match: {
+                    latest: {
+                        "$exists": true,
+                        "$ne": null
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
                         connected_realm_id: "$connected_realm_id",
-                        last_modified: { $max: "$last_modified" },
+                        last_modified: "$latest",
                         price: "$unit_price"
                     },
                     quantity: { $sum: "$quantity" },

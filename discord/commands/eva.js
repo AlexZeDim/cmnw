@@ -28,7 +28,7 @@ module.exports = {
             }
 
             for (let i = 0; i < valuations.length; i++) {
-                if (i === 24 ) {
+                if (i === 19 ) {
                     embed.addField(`─────────────`, `
                         Full Log Avaliable
                         Pricing

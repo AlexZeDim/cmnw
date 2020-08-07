@@ -80,7 +80,7 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                         console.time(`DMA-XVA-${_id}-${k}`);
                         await items_db.find(ac).cursor({batchSize: 10}).eachAsync(async (item) => {
                             console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`)
-                            await iva(item, _id, t.valuations, 0)
+                            await iva(item, _id, t.auctions, 0)
                             console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`)
                         }, { parallel: 10 })
                         console.timeEnd(`DMA-XVA-${_id}-${k}`);

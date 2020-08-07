@@ -18,11 +18,11 @@ router.get('/:guildSlug@:realmSlug', async function(req, res) {
         guildSlug = guildSlug.toLowerCase()
 
         if (guildSlug && realmSlug) {
-            let characterLogs = await osint_logs.find({type: "guild", root_id:`${guildSlug}@${realmSlug}`}).sort({createdAt: -1}).lean();
+            let characterLogs = await osint_logs.find({type: "guild", root_id:`${guildSlug}@${realmSlug}`}).sort({before: -1}).lean();
             if (!characterLogs.length) {
                 let realm = await realms_db.findOne({ $text: { $search: realmSlug } });
                 if (realm) {
-                    characterLogs = await osint_logs.find({type: "character", root_id:`${guildSlug}@${realmSlug}`}).sort({createdAt: -1}).lean();
+                    characterLogs = await osint_logs.find({type: "character", root_id:`${guildSlug}@${realmSlug}`}).sort({before: -1}).lean();
                 } else {
                     await res.status(404).json({error: "Not found"});
                 }

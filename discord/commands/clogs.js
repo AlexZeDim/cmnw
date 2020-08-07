@@ -13,10 +13,18 @@ module.exports = {
             if (data.length) {
                 embed.setTitle((`${name}@${realm}`).toString().toUpperCase());
                 embed.setURL(`https://${process.env.domain}/character/${name}@${realm}`);
-                data.sort((a,b) => {
-                    return new Date(a.before) - new Date(b.before)
-                })
-                for (let i = 0; i < 29; i++) {
+                for (let i = 0; i < data.length; i++) {
+                    if (i === 24 ) {
+                        embed.addField(`─────────────`, `
+                        Full
+                        Log
+                        Available
+                        At
+                        [Conglomerat](https://${process.env.domain}/character/${name}@${realm})
+                        ─────────────
+                        `, true);
+                        break
+                    }
                     embed.addField(`─────────────`, `
                     Event: ${data[i].action}
                     From: ${data[i].original_value}

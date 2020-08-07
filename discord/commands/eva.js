@@ -27,24 +27,35 @@ module.exports = {
                 embed.setThumbnail(item.icon);
             }
 
-            for (let valuation of valuations) {
-                if (valuation.type === "MARKET") {
-                    if (valuation.details && valuation.details.orders && valuation.details.orders.length) {
-                        market_counter = valuation.details.orders.length
+            for (let i = 0; i < valuations.length; i++) {
+                if (i === 24 ) {
+                    embed.addField(`─────────────`, `
+                        Full Log Avaliable
+                        Pricing
+                        Available
+                        At
+                        [Conglomerat](https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB})
+                        ─────────────
+                        `, true);
+                    break
+                }
+                if (valuations[i].type === "MARKET") {
+                    if (valuations[i].details && valuations[i].details.orders && valuations[i].details.orders.length) {
+                        market_counter = valuations[i].details.orders.length
                     }
                 }
-                if (valuation.type === "DERIVATIVE") {
+                if (valuations[i].type === "DERIVATIVE") {
                     derivative_counter += 1;
                 }
 
-                if (valuation.type === "PREMIUM") {
+                if (valuations[i].type === "PREMIUM") {
                     premium_counter += 1;
                 }
 
                 embed.addField(`─────────────`, `
-                    Name: ${valuation.name}
-                    Type: ${valuation.type}
-                    Value: ${valuation.value}
+                    Name: ${valuations[i].name}
+                    Type: ${valuations[i].type}
+                    Value: ${valuations[i].value}
                     ─────────────
                     `, true);
             }

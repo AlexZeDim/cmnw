@@ -22,6 +22,17 @@ module.exports = {
                 embed.setTitle(_id.toUpperCase());
                 embed.setURL(`https://${process.env.domain}/find/b/${query}`);
                 for (let i = 0; i < match.length; i++) {
+                    if (i === 24 ) {
+                        embed.addField(`─────────────`, `
+                        Want 
+                        More
+                        To
+                        Find?
+                        [Conglomerat](https://${process.env.domain}/find/b/${query})
+                        ─────────────
+                        `, true);
+                        break
+                    }
                     let {guild} = match[i];
                     embed.addField(`┌─────────────┐`, `
                     Name: [${match[i].name}](https://${process.env.domain}/character/${match[i].realm.slug}/${match[i].name})

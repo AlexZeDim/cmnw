@@ -2,6 +2,10 @@ const { MessageEmbed } = require('discord.js');
 const axios = require('axios');
 require('dotenv').config();
 
+/***
+ * TODO refactor for Object.keys
+ * @type {{args: boolean, name: string, description: string, execute(*, *): Promise<void>}}
+ */
 module.exports = {
     name: 'char',
     description: 'Check selected character',

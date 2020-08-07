@@ -20,8 +20,8 @@ const eva = require('./routes/api/items/eva');
 const realms = require('./routes/api/realms');
 const wowtoken = require('./routes/api/wowtoken');
 const golds = require('./routes/api/golds');
-const xrs = require('./routes/api/items/xrs');
-const test = require('./routes/api/test');
+const xrs_item = require('./routes/api/items/xrs_item');
+const xrs_eva = require('./routes/api/items/xrs_eva');
 const app = express();
 
 app.use(logger('dev'));
@@ -55,7 +55,8 @@ app.use('/api/guilds/guild_logs', guild_logs);
 
 app.use('/api/items/item', items);
 app.use('/api/items/eva', cors(), eva);
-app.use('/api/items/xrs', cors(), xrs);
+app.use('/api/items/xrs', cors(), xrs_item);
+app.use('/api/items/xrs_eva', cors(), xrs_eva);
 
 /** Find */
 
@@ -66,7 +67,5 @@ app.use('/api/find', find);
 app.use('/api/realms', realms);
 app.use('/api/wowtoken', wowtoken);
 app.use('/api/golds', golds);
-app.use('/api/xrs', xrs);
-app.use('/api/test', test);
 
 module.exports = app;

@@ -13,6 +13,7 @@
     "axios": "latest",
     "battlenet-api-wrapper": "git+https://github.com/AlexZeDim/battlenet-api-wrapper.git",
     "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
     "csv": "^5.3.2",
     "debug": "~2.6.9",
     "discord.js": "^12.2.0",

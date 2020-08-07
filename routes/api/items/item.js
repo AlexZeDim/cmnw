@@ -8,6 +8,10 @@ const itemRealmQuery = require("../../api/middleware")
 const clusterChartData = require("../../../dma/getClusterChartData.js");
 const auctionsData = require("../../../dma/auctions/auctionsData.js");
 
+/**
+ * TODO add wowtoken and gold data
+ */
+
 
 router.get('/:itemQuery@:realmQuery', async function(req, res) {
     try {
@@ -15,6 +19,14 @@ router.get('/:itemQuery@:realmQuery', async function(req, res) {
         const { itemQuery, realmQuery } = req.params;
 
         let [item, realm] = await itemRealmQuery(itemQuery, realmQuery);
+
+        if (item._id === 1) {
+            /** TODO if gold, then another query */
+        } else if (item._id === 122270 || item._id === 122284) {
+            /** TODO if wowtoken, then another query */
+        } else {
+
+        }
 
         if (item && realm) {
             Object.assign(response, {item: item})

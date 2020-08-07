@@ -5,26 +5,26 @@ const router = express.Router();
  * Model importing
  */
 
-const items_db = require("../../db/items_db");
-const realms_db = require("../../db/realms_db");
+const items_db = require("../../../db/items_db");
+const realms_db = require("../../../db/realms_db");
 
 /**
  * Modules
  *
  */
 
-const ClusterChartCrossRealmData = require("../../dma/getClusterChartCrossRealmData.js");
+const ClusterChartCrossRealmData = require("../../../dma/getClusterChartCrossRealmData.js");
 
 
-router.get('/:i', async function(req, res) {
+router.get('/:itemQuery', async function(req, res) {
     try {
-        const { i } = req.params;
+        const { itemQuery } = req.params;
         let item;
         let response = {};
-        isNaN(i) ? (
-            item = await items_db.findOne({$text:{$search: i}},{score:{$meta:"textScore"}}).sort({score:{$meta:"textScore"}}).lean()
+        isNaN(itemQuery) ? (
+            item = await items_db.findOne({$text: {$search: itemQuery}}, {score: {$meta: "textScore"}}).sort({score:{$meta:"textScore"}}).lean()
         ) : (
-            item = await items_db.findById(i).lean()
+            item = await items_db.findById(itemQuery).lean()
         );
         if (item) {
             Object.assign(response, {item: item})

@@ -12,7 +12,7 @@ module.exports = {
         let guild_logs = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/guilds/guild_logs/${name}@${realm}`)).then(({data}) => {
             if (data.length) {
                 embed.setTitle((`${name}@${realm}`).toString().toUpperCase());
-                embed.setURL(`https://${process.env.domain}/guild/${name}@${realm}`);
+                embed.setURL(`https://${process.env.domain}/guild/${realm}/${name}`);
                 for (let i = 0; i < data.length; i++) {
                     if (i === 14 ) {
                         embed.addField(`─────────────`, `
@@ -20,7 +20,7 @@ module.exports = {
                         Is
                         Looking
                         For you?
-                        [Conglomerat](https://${process.env.domain}/guild/${name}@${realm})
+                        [Conglomerat](https://${process.env.domain}/guild/${realm}/${name})
                         ─────────────
                         `, true);
                         break

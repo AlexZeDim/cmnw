@@ -12,7 +12,7 @@ module.exports = {
         let character_logs = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/characters/character_logs/${name}@${realm}`)).then(({data}) => {
             if (data.length) {
                 embed.setTitle((`${name}@${realm}`).toString().toUpperCase());
-                embed.setURL(`https://${process.env.domain}/character/${name}@${realm}`);
+                embed.setURL(`https://${process.env.domain}/character/${realm}/${name}`);
                 for (let i = 0; i < data.length; i++) {
                     if (i === 19 ) {
                         embed.addField(`─────────────`, `
@@ -20,7 +20,7 @@ module.exports = {
                         Log
                         Available
                         At
-                        [Conglomerat](https://${process.env.domain}/character/${name}@${realm})
+                        [Conglomerat](https://${process.env.domain}/character/${realm}/${name})
                         ─────────────
                         `, true);
                         break

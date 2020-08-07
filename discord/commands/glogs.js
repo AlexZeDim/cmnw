@@ -26,8 +26,8 @@ module.exports = {
                     ─────────────
                     `, true);
                 }
+                embed.setFooter(`OSINT-Logs`);
             }
-            embed.setFooter(`OSINT-Logs`);
             return embed
         });
         await message.channel.send(guild_logs);

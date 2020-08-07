@@ -11,6 +11,12 @@ Arguments for this command are case-insensitive.
 CHAR блюрателла@гордунни
 ```
 
+### CLOGS [name]@[realm]
+[REDACTED]
+
+### GLOGS [name]@[realm]
+[REDACTED]
+
 ### WHOAMI
 
 Shows your discord username and ID.

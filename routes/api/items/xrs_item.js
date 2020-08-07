@@ -6,7 +6,6 @@ const router = express.Router();
  */
 
 const items_db = require("../../../db/items_db");
-const realms_db = require("../../../db/realms_db");
 
 /**
  * Modules
@@ -19,8 +18,7 @@ const ClusterChartCrossRealmData = require("../../../dma/getClusterChartCrossRea
 router.get('/:itemQuery', async function(req, res) {
     try {
         const { itemQuery } = req.params;
-        let item;
-        let response = {};
+        let item, response = {};
         isNaN(itemQuery) ? (
             item = await items_db.findOne({$text: {$search: itemQuery}}, {score: {$meta: "textScore"}}).sort({score:{$meta:"textScore"}}).lean()
         ) : (

@@ -4,7 +4,9 @@ require('dotenv').config();
 
 module.exports = {
     name: 'eva',
-    description: `This command shows the 30 cheapest valuation for any item available in the game, based on it's asset class.`,
+    description: `This command shows the 20 cheapest valuations for any item available in the game. Item can be queried via it's ID (*number*), or via a name (any string, any locale, case-insensitive) or even TICKER (**FLASK.INT**).
+     So does for the realm argument. Please notice that item should have an asset class for being valuated. And if it doesn't, the command will return nothing. Usage: \`eva flask.int@gordunni\``,
+    aliases: ['EVA', 'IVA', 'iva'],
     args: true,
     async execute(message, args) {
         const [item, realm] = args.split('@');

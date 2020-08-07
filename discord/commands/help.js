@@ -11,8 +11,8 @@ module.exports = {
         const {commands} = message.client;
 
         if (!args) {
-            data.push('List of all available commands:');
-            data.push(commands.map(command => command.name).join(', '));
+            data.push('List of all available commands:\n');
+            data.push(commands.map(command => command.name).join('\n'));
             data.push(`\nUse help [command name] to get info about specific command`);
 
             return message.channel.send(data, {split: true})

@@ -25,7 +25,6 @@ connection.once('open', () => console.log('Connected to database on ' + process.
 const pricing_methods = require("../../db/pricing_methods_db");
 
 /**
- * TODO as setter or something like that
  * This function add reagent_items field
  * @returns {Promise<void>}
  */

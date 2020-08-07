@@ -55,7 +55,7 @@ app.use('/api/guilds/guild_logs', guild_logs);
 
 app.use('/api/items/item', items);
 app.use('/api/items/eva', cors(), eva);
-app.use('/api/items/xrs', cors(), xrs_item);
+app.use('/api/items/xrs_item', cors(), xrs_item);
 app.use('/api/items/xrs_eva', cors(), xrs_eva);
 
 /** Find */

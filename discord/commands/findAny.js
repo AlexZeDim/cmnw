@@ -22,7 +22,7 @@ module.exports = {
                 embed.setTitle(_id.toUpperCase());
                 embed.setURL(`https://${process.env.domain}/find/any/${query}`);
                 for (let i = 0; i < match.length; i++) {
-                    if (i === 24 ) {
+                    if (i === 19 ) {
                         embed.addField(`─────────────`, `
                         Want 
                         More

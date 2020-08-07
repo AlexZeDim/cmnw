@@ -14,7 +14,7 @@ module.exports = {
                 embed.setTitle((`${name}@${realm}`).toString().toUpperCase());
                 embed.setURL(`https://${process.env.domain}/guild/${name}@${realm}`);
                 for (let i = 0; i < data.length; i++) {
-                    if (i === 24 ) {
+                    if (i === 14 ) {
                         embed.addField(`─────────────`, `
                         Guild 
                         Is

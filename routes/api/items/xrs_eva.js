@@ -35,8 +35,53 @@ router.get('/:itemQuery', async function(req, res) {
                 {
                     $group: {
                         _id: {
+                            connected_realm_id: "$connected_realm_id"
+                        },
+                        latest: {
+                            $max: "$last_modified"
+                        },
+                        data: {
+                            $push: "$$ROOT"
+                        }
+                    }
+                },
+                {
+                    $unwind: "$data"
+                },
+                {
+                    $addFields: {
+                        "data.latest": {
+                            $cond: {
+                                if: {
+                                    $eq: [
+                                        "$data.last_modified",
+                                        "$latest"
+                                    ]
+                                },
+                                then: "$latest",
+                                else: "$false"
+                            }
+                        }
+                    }
+                },
+                {
+                    $replaceRoot: {
+                        "newRoot": "$data"
+                    }
+                },
+                {
+                    $match: {
+                        latest: {
+                            "$exists": true,
+                            "$ne": null
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
                             connected_realm_id: "$connected_realm_id",
-                            latest_timestamp: { $max: "$last_modified" },
+                            latest_timestamp: "$latest",
                         },
                         data: { $push: "$$ROOT" },
                     }
@@ -104,17 +149,20 @@ router.get('/:itemQuery', async function(req, res) {
                                                     ]
                                                 },
                                                 "",
-                                                ","
+                                                ", "
                                             ]
                                         },
                                         {
-                                            $toString: "$$this.name"
+                                            $toString: "$$this.name_locale"
                                         }
                                     ]
                                 }
                             }
                         }
                     }
+                },
+                {
+                    $sort: {"value": 1}
                 }
             ])
             Object.assign(response, {valuations: valuations})

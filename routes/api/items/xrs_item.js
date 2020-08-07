@@ -9,11 +9,9 @@ const items_db = require("../../../db/items_db");
 
 /**
  * Modules
- *
  */
 
 const ClusterChartCrossRealmData = require("../../../dma/getClusterChartCrossRealmData.js");
-
 
 router.get('/:itemQuery', async function(req, res) {
     try {

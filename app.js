@@ -22,6 +22,7 @@ const wowtoken = require('./routes/api/wowtoken');
 const golds = require('./routes/api/golds');
 const xrs_item = require('./routes/api/items/xrs_item');
 const xrs_eva = require('./routes/api/items/xrs_eva');
+const xrs_iva = require('./routes/api/items/xrs_iva');
 const app = express();
 
 app.use(logger('dev'));
@@ -57,6 +58,7 @@ app.use('/api/items/item', items);
 app.use('/api/items/eva', cors(), eva);
 app.use('/api/items/xrs_item', cors(), xrs_item);
 app.use('/api/items/xrs_eva', cors(), xrs_eva);
+app.use('/api/items/xrs_iva', cors(), xrs_iva);
 
 /** Find */
 

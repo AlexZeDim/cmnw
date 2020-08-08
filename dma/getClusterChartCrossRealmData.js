@@ -162,7 +162,7 @@ async function auctionsCrossRealmData (item_id = 168487) {
                 }
                 /** If price rounded is higher then cap, yAxis = max */
                 if (corrected_price > cap) {
-                    y = L-1;
+                    y = priceRange_array.length-1;
                 }
             } else {
                 y = priceRange_array.indexOf(corrected_price);

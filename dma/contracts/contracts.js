@@ -136,7 +136,6 @@ async function contracts () {
                     {
                         $addFields: {
                             _id: { $concat: [ { $convert: { input: "$_id.item_id", to: "string" } }, "-", { $convert: { input: "$_id.last_modified", to: "string" } }, "@", { $convert: { input: "$_id.connected_realm_id", to: "string" } }] },
-                            item_id: 1,
                             date: {
                                 day: d,
                                 week: w,
@@ -150,7 +149,6 @@ async function contracts () {
             }
             const timestamp_data = await contract_query;
             if (timestamp_data && timestamp_data.length) {
-                console.log(timestamp_data)
                 await contracts_db.insertMany(timestamp_data, {ordered: false}).catch(error => error)
                 console.info(`C,${item_name}-${moment().format('DD.MMM.WW.YY')}`);
             } else {

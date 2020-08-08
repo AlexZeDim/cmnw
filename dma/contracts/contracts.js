@@ -53,7 +53,7 @@ async function contracts () {
                 contract_query = golds_db.aggregate([
                     {
                         $match: {
-                            createdAt: { $gt: moment.utc().subtract(1, 'day').toDate(), $lt: moment.utc().toDate() },
+                            createdAt: { $gt: moment.utc().subtract(1, 'day').toDate() },
                             status: 'Online',
                         }
                     },
@@ -150,6 +150,7 @@ async function contracts () {
             }
             const timestamp_data = await contract_query;
             if (timestamp_data && timestamp_data.length) {
+                console.log(timestamp_data)
                 await contracts_db.insertMany(timestamp_data, {ordered: false}).catch(error => error)
                 console.info(`C,${item_name}-${moment().format('DD.MMM.WW.YY')}`);
             } else {

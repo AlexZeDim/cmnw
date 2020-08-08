@@ -29,13 +29,22 @@ async function auctionsData (item_id = 168487, connected_realm_id = 1602) {
                 {
                     $group: {
                         _id: "$price",
-                        quantity: {$sum: "$quantity"},
-                        open_interest: {$sum: { $multiply: [ "$price", "$quantity" ] }},
-                        orders: {$addToSet: "$id"},
+                        quantity: { $sum: "$quantity" },
+                        open_interest: { $sum: { $multiply: [ "$price", "$quantity" ] } },
+                        orders: { $addToSet: "$id" },
                     }
                 },
                 {
                     $sort : { "_id": 1 }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        price: "$_id",
+                        quantity: "$quantity",
+                        open_interest: "$open_interest",
+                        size: { $cond: { if: { $isArray: "$orders" }, then: { $size: "$orders" }, else: 0} }
+                    }
                 }
             ]);
         } else {

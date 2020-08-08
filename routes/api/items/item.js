@@ -18,13 +18,18 @@ router.get('/:itemQuery@:realmQuery', async function(req, res) {
         let [item, realm] = await itemRealmQuery(itemQuery, realmQuery);
 
         if (item && realm) {
+            /**
+             * @type {Promise<{Object}>[]}
+             */
             let arrayPromises = [
                 clusterChartData(item._id, realm.connected_realm_id).then(chart => Object.assign(response, { chart: chart }))
             ];
             if (item._id === 1) {
                 arrayPromises.push(goldsData(realm.connected_realm_id).then(quotes => Object.assign(response, { quotes: quotes })))
             } else if (item._id === 122270 || item._id === 122284) {
-                /** TODO if wowtoken, then another query */
+                arrayPromises.length = 0;
+                const wowtoken_db = require("../../../db/wowtoken_db");
+                arrayPromises.push(wowtoken_db.findOne({ region: 'eu' }).sort({ _id: -1 }).lean().then(wowtoken => Object.assign(response, { wowtoken: wowtoken })))
             } else {
                 arrayPromises.push(auctionsData(item._id, realm.connected_realm_id).then(quotes => Object.assign(response, { quotes: quotes })))
             }

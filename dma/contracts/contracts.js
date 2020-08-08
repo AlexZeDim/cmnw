@@ -75,7 +75,6 @@ async function contracts () {
                     },
                     {
                         $project: {
-                            item_id: 1,
                             connected_realm_id: "$_id.connected_realm_id",
                             last_modified: "$_id.last_modified",
                             price: "$price",
@@ -88,6 +87,7 @@ async function contracts () {
                     {
                         $addFields: {
                             _id: { $concat: [ "1-", { $convert: { input: "$_id.last_modified", to: "string" } }, "@", { $convert: { input: "$_id.connected_realm_id", to: "string" } } ] },
+                            item_id: 1,
                             date: {
                                 day: d,
                                 week: w,

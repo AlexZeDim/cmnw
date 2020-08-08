@@ -13,7 +13,7 @@ const golds_db = require("../db/golds_db");
 
 async function getClusterChartData (item_id = 152510, connected_realm_id = 1602) {
     try {
-        let Model, price_field, price_query;
+        let Model, price_field, price_query, oi_quantity;
         /** Define difference between gold and commdty item */
         if (item_id === 1) {
             const ytd = new Date(new Date().setHours(new Date().getHours() - 12));
@@ -78,12 +78,18 @@ async function getClusterChartData (item_id = 152510, connected_realm_id = 1602)
                 } else {
                     y = priceRange_array.indexOf(corrected_price);
                 }
+                /** OI gold quantity fix */
+                if (item_id === 1) {
+                    oi_quantity = order.quantity / 1000
+                } else {
+                    oi_quantity = order.quantity
+                }
                 /** find element in chartArray by its xAxis and yAxis coordinates and add values */
                 chartArray.filter((el) => {
                     if (el.x === x && el.y === y) {
-                        el.value = el.value+order.quantity;
-                        el.oi = el.oi+(order[price_field]*order.quantity);
-                        el.orders = el.orders+1
+                        el.value = el.value + order.quantity;
+                        el.oi = el.oi + (order[price_field] * oi_quantity);
+                        el.orders = el.orders + 1
                     }
                 });
             }

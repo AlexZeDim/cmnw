@@ -30,7 +30,7 @@ async function goldsQuotes (connected_realm_id = 1602) {
                     $group: {
                         _id: "$price",
                         quantity: { $sum: "$quantity" },
-                        open_interest: { $sum: { $multiply: [ "$price", "$quantity" ] } },
+                        open_interest: { $sum: { $multiply: [ "$price", { $divide: [ "$quantity", 1000 ] } ] } },
                         sellers: { $addToSet: "$owner" },
                     }
                 },

@@ -20,13 +20,13 @@ let schema = new mongoose.Schema({
     connected_realm_id: Number,
     type: {
         type: String,
-        enum: ["VENDOR", "DERIVATIVE", "REAGENT", "MARKET", "PREMIUM"]
+        enum: ["VENDOR", "DERIVATIVE", "REAGENT", "MARKET", "PREMIUM", "FUNPAY", "OTC", "WOWTOKEN"]
     },
     last_modified: Number,
     value: Number,
     flag: {
         type: String,
-        enum: ["BUY", "SELL"]
+        enum: ["BUY", "SELL", "PAY FIX", "PAY FLOAT"]
     },
     details: Object
 },{

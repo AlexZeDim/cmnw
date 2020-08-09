@@ -5,6 +5,7 @@ apps:
     instances : 1
     cron_restart: '0 6 */2 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+    out_file: NULL
     min_uptime: 5000
     restart_delay: 3600000
   - script: ./osint/indexing/indexGuilds.js
@@ -13,6 +14,7 @@ apps:
     autorestart: true
     cron_restart: '15 */6 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+    out_file: NULL
     min_uptime: 5000
     restart_delay: 1800000
   - script: ./osint/characters/fromLogs.js

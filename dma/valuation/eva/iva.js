@@ -44,9 +44,9 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
          */
         if (item._id === 1) {
             /** Request timestamp for gold */
-            let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('golds').lean();
+            let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions golds').lean();
             /** Check existing pricing */
-            let currency = await valuations.findOne({item_id: item._id, last_modified: t.golds, connected_realm_id: connected_realm_id})
+            let currency = await valuations.findOne({item_id: item._id, last_modified: t.auctions, connected_realm_id: connected_realm_id})
             if (!currency) {
                 /** If pricing not found, get existing the lowest by price document */
                 /** Quantity > 100k+ g */
@@ -93,9 +93,8 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                  * Currency Valuation Adjustment
                  * Check existing price for gold
                  */
-                let wt_timestamp = wt_price._id / 1000
 
-                let wt_ext = await valuations.findOne({item_id: item._id, last_modified: { $gte: wt_timestamp }, connected_realm_id: connected_realm_id, type: 'WOWTOKEN'})
+                let wt_ext = await valuations.findOne({item_id: item._id, last_modified: last_modified, connected_realm_id: connected_realm_id, type: 'WOWTOKEN'})
                 if (!wt_ext) {
                     /** CONSTANT AMOUNT */
                     const wt_const = [
@@ -120,7 +119,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                             item_id: item._id,
                             connected_realm_id: connected_realm_id,
                             type: 'WOWTOKEN',
-                            last_modified: wt_timestamp,
+                            last_modified: last_modified,
                             value: parseFloat((wt_value / Math.floor(wt_price.price / 1000)).toFixed(2)),
                             details: {
                                 quotation: `${currency} per x1000`,
@@ -156,7 +155,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
             /** PAY CURRENCY RECEIVE GOLD */
             if (item._id === 122270) {
                 /** Check actual pricing for PAY FIX / RECEIVE FLOAT */
-                let wt = await valuations.findOne({item_id: item._id, last_modified: { $gte: last_modified } })
+                let wt = await valuations.findOne({item_id: item._id, last_modified: last_modified })
                 if (!wt) {
                     /** Check if pricing exists at all */
                     let wt_ext = await valuations.find({item_id: item._id})
@@ -197,7 +196,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
             /** PAY GOLD RECEIVE CURRENCY */
             if (item._id === 122284) {
                 /** Check existing pricing for PAY FLOAT / RECEIVE FIX */
-                let wt_ext = await valuations.findOne({item_id: item._id, last_modified: { $gte: last_modified }, connected_realm_id: connected_realm_id})
+                let wt_ext = await valuations.findOne({item_id: item._id, last_modified: last_modified, connected_realm_id: connected_realm_id})
                 if (!wt_ext) {
                     /** Request existing WT price */
                     let wt_price = await wowtoken_db.findOne({region: 'eu'}).sort({_id: -1}).lean()
@@ -210,7 +209,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                                     item_id: item._id,
                                     connected_realm_id: connected_realm_id,
                                     type: 'WOWTOKEN',
-                                    last_modified: wt_price._id / 1000,
+                                    last_modified: last_modified,
                                     value: wt_price.price,
                                     details: {
                                         quotation: `gold for FIX ${wt_value} ${currency} or 1m subscription`,

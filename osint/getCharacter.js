@@ -86,7 +86,9 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         /**
          * Character Data
          */
+
         if (characterData.value) {
+
             character.id = characterData.value.id
             character.name = characterData.value.name;
             character.faction = characterData.value.faction.name
@@ -105,12 +107,36 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
 
             /**
              * Realm
+             * Sometimes Blizzard return null values
              */
-            character.realm = {
-                id: characterData.value.realm.id,
-                name: characterData.value.realm.name,
-                slug: characterData.value.realm.slug
-            };
+
+            if (characterData.value.realm.name === null) {
+                /**
+                 * Find realm from slug is it's not provided
+                 */
+                let realm = await realms_db.findOne({
+                    $or: [
+                        { slug: realmSlug },
+                        { slug_locale: realmSlug }
+                    ]
+                }).lean();
+                /**
+                 * If realm exists, add it
+                 */
+                if (realm) {
+                    character.realm = {
+                        id: realm.id,
+                        name: realm.name,
+                        slug: realm.slug,
+                    }
+                }
+            } else {
+                character.realm = {
+                    id: characterData.value.realm.id,
+                    name: characterData.value.realm.name,
+                    slug: characterData.value.realm.slug
+                };
+            }
 
             /**
              * Active spec
@@ -133,7 +159,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
              * Active title
              * Hash T
              */
-            if ("active_title" in characterData.value) {
+            if (characterData.value.active_title) {
                 character.hash.t = parseInt(characterData.value.active_title.id, 16);
             }
 
@@ -222,6 +248,7 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
          * Character Mounts
          * Hash B
          */
+
         if (characterMount.value) {
             let mount_array = [];
             if (characterMount.value.mounts && characterMount.value.mounts.length) {

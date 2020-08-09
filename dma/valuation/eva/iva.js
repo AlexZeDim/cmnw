@@ -4,6 +4,9 @@
 
 const valuations = require("../../../db/valuations_db");
 const pricing_methods = require("../../../db/pricing_methods_db");
+const golds_db = require("../../../db/golds_db");
+const wowtoken_db = require("../../../db/wowtoken_db");
+const realms_db = require("../../../db/realms_db");
 
 /**
  * Modules
@@ -30,10 +33,192 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
          * Getting timestamps
          */
         if (!last_modified) {
-            const realms_db = require("../../../db/realms_db");
             let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions').lean();
             if (t) {
                 last_modified = t.auctions
+            }
+        }
+        /** Gold Valuation Adjustment .asset_class.includes('CURRENCY') */
+        if (item._id === 1) {
+            /** Request timestamp for gold */
+            let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('golds').lean();
+            /** Check existing pricing */
+            let currency = await valuations.findOne({item_id: item._id, last_modified: t.golds, connected_realm_id: connected_realm_id})
+            if (!currency) {
+                /** If pricing not found, get existing the lowest by price document */
+                /** Quantity > 100k+ g */
+                let ctd_gold = await golds_db.findOne({connected_realm_id: connected_realm_id, last_modified: t.golds, quantity: { $gte: 100000 }}).sort('price');
+                if (ctd_gold) {
+                    /** Predefined flags, venue, price, etc */
+                    const flags = ["BUY", "SELL"]
+                    let venue = 'FUNPAY'
+                    let price = ctd_gold.price
+                    let faction = ctd_gold.faction
+                    let description = 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.'
+                    for (let flag of flags) {
+                        /** Redefine for SELL flag */
+                        if (flag === "SELL") {
+                            price = price * 0.75
+                            venue = 'OTC'
+                            description = 'Price nominated in RUB for every x1000 gold (lot). It represents the exact amount of RUB that seller will receive in return, after FUNPAY exchange commission. (Near ¬25%). Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.'
+                        }
+                        currency = new valuations({
+                            name: `GOLD/RUB ${faction} ${flag} FUNPAY`,
+                            flag: flag,
+                            item_id: item._id,
+                            connected_realm_id: connected_realm_id,
+                            type: venue,
+                            last_modified: last_modified,
+                            value: price,
+                            details: {
+                                quotation: 'RUB per x1000',
+                                lot_size: 1000,
+                                minimal_settlement_amount: 100000,
+                                description: description
+                            }
+                        })
+                        await currency.save()
+                        console.info(`DMA-${iva.name}: ${item._id}@${currency.connected_realm_id},${currency.name}`)
+                    }
+                }
+            }
+        }
+
+        /** WoWToken and Currency Valuation Adjustment */
+        if (item.asset_class.includes('WOWTOKEN')) {
+
+            /** CONSTANT AMOUNT */
+            const wt_const = [
+                {
+                    flag: 'SELL',
+                    wt_value: '550',
+                    currency: 'RUB'
+                },
+                {
+                    flag: 'BUY',
+                    wt_value: '1400',
+                    currency: 'RUB'
+                },
+            ]
+
+            /** PAY CURRENCY RECEIVE GOLD */
+            if (item._id === 122270) {
+                /** Check actual pricing for PAY FIX / RECEIVE FLOAT */
+                let wt = await valuations.findOne({item_id: item._id, last_modified: { $gte: last_modified } })
+                if (!wt) {
+                    /** Check if pricing exists at all */
+                    let wt_ext = await valuations.find({item_id: item._id})
+                    if (wt_ext.length) {
+                        /** If yes, updated all the CONST values */
+                        valuations.updateMany({item_id: item._id}, { last_modified: last_modified })
+                    } else {
+                        /** Initiate the very first pricing predetermined */
+                        let initial_wt = [];
+                        await realms_db.find({locale: 'en_GB'}).cursor().eachAsync(({connected_realm_id}) => {
+                            for (let {flag, currency, wt_value} of wt_const) {
+                                if (flag === 'BUY') {
+                                    initial_wt.push({
+                                        name: `WOWTOKEN BUY ${currency}`,
+                                        flag: 'BUY',
+                                        item_id: item._id,
+                                        connected_realm_id: connected_realm_id,
+                                        type: 'WOWTOKEN',
+                                        last_modified: last_modified,
+                                        value: wt_value,
+                                        details: {
+                                            quotation: `${currency} per WoWToken`,
+                                            swap_type: 'PAY FIX / RECEIVE FLOAT',
+                                            description: 'You pay the fixed amount of real-money currency (based on your region) to receive in exchange a WoWToken, which could be converted to gold value of WoWToken, any time further.'
+                                        }
+                                    })
+                                }
+                            }
+                        });
+                        await valuations.insertMany(initial_wt)
+                    }
+                }
+            }
+
+            /** PAY GOLD RECEIVE CURRENCY */
+            if (item._id === 122284) {
+
+            }
+
+            /** Request WoWToken price */
+            let wt_price = await wowtoken_db.findOne({region: 'eu'}).sort({_id: -1}).lean()
+            if (wt_price) {
+                /**
+                 * Currency Valuation Adjustment
+                 * Check existing price for gold
+                 * FIXME criteria
+                 * TODO eachAsync parallel 10
+                 */
+                let wt_timestamp = wt_price._id / 1000
+
+                let wt_ext = await valuations.findOne({item_id: 1, last_modified: wt_timestamp})
+                if (!wt_ext) {
+                    /** Only if existing price not found */
+                    let wt_gold_pricing = []
+                    await realms_db.find({}).cursor().eachAsync((realm) => {
+                        /** For each realm */
+                        for (let {flag, wt_value, currency} of wt_const) {
+                            if (flag === 'SELL') {
+                                wt_gold_pricing.push({
+                                    name: `GOLD/${currency} ${flag} WOWTOKEN`,
+                                    flag: flag,
+                                    item_id: 1,
+                                    connected_realm_id: realm.connected_realm_id,
+                                    type: 'WOWTOKEN',
+                                    last_modified: wt_timestamp,
+                                    value: parseFloat((wt_value / Math.floor(wt_price.price / 1000)).toFixed(2)),
+                                    details: {
+                                        quotation: `${currency} per x1000`,
+                                        lot_size: 1000,
+                                        minimal_settlement_amount: wt_price.price,
+                                        description: 'description' //TODO
+                                    }
+                                })
+                            }
+                            if (flag === 'BUY') {
+                                wt_gold_pricing.push({
+                                    name: `GOLD/${currency} ${flag} WOWTOKEN`,
+                                    flag: flag,
+                                    item_id: 1,
+                                    connected_realm_id: realm.connected_realm_id,
+                                    type: 'WOWTOKEN',
+                                    last_modified: wt_timestamp,
+                                    value: parseFloat((wt_value / Math.floor(wt_price.price / 1000)).toFixed(2)),
+                                    details: {
+                                        quotation: `${currency} per x1000`,
+                                        lot_size: 1000,
+                                        minimal_settlement_amount: wt_price.price,
+                                        description: 'description' //TODO
+                                    }
+                                })
+                            }
+                        }
+                    })
+                    await valuations.insertMany(wt_gold_pricing)
+                }
+            }
+            /** Currency Price adjustment */
+            //TODO create a lot of gold prices based on WoWToken price
+            if (wt_price) {
+                let wowtoken = new valuations({
+                    name: `GOLD/RUB ${faction} ${flag} FUNPAY`,
+                    flag: flag,
+                    item_id: item._id,
+                    connected_realm_id: connected_realm_id,
+                    type: venue,
+                    last_modified: last_modified,
+                    value: price,
+                    details: {
+                        quotation: 'RUB per x1000',
+                        lot_size: 1000,
+                        minimal_settlement_amount: 100000,
+                        description: description
+                    }
+                })
             }
         }
 

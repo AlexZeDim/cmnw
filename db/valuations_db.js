@@ -33,6 +33,7 @@ let schema = new mongoose.Schema({
     timestamps: true
 });
 
+schema.index({ createdAt: -1 },{ name: 'TTL', expireAfterSeconds: 604800 });
 schema.index({ item_id: -1, last_modified: -1, connected_realm_id: 1 },{name: 'IVA'});
 schema.index({ type: -1 },{name: 'LastModified'});
 schema.index({ flag: -1 },{name: 'Flag'});

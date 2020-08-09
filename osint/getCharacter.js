@@ -48,11 +48,6 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
          */
         let character = await characters_db.findById(`${characterName}@${realmSlug}`)
 
-        /**
-         * TODO optional
-         * await bnw.WowProfileData.getCharacterStatus(realmSlug, characterName).catch(e=>(e))
-         */
-
         const [characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
             bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
             bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),

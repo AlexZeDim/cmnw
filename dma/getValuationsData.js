@@ -63,12 +63,13 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
                      * @type {Map<number, {Object}>}
                      */
                     const assetClassMap = new Map([
-                        [0, {"expansion": "BFA", "asset_class": "VENDOR"} ],
-                        [1, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE", "PREMIUM" ] } },  { "asset_class": { "$all": [ "REAGENT" , "MARKET", "COMMDTY" ] } } ] } ],
-                        [2, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class": { "$all": [ "REAGENT" , "PREMIUM" ] } } ] } ],
-                        [3, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$all": [ "REAGENT" , "DERIVATIVE" ] } } ] } ],
-                        [4, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class":  { "$all": [ "REAGENT" , "PREMIUM" ] } } ] } ],
-                        [5, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "REAGENT" ] } }, { "asset_class":  "DERIVATIVE" } ] } ]
+                        [0, {"_id": 1} ],
+                        [1, {"asset_class": "WOWTOKEN"} ],
+                        [2, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE", "PREMIUM" ] } },  { "asset_class": { "$all": [ "REAGENT" , "MARKET", "COMMDTY" ] } } ] } ],
+                        [3, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class": { "$all": [ "REAGENT" , "PREMIUM" ] } } ] } ],
+                        [4, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$all": [ "REAGENT" , "DERIVATIVE" ] } } ] } ],
+                        [5, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "DERIVATIVE" ] } }, { "asset_class":  { "$all": [ "REAGENT" , "PREMIUM" ] } } ] } ],
+                        [6, { "$and": [ { "expansion": "BFA" }, { "asset_class": { "$nin": [ "REAGENT" ] } }, { "asset_class":  "DERIVATIVE" } ] } ]
                     ]);
                     /**
                      * Start to evaluate every item class with selected item_db query
@@ -91,7 +92,7 @@ async function getValuationsData (realmQuery = { 'locale': 'ru_RU' }, bulkSize =
             } catch (e) {
                 console.error(e)
             }
-        }, {parallel: bulkSize});
+        }, { parallel: bulkSize });
         connection.close();
         console.timeEnd(`DMA-${getValuationsData.name}`);
     } catch (err) {

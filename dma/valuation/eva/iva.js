@@ -38,7 +38,10 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                 last_modified = t.auctions
             }
         }
-        /** Gold Valuation Adjustment .asset_class.includes('CURRENCY') */
+        /**
+         * Gold Valuation Adjustment
+         * .asset_class.includes('CURRENCY')
+         */
         if (item._id === 1) {
             /** Request timestamp for gold */
             let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('golds').lean();
@@ -82,6 +85,55 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                     }
                 }
             }
+
+            /** Request WoWToken price */
+            let wt_price = await wowtoken_db.findOne({region: 'eu'}).sort({_id: -1}).lean()
+            if (wt_price) {
+                /**
+                 * Currency Valuation Adjustment
+                 * Check existing price for gold
+                 */
+                let wt_timestamp = wt_price._id / 1000
+
+                let wt_ext = await valuations.findOne({item_id: item._id, last_modified: { $gte: wt_timestamp }, connected_realm_id: connected_realm_id, type: 'WOWTOKEN'})
+                if (!wt_ext) {
+                    /** CONSTANT AMOUNT */
+                    const wt_const = [
+                        {
+                            flag: 'SELL',
+                            wt_value: '550',
+                            currency: 'RUB',
+                            description: 'Represents the price per each x1000 gold, when you are exchanging your gold for Battle.net balance or 1m subscription'
+                        },
+                        {
+                            flag: 'BUY',
+                            wt_value: '1400',
+                            currency: 'RUB',
+                            description: 'Represents the price per each x1000 gold, when you are buying gold from Blizzard via WoWToken'
+                        },
+                    ]
+                    /** Only if existing price not found */
+                    for (let {flag, wt_value, currency, description} of wt_const) {
+                        let gwt = new valuations({
+                            name: `GOLD/${currency} ${flag} WOWTOKEN`,
+                            flag: flag,
+                            item_id: item._id,
+                            connected_realm_id: connected_realm_id,
+                            type: 'WOWTOKEN',
+                            last_modified: wt_timestamp,
+                            value: parseFloat((wt_value / Math.floor(wt_price.price / 1000)).toFixed(2)),
+                            details: {
+                                quotation: `${currency} per x1000`,
+                                lot_size: 1000,
+                                minimal_settlement_amount: wt_price.price,
+                                description: description
+                            }
+                        })
+                        await gwt.save()
+                        console.info(`DMA-${iva.name}: ${item._id}@${connected_realm_id}, GOLD/${currency} ${flag} WOWTOKEN`)
+                    }
+                }
+            }
         }
 
         /** WoWToken and Currency Valuation Adjustment */
@@ -90,12 +142,12 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
             /** CONSTANT AMOUNT */
             const wt_const = [
                 {
-                    flag: 'SELL',
+                    flag: 'PAY FLOAT',
                     wt_value: '550',
                     currency: 'RUB'
                 },
                 {
-                    flag: 'BUY',
+                    flag: 'PAY FIX',
                     wt_value: '1400',
                     currency: 'RUB'
                 },
@@ -111,15 +163,16 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                     if (wt_ext.length) {
                         /** If yes, updated all the CONST values */
                         valuations.updateMany({item_id: item._id}, { last_modified: last_modified })
+                        console.info(`DMA-${iva.name}: ${item._id}@${connected_realm_id},WOWTOKEN BUY`)
                     } else {
                         /** Initiate the very first pricing predetermined */
                         let initial_wt = [];
                         await realms_db.find({locale: 'en_GB'}).cursor().eachAsync(({connected_realm_id}) => {
                             for (let {flag, currency, wt_value} of wt_const) {
-                                if (flag === 'BUY') {
+                                if (flag === 'PAY FIX') {
                                     initial_wt.push({
-                                        name: `WOWTOKEN BUY ${currency}`,
-                                        flag: 'BUY',
+                                        name: `PAY FIX ${currency} / RECEIVE FLOAT GOLD`,
+                                        flag: flag,
                                         item_id: item._id,
                                         connected_realm_id: connected_realm_id,
                                         type: 'WOWTOKEN',
@@ -131,94 +184,46 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                                             description: 'You pay the fixed amount of real-money currency (based on your region) to receive in exchange a WoWToken, which could be converted to gold value of WoWToken, any time further.'
                                         }
                                     })
+                                    console.info(`DMA-${iva.name}: ${item._id}@${connected_realm_id},WOWTOKEN BUY ${currency}`)
                                 }
                             }
                         });
                         await valuations.insertMany(initial_wt)
+                        console.info(`DMA-${iva.name}: ${item._id}@${connected_realm_id}, INITIAL WOWTOKEN`)
                     }
                 }
             }
 
             /** PAY GOLD RECEIVE CURRENCY */
             if (item._id === 122284) {
-
-            }
-
-            /** Request WoWToken price */
-            let wt_price = await wowtoken_db.findOne({region: 'eu'}).sort({_id: -1}).lean()
-            if (wt_price) {
-                /**
-                 * Currency Valuation Adjustment
-                 * Check existing price for gold
-                 * FIXME criteria
-                 * TODO eachAsync parallel 10
-                 */
-                let wt_timestamp = wt_price._id / 1000
-
-                let wt_ext = await valuations.findOne({item_id: 1, last_modified: wt_timestamp})
+                /** Check existing pricing for PAY FLOAT / RECEIVE FIX */
+                let wt_ext = await valuations.findOne({item_id: item._id, last_modified: { $gte: last_modified }, connected_realm_id: connected_realm_id})
                 if (!wt_ext) {
-                    /** Only if existing price not found */
-                    let wt_gold_pricing = []
-                    await realms_db.find({}).cursor().eachAsync((realm) => {
-                        /** For each realm */
-                        for (let {flag, wt_value, currency} of wt_const) {
-                            if (flag === 'SELL') {
-                                wt_gold_pricing.push({
-                                    name: `GOLD/${currency} ${flag} WOWTOKEN`,
+                    /** Request existing WT price */
+                    let wt_price = await wowtoken_db.findOne({region: 'eu'}).sort({_id: -1}).lean()
+                    if (wt_price) {
+                        for (let {flag, currency, wt_value} of wt_const) {
+                            if (flag === 'PAY FLOAT') {
+                                let wowtoken = new valuations({
+                                    name: `PAY FLOAT GOLD / RECEIVE FIX ${currency}`,
                                     flag: flag,
-                                    item_id: 1,
-                                    connected_realm_id: realm.connected_realm_id,
+                                    item_id: item._id,
+                                    connected_realm_id: connected_realm_id,
                                     type: 'WOWTOKEN',
-                                    last_modified: wt_timestamp,
-                                    value: parseFloat((wt_value / Math.floor(wt_price.price / 1000)).toFixed(2)),
+                                    last_modified: wt_price._id / 1000,
+                                    value: wt_price.price,
                                     details: {
-                                        quotation: `${currency} per x1000`,
-                                        lot_size: 1000,
-                                        minimal_settlement_amount: wt_price.price,
-                                        description: 'description' //TODO
+                                        quotation: `gold for FIX ${wt_value} ${currency} or 1m subscription`,
+                                        swap_type: 'PAY FLOAT / RECEIVE FIX',
+                                        description: `You pay always floating (but fixed in a moment of time) amount of gold for fixed payment of ${wt_value} ${currency} or 1m subscription`
                                     }
                                 })
-                            }
-                            if (flag === 'BUY') {
-                                wt_gold_pricing.push({
-                                    name: `GOLD/${currency} ${flag} WOWTOKEN`,
-                                    flag: flag,
-                                    item_id: 1,
-                                    connected_realm_id: realm.connected_realm_id,
-                                    type: 'WOWTOKEN',
-                                    last_modified: wt_timestamp,
-                                    value: parseFloat((wt_value / Math.floor(wt_price.price / 1000)).toFixed(2)),
-                                    details: {
-                                        quotation: `${currency} per x1000`,
-                                        lot_size: 1000,
-                                        minimal_settlement_amount: wt_price.price,
-                                        description: 'description' //TODO
-                                    }
-                                })
+                                await wowtoken.save()
+                                console.info(`DMA-${iva.name}: ${item._id}@${connected_realm_id},WOWTOKEN BUY GOLD`)
                             }
                         }
-                    })
-                    await valuations.insertMany(wt_gold_pricing)
-                }
-            }
-            /** Currency Price adjustment */
-            //TODO create a lot of gold prices based on WoWToken price
-            if (wt_price) {
-                let wowtoken = new valuations({
-                    name: `GOLD/RUB ${faction} ${flag} FUNPAY`,
-                    flag: flag,
-                    item_id: item._id,
-                    connected_realm_id: connected_realm_id,
-                    type: venue,
-                    last_modified: last_modified,
-                    value: price,
-                    details: {
-                        quotation: 'RUB per x1000',
-                        lot_size: 1000,
-                        minimal_settlement_amount: 100000,
-                        description: description
                     }
-                })
+                }
             }
         }
 

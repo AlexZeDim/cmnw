@@ -56,7 +56,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                     const flags = ["BUY", "SELL"]
                     let venue = 'FUNPAY'
                     let price = ctd_gold.price
-                    let faction = ctd_gold.faction
+                    let faction = ctd_gold.faction.toUpperCase()
                     let description = 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.'
                     for (let flag of flags) {
                         /** Redefine for SELL flag */

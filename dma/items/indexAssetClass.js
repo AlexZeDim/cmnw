@@ -135,6 +135,14 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                 await items_db.updateMany({ asset_class: "REAGENT", loot_type: "ON_ACQUIRE" }, { $addToSet: { asset_class: "PREMIUM" } })
                 console.timeEnd(`Stage: items`)
                 break;
+            case 'currency':
+                console.info(`Stage: currency`)
+                console.time(`Stage: currency`)
+                await items_db.updateOne({ _id: 122270 }, { $addToSet: { asset_class: "WOWTOKEN" } })
+                await items_db.updateOne({ _id: 122284 }, { $addToSet: { asset_class: "WOWTOKEN" } })
+                await items_db.updateOne({ _id: 1 }, { $addToSet: { asset_class: "CURRENCY" } })
+                console.timeEnd(`Stage: currency`)
+                break;
             default:
                 break;
         }

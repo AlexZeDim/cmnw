@@ -72,7 +72,7 @@ async function iva (item, connected_realm_id = 1602, last_modified, item_depth =
                             connected_realm_id: connected_realm_id,
                             type: venue,
                             last_modified: last_modified,
-                            value: price,
+                            value: Round2(price.toFixed(2)),
                             details: {
                                 quotation: 'RUB per x1000',
                                 lot_size: 1000,

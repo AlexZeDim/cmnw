@@ -3,7 +3,7 @@ require('dotenv').config();
 module.exports = {
     name: 'help',
     description: 'List all of all available commands or info about a specific command.',
-    aliases: ['commands'],
+    aliases: ['commands', 'HELP', 'Help'],
     usage: '[command name]',
     cooldown: 5,
     execute(message, args) {

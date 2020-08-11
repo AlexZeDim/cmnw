@@ -5,7 +5,7 @@ require('dotenv').config();
 module.exports = {
     name: 'glogs',
     description: 'Search for last 20 events about certain guild in OSINT Logs. Realm transfers are covered. Example usage: \`glogs депортация@gordunni \` ',
-    aliases: ['guild_logs', 'GLOGS', 'GUILD_LOGS'],
+    aliases: ['guild_logs', 'GLOGS', 'GUILD_LOGS', 'Glogs'],
     args: true,
     async execute(message, args) {
         const [name, realm] = args.split('@');

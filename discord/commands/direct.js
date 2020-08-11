@@ -9,7 +9,7 @@ module.exports = {
      -r (reply: optional) — Allows the receiver to reply at your messages back.
      -exit or -close — After the following command, instantly close the message window between you and the receiver.
      Example usage: \` User: direct@240464611562881024 -m 50 -t 60 -d 10 -s hex \``,
-    aliases: ['DIRECT', 'DM', 'dm'],
+    aliases: ['DIRECT', 'DM', 'dm', 'Direct'],
     cooldown: 10,
     args: true,
     execute(message, args, client) {

@@ -5,7 +5,7 @@ require('dotenv').config();
 module.exports = {
     name: 'findC',
     description: `This command does the same as findA. If you are not sure about it, you might want to use \`help findA\` for more info.`,
-    aliases: ['findc', 'FINDC', 'FIND_C', 'find_c'],
+    aliases: ['findc', 'FINDC', 'FIND_C', 'find_c', 'FindC'],
     cooldown: 10,
     args: true,
     async execute(message, args) {

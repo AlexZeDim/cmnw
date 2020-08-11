@@ -4,7 +4,9 @@ require('dotenv').config();
 
 module.exports = {
     name: 'findAll',
-    description: 'This command will find out all twinks for characters',
+    description: `In result this command is return first 20 matches between all the hash value for the selected character. This is a maximum level confidence match and it requires only character name and realm as argument.
+    Example usage: \`findAll блюрателла@гордунни\``,
+    aliases: ['FindAll', 'FINDALL', 'find_all', 'find_All', 'Find_All', 'FIND_LL'],
     args: true,
     async execute(message, args) {
         const params = args.split('@');

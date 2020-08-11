@@ -4,7 +4,8 @@ require('dotenv').config();
 
 module.exports = {
     name: 'findAny',
-    description: 'This command will find out all twinks for characters',
+    description: 'This command will find out any match for any available hash value',
+    aliases: ['FindAny', 'FINDANY', 'find_any', 'find_Any', 'Find_Any', 'FIND_ANY'],
     args: true,
     async execute(message, args) {
         const params = args.split('@');

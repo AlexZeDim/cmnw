@@ -9,7 +9,7 @@ require('dotenv').config();
 module.exports = {
     name: 'char',
     description: 'Return information about specific character. Example usage: \`char блюрателла@гордунни\`',
-    aliases: ['character', 'CHAR', 'CHARACTER'],
+    aliases: ['character', 'CHAR', 'CHARACTER', 'Character'],
     args: true,
     async execute(message, args) {
         const [name, realm] = args.split('@');

@@ -19,6 +19,7 @@ router.get('/:type/:query', async function(req, res) {
 
         const queryToHash = async (type, query) => {
             /** If query has realm argument */
+            query = query.toLowerCase();
             if (query.includes('@')) {
                 const [n, r] = query.split('@');
                 const { slug } = await realms_db.findOne({$text: {$search: r}});
@@ -82,33 +83,33 @@ router.get('/:type/:query', async function(req, res) {
         switch (type) {
             case 'a':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(15).lean();
+                result.match = await characters_db.find(search).limit(100).lean();
                 break;
             case 'b':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(15).lean();
+                result.match = await characters_db.find(search).limit(100).lean();
                 break;
             case 'c':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(15).lean();
+                result.match = await characters_db.find(search).limit(100).lean();
                 break;
             case 'ex':
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(15).lean();
+                result.match = await characters_db.find(search).limit(100).lean();
                 break;
             case 'all':
                 /**
                  * Only character can match all hashes
                  */
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find(search).limit(15).lean();
+                result.match = await characters_db.find(search).limit(100).lean();
                 break;
             case 'any':
                 /**
                  * Only hash can match any hash fields
                  */
                 search = await queryToHash(type, query);
-                result.match = await characters_db.find({hash: search}).limit(15).lean();
+                result.match = await characters_db.find({hash: search}).limit(100).lean();
                 break;
         }
         result._id = query;

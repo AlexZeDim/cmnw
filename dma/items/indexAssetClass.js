@@ -57,7 +57,7 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                             if (item) {
                                 item.asset_class.addToSet("DERIVATIVE")
                                 await item.save()
-                                console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                                console.info(`${item._id}, ${item.asset_class.toString()}`)
                             }
                         }
                         if (method.horde_item_id) {
@@ -65,7 +65,7 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                             if (item) {
                                 item.asset_class.addToSet("DERIVATIVE")
                                 await item.save()
-                                console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                                console.info(`${item._id}, ${item.asset_class.toString()}`)
                             }
                         }
                         /** Reagent Asset Class */
@@ -75,7 +75,7 @@ async function indexAssetClass (arg = "pricing_methods", bulkSize = 10) {
                                 if (item) {
                                     item.asset_class.addToSet("REAGENT")
                                     await item.save()
-                                    console.info(`${item._id}, ${ item.asset_class.toString()}`)
+                                    console.info(`${item._id}, ${item.asset_class.toString()}`)
                                 }
                             }
                         }

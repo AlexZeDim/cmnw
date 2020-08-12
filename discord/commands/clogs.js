@@ -21,7 +21,7 @@ module.exports = {
                         Log
                         Available
                         At
-                        [Conglomerat](https://${process.env.domain}/character/${realm}/${name})
+                        [Conglomerat](https://${process.env.domain}/character/${realm}/${data[i].root_id})
                         ─────────────
                         `, true);
                         break

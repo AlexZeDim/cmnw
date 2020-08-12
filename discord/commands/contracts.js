@@ -16,7 +16,7 @@ module.exports = {
             const [name, realm] = args.split('@');
             let contracts = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/contracts/${tenor}/${name}@${realm}`)).then(({data}) => {
                 let { item, realm, snapshot, contracts } = data;
-                embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/contracts/${realm.slug}/${item.name.en_GB}/${tenor}`));
+                embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/contracts/${realm.slug}/${item._id}/${tenor}`));
 
                 if ("icon" in item) {
                     embed.setThumbnail(item.icon);

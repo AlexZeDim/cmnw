@@ -33,11 +33,11 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
                     $group: {
                         _id: null,
                         price_minimum: { $min: '$price' },
-                        price_average: { $avg: '$price' },
+                        price_average: { $round: [ { $avg: '$price' }, 1 ] },
                         price_maximum: { $max: '$price' },
-                        price_standard_deviation: { $stdDevPop: "$price" },
+                        price_standard_deviation: { $round: [ { $avg: '$price' }, 1 ] },
                         quantity_minimum: { $min: '$quantity' },
-                        quantity_average: { $avg: '$quantity' },
+                        quantity_average: { $round: [ { $avg: '$quantity' }, 1 ] },
                         quantity_maximum: { $max: '$quantity' },
                         contracts: { $push: '$$ROOT'}
                     }

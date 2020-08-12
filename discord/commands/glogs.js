@@ -21,7 +21,7 @@ module.exports = {
                         Is
                         Looking
                         For you?
-                        [Conglomerat](https://${process.env.domain}/guild/${realm}/${name})
+                        [Conglomerat](https://${process.env.domain}/guild/${realm}/${data._id.split('@')[0]})
                         ─────────────
                         `, true);
                         break

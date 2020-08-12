@@ -16,14 +16,14 @@ module.exports = {
                 realm,
                 valuations
             } = data;
-            embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB}`));
+            embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item._id}`));
 
             let descriptionString = '';
             let market_counter = 0;
             let derivative_counter = 0;
             let premium_counter = 0;
 
-            embed.setURL(encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB}`));
+            embed.setURL(encodeURI(`https://${process.env.domain}/item/${realm.slug}/${item._id}`));
             if ("icon" in item) {
                 embed.setThumbnail(item.icon);
             }
@@ -35,7 +35,7 @@ module.exports = {
                         Pricing
                         Available
                         At
-                        [Conglomerat](https://${process.env.domain}/item/${realm.slug}/${item.name.en_GB})
+                        [Conglomerat](https://${process.env.domain}/item/${realm.slug}/${item._id})
                         ─────────────
                         `, true);
                     break

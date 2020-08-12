@@ -17,6 +17,7 @@
     "start": "node discord/bot.js",
     "core": "node ./bin/www.js"
   },
+  "languageName": "node",
   "repository": {
     "type": "git",
     "url": "https://github.com/AlexZeDim/conglomerat.git"

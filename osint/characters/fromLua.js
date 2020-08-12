@@ -33,6 +33,7 @@ const getCharacter = require('../getCharacter');
 
 const fromLua = async (queryKeys = {tags: `OSINT-indexCharacters`}) => {
     try {
+        console.time(`OSINT-${fromLua.name}`);
         let { token } = await keys_db.findOne(queryKeys);
         let osint = fs.readFileSync('C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\Гордунни\\Бэквордация\\SavedVariables\\OSINT.lua','utf8').split('["csv"] = ')[1];
         let arrayOfLines = osint.match(/[^\r\n]+/g);
@@ -43,6 +44,8 @@ const fromLua = async (queryKeys = {tags: `OSINT-indexCharacters`}) => {
                 await getCharacter(realm, name, {}, token,`OSINT-${fromLua.name}`, false)
             }
         }
+        connection.close();
+        console.timeEnd(`OSINT-${fromLua.name}`);
     } catch (e) {
         console.error(e)
     }

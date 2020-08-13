@@ -47,6 +47,9 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
                         open_interest_minimum: { $min: '$open_interest' },
                         open_interest_average: { $avg: '$open_interest' },
                         open_interest_maximum: { $max: '$open_interest' },
+                        orders_minimum: { $min: '$size' },
+                        orders_average: { $avg: '$size' },
+                        orders_maximum: { $max: '$size' },
                         contracts: { $push: '$$ROOT'}
                     }
                 },
@@ -58,6 +61,7 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
                         open_interest_minimum: { $round: ['$open_interest_minimum', 0] },
                         open_interest_average: { $round: ['$open_interest_average', 0] },
                         open_interest_maximum: { $round: ['$open_interest_maximum', 0] },
+                        orders_average: { $round: ['$orders_average', 0] }
                     }
                 }
             ]).then((aggregate) => {

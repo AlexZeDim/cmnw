@@ -30,6 +30,11 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
                     }
                 },
                 {
+                    $addFields: {
+                        size: { $cond: { if: { $gt: [ { $size: '$orders' }, 0 ] }, then: { $size: "$orders" }, else: { $size: "$sellers" } } }
+                    }
+                },
+                {
                     $group: {
                         _id: null,
                         price_minimum: { $min: '$price' },

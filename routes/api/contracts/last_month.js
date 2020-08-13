@@ -30,16 +30,34 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
                     }
                 },
                 {
+                    $addFields: {
+                        size: { $cond: { if: { $gt: [ { $size: '$orders' }, 0 ] }, then: { $size: "$orders" }, else: { $size: "$sellers" } } }
+                    }
+                },
+                {
                     $group: {
                         _id: null,
                         price_minimum: { $min: '$price' },
-                        price_average: { $round: [ { $avg: '$price' }, 1 ] },
+                        price_average: { $avg: '$price' },
                         price_maximum: { $max: '$price' },
-                        price_standard_deviation: { $round: [ { $avg: '$price' }, 1 ] },
+                        price_standard_deviation: { $stdDevPop: "$price" },
                         quantity_minimum: { $min: '$quantity' },
-                        quantity_average: { $round: [ { $avg: '$quantity' }, 1 ] },
+                        quantity_average: { $avg: '$quantity' },
                         quantity_maximum: { $max: '$quantity' },
+                        open_interest_minimum: { $min: '$open_interest' },
+                        open_interest_average: { $avg: '$open_interest' },
+                        open_interest_maximum: { $max: '$open_interest' },
                         contracts: { $push: '$$ROOT'}
+                    }
+                },
+                {
+                    $addFields: {
+                        price_average: { $round: ['$price_average', 2] },
+                        price_standard_deviation: { $round: ['$price_standard_deviation', 2] },
+                        quantity_average: { $round: ['$quantity_average', 0] },
+                        open_interest_minimum: { $round: ['$open_interest_minimum', 0] },
+                        open_interest_average: { $round: ['$open_interest_average', 0] },
+                        open_interest_maximum: { $round: ['$open_interest_maximum', 0] },
                     }
                 }
             ]).then((aggregate) => {

@@ -43,7 +43,7 @@ async function indexCharacters (queryFind = {}, queryKeys = {tags: `OSINT-${inde
     try {
         console.time(`OSINT-${indexCharacters.name}`);
         let { token } = await keys_db.findOne(queryKeys);
-        await characters_db.find(queryFind).sort({lastModified: 1}).lean().cursor({batchSize: bulkSize}).eachAsync(async ({_id}) => {
+        await characters_db.find(queryFind).sort({_id: 1}).lean().cursor({batchSize: bulkSize}).eachAsync(async ({_id}) => {
             const [characterName, realmSlug] = _id.split('@');
             await getCharacter(realmSlug, characterName, {}, token,`OSINT-${indexCharacters.name}`, false)
         }, { parallel: bulkSize })

@@ -38,7 +38,7 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-async function importTaxonomy_CSV (path = 'C:\\taxonomy.csv') {
+async function importTaxonomy_CSV (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') {
     try {
         console.time(`DMA-${importTaxonomy_CSV.name}`)
         let path_, file_;
@@ -62,9 +62,13 @@ async function importTaxonomy_CSV (path = 'C:\\taxonomy.csv') {
                 case 'taxonomy':
                     for (let i = 1; i < data.length; i++) {
                         let item = await items_db.findById(parseInt(data[i][0]))
-                        item.asset_class.addToSet(data[i][5])
-                        await item.save()
-                        console.info(`U, ${parseFloat(data[i][0])}`);
+                        if (item) {
+                            item.asset_class.addToSet(data[i][5])
+                            await item.save()
+                            console.info(`U, ${parseFloat(data[i][0])}`);
+                        } else {
+                            console.info(`R, ${parseFloat(data[i][0])}`);
+                        }
                     }
                     break;
                 case 'itemsparse':

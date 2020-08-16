@@ -50,7 +50,7 @@ router.get('/:itemQuery', async function(req, res) {
             }, {parallel: 10});
             await res.status(200).json({status: "OK"});
         } else {
-            await res.status(404).json({error: "not found"});
+            await res.status(404).json({error: "Not found"});
         }
     } catch (e) {
         await res.status(500).json(e);

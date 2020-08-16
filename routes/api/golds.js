@@ -23,15 +23,17 @@ router.get('/:realmSlug', async function(req, res) {
         let contracts = [];
         let realm = await realms_db.findOne({ $text: { $search: realmSlug } }).sort({ score: { $meta: "textScore" } }).lean();
         if (realm) {
-            Object.assign(response, {realm: realm})
             await Promise.allSettled([
                 clusterGoldData(realm.connected_realm_id).then(chart => Object.assign(response, {chart: chart})),
                 goldsData(realm.connected_realm_id).then(quotes => Object.assign(response, {quotes: quotes})),
             ])
-            Object.assign(response, {contracts: contracts})
+            Object.assign(response, {
+                realm: realm,
+                contracts: contracts
+            })
             await res.status(200).json(response);
         } else {
-            await res.status(404).json({error: "not found"});
+            await res.status(404).json({error: "Not found"});
         }
     } catch (e) {
         await res.status(500).json(e);

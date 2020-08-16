@@ -24,7 +24,6 @@ router.get('/:itemQuery', async function(req, res) {
             item = await items_db.findById(itemQuery).lean()
         );
         if (item) {
-            Object.assign(response, {item: item});
             let valuations = await valuations_db.aggregate([
                 {
                     $match: {
@@ -165,7 +164,10 @@ router.get('/:itemQuery', async function(req, res) {
                     $sort: {"value": 1}
                 }
             ])
-            Object.assign(response, {valuations: valuations})
+            Object.assign(response, {
+                item: item,
+                valuations: valuations
+            })
             await res.status(200).json(response);
         } else {
             await res.status(404).json({error:"Not found"});

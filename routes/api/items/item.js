@@ -33,8 +33,10 @@ router.get('/:itemQuery@:realmQuery', async function(req, res) {
             } else {
                 arrayPromises.push(auctionsData(item._id, realm.connected_realm_id).then(quotes => Object.assign(response, { quotes: quotes })))
             }
-            Object.assign(response, {item: item})
-            Object.assign(response, {realm: realm})
+            Object.assign(response, {
+                item: item,
+                realm: realm
+            })
             await Promise.allSettled(arrayPromises)
             await res.status(200).json(response);
         } else {

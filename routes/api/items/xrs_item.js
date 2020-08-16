@@ -27,7 +27,7 @@ router.get('/:itemQuery', async function(req, res) {
             await ClusterChartCrossRealmData(item._id).then(chart => Object.assign(response, {chart: chart}));
             await res.status(200).json(response);
         } else {
-            await res.status(404).json({error: "not found"});
+            await res.status(404).json({error: "Not found"});
         }
     } catch (e) {
         await res.status(500).json(e);

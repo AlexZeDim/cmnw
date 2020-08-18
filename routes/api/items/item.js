@@ -6,6 +6,7 @@ const router = express.Router();
  */
 const itemRealmQuery = require("../../api/middleware")
 const clusterChartData = require("../../../dma/getClusterChartData.js");
+const auctionsFeed = require("../../../dma/auctions/auctionsFeed.js");
 const auctionsData = require("../../../dma/auctions/auctionsData.js");
 const goldsData = require("../../../dma/golds/goldsData.js");
 
@@ -18,12 +19,24 @@ router.get('/:itemQuery@:realmQuery', async function(req, res) {
         let [item, realm] = await itemRealmQuery(itemQuery, realmQuery);
 
         if (item && realm) {
-            /**
-             * @type {Promise<{Object}>[]}
-             */
-            let arrayPromises = [
-                clusterChartData(item._id, realm.connected_realm_id).then(chart => Object.assign(response, { chart: chart }))
-            ];
+
+            let is_commdty = false;
+            let arrayPromises = [];
+
+            if (item.asset_class && item.asset_class.includes('COMMDTY')) {
+                is_commdty = true;
+            } else {
+                if (item.stackable && item.stackable > 1) {
+                    is_commdty = true;
+                }
+            }
+
+            if (is_commdty) {
+                arrayPromises.push(clusterChartData(item._id, realm.connected_realm_id).then(chart => Object.assign(response, { chart: chart })))
+            } else {
+                arrayPromises.push(auctionsFeed(item._id, realm.connected_realm_id).then(feed => Object.assign(response, { feed: feed })))
+            }
+
             if (item._id === 1) {
                 arrayPromises.push(goldsData(realm.connected_realm_id).then(quotes => Object.assign(response, { quotes: quotes })))
             } else if (item._id === 122270 || item._id === 122284) {

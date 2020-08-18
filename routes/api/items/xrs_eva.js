@@ -9,6 +9,10 @@ const items_db = require("../../../db/items_db");
 const valuations_db = require("../../../db/valuations_db");
 
 /**
+ * TODO replace 101 string with https://stackoverflow.com/questions/46466409/map-an-array-of-objects-to-a-simple-array-of-key-values
+ */
+
+/**
  * Modules
  */
 

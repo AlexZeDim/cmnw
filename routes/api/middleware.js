@@ -9,7 +9,7 @@ const realms_db = require("../../db/realms_db");
  *
  * @param item
  * @param realm
- * @returns {Promise<[{_id: number},{connected_realm_id: number, auctions: number}]>}
+ * @returns {Promise<[{_id: number, asset_class: array, stackable: number},{connected_realm_id: number, auctions: number}]>}
  * @constructor
  */
 const itemRealmQuery = async (item, realm) => {

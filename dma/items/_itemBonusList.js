@@ -34,14 +34,14 @@ const auctions_db = require("../../db/auctions_db");
  * @returns {Promise<void>}
  */
 
-async function _itemBonusList () {
+async function _itemBonusList (item_id = 175010) {
     try {
         console.time(`DMA-${_itemBonusList.name}`);
 
         const item = await auctions_db.aggregate([
             {
                 $match: {
-                    'item.id': 175010
+                    'item.id': item_id
                 }
             },
             {
@@ -79,7 +79,7 @@ async function _itemBonusList () {
                 }
             }
         ])
-        console.log(item[0].item);
+        console.log(item[0].item.bonus_lists);
         connection.close();
         console.timeEnd(`DMA-${_itemBonusList.name}`);
     } catch (err) {

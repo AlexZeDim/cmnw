@@ -30,6 +30,9 @@ async function auctionsFeed (item_id = 168487, connected_realm_id) {
                 $match: query
             },
             {
+                $limit: 100
+            },
+            {
                 $lookup: {
                     from: "realms",
                     localField: "connected_realm_id",
@@ -39,7 +42,16 @@ async function auctionsFeed (item_id = 168487, connected_realm_id) {
             },
             {
                 $addFields: {
-                    connected_realm_id : '$connected_realm_id.name_locale'
+                    max_last_modified: { $arrayElemAt: [ "$connected_realm_id.auctions", 0 ] }
+                }
+            },
+            {
+                $match : { $expr : { $eq: [ "$last_modified" , "$max_last_modified" ] }}
+            },
+            {
+                $addFields: {
+                    connected_realm_id : '$connected_realm_id.name_locale',
+                    max_last_modified: '$false',
                 }
             }
         ])

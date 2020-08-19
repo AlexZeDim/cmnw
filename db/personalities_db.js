@@ -13,7 +13,7 @@ let schema = new mongoose.Schema({
             access: {
                 type: Number,
                 enum: [0, 1, 2, 3],  /** IDEA getter/setter test for clearance.access word */
-                default: [0]
+                default: 0
             },
             codeword: {
                 type: String,

@@ -223,8 +223,10 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
         if (characterPets.value) {
             let pets_array = [];
             let active_pets = [];
-            if (characterPets.value.pets && characterPets.value.pets.length) {
-                let pets = characterPets.value.pets;
+
+            let { pets } = characterPets.value;
+
+            if (pets) {
                 for (let pet of pets) {
                     if ("is_active" in pet) {
                         if ("name" in pet) {
@@ -239,7 +241,9 @@ async function getCharacter (realmSlug, characterName, characterObject = {}, tok
                     pets_array.push(pet.species.name)
                     pets_array.push(pet.level)
                 }
-                character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
+                if (active_pets.length) {
+                    character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
+                }
                 character.hash.a = crc32.calculate(Buffer.from(pets_array.toString())).toString(16);
             }
         }

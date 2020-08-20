@@ -34,9 +34,10 @@ router.get('/:itemQuery', async function(req, res) {
                 if (item.stackable && item.stackable > 1) {
                     is_commdty = true;
                 }
-                if (item._id === 1) {
-                    is_commdty = true;
-                }
+            }
+
+            if (item._id === 1) {
+                is_commdty = true;
             }
 
             if (is_commdty) {

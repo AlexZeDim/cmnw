@@ -53,7 +53,7 @@ const { Round2 } = require('../db/setters');
 
 async function getAuctionData(
   queryKeys = { tags: `DMA` },
-  realmQuery = { locale: 'ru_RU' },
+  realmQuery = { region: 'Europe' },
   bulkSize = 2,
 ) {
   try {

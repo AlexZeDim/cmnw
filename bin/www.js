@@ -3,9 +3,11 @@
  * Connection with DB
  */
 
-const {connect, connection} = require('mongoose');
-require('dotenv').config();
-connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+const { connect, connection } = require("mongoose");
+require("dotenv").config();
+connect(
+  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
+  {
     useNewUrlParser: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
@@ -13,25 +15,28 @@ connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.ho
     retryWrites: true,
     useCreateIndex: true,
     w: "majority",
-    family: 4
-});
+    family: 4,
+  }
+);
 
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+connection.on("error", console.error.bind(console, "connection error:"));
+connection.once("open", () =>
+  console.log("Connected to database on " + process.env.hostname)
+);
 
 /**
  * Module dependencies.
  */
 
-const app = require('../app');
-const http = require('http');
+const app = require("../app");
+const http = require("http");
 
 /**
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort('3030');
-app.set('port', port);
+const port = normalizePort("3030");
+app.set("port", port);
 
 /**
  * Create HTTP server.
@@ -44,29 +49,29 @@ const server = http.createServer(app);
  */
 
 server.listen(port, "0.0.0.0");
-server.on('error', onError);
-server.on('listening', onListening);
-process.on('beforeExit', shutDown);
-process.on('SIGINT', shutDown);
+server.on("error", onError);
+server.on("listening", onListening);
+process.on("beforeExit", shutDown);
+process.on("SIGINT", shutDown);
 
 /**
  * Normalize a port into a number, string, or false.
  */
 
 function normalizePort(val) {
-    const port = parseInt(val, 10);
+  const port = parseInt(val, 10);
 
-    if (isNaN(port)) {
-        // named pipe
-        return val;
-    }
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
 
-    if (port >= 0) {
-        // port number
-        return port;
-    }
+  if (port >= 0) {
+    // port number
+    return port;
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -74,27 +79,25 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
+  if (error.syscall !== "listen") {
+    throw error;
+  }
 
-    const bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
+  const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
+      process.exit(1);
+      break;
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
 }
 
 /**
@@ -102,11 +105,9 @@ function onError(error) {
  */
 
 function onListening() {
-    const addr = server.address();
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-    console.log('Listening on ' + bind);
+  const addr = server.address();
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  console.log("Listening on " + bind);
 }
 
 /**
@@ -114,10 +115,10 @@ function onListening() {
  */
 
 function shutDown() {
-    server.close( () => {
-        console.log('Closed out remaining connections');
-        connection.close(false, () => {});
-        console.log('DB connection closed.');
-        process.exit(0);
-    });
+  server.close(() => {
+    console.log("Closed out remaining connections");
+    connection.close(false, () => {});
+    console.log("DB connection closed.");
+    process.exit(0);
+  });
 }

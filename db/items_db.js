@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -13,112 +13,115 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });*/
 
-let schema = new mongoose.Schema({
+let schema = new mongoose.Schema(
+  {
     /**
      * Blizzard API
      */
     _id: {
-        type: Number
+      type: Number,
     },
     name: {
-        en_US: String,
-        es_MX: String,
-        pt_BR: String,
-        de_DE: String,
-        en_GB: String,
-        es_ES: String,
-        fr_FR: String,
-        it_IT: String,
-        ru_RU: String,
+      en_US: String,
+      es_MX: String,
+      pt_BR: String,
+      de_DE: String,
+      en_GB: String,
+      es_ES: String,
+      fr_FR: String,
+      it_IT: String,
+      ru_RU: String,
     },
     quality: {
-        type: String
+      type: String,
     },
     ilvl: {
-        type: Number
+      type: Number,
     },
     level: {
-      type: Number
+      type: Number,
     },
     icon: {
-        type: String
+      type: String,
     },
     item_class: {
-        type: String
+      type: String,
     },
     item_subclass: {
-        type: String
+      type: String,
     },
     purchase_price: {
-        type: Number
+      type: Number,
     },
     sell_price: {
-        type: Number
+      type: Number,
     },
     is_equippable: {
-        type: Boolean
+      type: Boolean,
     },
     is_stackable: {
-        type: Boolean
+      type: Boolean,
     },
     inventory_type: {
-        type: String
+      type: String,
     },
     purchase_quantity: {
-        type: Number
+      type: Number,
     },
     loot_type: {
-        type: String
+      type: String,
     },
     /**
      * IndexAssetClass - csv import
      */
     profession_class: {
-        type: String
+      type: String,
     },
     ticker: {
-        type: String,
+      type: String,
     },
     /** itemsparse */
     expansion: {
-        type: String,
+      type: String,
     },
     stackable: {
-        type: Number,
+      type: Number,
     },
     /**
      * IndexItems
      */
     asset_class: {
-        type: Array,
+      type: Array,
     },
     contracts: {
-        type: Boolean,
-        require: true,
-        default: false
-    }
-},{
-    timestamps: true
-});
-
-schema.index(
-    {
-        "ticker": "text",
-        "name.en_GB": "text",
-        "name.ru_RU": "text"
+      type: Boolean,
+      require: true,
+      default: false,
     },
-    {
-        weights: {
-            "ticker": 1,
-            "name.en_GB": 1,
-            "name.ru_RU": 1
-        },
-        name: 'SearchQuery'
-    }
+  },
+  {
+    timestamps: true,
+  }
 );
 
-schema.index({ expansion: 1, is_commdty: 1 },{name: 'Contracts'});
+schema.index(
+  {
+    ticker: "text",
+    "name.en_GB": "text",
+    "name.ru_RU": "text",
+  },
+  {
+    weights: {
+      ticker: 1,
+      "name.en_GB": 1,
+      "name.ru_RU": 1,
+    },
+    name: "SearchQuery",
+  }
+);
 
-let items_db = mongoose.model('items', schema, 'items');
+schema.index({ expansion: 1, is_commdty: 1 }, { name: "Contracts" });
+
+let items_db = mongoose.model("items", schema, "items");
 
 module.exports = items_db;

@@ -2,9 +2,11 @@
  * Connection with DB
  */
 
-const {connect, connection} = require('mongoose');
-require('dotenv').config();
-connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+const { connect, connection } = require("mongoose");
+require("dotenv").config();
+connect(
+  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
+  {
     useNewUrlParser: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
@@ -12,11 +14,14 @@ connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.ho
     retryWrites: true,
     useCreateIndex: true,
     w: "majority",
-    family: 4
-});
+    family: 4,
+  }
+);
 
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+connection.on("error", console.error.bind(console, "connection error:"));
+connection.once("open", () =>
+  console.log("Connected to database on " + process.env.hostname)
+);
 
 /**
  * Model importing
@@ -29,12 +34,12 @@ const realms_db = require("./../db/realms_db");
  * Modules
  */
 
-const moment = require('moment');
-const Xray = require('x-ray');
-const makeDriver = require('request-x-ray');
+const moment = require("moment");
+const Xray = require("x-ray");
+const makeDriver = require("request-x-ray");
 const driver = makeDriver({
-    method: "GET",
-    headers: {"Accept-Language": "en-GB,en;q=0.5"}
+  method: "GET",
+  headers: { "Accept-Language": "en-GB,en;q=0.5" },
 });
 const x = Xray();
 x.driver(driver);
@@ -44,46 +49,56 @@ x.driver(driver);
  * @returns {Promise<void>}
  */
 
-async function getGoldData () {
-    try {
-        console.time(`DMA-${getGoldData.name}`);
-        const t = moment().format('X');
-        let goldData = [];
-        let goldOrders = await x('https://funpay.ru/chips/2/', '.tc-item', [
-            {
-                realm: '.tc-server', //@data-server num
-                faction: '.tc-side', //@data-side 0/1
-                status: '@data-online',
-                quantity: '.tc-amount',
-                owner: '.media-user-name',
-                price: '.tc-price div'
-            }
-        ]).then((res) => res);
-        if (goldOrders.length !== 0) {
-            for (let i = 0; i < goldOrders.length; i++) {
-                let realm = await realms_db.findOne({$text:{$search: goldOrders[i].realm}}).select("connected_realm_id").lean()
-                if (realm && realm.connected_realm_id) {
-                    await realms_db.updateMany({connected_realm_id: realm.connected_realm_id}, {golds: t})
-                    if (parseFloat(goldOrders[i].quantity.replace(/\s/g,"")) < 15000000) {
-                        goldData.push({
-                            connected_realm_id: realm.connected_realm_id,
-                            faction: goldOrders[i].faction,
-                            quantity: +(goldOrders[i].quantity.replace(/\s/g,"")),
-                            status: goldOrders[i].status ? 'Online' : 'Offline',
-                            owner: goldOrders[i].owner,
-                            price: +(goldOrders[i].price.replace(/ ₽/g,"")),
-                            last_modified: t
-                        });
-                    }
-                }
-            }
-            await golds_db.insertMany(goldData).then(golds => console.info(`U,${golds.length}`))
+async function getGoldData() {
+  try {
+    console.time(`DMA-${getGoldData.name}`);
+    const t = moment().format("X");
+    let goldData = [];
+    let goldOrders = await x("https://funpay.ru/chips/2/", ".tc-item", [
+      {
+        realm: ".tc-server", //@data-server num
+        faction: ".tc-side", //@data-side 0/1
+        status: "@data-online",
+        quantity: ".tc-amount",
+        owner: ".media-user-name",
+        price: ".tc-price div",
+      },
+    ]).then((res) => res);
+    if (goldOrders.length !== 0) {
+      for (let i = 0; i < goldOrders.length; i++) {
+        let realm = await realms_db
+          .findOne({ $text: { $search: goldOrders[i].realm } })
+          .select("connected_realm_id")
+          .lean();
+        if (realm && realm.connected_realm_id) {
+          await realms_db.updateMany(
+            { connected_realm_id: realm.connected_realm_id },
+            { golds: t }
+          );
+          if (
+            parseFloat(goldOrders[i].quantity.replace(/\s/g, "")) < 15000000
+          ) {
+            goldData.push({
+              connected_realm_id: realm.connected_realm_id,
+              faction: goldOrders[i].faction,
+              quantity: +goldOrders[i].quantity.replace(/\s/g, ""),
+              status: goldOrders[i].status ? "Online" : "Offline",
+              owner: goldOrders[i].owner,
+              price: +goldOrders[i].price.replace(/ ₽/g, ""),
+              last_modified: t,
+            });
+          }
         }
-        connection.close();
-        console.timeEnd(`DMA-${getGoldData.name}`);
-    } catch (err) {
-        console.log(err);
+      }
+      await golds_db
+        .insertMany(goldData)
+        .then((golds) => console.info(`U,${golds.length}`));
     }
+    connection.close();
+    console.timeEnd(`DMA-${getGoldData.name}`);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
-getGoldData().then(r => r);
+getGoldData().then((r) => r);

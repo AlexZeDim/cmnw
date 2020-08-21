@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -13,28 +13,30 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });*/
 
-let schema = new mongoose.Schema({
+let schema = new mongoose.Schema(
+  {
     _id: {
-        type: String
+      type: String,
     },
     secret: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     token: {
-        type: String,
+      type: String,
     },
     expired_in: {
-        type: Number,
+      type: Number,
     },
     tags: {
-        type: Array,
+      type: Array,
     },
-},{
-    timestamps: true
-});
+  },
+  {
+    timestamps: true,
+  }
+);
 
-let keys_db = mongoose.model('keys', schema, 'keys');
+let keys_db = mongoose.model("keys", schema, "keys");
 
 module.exports = keys_db;
-

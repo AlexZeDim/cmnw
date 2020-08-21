@@ -2,9 +2,11 @@
  * Connection with DB
  */
 
-const {connect, connection} = require('mongoose');
-require('dotenv').config();
-connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+const { connect, connection } = require("mongoose");
+require("dotenv").config();
+connect(
+  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
+  {
     useNewUrlParser: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
@@ -12,11 +14,14 @@ connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.ho
     retryWrites: true,
     useCreateIndex: true,
     w: "majority",
-    family: 4
-});
+    family: 4,
+  }
+);
 
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+connection.on("error", console.error.bind(console, "connection error:"));
+connection.once("open", () =>
+  console.log("Connected to database on " + process.env.hostname)
+);
 
 /**
  * Model importing
@@ -29,7 +34,7 @@ const keys_db = require("../../db/keys_db");
  * getCharacter indexing
  */
 
-const getCharacter = require('../getCharacter');
+const getCharacter = require("../getCharacter");
 
 /***
  * Indexing every character in bulks from OSINT-DB for updated information
@@ -39,19 +44,38 @@ const getCharacter = require('../getCharacter');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters (queryFind = {}, queryKeys = {tags: `OSINT-${indexCharacters.name}`}, bulkSize = 5) {
-    try {
-        console.time(`OSINT-${indexCharacters.name}`);
-        let { token } = await keys_db.findOne(queryKeys);
-        await characters_db.find(queryFind).sort({updatedAt: 1}).lean().cursor({batchSize: bulkSize}).eachAsync(async ({_id}) => {
-            const [characterName, realmSlug] = _id.split('@');
-            await getCharacter(realmSlug, characterName, {}, token,`OSINT-${indexCharacters.name}`, false)
-        }, { parallel: bulkSize })
-        connection.close();
-        console.timeEnd(`OSINT-${indexCharacters.name}`);
-    } catch (err) {
-        console.error(`${indexCharacters.name},${err}`);
-    }
+async function indexCharacters(
+  queryFind = {},
+  queryKeys = { tags: `OSINT-${indexCharacters.name}` },
+  bulkSize = 5
+) {
+  try {
+    console.time(`OSINT-${indexCharacters.name}`);
+    let { token } = await keys_db.findOne(queryKeys);
+    await characters_db
+      .find(queryFind)
+      .sort({ updatedAt: 1 })
+      .lean()
+      .cursor({ batchSize: bulkSize })
+      .eachAsync(
+        async ({ _id }) => {
+          const [characterName, realmSlug] = _id.split("@");
+          await getCharacter(
+            realmSlug,
+            characterName,
+            {},
+            token,
+            `OSINT-${indexCharacters.name}`,
+            false
+          );
+        },
+        { parallel: bulkSize }
+      );
+    connection.close();
+    console.timeEnd(`OSINT-${indexCharacters.name}`);
+  } catch (err) {
+    console.error(`${indexCharacters.name},${err}`);
+  }
 }
 
 indexCharacters();

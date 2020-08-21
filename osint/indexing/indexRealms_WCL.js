@@ -2,9 +2,11 @@
  * Connection with DB
  */
 
-const {connect, connection} = require('mongoose');
-require('dotenv').config();
-connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
+const { connect, connection } = require("mongoose");
+require("dotenv").config();
+connect(
+  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
+  {
     useNewUrlParser: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
@@ -12,11 +14,14 @@ connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.ho
     retryWrites: true,
     useCreateIndex: true,
     w: "majority",
-    family: 4
-});
+    family: 4,
+  }
+);
 
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
+connection.on("error", console.error.bind(console, "connection error:"));
+connection.once("open", () =>
+  console.log("Connected to database on " + process.env.hostname)
+);
 
 /**
  * Model importing
@@ -28,7 +33,7 @@ const realms_db = require("../../db/realms_db");
  * Modules
  */
 
-const Xray = require('x-ray');
+const Xray = require("x-ray");
 let x = Xray();
 
 /***
@@ -39,36 +44,36 @@ let x = Xray();
  * @returns {Promise<void>}
  */
 
-async function indexRealms_WCL (startId = 247, endId = 517) {
-    try {
-        console.time(`OSINT-${indexRealms_WCL.name}`);
-        for (let wcl_id = startId; wcl_id < endId; wcl_id++) {
-            let realm_name = await x(`https://www.warcraftlogs.com/server/id/${wcl_id}`,
-                '.server-name'
-            ).then((res) => {
-                return res
-            });
-            let realm = await realms_db.findOne({$or:
-                    [
-                        { 'name': realm_name },
-                        { 'name_locale': realm_name },
-                        { 'locale_slug': realm_name },
-                    ]
-            });
-            if (realm) {
-                realm.wcl_id = wcl_id;
-                realm.save();
-                console.info(`U,${wcl_id},${realm_name}`)
-            } else {
-                console.info(`E,${wcl_id},${realm_name}`)
-            }
-        }
-        connection.close();
-        console.timeEnd(`OSINT-${indexRealms_WCL.name}`);
+async function indexRealms_WCL(startId = 247, endId = 517) {
+  try {
+    console.time(`OSINT-${indexRealms_WCL.name}`);
+    for (let wcl_id = startId; wcl_id < endId; wcl_id++) {
+      let realm_name = await x(
+        `https://www.warcraftlogs.com/server/id/${wcl_id}`,
+        ".server-name"
+      ).then((res) => {
+        return res;
+      });
+      let realm = await realms_db.findOne({
+        $or: [
+          { name: realm_name },
+          { name_locale: realm_name },
+          { locale_slug: realm_name },
+        ],
+      });
+      if (realm) {
+        realm.wcl_id = wcl_id;
+        realm.save();
+        console.info(`U,${wcl_id},${realm_name}`);
+      } else {
+        console.info(`E,${wcl_id},${realm_name}`);
+      }
     }
-    catch (err) {
-        console.error(`E,${err}`)
-    }
+    connection.close();
+    console.timeEnd(`OSINT-${indexRealms_WCL.name}`);
+  } catch (err) {
+    console.error(`E,${err}`);
+  }
 }
 
 indexRealms_WCL();

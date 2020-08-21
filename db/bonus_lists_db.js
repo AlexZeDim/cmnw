@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -13,7 +13,8 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });*/
 
-let schema = new mongoose.Schema({
+let schema = new mongoose.Schema(
+  {
     _id: Number,
     level: Number,
     azerite_tier_unlock_id: Number,
@@ -26,12 +27,12 @@ let schema = new mongoose.Schema({
     stats: String,
     socket: Number,
     effect: Object,
+  },
+  {
+    timestamps: true,
+  }
+);
 
-},{
-    timestamps: true
-});
-
-let bonus_lists_db = mongoose.model('bonus_lists', schema, 'bonus_lists');
+let bonus_lists_db = mongoose.model("bonus_lists", schema, "bonus_lists");
 
 module.exports = bonus_lists_db;
-

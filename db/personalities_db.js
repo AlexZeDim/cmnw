@@ -18,7 +18,7 @@ let schema = new mongoose.Schema(
             1,
             2,
             3,
-          ] /** IDEA getter/setter test for clearance.access word */,
+          ],
           default: 0,
         },
         codeword: {

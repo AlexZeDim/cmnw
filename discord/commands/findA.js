@@ -1,18 +1,18 @@
-const { MessageEmbed } = require("discord.js");
-const axios = require("axios");
-require("dotenv").config();
+const { MessageEmbed } = require('discord.js');
+const axios = require('axios');
+require('dotenv').config();
 
 module.exports = {
-  name: "findA",
+  name: 'findA',
   description: `Allows you to find no more than 20 (*available*) alternative characters (twinks) in OSINT-DB across different realms. Requires a query parameter, which can be a hash string \`f97efc28\` or a character's name and realm \`блюрателла@гордунни\`
     > Remember, that match by any of this hash values separately doesn't guarantee that a selected character would belong to one identity. It only gives you a certain level of confidence. Also, OSINT-DB doesn't have all the game characters. So if you want a maximum level of confidence, please use **findAll** because only it gives you almost 100% confidence level result.
     
     Usage: \`findA блюрателла@гордунни\``,
-  aliases: ["finda", "FINDA", "FIND_A", "find_a", "Find_A", "Find_a", "FindA"],
+  aliases: ['finda', 'FINDA', 'FIND_A', 'find_a', 'Find_A', 'Find_a', 'FindA'],
   cooldown: 10,
   args: true,
   async execute(message, args) {
-    const params = args.split("@");
+    const params = args.split('@');
     const [query, realm_arg] = params;
 
     let embed = new MessageEmbed();
@@ -39,7 +39,7 @@ module.exports = {
                             [Conglomerat](https://${process.env.domain}/find/a/${query})
                             ─────────────
                             `,
-                true
+                true,
               );
               break;
             }
@@ -51,12 +51,12 @@ module.exports = {
                 process.env.domain
               }/character/${match[i].realm.slug}/${match[i].name})
                         ${
-                          "realm" in match[i]
+                          'realm' in match[i]
                             ? `Realm: ${match[i].realm.name}`
                             : ``
                         } 
                         ${
-                          "faction" in match[i]
+                          'faction' in match[i]
                             ? `Faction: ${match[i].faction}`
                             : ``
                         } 
@@ -66,17 +66,17 @@ module.exports = {
                             : ``
                         } 
                         ${
-                          guild && typeof guild.rank !== "undefined"
+                          guild && typeof guild.rank !== 'undefined'
                             ? `Rank: ${
                                 parseInt(guild.rank) === 0
-                                  ? "GM"
+                                  ? 'GM'
                                   : `R${guild.rank}`
                               }`
                             : ``
                         } 
                         ─────────────
                         `,
-              true
+              true,
             );
           }
         } else {
@@ -85,7 +85,7 @@ module.exports = {
             `
                     No match found
                     ─────────────
-                    `
+                    `,
           );
         }
         embed.setFooter(`OSINT-DB`);

@@ -1,63 +1,65 @@
-const { MessageEmbed } = require("discord.js");
-const axios = require("axios");
-const humanizeString = require("humanize-string");
-require("dotenv").config();
+const { MessageEmbed } = require('discord.js');
+const axios = require('axios');
+const humanizeString = require('humanize-string');
+require('dotenv').config();
 
 /***
  * @type {{args: boolean, name: string, description: string, execute(*, *): Promise<void>}}
  */
 module.exports = {
-  name: "guild",
+  name: 'guild',
   description:
-    "Return information about specific guild. Example usage: `guild депортация@гордунни`",
-  aliases: ["GUILD", "Guild"],
+    'Return information about specific guild. Example usage: `guild депортация@гордунни`',
+  aliases: ['GUILD', 'Guild'],
   args: true,
   async execute(message, args) {
-    const [name, realm] = args.split("@");
+    const [name, realm] = args.split('@');
     let embed = new MessageEmbed();
     let guild = await axios
       .get(
         encodeURI(
-          `http://${process.env.localhost}:3030/api/guilds/guild/${name}@${realm}`
-        )
+          `http://${process.env.localhost}:3030/api/guilds/guild/${name}@${realm}`,
+        ),
       )
       .then(({ data }) => {
         let { _id, name, realm, members } = data;
         embed.setAuthor(
-          `${(name + "@" + realm.name).toUpperCase()}`,
-          "",
-          encodeURI(`https://${process.env.domain}/guild/${realm.slug}/${name}`)
+          `${(name + '@' + realm.name).toUpperCase()}`,
+          '',
+          encodeURI(
+            `https://${process.env.domain}/guild/${realm.slug}/${name}`,
+          ),
         );
 
         const fieldsToCheck = [
-          "id",
-          "achievement_points",
-          "faction",
-          "member_count",
-          "lastModified",
-          "createdBy",
+          'id',
+          'achievement_points',
+          'faction',
+          'member_count',
+          'lastModified',
+          'createdBy',
         ];
 
-        fieldsToCheck.map((field) => {
+        fieldsToCheck.map(field => {
           if (field in data) {
-            if (typeof data[field] === "object") {
+            if (typeof data[field] === 'object') {
               Object.entries(data[field]).map(([k, v]) => {
                 embed.addField(
                   `${humanizeString(field)} ${humanizeString(k)}`,
                   v,
-                  true
+                  true,
                 );
               });
             } else {
-              if (field === "faction") {
-                if (data[field] === "Alliance") {
-                  embed.setColor("#006aff");
-                } else if (data[field] === "Horde") {
-                  embed.setColor("#ff0000");
+              if (field === 'faction') {
+                if (data[field] === 'Alliance') {
+                  embed.setColor('#006aff');
+                } else if (data[field] === 'Horde') {
+                  embed.setColor('#ff0000');
                 }
-              } else if (field === "lastModified") {
+              } else if (field === 'lastModified') {
                 embed.setTimestamp(data[field]);
-              } else if (field === "createdBy") {
+              } else if (field === 'createdBy') {
                 embed.setFooter(`${data[field]}`);
               } else {
                 embed.addField(humanizeString(field), data[field], true);
@@ -66,7 +68,7 @@ module.exports = {
           }
         });
         if (members && members.length) {
-          members = members.filter((member) => member.guild.rank < 2);
+          members = members.filter(member => member.guild.rank < 2);
           for (let i = 0; i < members.length; i++) {
             if (i === 9) {
               embed.addField(
@@ -75,10 +77,10 @@ module.exports = {
                             Want Full Roster?
                             Check [Conglomerat](https://${
                               process.env.domain
-                            }/guild/${realm.slug}/${_id.split("@")[0]})
+                            }/guild/${realm.slug}/${_id.split('@')[0]})
                             ─────────────
                             `,
-                true
+                true,
               );
               break;
             }
@@ -90,12 +92,12 @@ module.exports = {
               }/character/${realm.slug}/${members[i].name})
                         R: ${
                           members[i].guild.rank === 0
-                            ? "GM"
+                            ? 'GM'
                             : members[i].guild.rank
                         }
                         ─────────────
                         `,
-              true
+              true,
             );
           }
         }

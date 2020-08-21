@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -78,7 +78,7 @@ let schema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["primary", "derivative"],
+      enum: ['primary', 'derivative'],
     },
     createdBy: {
       type: String,
@@ -98,19 +98,19 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ item_id: -1, type: 1 }, { name: "getPricingMethod" });
-schema.index({ item_id: -1 }, { name: "itemID" });
-schema.index({ horde_item_id: -1 }, { name: "Horde_itemID" });
-schema.index({ alliance_item_id: -1 }, { name: "Alliance_itemID" });
-schema.index({ spell_id: -1 }, { name: "spellID" });
+schema.index({ item_id: -1, type: 1 }, { name: 'getPricingMethod' });
+schema.index({ item_id: -1 }, { name: 'itemID' });
+schema.index({ horde_item_id: -1 }, { name: 'Horde_itemID' });
+schema.index({ alliance_item_id: -1 }, { name: 'Alliance_itemID' });
+schema.index({ spell_id: -1 }, { name: 'spellID' });
 
 let pricing_methods_db = mongoose.model(
-  "pricing_methods",
+  'pricing_methods',
   schema,
-  "pricing_methods"
+  'pricing_methods',
 );
 
 module.exports = pricing_methods_db;

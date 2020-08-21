@@ -1,22 +1,18 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
 /**
  * Model importing
  */
 
-const items_db = require("../../../db/items_db");
-const valuations_db = require("../../../db/valuations_db");
-
-/**
- * TODO replace 101 string with https://stackoverflow.com/questions/46466409/map-an-array-of-objects-to-a-simple-array-of-key-values
- */
+const items_db = require('../../../db/items_db');
+const valuations_db = require('../../../db/valuations_db');
 
 /**
  * Modules
  */
 
-router.get("/:itemQuery", async function (req, res) {
+router.get('/:itemQuery', async function (req, res) {
   try {
     let item,
       response = {};
@@ -27,9 +23,9 @@ router.get("/:itemQuery", async function (req, res) {
       ? (item = await items_db
           .findOne(
             { $text: { $search: itemQuery } },
-            { score: { $meta: "textScore" } }
+            { score: { $meta: 'textScore' } },
           )
-          .sort({ score: { $meta: "textScore" } })
+          .sort({ score: { $meta: 'textScore' } })
           .lean())
       : (item = await items_db.findById(itemQuery).lean());
     if (item) {
@@ -37,41 +33,41 @@ router.get("/:itemQuery", async function (req, res) {
         {
           $match: {
             item_id: item._id,
-            $nor: [{ type: "VENDOR" }, { type: "VSP" }],
+            $nor: [{ type: 'VENDOR' }, { type: 'VSP' }],
           },
         },
         {
           $group: {
             _id: {
-              connected_realm_id: "$connected_realm_id",
+              connected_realm_id: '$connected_realm_id',
             },
             latest: {
-              $max: "$last_modified",
+              $max: '$last_modified',
             },
             data: {
-              $push: "$$ROOT",
+              $push: '$$ROOT',
             },
           },
         },
         {
-          $unwind: "$data",
+          $unwind: '$data',
         },
         {
           $addFields: {
-            "data.latest": {
+            'data.latest': {
               $cond: {
                 if: {
-                  $eq: ["$data.last_modified", "$latest"],
+                  $eq: ['$data.last_modified', '$latest'],
                 },
-                then: "$latest",
-                else: "$false",
+                then: '$latest',
+                else: '$false',
               },
             },
           },
         },
         {
           $replaceRoot: {
-            newRoot: "$data",
+            newRoot: '$data',
           },
         },
         {
@@ -85,36 +81,36 @@ router.get("/:itemQuery", async function (req, res) {
         {
           $group: {
             _id: {
-              connected_realm_id: "$connected_realm_id",
-              latest_timestamp: "$latest",
+              connected_realm_id: '$connected_realm_id',
+              latest_timestamp: '$latest',
             },
-            data: { $push: "$$ROOT" },
+            data: { $push: '$$ROOT' },
           },
         },
         {
           $lookup: {
-            from: "realms",
-            localField: "_id.connected_realm_id",
-            foreignField: "connected_realm_id",
-            as: "realms",
+            from: 'realms',
+            localField: '_id.connected_realm_id',
+            foreignField: 'connected_realm_id',
+            as: 'realms',
           },
         },
         {
           $addFields: {
-            "data.connected_realm_id": {
+            'data.connected_realm_id': {
               $map: {
-                input: "$realms",
-                as: "r",
+                input: '$realms',
+                as: 'r',
                 in: {
                   $mergeObjects: [
-                    "$$r",
+                    '$$r',
                     {
                       $arrayElemAt: [
                         {
                           $filter: {
-                            input: "$data.connected_realm_id",
+                            input: '$data.connected_realm_id',
                             cond: {
-                              $eq: ["$$this._id", "$$r._id"],
+                              $eq: ['$$this._id', '$$r._id'],
                             },
                           },
                         },
@@ -128,31 +124,31 @@ router.get("/:itemQuery", async function (req, res) {
           },
         },
         {
-          $unwind: "$data",
+          $unwind: '$data',
         },
         {
-          $replaceRoot: { newRoot: "$data" },
+          $replaceRoot: { newRoot: '$data' },
         },
         {
           $addFields: {
             connected_realm_id: {
               $reduce: {
-                input: "$connected_realm_id",
-                initialValue: "",
+                input: '$connected_realm_id',
+                initialValue: '',
                 in: {
                   $concat: [
-                    "$$value",
+                    '$$value',
                     {
                       $cond: [
                         {
-                          $eq: ["$$value", ""],
+                          $eq: ['$$value', ''],
                         },
-                        "",
-                        ", ",
+                        '',
+                        ', ',
                       ],
                     },
                     {
-                      $toString: "$$this.name_locale",
+                      $toString: '$$this.name_locale',
                     },
                   ],
                 },
@@ -170,7 +166,7 @@ router.get("/:itemQuery", async function (req, res) {
       });
       await res.status(200).json(response);
     } else {
-      await res.status(404).json({ error: "Not found" });
+      await res.status(404).json({ error: 'Not found' });
     }
   } catch (e) {
     await res.status(500).json(e);

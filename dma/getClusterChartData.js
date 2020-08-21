@@ -2,8 +2,8 @@
  * Model importing
  */
 
-const auctions_db = require("../db/auctions_db");
-const golds_db = require("../db/golds_db");
+const auctions_db = require('../db/auctions_db');
+const golds_db = require('../db/golds_db');
 
 /**
  * @param item_id
@@ -13,7 +13,7 @@ const golds_db = require("../db/golds_db");
 
 async function getClusterChartData(
   item_id = 152510,
-  connected_realm_id = 1602
+  connected_realm_id = 1602,
 ) {
   try {
     let Model, price_field, price_query, oi_quantity;
@@ -24,21 +24,21 @@ async function getClusterChartData(
         createdAt: { $gt: ytd },
         connected_realm_id: connected_realm_id,
       };
-      price_field = "price";
+      price_field = 'price';
       Model = golds_db;
     } else {
       price_query = {
-        "item.id": item_id,
+        'item.id': item_id,
         connected_realm_id: connected_realm_id,
       };
-      price_field = "unit_price";
+      price_field = 'unit_price';
       Model = auctions_db;
     }
     let chartArray = [];
     /** Request all unique values (price x timestamp) for item */
     let [quotes, timestamp] = await Promise.all([
       Model.distinct(price_field, price_query).lean(),
-      Model.distinct("last_modified", price_query).lean(),
+      Model.distinct('last_modified', price_query).lean(),
     ]);
     /** Check for response */
     if (quotes.length && timestamp.length) {
@@ -67,7 +67,13 @@ async function getClusterChartData(
       /** Create empty array ob objects chart */
       for (let x_ = 0; x_ < timestamp.length; x_++) {
         for (let y_ = 0; y_ < priceRange_array.length; y_++) {
-          chartArray.push({ x: x_, y: y_, value: 0, oi: 0, orders: 0 });
+          chartArray.push({
+            x: x_,
+            y: y_,
+            value: 0,
+            oi: 0,
+            orders: 0,
+          });
         }
       }
       let orders = await Model.find(price_query).lean();
@@ -82,7 +88,7 @@ async function getClusterChartData(
           Math.abs(curr - order[price_field]) <
           Math.abs(prev - order[price_field])
             ? curr
-            : prev
+            : prev,
         );
         if (priceRange_array.indexOf(corrected_price) === -1) {
           /** If price rounded is lower then floor, yAxis = 0 */
@@ -103,7 +109,7 @@ async function getClusterChartData(
           oi_quantity = order.quantity;
         }
         /** find element in chartArray by its xAxis and yAxis coordinates and add values */
-        chartArray.filter((el) => {
+        chartArray.filter(el => {
           if (el.x === x && el.y === y) {
             el.value = el.value + order.quantity;
             el.oi = el.oi + order[price_field] * oi_quantity;
@@ -111,7 +117,7 @@ async function getClusterChartData(
           }
         });
       }
-      timestamp = timestamp.map((ts) => ts * 1000);
+      timestamp = timestamp.map(ts => ts * 1000);
       return {
         price_range: priceRange_array,
         timestamps: timestamp,

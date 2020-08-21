@@ -1,5 +1,5 @@
-const auctions_db = require("../../db/auctions_db");
-const realms_db = require("../../db/realms_db");
+const auctions_db = require('../../db/auctions_db');
+const realms_db = require('../../db/realms_db');
 
 /**
  * @param item_id
@@ -11,32 +11,34 @@ async function auctionsData(item_id = 168487, connected_realm_id = 1602) {
   try {
     const t = await realms_db
       .findOne({ connected_realm_id: connected_realm_id })
-      .select("auctions")
+      .select('auctions')
       .lean();
     if (t) {
       return await auctions_db.aggregate([
         {
           $match: {
             last_modified: t.auctions,
-            "item.id": item_id,
+            'item.id': item_id,
             connected_realm_id: connected_realm_id,
           },
         },
         {
           $project: {
-            id: "$id",
-            quantity: "$quantity",
+            id: '$id',
+            quantity: '$quantity',
             price: {
-              $ifNull: ["$buyout", { $ifNull: ["$bid", "$unit_price"] }],
+              $ifNull: ['$buyout', { $ifNull: ['$bid', '$unit_price'] }],
             },
           },
         },
         {
           $group: {
-            _id: "$price",
-            quantity: { $sum: "$quantity" },
-            open_interest: { $sum: { $multiply: ["$price", "$quantity"] } },
-            orders: { $addToSet: "$id" },
+            _id: '$price',
+            quantity: { $sum: '$quantity' },
+            open_interest: {
+              $sum: { $multiply: ['$price', '$quantity'] },
+            },
+            orders: { $addToSet: '$id' },
           },
         },
         {
@@ -45,13 +47,13 @@ async function auctionsData(item_id = 168487, connected_realm_id = 1602) {
         {
           $project: {
             _id: 0,
-            price: "$_id",
-            quantity: "$quantity",
-            open_interest: "$open_interest",
+            price: '$_id',
+            quantity: '$quantity',
+            open_interest: '$open_interest',
             size: {
               $cond: {
-                if: { $isArray: "$orders" },
-                then: { $size: "$orders" },
+                if: { $isArray: '$orders' },
+                then: { $size: '$orders' },
                 else: 0,
               },
             },

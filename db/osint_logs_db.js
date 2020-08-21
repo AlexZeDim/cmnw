@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { toSlug } = require("./setters");
+const mongoose = require('mongoose');
+const { toSlug } = require('./setters');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -26,7 +26,7 @@ let schema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["character", "guild"],
+      enum: ['character', 'guild'],
     },
     original_value: String,
     new_value: String,
@@ -37,13 +37,13 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ root_id: 1 }, { name: "RootID" });
-schema.index({ type: 1, root_id: 1 }, { name: "Search" });
+schema.index({ root_id: 1 }, { name: 'RootID' });
+schema.index({ type: 1, root_id: 1 }, { name: 'Search' });
 
-let osint_logs_db = mongoose.model("osint_logs", schema, "osint_logs");
+let osint_logs_db = mongoose.model('osint_logs', schema, 'osint_logs');
 
 //mongoose.connection.close()
 

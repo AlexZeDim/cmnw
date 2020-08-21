@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -30,9 +30,9 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-let bonus_lists_db = mongoose.model("bonus_lists", schema, "bonus_lists");
+let bonus_lists_db = mongoose.model('bonus_lists', schema, 'bonus_lists');
 
 module.exports = bonus_lists_db;

@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,28 +13,28 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const pricing_methods = require("../../db/pricing_methods_db");
+const pricing_methods = require('../../db/pricing_methods_db');
 
 /**
  * Modules
  */
 
-const csv = require("csv");
-const fs = require("fs");
+const csv = require('csv');
+const fs = require('fs');
 
 /**
  *
@@ -50,11 +50,11 @@ const fs = require("fs");
 
 async function importMethodsClientCSV(path, expr) {
   try {
-    let eva = fs.readFileSync(path, "utf8");
+    let eva = fs.readFileSync(path, 'utf8');
     csv.parse(eva, async function (err, data) {
       const L = data.length;
       switch (expr) {
-        case "spelleffect":
+        case 'spelleffect':
           /**
            *  EffectItemType - itemID
            *  EffectBasePointsF - itemQuantity
@@ -77,34 +77,34 @@ async function importMethodsClientCSV(path, expr) {
             SpellEffect.push(row);
           }
           let SE_cursor = await pricing_methods
-            .find({ type: "primary" })
+            .find({ type: 'primary' })
             .cursor();
-          SE_cursor.on("data", async (craft_quene) => {
+          SE_cursor.on('data', async craft_quene => {
             SE_cursor.pause();
             let profession_Q = await SpellEffect.find(
-              ({ SpellID }) => SpellID === craft_quene.spell_id
+              ({ SpellID }) => SpellID === craft_quene.spell_id,
             );
             if (
-              profession_Q.hasOwnProperty("EffectBasePointsF") &&
-              profession_Q.hasOwnProperty("SpellID")
+              profession_Q.hasOwnProperty('EffectBasePointsF') &&
+              profession_Q.hasOwnProperty('SpellID')
             ) {
               console.info(
-                `${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}:${craft_quene.spell_id}=${profession_Q.SpellID}=>${profession_Q.EffectBasePointsF}`
+                `${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}:${craft_quene.spell_id}=${profession_Q.SpellID}=>${profession_Q.EffectBasePointsF}`,
               );
               craft_quene.item_quantity = parseInt(
-                profession_Q.EffectBasePointsF
+                profession_Q.EffectBasePointsF,
               );
               craft_quene.updatedBy = `DMA-${importMethodsClientCSV.name}`;
             }
             craft_quene.save();
             SE_cursor.resume();
           });
-          SE_cursor.on("close", async () => {
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+          SE_cursor.on('close', async () => {
+            await new Promise(resolve => setTimeout(resolve, 5000));
             connection.close();
           });
           break;
-        case "spellreagents":
+        case 'spellreagents':
           let array = [];
           //IDEA find it by headers
           let reagentsIndex = [2, 3, 4, 5, 6, 7, 8, 9];
@@ -116,7 +116,7 @@ async function importMethodsClientCSV(path, expr) {
             let row_reagentArray = [];
 
             for (let r = 0; r < reagentsIndex.length; r++) {
-              if (data[i][reagentsIndex[r]] !== "0") {
+              if (data[i][reagentsIndex[r]] !== '0') {
                 let row_reagent = {};
                 row_reagent._id = parseInt(data[i][reagentsIndex[r]]);
                 row_reagent.quantity = parseInt(data[i][quantityIndex[r]]);
@@ -140,7 +140,7 @@ async function importMethodsClientCSV(path, expr) {
             }
           }
           break;
-        case "skilllineability":
+        case 'skilllineability':
           /***
            * ID - recipeID
            * SkillLine - professionID
@@ -170,18 +170,18 @@ async function importMethodsClientCSV(path, expr) {
             SkillLineAbility.push(row);
           }
           //TODO write from local or add to API
-          console.time("write");
+          console.time('write');
           let SLA_cursor = await pricing_methods
-            .find({ type: "primary" })
+            .find({ type: 'primary' })
             .cursor();
-          SLA_cursor.on("data", async (craft_quene) => {
+          SLA_cursor.on('data', async craft_quene => {
             SLA_cursor.pause();
             let profession_Q = SkillLineAbility.find(
-              (x) => x.ID === craft_quene.recipe_id
+              x => x.ID === craft_quene.recipe_id,
             );
-            if (profession_Q.hasOwnProperty("Spell")) {
+            if (profession_Q.hasOwnProperty('Spell')) {
               console.info(
-                `${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`
+                `${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`,
               );
               craft_quene.spell_id = profession_Q.Spell;
               craft_quene.updatedBy = `DMA-${importMethodsClientCSV.name}`;
@@ -190,14 +190,14 @@ async function importMethodsClientCSV(path, expr) {
             craft_quene.save();
             SLA_cursor.resume();
           });
-          SLA_cursor.on("close", async () => {
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+          SLA_cursor.on('close', async () => {
+            await new Promise(resolve => setTimeout(resolve, 5000));
             connection.close();
           });
-          console.timeEnd("write");
+          console.timeEnd('write');
           break;
         default:
-          console.log("Sorry, we got nothing");
+          console.log('Sorry, we got nothing');
       }
     });
   } catch (err) {
@@ -205,4 +205,4 @@ async function importMethodsClientCSV(path, expr) {
   }
 }
 
-importMethodsClientCSV("C:\\spelleffect.csv", "spelleffect");
+importMethodsClientCSV('C:\\spelleffect.csv', 'spelleffect');

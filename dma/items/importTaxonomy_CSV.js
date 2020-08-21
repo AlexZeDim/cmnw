@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,29 +13,29 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const items_db = require("../../db/items_db");
+const items_db = require('../../db/items_db');
 
 /**
  * Modules
  */
 
-const csv = require("csv");
-const fs = require("fs");
-const { basename, normalize } = require("path");
+const csv = require('csv');
+const fs = require('fs');
+const { basename, normalize } = require('path');
 
 /***
  * This function allows Taxonomy to be imported up to the DMA-DB
@@ -44,17 +44,17 @@ const { basename, normalize } = require("path");
  */
 
 async function importTaxonomy_CSV(
-  path = "C:\\Projects\\conglomerat\\uploads\\taxonomy.csv"
+  path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv',
 ) {
   try {
     console.time(`DMA-${importTaxonomy_CSV.name}`);
     let path_, file_;
 
-    if (path.endsWith(".csv")) {
+    if (path.endsWith('.csv')) {
       file_ = path;
       path = path.slice(0, -4);
     } else {
-      file_ = path + ".csv";
+      file_ = path + '.csv';
     }
 
     if (process.env.PWD) {
@@ -63,10 +63,10 @@ async function importTaxonomy_CSV(
       path_ = file_;
     }
 
-    let fileSync = fs.readFileSync(path_, "utf8");
+    let fileSync = fs.readFileSync(path_, 'utf8');
     csv.parse(fileSync, async function (err, data) {
-      switch (basename(path, ".csv")) {
-        case "taxonomy":
+      switch (basename(path, '.csv')) {
+        case 'taxonomy':
           for (let i = 1; i < data.length; i++) {
             let item = await items_db.findById(parseInt(data[i][0]));
             if (item) {
@@ -78,17 +78,17 @@ async function importTaxonomy_CSV(
             }
           }
           break;
-        case "itemsparse":
+        case 'itemsparse':
           const expansionTicker = new Map([
-            [8, "SHDW"],
-            [7, "BFA"],
-            [6, "LGN"],
-            [5, "WOD"],
-            [4, "MOP"],
-            [3, "CATA"],
-            [2, "WOTLK"],
-            [1, "TBC"],
-            [0, "CLSC"],
+            [8, 'SHDW'],
+            [7, 'BFA'],
+            [6, 'LGN'],
+            [5, 'WOD'],
+            [4, 'MOP'],
+            [3, 'CATA'],
+            [2, 'WOTLK'],
+            [1, 'TBC'],
+            [0, 'CLSC'],
           ]);
           for (let i = 1; i < data.length; i++) {
             await items_db.findByIdAndUpdate(parseFloat(data[i][0]), {
@@ -97,13 +97,13 @@ async function importTaxonomy_CSV(
             });
             console.info(
               `U, ${parseFloat(data[i][0])}, ${expansionTicker.get(
-                parseInt(data[i][68])
-              )}, ${parseInt(data[i][32])}`
+                parseInt(data[i][68]),
+              )}, ${parseInt(data[i][32])}`,
             );
           }
           break;
         default:
-          console.info("Sorry, we got nothing");
+          console.info('Sorry, we got nothing');
       }
       connection.close();
     });

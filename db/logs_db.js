@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -30,12 +30,12 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ isIndexed: 1 }, { name: "isIndexed" });
-schema.index({ createdAt: -1 }, { name: "TTL", expireAfterSeconds: 604800 });
+schema.index({ isIndexed: 1 }, { name: 'isIndexed' });
+schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 604800 });
 
-let logs_db = mongoose.model("logs", schema, "logs");
+let logs_db = mongoose.model('logs', schema, 'logs');
 
 module.exports = logs_db;

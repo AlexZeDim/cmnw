@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,23 +13,23 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const items_db = require("../../db/items_db");
-const auctions_db = require("../../db/auctions_db");
-const pricing_methods_db = require("../../db/pricing_methods_db");
+const items_db = require('../../db/items_db');
+const auctions_db = require('../../db/auctions_db');
+const pricing_methods_db = require('../../db/pricing_methods_db');
 
 /**
  * indexItems add is_auction, is_commdty and is_derivative properties to items
@@ -38,11 +38,11 @@ const pricing_methods_db = require("../../db/pricing_methods_db");
  * @returns {Promise<void>}
  */
 
-async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
+async function indexAssetClass(arg = 'pricing_methods', bulkSize = 10) {
   try {
     console.time(`DMA-${indexAssetClass.name}`);
     switch (arg) {
-      case "pricing_methods":
+      case 'pricing_methods':
         console.info(`Stage: pricing methods`);
         console.time(`Stage: pricing methods`);
         await pricing_methods_db
@@ -50,13 +50,13 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
           .limit(100)
           .cursor({ batchSize: bulkSize })
           .eachAsync(
-            async (method) => {
+            async method => {
               try {
                 /** Derivative Asset Class */
                 if (method.item_id) {
                   let item = await items_db.findById(method.item_id);
                   if (item.asset_class) {
-                    item.asset_class.addToSet("DERIVATIVE");
+                    item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
                     console.info(`${item._id}, ${item.asset_class.toString()}`);
                   }
@@ -65,7 +65,7 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
                   console.log();
                   let item = await items_db.findById(method.alliance_item_id);
                   if (item) {
-                    item.asset_class.addToSet("DERIVATIVE");
+                    item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
                     console.info(`${item._id}, ${item.asset_class.toString()}`);
                   }
@@ -73,7 +73,7 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
                 if (method.horde_item_id) {
                   let item = await items_db.findById(method.horde_item_id);
                   if (item) {
-                    item.asset_class.addToSet("DERIVATIVE");
+                    item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
                     console.info(`${item._id}, ${item.asset_class.toString()}`);
                   }
@@ -83,10 +83,10 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
                   for (let { _id } of method.reagents) {
                     let item = await items_db.findById(_id);
                     if (item) {
-                      item.asset_class.addToSet("REAGENT");
+                      item.asset_class.addToSet('REAGENT');
                       await item.save();
                       console.info(
-                        `${item._id}, ${item.asset_class.toString()}`
+                        `${item._id}, ${item.asset_class.toString()}`,
                       );
                     }
                   }
@@ -95,10 +95,10 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
                 console.error(e);
               }
             },
-            { parallel: bulkSize }
+            { parallel: bulkSize },
           );
         console.timeEnd(`Stage: pricing methods`);
-      case "auctions":
+      case 'auctions':
         console.info(`Stage: auctions`);
         console.time(`Stage: auctions`);
         await auctions_db
@@ -106,16 +106,18 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
             {
               $group: {
                 _id: {
-                  id: "$item.id",
-                  is_commdty: { $ifNull: ["$unit_price", false] },
+                  id: '$item.id',
+                  is_commdty: {
+                    $ifNull: ['$unit_price', false],
+                  },
                 },
               },
             },
             {
               $project: {
-                _id: "$_id.id",
+                _id: '$_id.id',
                 is_commdty: {
-                  $cond: [{ $eq: ["$_id.is_commdty", false] }, false, true],
+                  $cond: [{ $eq: ['$_id.is_commdty', false] }, false, true],
                 },
               },
             },
@@ -127,19 +129,19 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
               let item = await items_db.findById(_id);
               if (item) {
                 if (is_commdty) {
-                  item.asset_class.addToSet("COMMDTY");
+                  item.asset_class.addToSet('COMMDTY');
                 } else {
-                  item.asset_class.addToSet("ITEM");
+                  item.asset_class.addToSet('ITEM');
                 }
-                item.asset_class.addToSet("MARKET");
+                item.asset_class.addToSet('MARKET');
                 await item.save();
                 console.info(`${item._id}, ${item.asset_class.toString()}`);
               }
             },
-            { parallel: bulkSize }
+            { parallel: bulkSize },
           );
         console.timeEnd(`Stage: auctions`);
-      case "contracts":
+      case 'contracts':
         console.info(`Stage: contracts`);
         console.time(`Stage: contracts`);
         await items_db.updateMany({}, { contracts: false });
@@ -148,37 +150,37 @@ async function indexAssetClass(arg = "pricing_methods", bulkSize = 10) {
             $or: [
               { _id: 1 },
               {
-                expansion: "BFA",
-                asset_class: { $all: ["MARKET", "COMMDTY"] },
+                expansion: 'BFA',
+                asset_class: { $all: ['MARKET', 'COMMDTY'] },
               },
             ],
           },
-          { contracts: true }
+          { contracts: true },
         );
         console.timeEnd(`Stage: contracts`);
-      case "items":
+      case 'items':
         console.info(`Stage: items`);
         console.time(`Stage: items`);
         await items_db.updateMany(
-          { asset_class: "REAGENT", loot_type: "ON_ACQUIRE" },
-          { $addToSet: { asset_class: "PREMIUM" } }
+          { asset_class: 'REAGENT', loot_type: 'ON_ACQUIRE' },
+          { $addToSet: { asset_class: 'PREMIUM' } },
         );
         console.timeEnd(`Stage: items`);
         break;
-      case "currency":
+      case 'currency':
         console.info(`Stage: currency`);
         console.time(`Stage: currency`);
         await items_db.updateOne(
           { _id: 122270 },
-          { $addToSet: { asset_class: "WOWTOKEN" } }
+          { $addToSet: { asset_class: 'WOWTOKEN' } },
         );
         await items_db.updateOne(
           { _id: 122284 },
-          { $addToSet: { asset_class: "WOWTOKEN" } }
+          { $addToSet: { asset_class: 'WOWTOKEN' } },
         );
         await items_db.updateOne(
           { _id: 1 },
-          { $addToSet: { asset_class: "CURRENCY" } }
+          { $addToSet: { asset_class: 'CURRENCY' } },
         );
         console.timeEnd(`Stage: currency`);
         break;

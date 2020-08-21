@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,21 +13,21 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const auctions_db = require("../../db/auctions_db");
+const auctions_db = require('../../db/auctions_db');
 
 /**
  * Modules
@@ -45,7 +45,7 @@ async function _itemBonusList(item_id = 175010) {
     const item = await auctions_db.aggregate([
       {
         $match: {
-          "item.id": item_id,
+          'item.id': item_id,
         },
       },
       {
@@ -53,28 +53,28 @@ async function _itemBonusList(item_id = 175010) {
       },
       {
         $lookup: {
-          from: "bonus_lists",
-          localField: "item.bonus_lists",
-          foreignField: "_id",
-          as: "item.bonus_lists",
+          from: 'bonus_lists',
+          localField: 'item.bonus_lists',
+          foreignField: '_id',
+          as: 'item.bonus_lists',
         },
       },
       {
         $lookup: {
-          from: "items",
-          localField: "item.id",
-          foreignField: "_id",
-          as: "fromItems",
+          from: 'items',
+          localField: 'item.id',
+          foreignField: '_id',
+          as: 'fromItems',
         },
       },
       {
         $addFields: {
-          fromItems: { $arrayElemAt: ["$fromItems", 0] },
+          fromItems: { $arrayElemAt: ['$fromItems', 0] },
         },
       },
       {
         $addFields: {
-          item: { $mergeObjects: ["$fromItems", "$item"] },
+          item: { $mergeObjects: ['$fromItems', '$item'] },
         },
       },
       {

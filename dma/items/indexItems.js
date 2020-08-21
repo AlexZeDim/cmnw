@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,27 +13,27 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const keys_db = require("../../db/keys_db");
-const items_db = require("../../db/items_db");
+const keys_db = require('../../db/keys_db');
+const items_db = require('../../db/items_db');
 
 /**
  * Modules
  */
-const getItem = require("./getItem");
+const getItem = require('./getItem');
 
 /**
  * This function parse items across B.net API with wrapper
@@ -42,13 +42,13 @@ const getItem = require("./getItem");
  * @returns {Promise<void>}
  */
 
-async function indexItems(queryKeys = "DMA", operation = "update") {
+async function indexItems(queryKeys = 'DMA', operation = 'update') {
   try {
     console.time(`DMA-${indexItems.name}`);
 
     const { token } = await keys_db.findOne({ tags: queryKeys });
 
-    if (operation === "update") {
+    if (operation === 'update') {
       await items_db
         .find({})
         .lean()
@@ -57,7 +57,7 @@ async function indexItems(queryKeys = "DMA", operation = "update") {
           async ({ _id }) => {
             await getItem(_id, token);
           },
-          { parallel: 10 }
+          { parallel: 10 },
         );
     } else {
       for (let _id = 25; _id < 230000; _id++) {

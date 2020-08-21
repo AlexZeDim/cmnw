@@ -2,7 +2,7 @@
  * Model importing
  */
 
-const gold_db = require("../db/golds_db");
+const gold_db = require('../db/golds_db');
 
 /**
  * @param connected_realm_id
@@ -18,14 +18,14 @@ async function getClusterGoldData(connected_realm_id = 1602) {
       sampleVariable_prev = 0;
     let [quotes, timestamp] = await Promise.all([
       gold_db
-        .distinct("price", {
-          status: "Online",
+        .distinct('price', {
+          status: 'Online',
           connected_realm_id: connected_realm_id,
         })
         .lean(),
       gold_db
-        .distinct("last_modified", {
-          status: "Online",
+        .distinct('last_modified', {
+          status: 'Online',
           connected_realm_id: connected_realm_id,
         })
         .lean(),
@@ -75,7 +75,7 @@ async function getClusterGoldData(connected_realm_id = 1602) {
       if (step < 1) {
         round = (number, nearest = 0.5) =>
           parseFloat(
-            (Math.round(number * (1 / nearest)) / (1 / nearest)).toFixed(2)
+            (Math.round(number * (1 / nearest)) / (1 / nearest)).toFixed(2),
           );
       } else {
         round = (number, precision = 5) =>
@@ -88,11 +88,17 @@ async function getClusterGoldData(connected_realm_id = 1602) {
       let priceRange_array = await range(
         round(start, step),
         round(stop, step),
-        step
+        step,
       );
       for (let x_ = 0; x_ < timestamp.length; x_++) {
         for (let y_ = 0; y_ < priceRange_array.length; y_++) {
-          chartArray.push({ x: x_, y: y_, value: 0, oi: 0, orders: 0 });
+          chartArray.push({
+            x: x_,
+            y: y_,
+            value: 0,
+            oi: 0,
+            orders: 0,
+          });
         }
       }
       await gold_db
@@ -114,7 +120,7 @@ async function getClusterGoldData(connected_realm_id = 1602) {
             } else {
               y = priceRange_array.indexOf(round(price, step));
             }
-            chartArray.filter((el) => {
+            chartArray.filter(el => {
               if (el.x === x && el.y === y) {
                 el.value = el.value + quantity;
                 el.oi = el.oi + price * quantity;
@@ -122,12 +128,12 @@ async function getClusterGoldData(connected_realm_id = 1602) {
               }
             });
           },
-          { parallel: 20 }
+          { parallel: 20 },
         );
       if (step < 1) {
-        priceRange_array = priceRange_array.map((p) => p.toFixed(2));
+        priceRange_array = priceRange_array.map(p => p.toFixed(2));
       }
-      timestamp = timestamp.map((ts) => ts.toLocaleString("en-GB"));
+      timestamp = timestamp.map(ts => ts.toLocaleString('en-GB'));
       return {
         price_range: priceRange_array,
         timestamps: timestamp,

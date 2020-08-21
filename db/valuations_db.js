@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -21,38 +21,38 @@ let schema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
-        "VENDOR",
-        "DERIVATIVE",
-        "REAGENT",
-        "MARKET",
-        "PREMIUM",
-        "FUNPAY",
-        "OTC",
-        "WOWTOKEN",
+        'VENDOR',
+        'DERIVATIVE',
+        'REAGENT',
+        'MARKET',
+        'PREMIUM',
+        'FUNPAY',
+        'OTC',
+        'WOWTOKEN',
       ],
     },
     last_modified: Number,
     value: Number,
     flag: {
       type: String,
-      enum: ["BUY", "SELL", "PAY FIX", "PAY FLOAT"],
+      enum: ['BUY', 'SELL', 'PAY FIX', 'PAY FLOAT'],
     },
     details: Object,
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ createdAt: -1 }, { name: "TTL", expireAfterSeconds: 604800 });
+schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 604800 });
 schema.index(
   { item_id: -1, last_modified: -1, connected_realm_id: 1 },
-  { name: "IVA" }
+  { name: 'IVA' },
 );
-schema.index({ type: -1 }, { name: "LastModified" });
-schema.index({ flag: -1 }, { name: "Flag" });
-schema.index({ value: -1 }, { name: "Sorting" });
+schema.index({ type: -1 }, { name: 'LastModified' });
+schema.index({ flag: -1 }, { name: 'Flag' });
+schema.index({ value: -1 }, { name: 'Sorting' });
 
-let valuations_db = mongoose.model("valuations", schema, "valuations");
+let valuations_db = mongoose.model('valuations', schema, 'valuations');
 
 module.exports = valuations_db;

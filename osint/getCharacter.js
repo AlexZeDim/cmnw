@@ -2,21 +2,21 @@
  * Model importing
  */
 
-const characters_db = require("../db/characters_db");
-const realms_db = require("../db/realms_db");
-const osint_logs_db = require("../db/osint_logs_db");
+const characters_db = require('../db/characters_db');
+const realms_db = require('../db/realms_db');
+const osint_logs_db = require('../db/osint_logs_db');
 
 /**
  * Modules
  */
 
-const crc32 = require("fast-crc32c");
-const battleNetWrapper = require("battlenet-api-wrapper");
-const { toSlug, fromSlug } = require("../db/setters");
-const indexDetective = require("./indexing/indexDetective");
+const crc32 = require('fast-crc32c');
+const battleNetWrapper = require('battlenet-api-wrapper');
+const { toSlug, fromSlug } = require('../db/setters');
+const indexDetective = require('./indexing/indexDetective');
 
-const clientId = "530992311c714425a0de2c21fcf61c7d";
-const clientSecret = "HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP";
+const clientId = '530992311c714425a0de2c21fcf61c7d';
+const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 /**
  * Request characters from Blizzard API and add it to OSINT-DB (guilds)
@@ -32,9 +32,9 @@ async function getCharacter(
   realmSlug,
   characterName,
   characterObject = {},
-  token = "",
-  updatedBy = "OSINT-getCharacter",
-  guildRank = false
+  token = '',
+  updatedBy = 'OSINT-getCharacter',
+  guildRank = false,
 ) {
   try {
     /**
@@ -47,13 +47,13 @@ async function getCharacter(
      * B.net wrapper
      */
     const bnw = new battleNetWrapper();
-    await bnw.init(clientId, clientSecret, token, "eu", "en_GB");
+    await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
 
     /**
      * Check if character exists
      */
     let character = await characters_db.findById(
-      `${characterName}@${realmSlug}`
+      `${characterName}@${realmSlug}`,
     );
 
     const [
@@ -70,17 +70,17 @@ async function getCharacter(
 
     if (character) {
       if (characterData.value) {
-        let detectiveCheck = ["race", "gender", "faction"];
+        let detectiveCheck = ['race', 'gender', 'faction'];
         for (let check of detectiveCheck) {
           if (check in character) {
             indexDetective(
               character._id,
-              "character",
+              'character',
               character[check],
               characterData.value[check].name,
               check,
               new Date(characterData.value.last_login_timestamp),
-              new Date(character.lastModified)
+              new Date(character.lastModified),
             );
           }
         }
@@ -113,9 +113,9 @@ async function getCharacter(
       /**
        * Timestamp
        */
-      if ("last_login_timestamp" in characterData.value) {
+      if ('last_login_timestamp' in characterData.value) {
         character.lastModified = new Date(
-          characterData.value.last_login_timestamp
+          characterData.value.last_login_timestamp,
         );
       }
 
@@ -154,7 +154,7 @@ async function getCharacter(
       /**
        * Active spec
        */
-      if ("active_spec" in characterData.value) {
+      if ('active_spec' in characterData.value) {
         character.spec = characterData.value.active_spec.name;
       }
 
@@ -162,8 +162,8 @@ async function getCharacter(
        * Item Level
        */
       if (
-        "average_item_level" in characterData.value &&
-        "equipped_item_level" in characterData.value
+        'average_item_level' in characterData.value &&
+        'equipped_item_level' in characterData.value
       ) {
         character.ilvl = {
           eq: characterData.value.average_item_level,
@@ -189,10 +189,10 @@ async function getCharacter(
         if (guildRank === true) {
           const { members } = await bnw.WowProfileData.getGuildRoster(
             characterData.value.realm.slug,
-            toSlug(characterData.value.guild.name)
+            toSlug(characterData.value.guild.name),
           );
           const { rank } = members.find(
-            ({ character }) => character.id === characterData.value.id
+            ({ character }) => character.id === characterData.value.id,
           );
           character.guild.rank = rank;
         }
@@ -224,12 +224,12 @@ async function getCharacter(
        */
       if (characterObject && Object.keys(characterObject).length) {
         let character_fields = [
-          "id",
-          "guild",
-          "faction",
-          "character_class",
-          "level",
-          "lastModified",
+          'id',
+          'guild',
+          'faction',
+          'character_class',
+          'level',
+          'lastModified',
         ];
         for (let field of character_fields) {
           if (field in characterObject) {
@@ -255,14 +255,14 @@ async function getCharacter(
 
       if (pets && pets.length) {
         for (let pet of pets) {
-          if ("is_active" in pet) {
-            if ("name" in pet) {
+          if ('is_active' in pet) {
+            if ('name' in pet) {
               active_pets.push(`${pet.name}`);
             }
             active_pets.push(pet.species.name);
             pets_array.push(pet.level);
           }
-          if ("name" in pet) {
+          if ('name' in pet) {
             pets_array.push(`${pet.name}`);
           }
           pets_array.push(pet.species.name);
@@ -308,9 +308,9 @@ async function getCharacter(
         character.id = parseInt(
           characterMedia.value.avatar_url
             .toString()
-            .split("/")
+            .split('/')
             .pop(-1)
-            .match(/([0-9]+)/g)[0]
+            .match(/([0-9]+)/g)[0],
         );
       }
       character.media = {
@@ -340,33 +340,33 @@ async function getCharacter(
        * If we found rename and anything else
        */
       renamedCopy = await characters_db.findOne({
-        "realm.slug": realmSlug,
+        'realm.slug': realmSlug,
         id: character.id,
         character_class: character.character_class,
       });
       if (renamedCopy) {
-        let renameCheck = ["race", "gender", "faction"];
+        let renameCheck = ['race', 'gender', 'faction'];
         for (let check of renameCheck) {
           if (check in character && check in renamedCopy) {
             indexDetective(
               character._id,
-              "character",
+              'character',
               renamedCopy[check],
               character[check],
               check,
               new Date(character.lastModified),
-              new Date(renamedCopy.lastModified)
+              new Date(renamedCopy.lastModified),
             );
           }
         }
         indexDetective(
           character._id,
-          "character",
+          'character',
           renamedCopy.name,
           character.name,
-          "name",
+          'name',
           new Date(character.lastModified),
-          new Date(renamedCopy.lastModified)
+          new Date(renamedCopy.lastModified),
         );
         /** Update all osint logs */
         await osint_logs_db.updateMany(
@@ -376,7 +376,7 @@ async function getCharacter(
           {
             root_id: character._id,
             $push: { root_history: character._id },
-          }
+          },
         );
         renamedCopy.deleteOne();
       }
@@ -390,18 +390,18 @@ async function getCharacter(
          * allows us to find yourself in past
          */
         let transfer_query = {
-          "realm.slug": { $ne: realmSlug },
+          'realm.slug': { $ne: realmSlug },
           name: character.name,
           character_class: character.character_class,
           level: character.level,
           statusCode: 200,
         };
         if (character.hash.a && character.hash.c) {
-          transfer_query["hash.a"] = character.hash.a;
-          transfer_query["hash.c"] = character.hash.c;
+          transfer_query['hash.a'] = character.hash.a;
+          transfer_query['hash.c'] = character.hash.c;
         }
         if (character.hash.b) {
-          transfer_query["hash.b"] = character.hash.b;
+          transfer_query['hash.b'] = character.hash.b;
         }
         /***
          * If criteria is >6 i.e. 7
@@ -422,32 +422,32 @@ async function getCharacter(
              */
             const transfer_ex = await bnw.WowProfileData.getCharacterStatus(
               transfer_character.realm.slug,
-              transfer_character.name
+              transfer_character.name,
             );
 
             if (!transfer_ex) {
-              let renameCheck = ["race", "gender", "faction"];
+              let renameCheck = ['race', 'gender', 'faction'];
               for (let check of renameCheck) {
                 if (check in character && check in transfer_character) {
                   indexDetective(
                     character._id,
-                    "character",
+                    'character',
                     transfer_character[check],
                     character[check],
                     check,
                     new Date(character.lastModified),
-                    new Date(transfer_character.lastModified)
+                    new Date(transfer_character.lastModified),
                   );
                 }
               }
               indexDetective(
                 character._id,
-                "character",
-                transfer_character["realm"].slug,
-                character["realm"].slug,
-                "realm",
+                'character',
+                transfer_character['realm'].slug,
+                character['realm'].slug,
+                'realm',
                 new Date(character.lastModified),
-                new Date(transfer_character.lastModified)
+                new Date(transfer_character.lastModified),
               );
               /** Update all osint logs */
               await osint_logs_db.updateMany(
@@ -457,7 +457,7 @@ async function getCharacter(
                 {
                   root_id: character._id,
                   $push: { root_history: character._id },
-                }
+                },
               );
               transfer_character.deleteOne();
             }
@@ -468,18 +468,18 @@ async function getCharacter(
            * search via shadow_query
            */
           let shadow_query = {
-            "realm.slug": { $ne: realmSlug },
+            'realm.slug': { $ne: realmSlug },
             name: { $ne: character.name },
             character_class: character.character_class,
             level: character.level,
             statusCode: 200,
           };
           if (character.hash.a && character.hash.c) {
-            shadow_query["hash.a"] = character.hash.a;
-            shadow_query["hash.c"] = character.hash.c;
+            shadow_query['hash.a'] = character.hash.a;
+            shadow_query['hash.c'] = character.hash.c;
           }
           if (character.hash.b) {
-            shadow_query["hash.b"] = character.hash.b;
+            shadow_query['hash.b'] = character.hash.b;
           }
           /***
            * If criteria is >7 i.e. 8
@@ -500,41 +500,41 @@ async function getCharacter(
                */
               const transfer_ex = await bnw.WowProfileData.getCharacterStatus(
                 shadow_character.realm.slug,
-                shadow_character.name
+                shadow_character.name,
               );
 
               if (!transfer_ex) {
-                let renameCheck = ["name", "race", "gender", "faction"];
+                let renameCheck = ['name', 'race', 'gender', 'faction'];
                 for (let check of renameCheck) {
                   if (check in character && check in shadow_character) {
                     indexDetective(
                       character._id,
-                      "character",
+                      'character',
                       shadow_character[check],
                       character[check],
                       check,
                       new Date(character.lastModified),
-                      new Date(shadow_character.lastModified)
+                      new Date(shadow_character.lastModified),
                     );
                   }
                 }
                 indexDetective(
                   character._id,
-                  "character",
+                  'character',
                   shadow_character.name,
                   character.name,
-                  "name",
+                  'name',
                   new Date(character.lastModified),
-                  new Date(renamedCopy.lastModified)
+                  new Date(renamedCopy.lastModified),
                 );
                 indexDetective(
                   character._id,
-                  "character",
-                  shadow_character["realm"].slug,
-                  character["realm"].slug,
-                  "realm",
+                  'character',
+                  shadow_character['realm'].slug,
+                  character['realm'].slug,
+                  'realm',
                   new Date(character.lastModified),
-                  new Date(shadow_character.lastModified)
+                  new Date(shadow_character.lastModified),
                 );
 
                 /** Update all osint logs */
@@ -545,7 +545,7 @@ async function getCharacter(
                   {
                     root_id: character._id,
                     $push: { root_history: character._id },
-                  }
+                  },
                 );
                 shadow_character.deleteOne();
               }
@@ -558,13 +558,13 @@ async function getCharacter(
     console.info(
       `U:${character.name}@${character.realm.name}#${character.id || 0}:${
         character.statusCode
-      }`
+      }`,
     );
   } catch (error) {
     console.error(
       `E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(
-        realmSlug
-      )},${error}`
+        realmSlug,
+      )},${error}`,
     );
   }
 }

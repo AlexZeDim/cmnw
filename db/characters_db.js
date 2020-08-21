@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { toSlug, fromSlug } = require("./setters");
+const mongoose = require('mongoose');
+const { toSlug, fromSlug } = require('./setters');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -113,23 +113,23 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ name: 1 }, { name: "Name" });
-schema.index({ "guild.name": 1 }, { name: "Guild" });
-schema.index({ id: 1 }, { name: "ID" });
+schema.index({ name: 1 }, { name: 'Name' });
+schema.index({ 'guild.name': 1 }, { name: 'Guild' });
+schema.index({ id: 1 }, { name: 'ID' });
 
-schema.index({ "hash.a": 1 }, { name: "Hash A" });
-schema.index({ "hash.b": 1 }, { name: "Hash B" });
-schema.index({ "hash.c": 1 }, { name: "Hash C" });
-schema.index({ "hash.ex": 1 }, { name: "Hash EX" });
-schema.index({ "hash.t": 1 }, { name: "Hash T" });
+schema.index({ 'hash.a': 1 }, { name: 'Hash A' });
+schema.index({ 'hash.b': 1 }, { name: 'Hash B' });
+schema.index({ 'hash.c': 1 }, { name: 'Hash C' });
+schema.index({ 'hash.ex': 1 }, { name: 'Hash EX' });
+schema.index({ 'hash.t': 1 }, { name: 'Hash T' });
 
-schema.index({ updatedAt: 1 }, { name: "OSINT-IndexCharacters" });
-schema.index({ "realm.slug": 1, id: 1 }, { name: "ByGUID" });
+schema.index({ updatedAt: 1 }, { name: 'OSINT-IndexCharacters' });
+schema.index({ 'realm.slug': 1, id: 1 }, { name: 'ByGUID' });
 
-let characters_db = mongoose.model("characters", schema, "characters");
+let characters_db = mongoose.model('characters', schema, 'characters');
 
 //connection.close()
 

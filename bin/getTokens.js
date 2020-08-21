@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,27 +13,27 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const keys_db = require("../db/keys_db");
+const keys_db = require('../db/keys_db');
 
 /**
  * Modules
  */
 
-const axios = require("axios");
+const axios = require('axios');
 
 /**
  * Update tokens from Blizzard API as a separate task
@@ -50,14 +50,14 @@ async function getTokens() {
     ) {
       const { access_token, expires_in } = await axios
         .get(
-          `https://eu.battle.net/oauth/token?grant_type=client_credentials&client_id=${auth._id}&client_secret=${auth.secret}`
+          `https://eu.battle.net/oauth/token?grant_type=client_credentials&client_id=${auth._id}&client_secret=${auth.secret}`,
         )
-        .then((res) => {
+        .then(res => {
           return res.data;
         });
       let token = await keys_db.updateOne(
         { _id: auth._id },
-        { token: access_token, expired_in: expires_in }
+        { token: access_token, expired_in: expires_in },
       );
       if (token) console.info(`U,${auth._id},${expires_in}`);
     }
@@ -67,4 +67,4 @@ async function getTokens() {
   }
 }
 
-getTokens().then((r) => r);
+getTokens().then(r => r);

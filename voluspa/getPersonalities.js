@@ -57,6 +57,7 @@ async function T() {
           },
         },
       ])
+      .allowDiskUse(true)
       .cursor({ batchSize: 10 })
       .exec()
       .eachAsync(

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema(
@@ -7,8 +7,8 @@ let schema = new mongoose.Schema(
     mentions: Array,
     type: {
       type: String,
-      enum: ["profile", "message"],
-      default: "message",
+      enum: ['profile', 'message'],
+      default: 'message',
     },
     clearance: [
       {
@@ -20,7 +20,7 @@ let schema = new mongoose.Schema(
         },
         codeword: {
           type: String,
-          default: "WoW",
+          default: 'WoW',
         },
       },
     ],
@@ -28,9 +28,9 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-let message_db = mongoose.model("messages", schema, "messages");
+let message_db = mongoose.model('messages', schema, 'messages');
 
 module.exports = message_db;

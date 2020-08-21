@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -34,9 +34,9 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-let keys_db = mongoose.model("keys", schema, "keys");
+let keys_db = mongoose.model('keys', schema, 'keys');
 
 module.exports = keys_db;

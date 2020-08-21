@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,22 +13,22 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const characters_db = require("../db/characters_db");
-const personalities_db = require("../db/personalities_db");
+const characters_db = require('../db/characters_db');
+const personalities_db = require('../db/personalities_db');
 
 async function T() {
   try {
@@ -47,13 +47,15 @@ async function T() {
         {
           $group: {
             _id: {
-              realm: "$realm.slug",
-              hash_a: "$hash.a",
-              hash_c: "$hash.c",
+              realm: '$realm.slug',
+              hash_a: '$hash.a',
+              hash_c: '$hash.c',
             },
-            characters: { $addToSet: "$_id" },
+            characters: { $addToSet: '$_id' },
             guild: {
-              $addToSet: { $concat: ["$guild.slug", "@", "$realm.slug"] },
+              $addToSet: {
+                $concat: ['$guild.slug', '@', '$realm.slug'],
+              },
             },
           },
         },
@@ -61,20 +63,20 @@ async function T() {
       .cursor({ batchSize: 10 })
       .exec()
       .eachAsync(
-        (identity) => {
+        identity => {
           /** Clearance by guild */
-          let clearance = identity.guild.map((g) => ({
+          let clearance = identity.guild.map(g => ({
             access: 1,
             codeword: g,
           }));
           /** Default clearance */
           clearance.push({
             access: 0,
-            codeword: "WoW",
+            codeword: 'WoW',
           });
           /** Character aliases */
-          let aliases = identity.characters.map((a) => ({
-            type: "character",
+          let aliases = identity.characters.map(a => ({
+            type: 'character',
             value: a,
           }));
           /*            let x = new personalities_db({
@@ -84,7 +86,7 @@ async function T() {
             })*/
           console.log(identity);
         },
-        { parallel: 10 }
+        { parallel: 10 },
       );
 
     connection.close();

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -33,15 +33,15 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ createdAt: -1 }, { name: "TTL", expireAfterSeconds: 604800 });
+schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 604800 });
 schema.index(
   { status: 1, connected_realm_id: 1, last_modified: -1 },
-  { name: "GoldsQuotes" }
+  { name: 'GoldsQuotes' },
 );
 
-let golds_db = mongoose.model("golds", schema, "golds");
+let golds_db = mongoose.model('golds', schema, 'golds');
 
 module.exports = golds_db;

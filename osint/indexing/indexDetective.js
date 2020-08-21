@@ -11,7 +11,7 @@
  * @returns {Promise<void>}
  */
 
-const osint_logs_db = require("../../db/osint_logs_db");
+const osint_logs_db = require('../../db/osint_logs_db');
 
 /**
  *
@@ -32,7 +32,7 @@ function indexDetective(
   new_value,
   action,
   before,
-  after
+  after,
 ) {
   /**
    * Find change
@@ -45,71 +45,71 @@ function indexDetective(
      */
     let message;
     switch (action) {
-      case "race":
+      case 'race':
         message = `${root_id} changed race from ${original_value} to ${new_value}`;
         break;
-      case "gender":
+      case 'gender':
         message = `${root_id} swap gender from ${original_value} to ${new_value}`;
         break;
-      case "faction":
+      case 'faction':
         message = `${root_id} changed faction from ${original_value} to ${new_value}`;
         break;
-      case "name":
+      case 'name':
         message = `${root_id} changed name from ${original_value} to ${new_value}`;
         break;
-      case "realm":
+      case 'realm':
         message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
         break;
-      case "join":
-        if (type === "guild") {
+      case 'join':
+        if (type === 'guild') {
           message = `${new_value} joins to ${root_id}`;
         }
-        if (type === "character") {
+        if (type === 'character') {
           message = `${root_id} joins to ${new_value}`;
         }
         break;
-      case "leave":
-        if (type === "guild") {
+      case 'leave':
+        if (type === 'guild') {
           message = `${original_value} leaves ${root_id}`;
         }
-        if (type === "character") {
+        if (type === 'character') {
           message = `${root_id} leaves ${original_value}`;
         }
         break;
-      case "promote":
-        if (type === "guild") {
+      case 'promote':
+        if (type === 'guild') {
           message = `In ${root_id} member ${original_value} was promoted to ${new_value}`;
         }
-        if (type === "character") {
+        if (type === 'character') {
           message = `${root_id} was promoted in ${original_value} to ${new_value}`;
         }
         break;
-      case "demote":
-        if (type === "guild") {
+      case 'demote':
+        if (type === 'guild') {
           message = `In ${root_id} member ${original_value} was demoted to ${new_value}`;
         }
-        if (type === "character") {
+        if (type === 'character') {
           message = `${root_id} was demoted in ${original_value} to ${new_value}`;
         }
         break;
-      case "title":
-        if (type === "guild") {
+      case 'title':
+        if (type === 'guild') {
           message = `${root_id} GM title was transferred from ${original_value} to ${new_value}`;
         }
-        if (type === "character") {
+        if (type === 'character') {
           message = `${original_value} has transferred GM title to ${new_value}`;
         }
         break;
-      case "ownership":
-        if (type === "guild") {
+      case 'ownership':
+        if (type === 'guild') {
           message = `${root_id} GM ownership was transferred from ${original_value} to ${new_value}`;
         }
-        if (type === "character") {
+        if (type === 'character') {
           message = `${original_value} has GM ownership to ${new_value}`;
         }
         break;
       default:
-        message = "";
+        message = '';
     }
     let event = new osint_logs_db({
       root_id: root_id,

@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const { Round2 } = require("./setters");
+const { Round2 } = require('./setters');
 
 /*require('dotenv').config();
 mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
@@ -60,22 +60,22 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 schema.index(
-  { "date.month": -1, connected_realm_id: 1, item_id: -1 },
-  { name: "M" }
+  { 'date.month': -1, connected_realm_id: 1, item_id: -1 },
+  { name: 'M' },
 );
 schema.index(
-  { "date.week": -1, connected_realm_id: 1, item_id: -1 },
-  { name: "W" }
+  { 'date.week': -1, connected_realm_id: 1, item_id: -1 },
+  { name: 'W' },
 );
 schema.index(
-  { "date.month": -1, connected_realm_id: 1, item_id: -1 },
-  { name: "M" }
+  { 'date.month': -1, connected_realm_id: 1, item_id: -1 },
+  { name: 'M' },
 );
 
-let contracts_db = mongoose.model("contracts", schema, "contracts");
+let contracts_db = mongoose.model('contracts', schema, 'contracts');
 
 module.exports = contracts_db;

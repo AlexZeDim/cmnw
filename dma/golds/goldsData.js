@@ -1,5 +1,5 @@
-const golds_db = require("../../db/golds_db");
-const realms_db = require("../../db/realms_db");
+const golds_db = require('../../db/golds_db');
+const realms_db = require('../../db/realms_db');
 
 /**
  * @param connected_realm_id
@@ -10,33 +10,35 @@ async function goldsQuotes(connected_realm_id = 1602) {
   try {
     const t = await realms_db
       .findOne({ connected_realm_id: connected_realm_id })
-      .select("golds")
+      .select('golds')
       .lean();
     if (t) {
       return await golds_db.aggregate([
         {
           $match: {
-            status: "Online",
+            status: 'Online',
             connected_realm_id: connected_realm_id,
             last_modified: t.golds,
           },
         },
         {
           $project: {
-            id: "$id",
-            quantity: "$quantity",
-            price: "$price",
-            owner: "$owner",
+            id: '$id',
+            quantity: '$quantity',
+            price: '$price',
+            owner: '$owner',
           },
         },
         {
           $group: {
-            _id: "$price",
-            quantity: { $sum: "$quantity" },
+            _id: '$price',
+            quantity: { $sum: '$quantity' },
             open_interest: {
-              $sum: { $multiply: ["$price", { $divide: ["$quantity", 1000] }] },
+              $sum: {
+                $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+              },
             },
-            sellers: { $addToSet: "$owner" },
+            sellers: { $addToSet: '$owner' },
           },
         },
         {
@@ -45,13 +47,13 @@ async function goldsQuotes(connected_realm_id = 1602) {
         {
           $project: {
             _id: 0,
-            price: "$_id",
-            quantity: "$quantity",
-            open_interest: "$open_interest",
+            price: '$_id',
+            quantity: '$quantity',
+            open_interest: '$open_interest',
             size: {
               $cond: {
-                if: { $isArray: "$sellers" },
-                then: { $size: "$sellers" },
+                if: { $isArray: '$sellers' },
+                then: { $size: '$sellers' },
                 else: 0,
               },
             },

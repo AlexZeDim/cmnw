@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,37 +13,37 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const logs_db = require("../../db/logs_db");
-const realms_db = require("../../db/realms_db");
-const characters_db = require("../../db/characters_db");
-const keys_db = require("../../db/keys_db");
+const logs_db = require('../../db/logs_db');
+const realms_db = require('../../db/realms_db');
+const characters_db = require('../../db/characters_db');
+const keys_db = require('../../db/keys_db');
 
 /**
  * Modules
  */
 
-const axios = require("axios");
-const { toSlug } = require("../../db/setters");
+const axios = require('axios');
+const { toSlug } = require('../../db/setters');
 
 /**
  * getGuild indexing
  */
 
-const getCharacter = require("../getCharacter");
+const getCharacter = require('../getCharacter');
 
 /**
  * Parse all open logs from Kihra's WCL API (https://www.warcraftlogs.com/) for new characters for OSINT-DB (characters)
@@ -53,12 +53,12 @@ const getCharacter = require("../getCharacter");
  * @returns {Promise<void>}
  */
 
-const pub_key = "71255109b6687eb1afa4d23f39f2fa76";
+const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 
 async function indexLogs(
   queryInput = { isIndexed: false },
   bulkSize = 1,
-  queryKeys = { tags: `OSINT-indexCharacters` }
+  queryKeys = { tags: `OSINT-indexCharacters` },
 ) {
   try {
     console.time(`OSINT-${indexLogs.name}`);
@@ -67,14 +67,14 @@ async function indexLogs(
       .find(queryInput)
       .cursor({ batchSize: bulkSize })
       .eachAsync(
-        async (log) => {
+        async log => {
           try {
             /** Request WCL log by it's _id from API */
             let wcl_log = await axios
               .get(
-                `https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${pub_key}`
+                `https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${pub_key}`,
               )
-              .then((res) => {
+              .then(res => {
                 return res.data || { exportedCharacters: [] };
               });
             /** Only if exportedCharacters found in logs */
@@ -95,7 +95,7 @@ async function indexLogs(
                   .lean();
                 if (realm && realm.slug) {
                   let character_OSINT = await characters_db.findById(
-                    toSlug(`${character.name}@${realm.slug}`)
+                    toSlug(`${character.name}@${realm.slug}`),
                   );
                   if (!character_OSINT) {
                     await getCharacter(
@@ -103,7 +103,7 @@ async function indexLogs(
                       character.name,
                       {},
                       token,
-                      `OSINT-${indexLogs.name}`
+                      `OSINT-${indexLogs.name}`,
                     );
                   }
                 }
@@ -117,7 +117,7 @@ async function indexLogs(
             console.error(`E,OSINT-${indexLogs.name},${error}`);
           }
         },
-        { parallel: bulkSize }
+        { parallel: bulkSize },
       );
     connection.close();
     console.timeEnd(`OSINT-${indexLogs.name}`);

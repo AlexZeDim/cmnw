@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema(
   {
     codename: {
       type: String,
-      default: "Unknown",
+      default: 'Unknown',
       required: true,
     },
     clearance: [
@@ -23,7 +23,7 @@ let schema = new mongoose.Schema(
         },
         codeword: {
           type: String,
-          default: "WoW",
+          default: 'WoW',
         },
       },
     ],
@@ -32,13 +32,13 @@ let schema = new mongoose.Schema(
         type: {
           type: String,
           enum: [
-            "discord",
-            "battle.tag",
-            "twitter",
-            "name",
-            "character",
-            "nickname",
-            "codename",
+            'discord',
+            'battle.tag',
+            'twitter',
+            'name',
+            'character',
+            'nickname',
+            'codename',
           ],
           required: true,
         },
@@ -48,9 +48,9 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-let personalities_db = mongoose.model("personalities", schema, "personalities");
+let personalities_db = mongoose.model('personalities', schema, 'personalities');
 
 module.exports = personalities_db;

@@ -3,11 +3,11 @@
  * @returns {string}
  */
 
-exports.toSlug = (string) => {
+exports.toSlug = string => {
   return string
     .toString()
-    .replace(/\s+/g, "-")
-    .replace(/'+/g, "")
+    .replace(/\s+/g, '-')
+    .replace(/'+/g, '')
     .toLowerCase();
 };
 
@@ -16,10 +16,10 @@ exports.toSlug = (string) => {
  * @returns {string}
  */
 
-exports.fromSlug = (string) => {
+exports.fromSlug = string => {
   return (
     string.toString().charAt(0).toUpperCase() +
-    string.slice(1).replace(/-+/g, " ")
+    string.slice(1).replace(/-+/g, ' ')
   );
 };
 
@@ -29,6 +29,6 @@ exports.fromSlug = (string) => {
  * @constructor
  */
 
-exports.Round2 = (number) => {
+exports.Round2 = number => {
   return parseFloat(number.toFixed(2));
 };

@@ -1,18 +1,18 @@
-require("dotenv").config();
-const path = require("path");
-const fs = require("fs");
-const Discord = require("discord.js");
+require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
+const Discord = require('discord.js');
 
 const bot = new Discord.Client();
 bot.commands = new Discord.Collection();
 
-bot.on("ready", () => {
+bot.on('ready', () => {
   console.log(`Logged in as ${bot.user.tag}!`);
 });
 
 const commandFiles = fs
   .readdirSync(path.normalize(`${__dirname}/commands/`))
-  .filter((file) => file.endsWith(".js"));
+  .filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
   const command = require(path.normalize(`${__dirname}/commands/${file}`));
@@ -21,13 +21,13 @@ for (const file of commandFiles) {
 
 const cooldowns = new Discord.Collection();
 
-bot.on("message", async (message) => {
+bot.on('message', async message => {
   if (message.author.bot) return;
 
-  let commandName = "";
+  let commandName = '';
   let args;
 
-  if (message.content.startsWith("direct")) {
+  if (message.content.startsWith('direct')) {
     commandName = message.content.split(/(?<=^\S+)@/)[0];
     args = message.content.split(/(?<=^\S+)@/)[1];
   } else {
@@ -37,13 +37,11 @@ bot.on("message", async (message) => {
 
   let command =
     bot.commands.get(commandName) ||
-    bot.commands.find(
-      (cmd) => cmd.aliases && cmd.aliases.includes(commandName)
-    );
+    bot.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
   if (!command) return;
 
-  if (command.guildOnly && message.channel.type !== "text") {
+  if (command.guildOnly && message.channel.type !== 'text') {
     return message.reply("I can't execute that command inside DMs!");
   }
 
@@ -63,7 +61,7 @@ bot.on("message", async (message) => {
       return message.reply(
         `Please wait ${timeLeft.toFixed(1)} more second(s) before using \`${
           command.name
-        }\` command.`
+        }\` command.`,
       );
     }
   }
@@ -75,7 +73,7 @@ bot.on("message", async (message) => {
     command.execute(message, args, bot);
   } catch (error) {
     console.error(error);
-    await message.reply("There was an error trying to execute that command!");
+    await message.reply('There was an error trying to execute that command!');
   }
 });
 

@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,28 +13,28 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const logs_db = require("../../db/logs_db");
-const realms_db = require("../../db/realms_db");
+const logs_db = require('../../db/logs_db');
+const realms_db = require('../../db/realms_db');
 
 /**
  * Modules
  */
 
-const Xray = require("x-ray");
+const Xray = require('x-ray');
 let x = Xray();
 
 /**
@@ -43,12 +43,12 @@ let x = Xray();
  */
 
 async function fromLogs(
-  queryFind = { locale: "ru_RU" },
+  queryFind = { locale: 'ru_RU' },
   delay = 10,
   startPage = 0,
   endPage = 100,
   faultTolerance = 400,
-  emptyPage = 2
+  emptyPage = 2,
 ) {
   try {
     console.time(`OSINT-${fromLogs.name}`);
@@ -57,34 +57,36 @@ async function fromLogs(
       .lean()
       .cursor({ batchSize: 1 })
       .eachAsync(
-        async (realm) => {
+        async realm => {
           if (realm.slug && realm.wcl_id) {
             let { wcl_id, slug } = realm;
             let ep_counter = 0;
             let ft_counter = 0;
             for (let page = startPage; page < endPage; page++) {
               /** Creating safe delay */
-              await new Promise((resolve) => setTimeout(resolve, delay * 1000));
+              await new Promise(resolve => setTimeout(resolve, delay * 1000));
               /** Parsing page with the requested delay */
               const indexLogs = await x(
                 `https://www.warcraftlogs.com/zone/reports?zone=24&server=${wcl_id}&page=${page}`,
-                ".description-cell",
+                '.description-cell',
                 [
                   {
-                    link: "a@href",
+                    link: 'a@href',
                   },
-                ]
-              ).then((res) => {
+                ],
+              ).then(res => {
                 return res;
               });
               /** If parsed page have results */
               if (indexLogs.length) {
                 for (let index_log of indexLogs) {
-                  if ("link" in index_log) {
+                  if ('link' in index_log) {
                     let link = index_log.link.match(/(.{16})\s*$/g)[0];
-                    if (index_log.link.includes("reports") === true) {
+                    if (index_log.link.includes('reports') === true) {
                       /*** Check logs in collection */
-                      let log = await logs_db.findById({ _id: link });
+                      let log = await logs_db.findById({
+                        _id: link,
+                      });
 
                       if (log) {
                         /** If exists counter +1*/
@@ -123,7 +125,7 @@ async function fromLogs(
             }
           }
         },
-        { parallel: 1 }
+        { parallel: 1 },
       );
     connection.close();
     console.timeEnd(`OSINT-${fromLogs.name}`);

@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { toSlug } = require("./setters");
+const mongoose = require('mongoose');
+const { toSlug } = require('./setters');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -91,22 +91,22 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ name: 1 }, { name: "Name", collation: { strength: 3 } });
-schema.index({ slug: 1 }, { name: "Slug", collation: { strength: 3 } });
+schema.index({ name: 1 }, { name: 'Name', collation: { strength: 3 } });
+schema.index({ slug: 1 }, { name: 'Slug', collation: { strength: 3 } });
 schema.index(
   { name_locale: 1 },
-  { name: "NameLocale", collation: { strength: 3 } }
+  { name: 'NameLocale', collation: { strength: 3 } },
 );
-schema.index({ ticker: 1 }, { name: "Ticker", collation: { strength: 3 } });
-schema.index({ connected_realm_id: 1 }, { name: "ConnectedRealms" });
+schema.index({ ticker: 1 }, { name: 'Ticker', collation: { strength: 3 } });
+schema.index({ connected_realm_id: 1 }, { name: 'ConnectedRealms' });
 schema.index(
-  { name: "text", slug: "text", name_locale: "text", ticker: "text" },
-  { name: "SearchQuery" }
+  { name: 'text', slug: 'text', name_locale: 'text', ticker: 'text' },
+  { name: 'SearchQuery' },
 );
 
-let realms_db = mongoose.model("realms", schema, "realms");
+let realms_db = mongoose.model('realms', schema, 'realms');
 
 module.exports = realms_db;

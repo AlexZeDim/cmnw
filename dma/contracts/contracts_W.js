@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,32 +13,32 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
-const contracts_db = require("../../db/contracts_db");
-const realms_db = require("../../db/realms_db");
-const items_db = require("../../db/items_db");
+const contracts_db = require('../../db/contracts_db');
+const realms_db = require('../../db/realms_db');
+const items_db = require('../../db/items_db');
 
 /**
  * Moment monthsShort =>  Financial Format
  */
-const moment = require("moment");
-moment.updateLocale("en", {
-  monthsShort: ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"],
+const moment = require('moment');
+moment.updateLocale('en', {
+  monthsShort: ['F', 'G', 'H', 'J', 'K', 'M', 'N', 'Q', 'U', 'V', 'X', 'Z'],
 });
 
-const { Round2 } = require("../../db/setters");
+const { Round2 } = require('../../db/setters');
 
 /**
  *
@@ -54,7 +54,7 @@ const standardDeviation = (arr, usePopulation = true) => {
       arr
         .reduce((acc, val) => acc.concat((val - mean) ** 2), [])
         .reduce((acc, val) => acc + val, 0) /
-        (arr.length - (usePopulation ? 0 : 1))
+        (arr.length - (usePopulation ? 0 : 1)),
     ) || 0
   );
 };
@@ -64,7 +64,7 @@ const standardDeviation = (arr, usePopulation = true) => {
  * @returns {number[]}
  */
 
-const arithmeticReturns = (portfolioEquityCurve) => {
+const arithmeticReturns = portfolioEquityCurve => {
   let returns = new Array(portfolioEquityCurve.length);
   returns[0] = 0;
   for (let i = 1; i < portfolioEquityCurve.length; ++i) {
@@ -102,18 +102,18 @@ const VaR = (portfolioEquityCurve, alpha) => {
  * @returns {Promise<void>}
  */
 
-async function contracts_W(arg_realm = "ru_RU") {
+async function contracts_W(arg_realm = 'ru_RU') {
   try {
     console.time(`DMA-${contracts_W.name}`);
     let [realms, items] = await Promise.all([
       realms_db
-        .distinct("connected_realm_id", {
+        .distinct('connected_realm_id', {
           $or: [{ slug: arg_realm }, { locale: arg_realm }],
         })
         .lean(),
       items_db
         .find({
-          $or: [{ _id: 1 }, { expansion: "BFA" }],
+          $or: [{ _id: 1 }, { expansion: 'BFA' }],
         })
         .lean(),
     ]);
@@ -125,32 +125,32 @@ async function contracts_W(arg_realm = "ru_RU") {
       for (let connected_realm_id of realms) {
         let contract_data = await contracts_db
           .find({
-            "date.week": moment().get("week"),
-            type: "D",
+            'date.week': moment().get('week'),
+            type: 'D',
             connected_realm_id: connected_realm_id,
             item_id: _id,
           })
-          .sort("updatedAt")
+          .sort('updatedAt')
           .lean();
         if (contract_data && contract_data.length) {
           /**
            * Create new Week contract
            */
           let contract = await contracts_db.findById(
-            `${code}-${moment().format("WW.YY")}@${connected_realm_id}`
+            `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
           );
 
           if (!contract) {
             contract = new contracts_db({
-              _id: `${code}-${moment().format("WW.YY")}@${connected_realm_id}`,
-              code: `${code}-${moment().format("WW.YY")}`,
+              _id: `${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
+              code: `${code}-${moment().format('WW.YY')}`,
               item_id: _id,
               connected_realm_id: connected_realm_id,
               date: {
-                day: moment().get("date"),
-                week: moment().get("week"),
-                month: moment().get("month") + 1,
-                year: moment().get("year"),
+                day: moment().get('date'),
+                week: moment().get('week'),
+                month: moment().get('month') + 1,
+                year: moment().get('year'),
               },
               type: `W`,
             });
@@ -204,14 +204,18 @@ async function contracts_W(arg_realm = "ru_RU") {
               }
               /** Quantity for item */
               if (quantity) {
-                Object.assign(contract_day, { quantity: quantity });
+                Object.assign(contract_day, {
+                  quantity: quantity,
+                });
                 let { low, high } = quantity;
                 quantity_low_Array.push(low);
                 quantity_high_Array.push(high);
               }
               /** Open Interest (price x quantity) */
               if (open_interest) {
-                Object.assign(contract_day, { open_interest: open_interest });
+                Object.assign(contract_day, {
+                  open_interest: open_interest,
+                });
                 let { low, high } = open_interest;
                 oi_low_Array.push(low);
                 oi_high_Array.push(high);
@@ -258,10 +262,10 @@ async function contracts_W(arg_realm = "ru_RU") {
                 }
                 price_Array.push(price);
                 if (price_size) price_size_Array.push(price_size);
-                if (sellers) sellers.map((x) => sellersArray.add(x));
+                if (sellers) sellers.map(x => sellersArray.add(x));
               });
               dataArray.push(contract_day);
-            }
+            },
           );
 
           contract.price = {
@@ -269,11 +273,11 @@ async function contracts_W(arg_realm = "ru_RU") {
             low: Math.min(...price_low_Array),
             avg: Round2(
               price_Array.reduce((total, next) => total + next, 0) /
-                price_Array.length
+                price_Array.length,
             ),
             change: Round2(
               contract_data[contract_data.length - 1].price.close -
-                contract_data[0].price.open
+                contract_data[0].price.open,
             ),
             high: Math.max(...price_high_Array),
             close: contract_data[contract_data.length - 1].price.close,
@@ -286,7 +290,7 @@ async function contracts_W(arg_realm = "ru_RU") {
 
           if (price_size_Array && price_size_Array.length) {
             contract.risk.stdDev_size = Round2(
-              standardDeviation(price_size_Array)
+              standardDeviation(price_size_Array),
             );
             contract.risk.VaR_size = VaR(price_size_Array, 0.8) || 0;
             contract.price_size = {
@@ -294,11 +298,11 @@ async function contracts_W(arg_realm = "ru_RU") {
               low: Math.min(...price_size_Array),
               change: Round2(
                 price_size_Array[price_size_Array.length - 1] -
-                  price_size_Array[0]
+                  price_size_Array[0],
               ),
               avg: Round2(
                 price_size_Array.reduce((total, next) => total + next, 0) /
-                  price_size_Array.length
+                  price_size_Array.length,
               ),
               high: Math.max(...price_size_Array),
               close: price_size_Array[price_size_Array.length - 1],
@@ -310,7 +314,7 @@ async function contracts_W(arg_realm = "ru_RU") {
             low: Math.min(...quantity_low_Array),
             change: Round2(
               contract_data[contract_data.length - 1].quantity.close -
-                contract_data[0].quantity.open
+                contract_data[0].quantity.open,
             ),
             high: Math.max(...quantity_high_Array),
             close: contract_data[contract_data.length - 1].quantity.close,
@@ -321,7 +325,7 @@ async function contracts_W(arg_realm = "ru_RU") {
             low: Math.min(...oi_low_Array),
             change: Round2(
               contract_data[contract_data.length - 1].open_interest.close -
-                contract_data[0].open_interest.open
+                contract_data[0].open_interest.open,
             ),
             high: Math.max(...oi_high_Array),
             close: contract_data[contract_data.length - 1].open_interest.close,
@@ -333,7 +337,7 @@ async function contracts_W(arg_realm = "ru_RU") {
               low: Math.min(...o_low_Array),
               change: Round2(
                 contract_data[contract_data.length - 1].orders.close -
-                  contract_data[0].orders.open
+                  contract_data[0].orders.open,
               ),
               high: Math.max(...o_high_Array),
               close: contract_data[contract_data.length - 1].orders.close,
@@ -353,7 +357,7 @@ async function contracts_W(arg_realm = "ru_RU") {
               open: contract_data[0].sellers.open,
               change: Round2(
                 contract_data[contract_data.length - 1].sellers.close -
-                  contract_data[0].sellers.open
+                  contract_data[0].sellers.open,
               ),
               close: contract_data[contract_data.length - 1].sellers.close,
               total: sellersArray.size,
@@ -366,7 +370,7 @@ async function contracts_W(arg_realm = "ru_RU") {
           console.info(`C,${contract._id}`);
         } else {
           console.error(
-            `E,${code}-${moment().format("WW.YY")}@${connected_realm_id}`
+            `E,${code}-${moment().format('WW.YY')}@${connected_realm_id}`,
           );
         }
       }

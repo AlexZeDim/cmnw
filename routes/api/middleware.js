@@ -2,8 +2,8 @@
  * Model importing
  */
 
-const items_db = require("../../db/items_db");
-const realms_db = require("../../db/realms_db");
+const items_db = require('../../db/items_db');
+const realms_db = require('../../db/realms_db');
 
 /**
  *
@@ -20,9 +20,9 @@ const itemRealmQuery = async (item, realm) => {
       itemQuery = items_db
         .findOne(
           { $text: { $search: item } },
-          { score: { $meta: "textScore" } }
+          { score: { $meta: 'textScore' } },
         )
-        .sort({ score: { $meta: "textScore" } })
+        .sort({ score: { $meta: 'textScore' } })
         .lean();
     } else {
       itemQuery = items_db.findById(parseInt(item)).lean();
@@ -32,9 +32,9 @@ const itemRealmQuery = async (item, realm) => {
       realmQuery = realms_db
         .findOne(
           { $text: { $search: realm } },
-          { score: { $meta: "textScore" } }
+          { score: { $meta: 'textScore' } },
         )
-        .sort({ score: { $meta: "textScore" } })
+        .sort({ score: { $meta: 'textScore' } })
         .lean();
     } else {
       realmQuery = realms_db.findById(parseInt(realm)).lean();

@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { toSlug } = require("./setters");
+const mongoose = require('mongoose');
+const { toSlug } = require('./setters');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -78,14 +78,14 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ name: 1 }, { name: "Name" });
-schema.index({ "realm.slug": 1 }, { name: "RealmSlug" });
-schema.index({ id: 1, "realm.slug": 1 }, { name: "RenameGuild" });
+schema.index({ name: 1 }, { name: 'Name' });
+schema.index({ 'realm.slug': 1 }, { name: 'RealmSlug' });
+schema.index({ id: 1, 'realm.slug': 1 }, { name: 'RenameGuild' });
 
-let guild_db = mongoose.model("guilds", schema, "guilds");
+let guild_db = mongoose.model('guilds', schema, 'guilds');
 
 //mongoose.connection.close()
 

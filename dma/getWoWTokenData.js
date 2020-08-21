@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,29 +13,29 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const wowtoken_db = require("../db/wowtoken_db");
-const keys_db = require("../db/keys_db");
+const wowtoken_db = require('../db/wowtoken_db');
+const keys_db = require('../db/keys_db');
 
 /**
  * Modules
  */
 
-const battleNetWrapper = require("battlenet-api-wrapper");
-const { Round2 } = require("../db/setters");
+const battleNetWrapper = require('battlenet-api-wrapper');
+const { Round2 } = require('../db/setters');
 
 /**
  * @param queryKeys
@@ -47,7 +47,7 @@ async function getWoWTokenData(queryKeys = { tags: `DMA` }) {
     console.time(`DMA-${getWoWTokenData.name}`);
     const { _id, secret, token } = await keys_db.findOne(queryKeys);
     const bnw = new battleNetWrapper();
-    await bnw.init(_id, secret, token, "eu", "en_GB");
+    await bnw.init(_id, secret, token, 'eu', 'en_GB');
     const {
       last_updated_timestamp,
       price,
@@ -55,12 +55,12 @@ async function getWoWTokenData(queryKeys = { tags: `DMA` }) {
       statusCode,
     } = await bnw.WowGameData.getWowTokenIndex();
     const wt = await wowtoken_db
-      .findOne({ region: "eu" })
-      .sort("-lastModified");
+      .findOne({ region: 'eu' })
+      .sort('-lastModified');
     if (statusCode === 200) {
       let wowtoken = new wowtoken_db({
         _id: last_updated_timestamp,
-        region: "eu",
+        region: 'eu',
         price: Round2(price / 10000),
         lastModified: lastModified,
       });

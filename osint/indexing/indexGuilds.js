@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,28 +13,28 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const guild_db = require("../../db/guilds_db");
-const keys_db = require("../../db/keys_db");
+const guild_db = require('../../db/guilds_db');
+const keys_db = require('../../db/keys_db');
 
 /**
  * getGuild indexing
  */
 
-const getGuild = require("../getGuild");
+const getGuild = require('../getGuild');
 
 /**
  * Indexing every guild in bulks from OSINT-DB for updated information
@@ -47,7 +47,7 @@ const getGuild = require("../getGuild");
 async function indexGuild(
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
-  bulkSize = 2
+  bulkSize = 2,
 ) {
   try {
     console.time(`OSINT-${indexGuild.name}`);
@@ -58,15 +58,15 @@ async function indexGuild(
       .cursor({ batchSize: bulkSize })
       .eachAsync(
         async ({ _id }) => {
-          const [guildName, realmSlug] = _id.split("@");
+          const [guildName, realmSlug] = _id.split('@');
           await getGuild(
             realmSlug,
             guildName,
             token,
-            `OSINT-${indexGuild.name}`
+            `OSINT-${indexGuild.name}`,
           );
         },
-        { parallel: bulkSize }
+        { parallel: bulkSize },
       );
     connection.close();
     console.timeEnd(`OSINT-${indexGuild.name}`);

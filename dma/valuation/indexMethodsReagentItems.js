@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,21 +13,21 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const pricing_methods = require("../../db/pricing_methods_db");
+const pricing_methods = require('../../db/pricing_methods_db');
 
 /**
  * This function add reagent_items field
@@ -40,28 +40,28 @@ async function indexMethodsReagentItems() {
       .aggregate([
         {
           $lookup: {
-            from: "items",
-            localField: "reagents._id",
-            foreignField: "_id",
-            as: "reagent_items",
+            from: 'items',
+            localField: 'reagents._id',
+            foreignField: '_id',
+            as: 'reagent_items',
           },
         },
         {
           $addFields: {
             reagent_items: {
               $map: {
-                input: "$reagent_items",
-                as: "ri",
+                input: '$reagent_items',
+                as: 'ri',
                 in: {
                   $mergeObjects: [
-                    "$$ri",
+                    '$$ri',
                     {
                       $arrayElemAt: [
                         {
                           $filter: {
-                            input: "$reagents",
+                            input: '$reagents',
                             cond: {
-                              $eq: ["$$this._id", "$$ri._id"],
+                              $eq: ['$$this._id', '$$ri._id'],
                             },
                           },
                         },
@@ -77,17 +77,17 @@ async function indexMethodsReagentItems() {
       ])
       .cursor({ batchSize: 1 })
       .exec();
-    cursor.on("data", async (pricing_method) => {
+    cursor.on('data', async pricing_method => {
       cursor.pause();
       let method = await pricing_methods.findByIdAndUpdate(
         pricing_method._id,
-        pricing_method
+        pricing_method,
       );
       console.log(method);
       cursor.resume();
     });
-    cursor.on("close", async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+    cursor.on('close', async () => {
+      await new Promise(resolve => setTimeout(resolve, 5000));
       connection.close();
     });
   } catch (err) {

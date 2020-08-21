@@ -2,8 +2,8 @@
  * Model importing
  */
 
-const auctions_db = require("../db/auctions_db");
-const realms_db = require("../db/realms_db");
+const auctions_db = require('../db/auctions_db');
+const realms_db = require('../db/realms_db');
 
 /**
  * @param item_id
@@ -17,48 +17,48 @@ async function auctionsCrossRealmData(item_id = 168487) {
     let [realms, quotes] = await Promise.all([
       realms_db.aggregate([
         {
-          $match: { locale: "ru_RU" },
+          $match: { locale: 'ru_RU' },
         },
         {
           $group: {
             _id: {
-              connected_realm_id: "$connected_realm_id",
+              connected_realm_id: '$connected_realm_id',
             },
-            connected_realms: { $push: "$$ROOT" },
+            connected_realms: { $push: '$$ROOT' },
           },
         },
         {
           $project: {
-            _id: "$_id.connected_realm_id",
-            connected_realms: "$connected_realms",
+            _id: '$_id.connected_realm_id',
+            connected_realms: '$connected_realms',
           },
         },
       ]),
       auctions_db
         .aggregate([
           {
-            $match: { "item.id": item_id },
+            $match: { 'item.id': item_id },
           },
           {
             $group: {
               _id: {
-                connected_realm_id: "$connected_realm_id",
-                latest_timestamp: { $max: "$last_modified" },
+                connected_realm_id: '$connected_realm_id',
+                latest_timestamp: { $max: '$last_modified' },
               },
-              price: { $addToSet: "$unit_price" },
+              price: { $addToSet: '$unit_price' },
             },
           },
           {
-            $unwind: "$price",
+            $unwind: '$price',
           },
           {
             $group: {
               _id: null,
-              price: { $addToSet: "$price" },
+              price: { $addToSet: '$price' },
             },
           },
         ])
-        .then((data) => {
+        .then(data => {
           return data[0].price.sort((a, b) => a - b);
         }),
     ]);
@@ -92,40 +92,40 @@ async function auctionsCrossRealmData(item_id = 168487) {
 
     const orders = await auctions_db.aggregate([
       {
-        $match: { "item.id": item_id },
+        $match: { 'item.id': item_id },
       },
       {
         $group: {
           _id: {
-            connected_realm_id: "$connected_realm_id",
+            connected_realm_id: '$connected_realm_id',
           },
           latest: {
-            $max: "$last_modified",
+            $max: '$last_modified',
           },
           data: {
-            $push: "$$ROOT",
+            $push: '$$ROOT',
           },
         },
       },
       {
-        $unwind: "$data",
+        $unwind: '$data',
       },
       {
         $addFields: {
-          "data.latest": {
+          'data.latest': {
             $cond: {
               if: {
-                $eq: ["$data.last_modified", "$latest"],
+                $eq: ['$data.last_modified', '$latest'],
               },
-              then: "$latest",
-              else: "$false",
+              then: '$latest',
+              else: '$false',
             },
           },
         },
       },
       {
         $replaceRoot: {
-          newRoot: "$data",
+          newRoot: '$data',
         },
       },
       {
@@ -139,12 +139,14 @@ async function auctionsCrossRealmData(item_id = 168487) {
       {
         $group: {
           _id: {
-            connected_realm_id: "$connected_realm_id",
-            last_modified: "$latest",
-            price: "$unit_price",
+            connected_realm_id: '$connected_realm_id',
+            last_modified: '$latest',
+            price: '$unit_price',
           },
-          quantity: { $sum: "$quantity" },
-          open_interest: { $sum: { $multiply: ["$unit_price", "$quantity"] } },
+          quantity: { $sum: '$quantity' },
+          open_interest: {
+            $sum: { $multiply: ['$unit_price', '$quantity'] },
+          },
           orders: { $sum: 1 },
         },
       },
@@ -159,7 +161,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
       const corrected_price = priceRange_array.reduce((prev, curr) =>
         Math.abs(curr - order._id.price) < Math.abs(prev - order._id.price)
           ? curr
-          : prev
+          : prev,
       );
       if (priceRange_array.indexOf(corrected_price) === -1) {
         /** If price rounded is lower then floor, yAxis = 0 */
@@ -174,7 +176,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
         y = priceRange_array.indexOf(corrected_price);
       }
       /** find element in chartArray by its xAxis and yAxis coordinates and add values */
-      chartArray.filter((el) => {
+      chartArray.filter(el => {
         if (el.x === x && el.y === y) {
           el.value = el.value + order.quantity;
           el.oi = el.oi + order.open_interest;

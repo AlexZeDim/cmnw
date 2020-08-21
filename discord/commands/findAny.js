@@ -1,22 +1,22 @@
-const { MessageEmbed } = require("discord.js");
-const axios = require("axios");
-require("dotenv").config();
+const { MessageEmbed } = require('discord.js');
+const axios = require('axios');
+require('dotenv').config();
 
 module.exports = {
-  name: "findAny",
+  name: 'findAny',
   description:
-    "This command will find out any match for any available hash value",
+    'This command will find out any match for any available hash value',
   aliases: [
-    "FindAny",
-    "FINDANY",
-    "find_any",
-    "find_Any",
-    "Find_Any",
-    "FIND_ANY",
+    'FindAny',
+    'FINDANY',
+    'find_any',
+    'find_Any',
+    'Find_Any',
+    'FIND_ANY',
   ],
   args: true,
   async execute(message, args) {
-    const params = args.split("@");
+    const params = args.split('@');
     const [query, realm_arg] = params;
 
     let embed = new MessageEmbed();
@@ -43,7 +43,7 @@ module.exports = {
                             [Conglomerat](https://${process.env.domain}/find/any/${query})
                             ─────────────
                             `,
-                true
+                true,
               );
               break;
             }
@@ -55,12 +55,12 @@ module.exports = {
                 process.env.domain
               }/character/${match[i].realm.slug}/${match[i].name})
                         ${
-                          "realm" in match[i]
+                          'realm' in match[i]
                             ? `Realm: ${match[i].realm.name}`
                             : ``
                         } 
                         ${
-                          "faction" in match[i]
+                          'faction' in match[i]
                             ? `Faction: ${match[i].faction}`
                             : ``
                         } 
@@ -70,17 +70,17 @@ module.exports = {
                             : ``
                         } 
                         ${
-                          guild && typeof guild.rank !== "undefined"
+                          guild && typeof guild.rank !== 'undefined'
                             ? `Rank: ${
                                 parseInt(guild.rank) === 0
-                                  ? "GM"
+                                  ? 'GM'
                                   : `R${guild.rank}`
                               }`
                             : ``
                         } 
                         ─────────────
                         `,
-              true
+              true,
             );
           }
         } else {
@@ -89,7 +89,7 @@ module.exports = {
             `
                     No match found
                     ─────────────
-                    `
+                    `,
           );
         }
         embed.setFooter(`OSINT-DB`);

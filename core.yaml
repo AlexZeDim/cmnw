@@ -1,18 +1,18 @@
 apps:
   - script: ./bin/getTokens.js
-    name: "CORE-getToken"
+    name: 'CORE-getToken'
     instances: 1
     autorestart: true
-    max_memory_restart: "100M"
-    cron_restart: "*/1 * * * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    max_memory_restart: '100M'
+    cron_restart: '*/1 * * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./bin/www.js
-    name: "CORE-api"
+    name: 'CORE-api'
     instances: 1
     autorestart: true
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./discord/bot.js
-    name: "CORE-discord"
+    name: 'CORE-discord'
     instances: 1
     autorestart: true
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    log_date_format: 'DD/MM HH:mm:ss.SSS'

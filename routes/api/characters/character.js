@@ -1,20 +1,20 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
 /**
  * Model importing
  */
 
-const realms_db = require("../../../db/realms_db");
-const characters_db = require("../../../db/characters_db");
+const realms_db = require('../../../db/realms_db');
+const characters_db = require('../../../db/characters_db');
 
 /**
  * Modules
  */
 
-const moment = require("moment");
+const moment = require('moment');
 
-router.get("/:nameSlug@:realmSlug", async function (req, res) {
+router.get('/:nameSlug@:realmSlug', async function (req, res) {
   try {
     let { nameSlug, realmSlug } = req.params;
     nameSlug = nameSlug.toLowerCase();
@@ -24,7 +24,9 @@ router.get("/:nameSlug@:realmSlug", async function (req, res) {
         .findById(`${nameSlug}@${realmSlug}`)
         .lean();
       if (!characterData) {
-        let realm = await realms_db.findOne({ $text: { $search: realmSlug } });
+        let realm = await realms_db.findOne({
+          $text: { $search: realmSlug },
+        });
         if (realm) {
           let outdated = false;
           characterData = await characters_db
@@ -33,14 +35,14 @@ router.get("/:nameSlug@:realmSlug", async function (req, res) {
           if (
             characterData &&
             moment(characterData.lastModified).isBefore(
-              moment().subtract(30, "days")
+              moment().subtract(30, 'days'),
             )
           ) {
             outdated = true;
           }
           if (!characterData || outdated) {
-            const getCharacter = require("../../../osint/getCharacter");
-            const keys_db = require("../../../db/keys_db");
+            const getCharacter = require('../../../osint/getCharacter');
+            const keys_db = require('../../../db/keys_db');
             const { token } = await keys_db.findOne({
               tags: `OSINT-indexCharacters`,
             });
@@ -50,7 +52,7 @@ router.get("/:nameSlug@:realmSlug", async function (req, res) {
               {},
               token,
               `OSINT-userInput`,
-              true
+              true,
             );
             characterData = await characters_db
               .findById(`${nameSlug}@${realm.slug}`)
@@ -60,7 +62,7 @@ router.get("/:nameSlug@:realmSlug", async function (req, res) {
       }
       await res.status(200).json(characterData);
     } else {
-      await res.status(404).json({ error: "Not found" });
+      await res.status(404).json({ error: 'Not found' });
     }
   } catch (e) {
     await res.status(500).json(e);

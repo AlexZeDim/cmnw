@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -45,16 +45,16 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-schema.index({ createdAt: -1 }, { name: "TTL", expireAfterSeconds: 86400 });
+schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 86400 });
 schema.index(
   { connected_realm_id: 1, last_modified: -1 },
-  { name: "TimestampCheck" }
+  { name: 'TimestampCheck' },
 );
-schema.index({ "item.id": -1, connected_realm_id: 1 }, { name: "PriceLevel" });
+schema.index({ 'item.id': -1, connected_realm_id: 1 }, { name: 'PriceLevel' });
 
-let auctions_db = mongoose.model("auctions", schema, "auctions");
+let auctions_db = mongoose.model('auctions', schema, 'auctions');
 
 module.exports = auctions_db;

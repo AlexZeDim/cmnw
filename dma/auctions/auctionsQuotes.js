@@ -1,5 +1,5 @@
-const auctions_db = require("../../db/auctions_db");
-const realms_db = require("../../db/realms_db");
+const auctions_db = require('../../db/auctions_db');
+const realms_db = require('../../db/realms_db');
 
 /**
  * @param item_id
@@ -19,7 +19,7 @@ async function auctionsQuotes(item_id = 168487, connected_realm_id = 1602) {
   try {
     const t = await realms_db
       .findOne({ connected_realm_id: connected_realm_id })
-      .select("auctions")
+      .select('auctions')
       .lean();
     if (t) {
       return await auctions_db
@@ -27,47 +27,49 @@ async function auctionsQuotes(item_id = 168487, connected_realm_id = 1602) {
           {
             $match: {
               last_modified: t.auctions,
-              "item.id": item_id,
+              'item.id': item_id,
               connected_realm_id: connected_realm_id,
             },
           },
           {
             $project: {
-              _id: "$last_modified",
-              id: "$id",
-              quantity: "$quantity",
+              _id: '$last_modified',
+              id: '$id',
+              quantity: '$quantity',
               price: {
-                $ifNull: ["$buyout", { $ifNull: ["$bid", "$unit_price"] }],
+                $ifNull: ['$buyout', { $ifNull: ['$bid', '$unit_price'] }],
               },
             },
           },
           {
             $group: {
-              _id: "$_id",
-              quantity: { $sum: "$quantity" },
-              open_interest: { $sum: { $multiply: ["$price", "$quantity"] } },
-              min: { $min: "$price" },
+              _id: '$_id',
+              quantity: { $sum: '$quantity' },
+              open_interest: {
+                $sum: { $multiply: ['$price', '$quantity'] },
+              },
+              min: { $min: '$price' },
               min_size: {
                 $min: {
                   $cond: [
-                    { $gte: ["$quantity", 200] },
-                    "$price",
-                    { $min: "$price" },
+                    { $gte: ['$quantity', 200] },
+                    '$price',
+                    { $min: '$price' },
                   ],
                 },
               },
-              orders: { $addToSet: "$id" },
+              orders: { $addToSet: '$id' },
             },
           },
         ])
-        .then((result) => {
+        .then(result => {
           if (result.length) {
             return result[0];
           } else {
             return empty;
           }
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
           return empty;
         });

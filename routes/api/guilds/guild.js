@@ -1,19 +1,19 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
 /**
  * Model importing
  */
 
-const realms_db = require("../../../db/realms_db");
-const guilds_db = require("../../../db/guilds_db");
-const { toSlug } = require("../../../db/setters");
+const realms_db = require('../../../db/realms_db');
+const guilds_db = require('../../../db/guilds_db');
+const { toSlug } = require('../../../db/setters');
 
 /**
  * Modules
  */
 
-router.get("/:guildSlug@:realmSlug", async function (req, res) {
+router.get('/:guildSlug@:realmSlug', async function (req, res) {
   try {
     let { guildSlug, realmSlug } = req.params;
     guildSlug = toSlug(guildSlug);
@@ -23,14 +23,16 @@ router.get("/:guildSlug@:realmSlug", async function (req, res) {
       .lean();
 
     if (!guildData) {
-      let realm = await realms_db.findOne({ $text: { $search: realmSlug } });
+      let realm = await realms_db.findOne({
+        $text: { $search: realmSlug },
+      });
       if (realm) {
         guildData = await guilds_db
           .findById(`${guildSlug}@${realm.slug}`)
           .lean();
         if (!guildData) {
-          const getGuild = require("../../../osint/getGuild");
-          const keys_db = require("../../../db/keys_db");
+          const getGuild = require('../../../osint/getGuild');
+          const keys_db = require('../../../db/keys_db');
           const { token } = await keys_db.findOne({
             tags: `OSINT-indexGuilds`,
           });
@@ -39,7 +41,7 @@ router.get("/:guildSlug@:realmSlug", async function (req, res) {
             .findById(`${guildSlug}@${realm.slug}`)
             .lean();
           if (!guildData) {
-            await res.status(404).json({ error: "Not found" });
+            await res.status(404).json({ error: 'Not found' });
           }
         }
       }
@@ -53,10 +55,10 @@ router.get("/:guildSlug@:realmSlug", async function (req, res) {
       },
       {
         $lookup: {
-          from: "characters",
-          localField: "members._id",
-          foreignField: "_id",
-          as: "members",
+          from: 'characters',
+          localField: 'members._id',
+          foreignField: '_id',
+          as: 'members',
         },
       },
     ]);

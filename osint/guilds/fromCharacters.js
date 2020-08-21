@@ -2,8 +2,8 @@
  * Connection with DB
  */
 
-const { connect, connection } = require("mongoose");
-require("dotenv").config();
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -13,36 +13,36 @@ connect(
     bufferMaxEntries: 0,
     retryWrites: true,
     useCreateIndex: true,
-    w: "majority",
+    w: 'majority',
     family: 4,
-  }
+  },
 );
 
-connection.on("error", console.error.bind(console, "connection error:"));
-connection.once("open", () =>
-  console.log("Connected to database on " + process.env.hostname)
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
 );
 
 /**
  * Model importing
  */
 
-const characters_db = require("../../db/characters_db");
-const realms_db = require("../../db/realms_db");
-const keys_db = require("../../db/keys_db");
-const guilds_db = require("../../db/guilds_db");
+const characters_db = require('../../db/characters_db');
+const realms_db = require('../../db/realms_db');
+const keys_db = require('../../db/keys_db');
+const guilds_db = require('../../db/guilds_db');
 
 /**
  * getGuild indexing
  */
 
-const getGuild = require("../getGuild");
+const getGuild = require('../getGuild');
 
 /**
  * Modules
  */
 
-const { toSlug } = require("../../db/setters");
+const { toSlug } = require('../../db/setters');
 
 /**
  * This function takes every unique guild name from OSINT-DB (characters) and
@@ -53,8 +53,8 @@ const { toSlug } = require("../../db/setters");
  */
 
 async function fromCharacters(
-  queryFind = { locale: "ru_RU" },
-  queryKeys = { tags: `OSINT-indexGuilds` }
+  queryFind = { locale: 'ru_RU' },
+  queryKeys = { tags: `OSINT-indexGuilds` },
 ) {
   try {
     console.time(`OSINT-${fromCharacters.name}`);
@@ -63,11 +63,13 @@ async function fromCharacters(
       .lean()
       .cursor()
       .eachAsync(
-        async (realm) => {
+        async realm => {
           if (realm.slug) {
             const { token } = await keys_db.findOne(queryKeys);
             let guild_slugs = await characters_db
-              .distinct("guild.slug", { "realm.slug": realm.slug })
+              .distinct('guild.slug', {
+                'realm.slug': realm.slug,
+              })
               .lean();
             for (let guild_slug of guild_slugs) {
               /**
@@ -81,13 +83,13 @@ async function fromCharacters(
                   realm.slug,
                   guild_slug,
                   token,
-                  `OSINT-${fromCharacters.name}`
+                  `OSINT-${fromCharacters.name}`,
                 );
               }
             }
           }
         },
-        { parallel: 1 }
+        { parallel: 1 },
       );
     connection.close();
     console.timeEnd(`OSINT-${fromCharacters.name}`);

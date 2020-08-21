@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -101,27 +101,27 @@ let schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 schema.index(
   {
-    ticker: "text",
-    "name.en_GB": "text",
-    "name.ru_RU": "text",
+    ticker: 'text',
+    'name.en_GB': 'text',
+    'name.ru_RU': 'text',
   },
   {
     weights: {
       ticker: 1,
-      "name.en_GB": 1,
-      "name.ru_RU": 1,
+      'name.en_GB': 1,
+      'name.ru_RU': 1,
     },
-    name: "SearchQuery",
-  }
+    name: 'SearchQuery',
+  },
 );
 
-schema.index({ expansion: 1, is_commdty: 1 }, { name: "Contracts" });
+schema.index({ expansion: 1, is_commdty: 1 }, { name: 'Contracts' });
 
-let items_db = mongoose.model("items", schema, "items");
+let items_db = mongoose.model('items', schema, 'items');
 
 module.exports = items_db;

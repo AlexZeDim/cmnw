@@ -1,51 +1,51 @@
 apps:
   - script: ./osint/indexing/indexCharacters.js
-    name: "OSINT-indexCharacters"
+    name: 'OSINT-indexCharacters'
     autorestart: true
     instances: 1
-    cron_restart: "0 6 */2 * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    cron_restart: '0 6 */2 * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: NULL
     min_uptime: 5000
     restart_delay: 3600000
   - script: ./osint/indexing/indexGuilds.js
-    name: "OSINT-indexGuilds"
+    name: 'OSINT-indexGuilds'
     instances: 1
     autorestart: true
-    cron_restart: "15 */6 * * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    cron_restart: '15 */6 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: NULL
     min_uptime: 5000
     restart_delay: 1800000
   - script: ./osint/characters/fromLogs.js
-    name: "OSINT-fromLogs"
+    name: 'OSINT-fromLogs'
     instances: 1
     autorestart: true
-    max_memory_restart: "1G"
-    cron_restart: "0 2 * * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    max_memory_restart: '1G'
+    cron_restart: '0 2 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
   - script: ./osint/indexing/indexLogs.js
-    name: "OSINT-indexLogs"
+    name: 'OSINT-indexLogs'
     instances: 1
     autorestart: true
-    max_memory_restart: "1G"
-    cron_restart: "0 3 * * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    max_memory_restart: '1G'
+    cron_restart: '0 3 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
   - script: ./osint/guilds/fromCharacters.js
-    name: "OSINT-fromCharacters"
+    name: 'OSINT-fromCharacters'
     instances: 1
     autorestart: true
-    max_memory_restart: "1G"
-    cron_restart: "30 3 * * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    max_memory_restart: '1G'
+    cron_restart: '30 3 * * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./osint/guilds/fromJSON.js
-    name: "OSINT-fromJSON"
+    name: 'OSINT-fromJSON'
     instances: 1
     autorestart: true
-    max_memory_restart: "1G"
-    cron_restart: "0 5 1,15 * *"
-    log_date_format: "DD/MM HH:mm:ss.SSS"
+    max_memory_restart: '1G'
+    cron_restart: '0 5 1,15 * *'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

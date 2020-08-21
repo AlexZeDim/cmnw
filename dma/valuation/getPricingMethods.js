@@ -1,10 +1,10 @@
-const pricing_methods = require("../../db/pricing_methods_db");
+const pricing_methods = require('../../db/pricing_methods_db');
 
 async function getPricingMethods(id = 15389, derivative = false) {
   try {
-    let query = [{ type: "primary", item_quantity: { $ne: 0 } }];
+    let query = [{ type: 'primary', item_quantity: { $ne: 0 } }];
     if (derivative) {
-      query.push({ type: "derivative" });
+      query.push({ type: 'derivative' });
     }
     return await pricing_methods.aggregate([
       {
@@ -29,37 +29,37 @@ async function getPricingMethods(id = 15389, derivative = false) {
         $addFields: {
           item_id: {
             $filter: {
-              input: ["$item_id", "$horde_item_id", "$alliance_item_id"],
-              as: "d",
+              input: ['$item_id', '$horde_item_id', '$alliance_item_id'],
+              as: 'd',
               cond: {
-                $ne: ["$$d", null],
+                $ne: ['$$d', null],
               },
             },
           },
         },
       },
       {
-        $unset: ["alliance_item_id", "horde_item_id"],
+        $unset: ['alliance_item_id', 'horde_item_id'],
       },
       {
         $unwind: {
-          path: "$item_id",
+          path: '$item_id',
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $group: {
-          _id: "$item_id",
+          _id: '$item_id',
           max: {
-            $max: "$rank",
+            $max: '$rank',
           },
           data: {
-            $push: "$$ROOT",
+            $push: '$$ROOT',
           },
         },
       },
       {
-        $unwind: "$data",
+        $unwind: '$data',
       },
       {
         $match: {
@@ -68,43 +68,43 @@ async function getPricingMethods(id = 15389, derivative = false) {
               {
                 $eq: [
                   {
-                    $type: "$data.rank",
+                    $type: '$data.rank',
                   },
-                  "missing",
+                  'missing',
                 ],
               },
-              { $eq: ["$data.rank", "$max"] },
+              { $eq: ['$data.rank', '$max'] },
             ],
           },
         },
       },
       {
-        $replaceWith: "$data",
+        $replaceWith: '$data',
       },
       {
         $lookup: {
-          from: "items",
-          localField: "reagents._id",
-          foreignField: "_id",
-          as: "reagent_items",
+          from: 'items',
+          localField: 'reagents._id',
+          foreignField: '_id',
+          as: 'reagent_items',
         },
       },
       {
         $addFields: {
           reagent_items: {
             $map: {
-              input: "$reagent_items",
-              as: "ri",
+              input: '$reagent_items',
+              as: 'ri',
               in: {
                 $mergeObjects: [
-                  "$$ri",
+                  '$$ri',
                   {
                     $arrayElemAt: [
                       {
                         $filter: {
-                          input: "$reagents",
+                          input: '$reagents',
                           cond: {
-                            $eq: ["$$this._id", "$$ri._id"],
+                            $eq: ['$$this._id', '$$ri._id'],
                           },
                         },
                       },

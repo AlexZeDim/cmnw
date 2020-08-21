@@ -49,3 +49,9 @@ apps:
     cron_restart: '0 5 1,15 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
+  - script: ./voluspa/getPersonalities.js
+    name: 'VOLUSPA-getPersonalities'
+    instances: 1
+    autorestart: true
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    restart_delay: 300000

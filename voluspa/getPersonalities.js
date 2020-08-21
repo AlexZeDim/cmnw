@@ -42,9 +42,6 @@ async function T() {
           },
         },
         {
-          $limit: 1000,
-        },
-        {
           $group: {
             _id: {
               realm: '$realm.slug',
@@ -79,16 +76,15 @@ async function T() {
             type: 'character',
             value: a,
           }));
-          /*            let x = new personalities_db({
+          let persona = new personalities_db({
                 codename: 'Unknown',
-                clearance:clearance,
+                clearance: clearance,
                 aliases: aliases
-            })*/
-          console.log(identity);
+            })
+          persona.save();
         },
         { parallel: 10 },
       );
-
     connection.close();
     console.timeEnd(`DMA-${T.name}`);
   } catch (err) {

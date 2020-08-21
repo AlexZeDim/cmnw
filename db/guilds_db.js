@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { toSlug } = require('./setters');
+const mongoose = require("mongoose");
+const { toSlug } = require("./setters");
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -14,73 +14,78 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });*/
 
-let schema = new mongoose.Schema({
+let schema = new mongoose.Schema(
+  {
     _id: {
-        type: String,
+      type: String,
     },
     id: {
-        type: Number
+      type: Number,
     },
     name: {
-        type: String,
+      type: String,
     },
     realm: {
-        id: Number,
-        name: String,
-        slug: {
-            type: String,
-            set: toSlug,
-        },
+      id: Number,
+      name: String,
+      slug: {
+        type: String,
+        set: toSlug,
+      },
     },
     faction: {
-        type: String
+      type: String,
     },
     crest: {
-        emblem: Object,
-        border: Object,
-        background: Object
+      emblem: Object,
+      border: Object,
+      background: Object,
     },
-    members: [{
+    members: [
+      {
         _id: {
-            type: String,
-            set: toSlug,
+          type: String,
+          set: toSlug,
         },
         id: Number,
         rank: Number,
-    }],
+      },
+    ],
     achievement_points: {
-        type: Number
+      type: Number,
     },
     member_count: {
-        type: Number
+      type: Number,
     },
     lastModified: {
-        type: Date
+      type: Date,
     },
     created_timestamp: {
-        type: Date
+      type: Date,
     },
     statusCode: {
-        type: Number
+      type: Number,
     },
     isWatched: {
-        type: Boolean
+      type: Boolean,
     },
     createdBy: {
-        type: String
+      type: String,
     },
     updatedBy: {
-        type: String
+      type: String,
     },
-},{
-    timestamps: true
-});
+  },
+  {
+    timestamps: true,
+  }
+);
 
-schema.index({ "name": 1 },{name: 'Name'});
-schema.index({ "realm.slug": 1 } ,{name: 'RealmSlug'});
-schema.index({ "id": 1, "realm.slug": 1 } ,{name: 'RenameGuild'});
+schema.index({ name: 1 }, { name: "Name" });
+schema.index({ "realm.slug": 1 }, { name: "RealmSlug" });
+schema.index({ id: 1, "realm.slug": 1 }, { name: "RenameGuild" });
 
-let guild_db = mongoose.model('guilds', schema, 'guilds');
+let guild_db = mongoose.model("guilds", schema, "guilds");
 
 //mongoose.connection.close()
 

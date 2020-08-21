@@ -4,8 +4,12 @@
  */
 
 exports.toSlug = (string) => {
-    return string.toString().replace(/\s+/g, "-").replace(/'+/g, "").toLowerCase();
-}
+  return string
+    .toString()
+    .replace(/\s+/g, "-")
+    .replace(/'+/g, "")
+    .toLowerCase();
+};
 
 /**
  * @param string
@@ -13,8 +17,11 @@ exports.toSlug = (string) => {
  */
 
 exports.fromSlug = (string) => {
-    return string.toString().charAt(0).toUpperCase() + string.slice(1).replace(/-+/g," ")
-}
+  return (
+    string.toString().charAt(0).toUpperCase() +
+    string.slice(1).replace(/-+/g, " ")
+  );
+};
 
 /**
  * @param number
@@ -23,5 +30,5 @@ exports.fromSlug = (string) => {
  */
 
 exports.Round2 = (number) => {
-    return parseFloat((number).toFixed(2));
-}
+  return parseFloat(number.toFixed(2));
+};

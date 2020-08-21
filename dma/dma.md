@@ -1,62 +1,62 @@
 # DMA
 
- - Items
- - Auctions
- - Golds
- - Contracts
- - Valuations
- - WoWToken
+- Items
+- Auctions
+- Golds
+- Contracts
+- Valuations
+- WoWToken
 
 ## Items
 
-Items collection is a fundamental part of DMA. Almost every function based on it. 
+Items collection is a fundamental part of DMA. Almost every function based on it.
 It doesn't have an endpoint directly, but instead, this data provides in every endpoint request.
 
-Most of the item's data are from Battle.net API, but not all of them. 
+Most of the item's data are from Battle.net API, but not all of them.
 And the most sensitive part has usually been imported via `*.csv` files or added in sophisticated way.
 
 Data sources:
 
- - Battle.net API
- - WoW.tools (*csv import*)
- - User defined (*csv import*)
- 
+- Battle.net API
+- WoW.tools (_csv import_)
+- User defined (_csv import_)
+
 ## Auctions
 
-The spine of this world. Run cron task evey 10 minutes to a scan an updated market data. 
+The spine of this world. Run cron task evey 10 minutes to a scan an updated market data.
 It is provided by `getAuctionHouseData` Battle.net API endpoint. Contracts and evaluations data have been derived from the `auctions` collection.
 
 #### Functions
 
 There are two basic functions for working with collection data itself:
- - auctionsData (**item_id:** *Number*, **connected_realm_id:** *Number*) — returns array of orders data for selected item and realm on the latest timestamp.
- - auctionsQuotes (**item_id:** *Number*, **connected_realm_id:** *Number*) — returns aggregated object of quotes for selected item and realm on latest timestamp.
+
+- auctionsData (**item_id:** _Number_, **connected_realm_id:** _Number_) — returns array of orders data for selected item and realm on the latest timestamp.
+- auctionsQuotes (**item_id:** _Number_, **connected_realm_id:** _Number_) — returns aggregated object of quotes for selected item and realm on latest timestamp.
 
 ## Gold
 
 Gold data collection is precisely the same as auction data, except it has `sellers` attribute, instead of `orders` and only one basic function.
-Data feed has been provided by the hugest ru-WoW gold exchange website: [FunPay.ru](https://funpay.ru). 
+Data feed has been provided by the hugest ru-WoW gold exchange website: [FunPay.ru](https://funpay.ru).
 
 #### Functions
 
- - goldsData (**connected_realm_id:** *Number*) — returns array of orders for a selected realm on the latest timestamp.
+- goldsData (**connected_realm_id:** _Number_) — returns array of orders for a selected realm on the latest timestamp.
 
 ## Contracts
 
-Contracts is name of a historical pricing data management system. Quotes are indexing every hour by `tod.js` 
+Contracts is name of a historical pricing data management system. Quotes are indexing every hour by `tod.js`
 This data formed only for the latest expansion `COMMODITY` items, which have `unit_price` field and gold data. The result information have been stored in `contracts` collection.
 IDs formed by `item_id-timestamp@connected_realm` pattern.
 
- #### Endpoints
- 
- - INTRADAY / TOD
- - CURRENT WEEK / WEEK
- - CURRENT MONTH / MONTH
- - YESTERDAY / YTD
- - LAST WEEK / LASTWEEK
- - LAST MONTH / LASTMONTH
- - FROM : TO / CUSTOM
+#### Endpoints
 
+- INTRADAY / TOD
+- CURRENT WEEK / WEEK
+- CURRENT MONTH / MONTH
+- YESTERDAY / YTD
+- LAST WEEK / LASTWEEK
+- LAST MONTH / LASTMONTH
+- FROM : TO / CUSTOM
 
 ## Valuations
 
@@ -66,9 +66,10 @@ Version 3, codename: EVA is an evaluation algorithm capable to find a cheapest-t
 
 What else to say? You want it. We have it.
 
- #### To be remembered:
-  - Version 2. Codename: Turing.
-  - Version 1. Codename: Brutus.
+#### To be remembered:
+
+- Version 2. Codename: Turing.
+- Version 1. Codename: Brutus.
 
 ## WoWToken
 
@@ -76,7 +77,7 @@ A simple script that request WoWToken price in european region, every 10 minutes
 
 There is nothing left to say.
 
- #### Endpoints
- 
- - LAST PRICE
- - DATA FEED
+#### Endpoints
+
+- LAST PRICE
+- DATA FEED

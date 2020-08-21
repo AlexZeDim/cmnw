@@ -13,31 +13,38 @@ const realms_db = require("../../db/realms_db");
  * @constructor
  */
 const itemRealmQuery = async (item, realm) => {
-    try {
+  try {
+    let itemQuery, realmQuery;
 
-        let itemQuery, realmQuery;
-
-        if (isNaN(item)) {
-            itemQuery = items_db.findOne({ $text: { $search: item }}, { score: {"$meta": "textScore"}}).sort({ score: { $meta: "textScore" } }).lean();
-        } else {
-            itemQuery = items_db.findById(parseInt(item)).lean();
-        }
-
-        if (isNaN(realm)) {
-            realmQuery = realms_db.findOne({ $text: { $search: realm } }, { score: {"$meta": "textScore"}}).sort({ score: { $meta: "textScore" } }).lean();
-        } else {
-            realmQuery = realms_db.findById(parseInt(realm)).lean();
-        }
-
-        return await Promise.all([
-            await itemQuery,
-            await realmQuery
-        ])
-
-    } catch (error) {
-        console.error(error);
-        return void 0
+    if (isNaN(item)) {
+      itemQuery = items_db
+        .findOne(
+          { $text: { $search: item } },
+          { score: { $meta: "textScore" } }
+        )
+        .sort({ score: { $meta: "textScore" } })
+        .lean();
+    } else {
+      itemQuery = items_db.findById(parseInt(item)).lean();
     }
-}
+
+    if (isNaN(realm)) {
+      realmQuery = realms_db
+        .findOne(
+          { $text: { $search: realm } },
+          { score: { $meta: "textScore" } }
+        )
+        .sort({ score: { $meta: "textScore" } })
+        .lean();
+    } else {
+      realmQuery = realms_db.findById(parseInt(realm)).lean();
+    }
+
+    return await Promise.all([await itemQuery, await realmQuery]);
+  } catch (error) {
+    console.error(error);
+    return void 0;
+  }
+};
 
 module.exports = itemRealmQuery;

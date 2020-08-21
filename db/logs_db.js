@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -13,26 +13,29 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });*/
 
-let schema = new mongoose.Schema({
+let schema = new mongoose.Schema(
+  {
     _id: {
-        type: String
+      type: String,
     },
     isIndexed: {
-        type: Boolean
+      type: Boolean,
     },
     realm: {
-        type: String
+      type: String,
     },
     source: {
-        type: String
+      type: String,
     },
-},{
-    timestamps: true
-});
+  },
+  {
+    timestamps: true,
+  }
+);
 
-schema.index({ isIndexed: 1 },{name: 'isIndexed'});
-schema.index({ createdAt: -1 },{name: 'TTL', expireAfterSeconds: 604800});
+schema.index({ isIndexed: 1 }, { name: "isIndexed" });
+schema.index({ createdAt: -1 }, { name: "TTL", expireAfterSeconds: 604800 });
 
-let logs_db = mongoose.model('logs', schema, 'logs');
+let logs_db = mongoose.model("logs", schema, "logs");
 
 module.exports = logs_db;

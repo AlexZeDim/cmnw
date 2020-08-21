@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 
 /*require('dotenv').config();
@@ -13,42 +13,48 @@ mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${proce
     family: 4
 });*/
 
-let schema = new mongoose.Schema({
+let schema = new mongoose.Schema(
+  {
     id: {
-        type: Number
+      type: Number,
     },
     item: {
-        type: Object
+      type: Object,
     },
     connected_realm_id: {
-        type: Number
+      type: Number,
     },
     quantity: {
-        type: Number
+      type: Number,
     },
     bid: {
-        type: Number
+      type: Number,
     },
     buyout: {
-        type: Number
+      type: Number,
     },
     unit_price: {
-        type: Number
+      type: Number,
     },
     time_left: {
-        type: String
+      type: String,
     },
     last_modified: {
-        type: Number
-    }
-},{
-    timestamps: true
-});
+      type: Number,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-schema.index({ createdAt: -1 },{name: 'TTL', expireAfterSeconds: 86400});
-schema.index({ connected_realm_id: 1, last_modified: -1 },{name: 'TimestampCheck'});
-schema.index({ "item.id": -1, connected_realm_id: 1 },{name: 'PriceLevel'});
+schema.index({ createdAt: -1 }, { name: "TTL", expireAfterSeconds: 86400 });
+schema.index(
+  { connected_realm_id: 1, last_modified: -1 },
+  { name: "TimestampCheck" }
+);
+schema.index({ "item.id": -1, connected_realm_id: 1 }, { name: "PriceLevel" });
 
-let auctions_db = mongoose.model('auctions', schema, 'auctions');
+let auctions_db = mongoose.model("auctions", schema, "auctions");
 
 module.exports = auctions_db;

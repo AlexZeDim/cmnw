@@ -17,7 +17,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
     let [realms, quotes] = await Promise.all([
       realms_db.aggregate([
         {
-          $match: { locale: 'ru_RU' },
+          $match: { region: 'Europe' },
         },
         {
           $group: {
@@ -64,10 +64,13 @@ async function auctionsCrossRealmData(item_id = 168487) {
     ]);
 
     /** Data is already sorted by price ascending */
-    const L = quotes.length;
-    const ninety_five_percent = Math.floor(L * 0.95);
+    let L = quotes.length;
+    if (L > 3) {
+      L = L - 2
+    }
+    const ninety_percent = Math.floor(L * 0.90);
     let floor = Math.floor(quotes[0]);
-    let cap = Math.round(quotes[ninety_five_percent]);
+    let cap = Math.round(quotes[ninety_percent]);
     const price_range = cap - floor;
     /** Step represent 2.5% for each cluster */
     let step = price_range / 40;

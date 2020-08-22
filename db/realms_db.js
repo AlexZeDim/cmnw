@@ -88,6 +88,21 @@ let schema = new mongoose.Schema(
     golds: {
       type: Number,
     },
+    /**
+     * Players
+     */
+    players: {
+      total: Number,
+      alliance: Number,
+      horde: Number,
+      max_level: Number,
+      unique: Number,
+    },
+    guilds: {
+      total: Number,
+      alliance: Number,
+      horde: Number,
+    }
   },
   {
     timestamps: true,

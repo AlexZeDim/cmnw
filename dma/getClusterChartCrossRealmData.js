@@ -20,6 +20,9 @@ async function auctionsCrossRealmData(item_id = 168487) {
           $match: { region: 'Europe' },
         },
         {
+          $limit: 100
+        },
+        {
           $group: {
             _id: {
               connected_realm_id: '$connected_realm_id',

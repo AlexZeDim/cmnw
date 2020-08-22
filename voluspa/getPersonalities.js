@@ -64,6 +64,7 @@ async function getPersonalities() {
       .eachAsync(
         async identity => {
           let persona;
+          let flag = 'E'
           /** Clearance by guild */
           let clearance = identity.guild.map(g => ({
             access: 0,
@@ -88,16 +89,15 @@ async function getPersonalities() {
               codename: 'Unknown',
               clearance: clearance
             })
+            if (persona.isNew) {
+              flag = 'C'
+            }
             await persona.save()
           }
           let characters = await characters_db.updateMany(
             { _id: { $in: identity.characters } },
             { $set: { personality : persona._id } }
           )
-          let flag = 'E'
-          if (persona.isNew) {
-            flag = 'C'
-          }
           console.log(`${flag},${persona._id},${characters.n},${characters.nModified}`)
         },
         { parallel: 10 },

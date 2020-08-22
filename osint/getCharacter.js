@@ -175,8 +175,11 @@ async function getCharacter(
        * Active title
        * Hash T
        */
-      if (characterData.value.active_title) {
-        character.hash.t = parseInt(characterData.value.active_title.id, 16);
+      if ('active_title' in characterData.value) {
+        let { active_title } = characterData.value
+        if (active_title.id) {
+          character.hash.t = parseInt(active_title.id, 16);
+        }
       }
 
       /**

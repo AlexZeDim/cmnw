@@ -29,6 +29,7 @@ let schema = new mongoose.Schema(
     ],
     aliases: [
       {
+        _id: false,
         type: {
           type: String,
           enum: [
@@ -50,6 +51,8 @@ let schema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+schema.index({ 'aliases.type': 1, 'aliases.value': 1 }, { name: 'Aliases' });
 
 let personalities_db = mongoose.model('personalities', schema, 'personalities');
 

@@ -3,7 +3,7 @@ apps:
     name: 'OSINT-indexCharacters'
     autorestart: true
     instances: 1
-    cron_restart: '0 6 */2 * *'
+    cron_restart: '0 6 */3 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: NULL
     min_uptime: 5000
@@ -12,7 +12,7 @@ apps:
     name: 'OSINT-indexGuilds'
     instances: 1
     autorestart: true
-    cron_restart: '15 */6 * * *'
+    cron_restart: '15 */12 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: NULL
     min_uptime: 5000
@@ -29,6 +29,7 @@ apps:
     name: 'OSINT-indexLogs'
     instances: 1
     autorestart: true
+    out_file: NULL
     max_memory_restart: '1G'
     cron_restart: '0 3 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -37,7 +38,7 @@ apps:
     name: 'OSINT-fromCharacters'
     instances: 1
     autorestart: true
-    max_memory_restart: '1G'
+    out_file: NULL
     cron_restart: '30 3 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
@@ -45,13 +46,14 @@ apps:
     name: 'OSINT-fromJSON'
     instances: 1
     autorestart: true
-    max_memory_restart: '1G'
+    out_file: NULL
     cron_restart: '0 5 1,15 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./voluspa/getPersonalities.js
     name: 'VOLUSPA-getPersonalities'
     instances: 1
+    out_file: NULL
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

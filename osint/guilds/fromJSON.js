@@ -71,7 +71,7 @@ const { toSlug } = require('../../db/setters');
  */
 
 async function fromJSON(
-  queryFind = { locale: 'ru_RU' },
+  queryFind = { region: 'Europe' },
   path = './temp',
   raidTier = 26,
   region = 'eu',

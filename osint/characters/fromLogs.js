@@ -43,7 +43,7 @@ let x = Xray();
  */
 
 async function fromLogs(
-  queryFind = { locale: 'ru_RU' },
+  queryFind = { region: 'Europe' },
   delay = 10,
   startPage = 0,
   endPage = 100,

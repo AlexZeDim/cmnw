@@ -28,7 +28,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
           },
         },
         {
-          $limit: 100
+          $limit: 35
         },
         {
           $project: {

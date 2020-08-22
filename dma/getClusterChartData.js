@@ -43,8 +43,11 @@ async function getClusterChartData(
     /** Check for response */
     if (quotes.length && timestamp.length) {
       /** Floor as 2nd value, Cap as .95% */
-      const L = quotes.length;
-      const ninety_percent = Math.floor((L - 2) * 0.9);
+      let L = quotes.length;
+      if (L > 3) {
+        L = L - 2
+      }
+      const ninety_percent = Math.floor(L * 0.9);
       let floor = Math.floor(quotes[0]);
       let cap = Math.round(quotes[ninety_percent]);
       /** Define range */

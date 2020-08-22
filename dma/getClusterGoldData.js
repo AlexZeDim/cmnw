@@ -12,10 +12,7 @@ const gold_db = require('../db/golds_db');
 async function getClusterGoldData(connected_realm_id = 1602) {
   try {
     let chartArray = [];
-    let priceArray = [];
     let round;
-    let sampleVariable = 0,
-      sampleVariable_prev = 0;
     let [quotes, timestamp] = await Promise.all([
       gold_db
         .distinct('price', {
@@ -31,65 +28,29 @@ async function getClusterGoldData(connected_realm_id = 1602) {
         .lean(),
     ]);
     if (quotes.length && timestamp.length) {
-      for (let i = 1; i < quotes.length; i++) {
-        if (i > 1) sampleVariable_prev = sampleVariable;
-        else
-          sampleVariable_prev =
-            (1 / quotes.length) * Math.pow(quotes[i], 2) -
-            Math.pow((1 / quotes.length) * quotes[i], 2);
-        sampleVariable =
-          (1 / quotes.length) * Math.pow(quotes[i], 2) -
-          Math.pow((1 / quotes.length) * quotes[i], 2);
-        if (sampleVariable_prev * 1.5 < sampleVariable) break;
-        else priceArray.push(quotes[i]);
+      quotes.sort((a, b) => a - b)
+      let L = quotes.length;
+      if (L > 3) {
+        L = L - 2
       }
-      let start = Math.floor(priceArray[0]);
-      let stop = Math.round(priceArray[priceArray.length - 1]);
+      const ninety_percent = Math.floor(L * 0.9);
+      let start = Math.floor(quotes[0]);
+      let stop = Math.round(quotes[ninety_percent]);
       const price_range = stop - start;
-      let step = 0;
-      switch (true) {
-        case price_range <= 1.5:
-          step = 0.1;
-          break;
-        case price_range <= 7.5:
-          step = 0.25;
-          break;
-        case price_range <= 15:
-          step = 0.5;
-          break;
-        case price_range <= 30:
-          step = 1;
-          break;
-        case price_range <= 42.5:
-          step = 2.5;
-          break;
-        case price_range <= 75:
-          step = 5;
-          break;
-        case price_range <= 150:
-          step = 10;
-          break;
-        default:
-          step = 1;
-      }
-      if (step < 1) {
-        round = (number, nearest = 0.5) =>
-          parseFloat(
-            (Math.round(number * (1 / nearest)) / (1 / nearest)).toFixed(2),
-          );
-      } else {
-        round = (number, precision = 5) =>
-          Math.round(number / precision) * precision;
-      }
+      let step = price_range / 20;
+      /** Generate range and round() */
+      /**
+       * @param start
+       * @param stop
+       * @param step
+       * @returns {number[]}
+       */
       const range = (start, stop, step = 1) =>
         Array(Math.ceil((stop + step - start) / step))
           .fill(start)
-          .map((x, y) => x + y * step);
-      let priceRange_array = await range(
-        round(start, step),
-        round(stop, step),
-        step,
-      );
+          .map((x, y) => parseFloat((x + y * step).toFixed(4)));
+      /** Create xAxis and yAxis */
+      let priceRange_array = await range(start, stop, step);
       for (let x_ = 0; x_ < timestamp.length; x_++) {
         for (let y_ = 0; y_ < priceRange_array.length; y_++) {
           chartArray.push({

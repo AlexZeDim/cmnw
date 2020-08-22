@@ -44,7 +44,7 @@ const iva = require('./valuation/eva/iva');
  */
 
 async function getValuationsData(
-  realmQuery = { locale: 'ru_RU' },
+  realmQuery = { region: 'Europe' },
   bulkSize = 1,
 ) {
   try {

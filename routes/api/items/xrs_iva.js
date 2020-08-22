@@ -31,7 +31,7 @@ router.get('/:itemQuery', async function (req, res) {
       await realms_db
         .aggregate([
           {
-            $match: { locale: 'ru_RU' },
+            $match: { region: 'Europe' },
           },
           {
             $group: {

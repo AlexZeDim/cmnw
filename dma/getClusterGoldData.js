@@ -31,7 +31,7 @@ async function getClusterGoldData(connected_realm_id = 1602) {
       quotes.sort((a, b) => a - b)
       let L = quotes.length;
       if (L > 3) {
-        L = L - 2
+        L = L - 3
       }
       const ninety_percent = Math.floor(L * 0.9);
       let start = Math.floor(quotes[0]);

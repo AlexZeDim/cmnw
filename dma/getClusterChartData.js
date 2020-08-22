@@ -45,7 +45,7 @@ async function getClusterChartData(
       /** Floor as 2nd value, Cap as .95% */
       let L = quotes.length;
       if (L > 3) {
-        L = L - 2
+        L = L - 3
       }
       const ninety_percent = Math.floor(L * 0.9);
       let floor = Math.floor(quotes[0]);

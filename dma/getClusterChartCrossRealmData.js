@@ -69,9 +69,9 @@ async function auctionsCrossRealmData(item_id = 168487) {
     /** Data is already sorted by price ascending */
     let L = quotes.length;
     if (L > 3) {
-      L = L - 2
+      L = L - 3
     }
-    const ninety_percent = Math.floor(L * 0.90);
+    const ninety_percent = Math.floor(L * 0.9);
     let floor = Math.floor(quotes[0]);
     let cap = Math.round(quotes[ninety_percent]);
     const price_range = cap - floor;

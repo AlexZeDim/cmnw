@@ -53,7 +53,7 @@ const { toSlug } = require('../../db/setters');
  */
 
 async function fromCharacters(
-  queryFind = { locale: 'ru_RU' },
+  queryFind = { region: 'Europe' },
   queryKeys = { tags: `OSINT-indexGuilds` },
 ) {
   try {

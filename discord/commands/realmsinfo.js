@@ -13,7 +13,9 @@ module.exports = {
   aliases: ['realminfo', 'REALMSINFO', 'REALMINFO', 'Realminfo', 'Realmsinfo'],
   args: true,
   async execute(message, args) {
-    const [realm] = args;
+    console.log(args)
+    const realm = args;
+    console.log(realm);
     let embed = new MessageEmbed();
     let realmsinfo = await axios
       .get(

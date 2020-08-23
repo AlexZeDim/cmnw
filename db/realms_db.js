@@ -89,7 +89,7 @@ let schema = new mongoose.Schema(
       type: Number,
     },
     /**
-     * Players
+     * VOLUSPA population
      */
     players: {
       total: Number,
@@ -109,16 +109,16 @@ let schema = new mongoose.Schema(
   },
 );
 
-schema.index({ name: 1 }, { name: 'Name', collation: { strength: 3 } });
-schema.index({ slug: 1 }, { name: 'Slug', collation: { strength: 3 } });
+schema.index({ name: 1 }, { name: 'Name', collation: { strength: 1 } });
+schema.index({ slug: 1 }, { name: 'Slug', collation: { strength: 1 } });
 schema.index(
   { name_locale: 1 },
-  { name: 'NameLocale', collation: { strength: 3 } },
+  { name: 'NameLocale', collation: { strength: 1 } },
 );
-schema.index({ ticker: 1 }, { name: 'Ticker', collation: { strength: 3 } });
+schema.index({ ticker: 1 }, { name: 'Ticker', collation: { strength: 1 } });
 schema.index({ connected_realm_id: 1 }, { name: 'ConnectedRealms' });
 schema.index(
-  { name: 'text', slug: 'text', name_locale: 'text', ticker: 'text' },
+  { name: 'text', slug: 'text', name_locale: 'text', ticker: 'text', region: 'text', locale: 'text' },
   { name: 'SearchQuery' },
 );
 

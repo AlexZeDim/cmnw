@@ -106,13 +106,13 @@ let schema = new mongoose.Schema(
 
 schema.index(
   {
-    ticker: 'text',
+    'ticker': 'text',
     'name.en_GB': 'text',
     'name.ru_RU': 'text',
   },
   {
     weights: {
-      ticker: 1,
+      'ticker': 1,
       'name.en_GB': 1,
       'name.ru_RU': 1,
     },
@@ -120,7 +120,7 @@ schema.index(
   },
 );
 
-schema.index({ expansion: 1, is_commdty: 1 }, { name: 'Contracts' });
+schema.index({ 'expansion': 1, 'is_commdty': 1 }, { name: 'Contracts' });
 
 let items_db = mongoose.model('items', schema, 'items');
 

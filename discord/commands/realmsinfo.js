@@ -31,46 +31,67 @@ module.exports = {
               `https://${process.env.domain}/realmsinfo/${realm}`,
             ),
           );
-          if (data.length > 1) {
-            for (let i = 0; i < data.length; i++) {
-              if (i === 4) {
-                embed.addField(
-                  `─────────────`,
-                  `
-                        Check
-                        Realm
-                        List
-                        At
-                        [Conglomerat](https://${process.env.domain}/realmsinfo/${realm})
-                        ─────────────
-                        `,
-                  true,
-                );
-                break;
-              }
+          for (let i = 0; i < data.length; i++) {
+            let name_locale, characters_total,
+              characters_alliance, characters_horde, characters_max_level,
+              characters_unique, guilds_total, guilds_alliance, guilds_horde;
+            if (data[i].name_locale) {
+              name_locale = data[i].name_locale
+            } else {
+              name_locale = data[i].name
+            }
+            if (data[i].players) {
+              characters_total = data[i].players.total
+              characters_alliance = data[i].players.alliance
+              characters_horde = data[i].players.horde
+              characters_max_level = data[i].players.max_level
+              characters_unique =  data[i].players.unique
+            }
+            if (data[i].guilds) {
+              guilds_total = data[i].guilds.total
+              guilds_alliance = data[i].guilds.alliance
+              guilds_horde = data[i].guilds.horde
+            }
+            if (i === 5) {
               embed.addField(
                 `─────────────`,
                 `
-                    Name: ${data[i].name}
-                    Type: ${data[i].name_locale || data[i].name}
-                    Locale: ${data[i].locale}
-                    Characters
-                    Total: ${data[i].players.total || 0}
-                    Alliance: ${data[i].players.alliance || 0}
-                    Horde: ${data[i].players.horde || 0}
-                    Max Level: ${data[i].players.max_level || 0}
-                    Unique: ${data[i].players.unique || 0}
-                    Guilds
-                    Total: ${data[i].guilds.total || 0}
-                    Alliance: ${data[i].guilds.alliance || 0}
-                    Horde: ${data[i].guilds.horde || 0}
-                    ─────────────
-                    `,
+                      Check
+                      Full
+                      Realm
+                      List
+                      At
+                      [Conglomerat](https://${process.env.domain}/realmsinfo/${realm})
+                      ─────────────
+                      `,
                 true,
               );
+              break;
             }
-          } else {
-            //TODO only one realm
+            embed.addField(
+              `─────────────`,
+              `
+                  Name: ${data[i].name}
+                  Type: ${name_locale}
+                  Locale: ${data[i].locale}
+                  ──────
+                  **Characters**
+                  ──────
+                  Total: ${characters_total}
+                  Alliance: ${characters_alliance}
+                  Horde: ${characters_horde}
+                  Max Level: ${characters_max_level}
+                  Unique: ${characters_unique}
+                  ──────
+                  **Guilds**
+                  ──────
+                  Total: ${guilds_total}
+                  Alliance: ${guilds_alliance}
+                  Horde: ${guilds_horde}
+                  ─────────────
+                  `,
+              true,
+            );
           }
         }
         return embed;

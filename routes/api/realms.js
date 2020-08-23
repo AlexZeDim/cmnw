@@ -11,10 +11,16 @@ const realms_db = require('../../db/realms_db');
  * Modules
  */
 
-router.get('/:region', async function (req, res) {
+router.get('/:realm', async function (req, res) {
   try {
-    let { region } = req.params;
-    let realms = await realms_db.find({ region: region });
+    let { realm } = req.params;
+    let realms = await realms_db
+      .find(
+        { $text: { $search: realm } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean();
     if (realms && realms.length) {
       await res.status(200).json(realms);
     } else {

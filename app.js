@@ -25,7 +25,8 @@ const xrs_eva = require('./routes/api/items/xrs_eva');
 const xrs_iva = require('./routes/api/items/xrs_iva');
 const app = express();
 
-app.use(logger('dev'));
+app.enable("trust proxy");
+app.use(logger('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());

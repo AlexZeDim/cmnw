@@ -18,77 +18,81 @@ router.get('/:type/:query', async function (req, res) {
      */
 
     const queryToHash = async (type, query) => {
-      /** If query has realm argument */
-      query = query.toLowerCase();
-      if (query.includes('@')) {
-        const [n, r] = query.split('@');
-        const { slug } = await realms_db.findOne({
-          $text: { $search: r },
-        });
-        /** Find realm and character itself */
-        let character = await characters_db
-          .findById(`${n.toLowerCase()}@${slug}`)
-          .lean();
-        if (!character) {
-          /** If character is not in OSINT-DB, then add it */
-          const getCharacter = require('../../osint/getCharacter');
-          const keys_db = require('../../db/keys_db');
-          const { token } = await keys_db.findOne({
-            tags: `OSINT-indexCharacters`,
+      try {
+        /** If query has realm argument */
+        query = query.toLowerCase();
+        if (query.includes('@')) {
+          const [n, r] = query.split('@');
+          const { slug } = await realms_db.findOne({
+            $text: { $search: r },
           });
-          character = await getCharacter(
-            slug,
-            n.toLowerCase(),
-            {},
-            token,
-            `OSINT-userInput`,
-            true,
-          );
+          /** Find realm and character itself */
+          let character = await characters_db
+            .findById(`${n.toLowerCase()}@${slug}`)
+            .lean();
           if (!character) {
-            /** Return 404, if still no character found */
-            await res.status(404).json({ error: 'not found' });
+            /** If character is not in OSINT-DB, then add it */
+            const getCharacter = require('../../osint/getCharacter');
+            const keys_db = require('../../db/keys_db');
+            const { token } = await keys_db.findOne({
+              tags: `OSINT-indexCharacters`,
+            });
+            character = await getCharacter(
+              slug,
+              n.toLowerCase(),
+              {},
+              token,
+              `OSINT-userInput`,
+              true,
+            );
+            if (!character) {
+              /** Return 404, if still no character found */
+              await res.status(404).json({ error: 'not found' });
+            }
           }
-        }
-        let { hash } = character;
-        /** Remove hash ex and t */
-        if (type === 'all') {
-          delete hash.ex;
-          delete hash.t;
-          let and = [];
-          for (const [key, value] of Object.entries(hash)) {
-            and.push({ [`hash.${key}`]: value });
+          let { hash } = character;
+          /** Remove hash ex and t */
+          if (type === 'all') {
+            delete hash.ex;
+            delete hash.t;
+            let and = [];
+            for (const [key, value] of Object.entries(hash)) {
+              and.push({ [`hash.${key}`]: value });
+            }
+            return { $and: and };
           }
-          return { $and: and };
-        }
-        if (type === 'any') {
-          delete hash.ex;
-          delete hash.t;
-          let or = [];
-          for (const [key, value] of Object.entries(hash)) {
-            or.push({ [`hash.${key}`]: value });
+          if (type === 'any') {
+            delete hash.ex;
+            delete hash.t;
+            let or = [];
+            for (const [key, value] of Object.entries(hash)) {
+              or.push({ [`hash.${key}`]: value });
+            }
+            return { $or: or };
           }
-          return { $or: or };
-        }
-        return { [`hash.${type}`]: hash[type] };
-      } else {
-        if (type === 'and') {
-          return {
-            $and: [
-              { 'hash.a': query },
-              { 'hash.b': query },
-              { 'hash.c': query },
-            ],
-          };
-        }
-        if (type === 'any') {
-          const hash_types = ['a', 'b', 'c'];
-          let or = [];
-          for (let ht of hash_types) {
-            or.push({ [`hash.${ht}`]: query });
+          return { [`hash.${type}`]: hash[type] };
+        } else {
+          if (type === 'and') {
+            return {
+              $and: [
+                { 'hash.a': query },
+                { 'hash.b': query },
+                { 'hash.c': query },
+              ],
+            };
           }
-          return { $or: or };
+          if (type === 'any') {
+            const hash_types = ['a', 'b', 'c'];
+            let or = [];
+            for (let ht of hash_types) {
+              or.push({ [`hash.${ht}`]: query });
+            }
+            return { $or: or };
+          }
+          return { [`hash.${type}`]: query };
         }
-        return { [`hash.${type}`]: query };
+      } catch (e) {
+        console.error(e)
       }
     };
 

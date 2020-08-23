@@ -45,7 +45,7 @@ module.exports = {
             embed.addField(
               `─────────────`,
               `
-                        Full Log Avaliable
+                        Full
                         Pricing
                         Available
                         At

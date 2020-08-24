@@ -159,7 +159,7 @@ router.get('/:itemQuery', async function (req, res) {
         {
           $sort: { value: 1 },
         },
-      ]);
+      ]).allowDiskUse(true);
       Object.assign(response, {
         item: item,
         valuations: valuations,

@@ -152,6 +152,7 @@ async function indexAssetClass(arg = 'pricing_methods', bulkSize = 10) {
               {
                 expansion: 'BFA',
                 asset_class: { $all: ['MARKET', 'COMMDTY'] },
+                ticker: { $exists: true }
               },
             ],
           },

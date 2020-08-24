@@ -70,7 +70,10 @@ async function importTaxonomy_CSV(
           for (let i = 1; i < data.length; i++) {
             let item = await items_db.findById(parseInt(data[i][0]));
             if (item) {
-              item.asset_class.addToSet(data[i][5]);
+              if (data[i][2]) {
+                item.ticker = data[i][2]
+              }
+              item.asset_class.addToSet(data[i][3]);
               await item.save();
               console.info(`U, ${parseFloat(data[i][0])}`);
             } else {

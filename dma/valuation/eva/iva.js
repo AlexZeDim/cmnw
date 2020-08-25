@@ -553,6 +553,7 @@ async function iva(
                     await pricing_methods.findByIdAndUpdate(price_method._id, {
                       single_name: premium_item._id,
                     });
+                    /** Check if PRVA for current premium item is exists */
                     let prva = await valuations.findOne({
                       item_id: premium_item._id,
                       last_modified: last_modified,
@@ -561,6 +562,9 @@ async function iva(
                       type: 'PREMIUM',
                     });
                     if (!prva) {
+                      console.log(`${premium_item.quantity} / ${price_method.queue_quantity}  * ${ava.details.quantity}`)
+                      let wi = premium_item.quantity / price_method.queue_quantity * ava.details.quantity;
+                      console.log(wi)
                       prva = new valuations({
                         name: `${price_method._id}`,
                         flag: 'SELL',
@@ -571,9 +575,7 @@ async function iva(
                         value: Round2(premium / premium_item.quantity),
                         details: {
                           wi: Round2(
-                            (premium_item.quantity /
-                              price_method.queue_quantity) *
-                              ava.details.quantity,
+                            wi,
                           ),
                         },
                       });

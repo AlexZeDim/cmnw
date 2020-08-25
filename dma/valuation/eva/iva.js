@@ -562,9 +562,6 @@ async function iva(
                       type: 'PREMIUM',
                     });
                     if (!prva) {
-                      console.log(`${premium_item.quantity} / ${price_method.queue_quantity}  * ${ava.details.quantity}`)
-                      let wi = premium_item.quantity / price_method.queue_quantity * ava.details.quantity;
-                      console.log(wi)
                       prva = new valuations({
                         name: `${price_method._id}`,
                         flag: 'SELL',
@@ -575,7 +572,7 @@ async function iva(
                         value: Round2(premium / premium_item.quantity),
                         details: {
                           wi: Round2(
-                            wi,
+                            premium_item.quantity / price_method.item_quantity * ava.details.quantity,
                           ),
                         },
                       });

@@ -12,13 +12,13 @@ const contracts_db = require('../../../db/contracts_db');
  */
 
 const moment = require('moment');
-const itemRealmQuery = require('../middleware');
+const queryItemAndRealm = require('../middleware');
 
 router.get('/:itemName@:realmSlug', async (req, res) => {
   try {
     let { itemName, realmSlug } = req.params;
 
-    const [item, realm] = await itemRealmQuery(itemName, realmSlug);
+    const [item, realm] = await queryItemAndRealm(itemName, realmSlug);
 
     if (item && realm) {
       const [contracts, data] = await contracts_db
@@ -81,7 +81,7 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
               orders_average: { $round: ['$orders_average', 0] },
             },
           },
-        ])
+        ]).allowDiskUse(true)
         .then(aggregate => {
           let data = aggregate[0];
           let contract = data.contracts;

@@ -68,10 +68,10 @@ async function migrations() {
       { _id: 163569, quantity: 5 },
       { _id: 158186, quantity: 20 },
     ];
-    for (let item of array_of_vendor) {
-      let i = await items.findById(item._id);
-      console.log(i);
-      //await items.findByIdAndUpdate(item._id, {purchase_price: purchase_price/item.quantity});
+    for (let i of array_of_vendor) {
+      let item = await items.findById(i._id);
+      item.purchase_price = item.purchase_price / i.quantity;
+      await item.save();
     }
     /**
      * Enchanting recipes has quantity 0, but actually they gave us one scroll

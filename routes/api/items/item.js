@@ -4,7 +4,7 @@ const router = express.Router();
 /**
  * Modules
  */
-const itemRealmQuery = require('../../api/middleware');
+const queryItemAndRealm = require('../../api/middleware');
 const clusterChartData = require('../../../dma/getClusterChartData.js');
 const auctionsFeed = require('../../../dma/auctions/auctionsFeed.js');
 const auctionsData = require('../../../dma/auctions/auctionsData.js');
@@ -16,7 +16,7 @@ router.get('/:itemQuery@:realmQuery', async function (req, res) {
 
     const { itemQuery, realmQuery } = req.params;
 
-    let [item, realm] = await itemRealmQuery(itemQuery, realmQuery);
+    let [item, realm] = await queryItemAndRealm(itemQuery, realmQuery);
 
     if (item && realm) {
       let is_commdty = false;

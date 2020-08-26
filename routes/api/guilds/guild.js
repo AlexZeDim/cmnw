@@ -61,7 +61,7 @@ router.get('/:guildSlug@:realmSlug', async function (req, res) {
           as: 'members',
         },
       },
-    ]);
+    ]).allowDiskUse(true);
     await res.status(200).json(json);
   } catch (e) {
     await res.status(500).json(e);

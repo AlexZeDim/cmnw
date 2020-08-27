@@ -37,7 +37,7 @@ const items_db = require('../../db/items_db');
 async function buildItemTags () {
   try {
     console.time(`DMA-${buildItemTags.name}`);
-    let fields = ['expansion', 'ticker', 'profession_class', 'asset_class', 'item_class', 'item_subclass']
+    let fields = ['expansion', 'ticker', 'profession_class', 'asset_class', 'item_class', 'item_subclass', 'quality']
     await items_db
       .find({})
       .cursor({ batchSize: 10 })
@@ -51,7 +51,7 @@ async function buildItemTags () {
                 if (field === 'ticker') {
                   item[field].split('.').map(t => {
                     t = t.toLowerCase();
-                    if (t === 'j') {
+                    if (t === 'j' || t === 'petal' || t === 'nugget') {
                       item.tags.addToSet('junior')
                     }
                     item.tags.addToSet(t)

@@ -1,6 +1,6 @@
 apps:
   - script: ./dma/getWoWTokenData.js
-    name: 'DMA-getWoWTokenData'
+    name: 'DMA-WT'
     instances: 1
     autorestart: true
     out_file: NULL
@@ -16,7 +16,7 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/getAuctionsData.js
-    name: 'DMA-getAuctionsData'
+    name: 'DMA-MARKET'
     instances: 1
     out_file: NULL
     autorestart: true
@@ -24,7 +24,7 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/getGoldData.js
-    name: 'DMA-getGoldData'
+    name: 'DMA-GOLD'
     instances: 1
     autorestart: true
     cron_restart: '00 */1 * * *'
@@ -32,7 +32,7 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/contracts/contracts.js
-    name: 'DMA-contracts'
+    name: 'DMA-CONTRACTS'
     instances: 1
     autorestart: true
     out_file: NULL
@@ -40,7 +40,7 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/items/indexAssetClass.js
-    name: 'DMA-indexAssetClass'
+    name: 'DMA-ASSET-CLASS'
     instances: 1
     args: 'pricing_methods 10'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

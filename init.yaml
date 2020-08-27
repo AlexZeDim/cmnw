@@ -3,16 +3,16 @@
 # on first launch or patch day
 apps:
   - script: ./dma/items/indexItems.js
-    name: 'DMA-getItems'
+    name: 'DMA-ITEMS'
     instances: 1
     args: 'DMA update'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./osint/indexing/indexRealms.js
-    name: 'OSINT-indexRealms'
+    name: 'OSINT-REALMS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./dma/items/importTaxonomy_CSV.js
-    name: 'DMA-importTaxonomy_CSV'
+    name: 'DMA-TAXONOMY'
     instances: 1
     args: 'itemsparse'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

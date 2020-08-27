@@ -74,30 +74,32 @@ let schema = new mongoose.Schema(
     /**
      * IndexAssetClass - csv import
      */
-    profession_class: {
-      type: String,
+    contracts: {
+      type: Boolean,
+      require: true,
+      default: false,
     },
-    ticker: {
-      type: String,
+    asset_class: {
+      type: Array,
     },
-    /** itemsparse */
+    /** add thought importTaxonomy_CSV('itemsparse') */
     expansion: {
       type: String,
     },
     stackable: {
       type: Number,
     },
+    /** add thought importTaxonomy_CSV('taxonomy') */
+    profession_class: {
+      type: String,
+    },
+    ticker: {
+      type: String,
+    },
     /**
      * IndexItems
      */
-    asset_class: {
-      type: Array,
-    },
-    contracts: {
-      type: Boolean,
-      require: true,
-      default: false,
-    },
+    tags: Array
   },
   {
     timestamps: true,

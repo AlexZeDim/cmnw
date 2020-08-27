@@ -43,21 +43,24 @@ async function buildItemTags () {
       .cursor({ batchSize: 10 })
       .eachAsync(
         async (item) => {
-          for (let field of fields) {
-            if (item[field]) {
-              if (Array.isArray(item[field])) {
-                item[field].map(as => item.tags.addToSet(as.toLowerCase()))
-              } else {
-                if (field === 'ticker') {
-                  item[field].split('.').map(t => {
-                    t = t.toLowerCase();
-                    if (t === 'j') {
-                      item.tags.addToSet('junior')
-                    }
-                    item.tags.addToSet(t)
-                  })
+          item.tags = undefined;
+          if (item.asset_class && item.asset_class.length) {
+            for (let field of fields) {
+              if (item[field]) {
+                if (Array.isArray(item[field])) {
+                  item[field].map(as => item.tags.addToSet(as.toLowerCase()))
                 } else {
-                  item.tags.addToSet(item[field].toLowerCase())
+                  if (field === 'ticker') {
+                    item[field].split('.').map(t => {
+                      t = t.toLowerCase();
+                      if (t === 'j') {
+                        item.tags.addToSet('junior')
+                      }
+                      item.tags.addToSet(t)
+                    })
+                  } else {
+                    item.tags.addToSet(item[field].toLowerCase())
+                  }
                 }
               }
             }

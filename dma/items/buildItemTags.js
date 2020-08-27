@@ -43,8 +43,7 @@ async function buildItemTags () {
       .cursor({ batchSize: 10 })
       .eachAsync(
         async (item) => {
-          item.tags = undefined;
-          item.tags = undefined;
+          item.tags = [];
           if (item.asset_class && item.asset_class.length) {
             for (let field of fields) {
               if (item[field]) {

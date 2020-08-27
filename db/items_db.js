@@ -111,12 +111,14 @@ schema.index(
     'ticker': 'text',
     'name.en_GB': 'text',
     'name.ru_RU': 'text',
+    'tags': 'text'
   },
   {
     weights: {
-      'ticker': 1,
-      'name.en_GB': 1,
-      'name.ru_RU': 1,
+      'ticker': 2,
+      'name.en_GB': 2,
+      'name.ru_RU': 2,
+      'tags': 1
     },
     name: 'SearchQuery',
   },

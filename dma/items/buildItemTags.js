@@ -44,6 +44,7 @@ async function buildItemTags () {
       .eachAsync(
         async (item) => {
           item.tags = undefined;
+          item.tags = undefined;
           if (item.asset_class && item.asset_class.length) {
             for (let field of fields) {
               if (item[field]) {

@@ -64,9 +64,6 @@ async function indexItems(queryKeys = 'DMA', operation = 'update') {
         await getItem(_id, token);
       }
     }
-    /**
-     * TODO After updateMany purchase_price/purchase_quantity
-     */
     connection.close();
     console.timeEnd(`DMA-${indexItems.name}`);
   } catch (err) {

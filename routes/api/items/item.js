@@ -28,6 +28,9 @@ router.get('/:itemQuery@:realmQuery', async function (req, res) {
         if (item.stackable && item.stackable > 1) {
           is_commdty = true;
         }
+        if (item._id === 122270 || item._id === 122284) {
+          is_commdty = false
+        }
       }
 
       if (item._id === 1) {
@@ -63,6 +66,12 @@ router.get('/:itemQuery@:realmQuery', async function (req, res) {
             .sort({ _id: -1 })
             .lean()
             .then(wowtoken => Object.assign(response, { wowtoken: wowtoken })),
+          wowtoken_db
+            .find({ region: 'eu' })
+            .limit(200)
+            .sort({ _id: -1 })
+            .lean()
+            .then(wt => Object.assign(response, { wt: wt })),
         );
       } else {
         arrayPromises.push(

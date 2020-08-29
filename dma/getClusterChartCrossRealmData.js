@@ -58,6 +58,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
             },
           },
         ])
+        .allowDiskUse(true)
         .then(data => {
           return data[0].price.sort((a, b) => a - b);
         }),

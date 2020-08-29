@@ -33,7 +33,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
             connected_realms: '$connected_realms',
           },
         },
-      ]),
+      ]).allowDiskUse(true),
       auctions_db
         .aggregate([
           {
@@ -154,7 +154,7 @@ async function auctionsCrossRealmData(item_id = 168487) {
           orders: { $sum: 1 },
         },
       },
-    ]);
+    ]).allowDiskUse(true);
     for (let order of orders) {
       /** Define coordinates */
       let x,

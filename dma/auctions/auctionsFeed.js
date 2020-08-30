@@ -33,6 +33,9 @@ async function auctionsFeed(item_id = 168487, connected_realm_id) {
         $match: query,
       },
       {
+        $limit: 1000
+      },
+      {
         $lookup: {
           from: 'realms',
           localField: 'connected_realm_id',

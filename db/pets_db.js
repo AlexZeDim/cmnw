@@ -66,6 +66,7 @@ let schema = new mongoose.Schema(
 );
 
 schema.index({ 'creature_id': 1, }, { name: 'CreatureID' });
+schema.index({ 'display_id': 1, }, { name: 'DisplayID' });
 
 let pets_db = mongoose.model('pets', schema, 'pets');
 

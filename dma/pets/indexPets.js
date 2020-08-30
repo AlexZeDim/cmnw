@@ -93,17 +93,17 @@ async function indexPets (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\
       path_ = path;
     }
     let fileSync = fs.readFileSync(path_, 'utf8');
-    csv.parse(fileSync, async function (err, data) {
+    await csv.parse(fileSync, async function (err, data) {
       for (let i = 1; i < data.length; i++) {
-        let pet = await pets_db.findById(parseInt(data[i][5]))
+        let pet = await pets_db.findOne({creature_id: parseInt(data[i][5])})
         if (pet) {
           pet.display_id = parseInt(data[i][1])
+          await pet.save();
+          console.info(`${pet._id}, ${pet.creature_id}, ${pet.display_id}`)
         }
-        await pet.save();
-        console.info(`${pet._id}, ${pet.display_id}`)
       }
     });
-    connection.close();
+    await connection.close();
     console.timeEnd(`DMA-${indexPets.name}`)
   } catch (error) {
     console.error(error)

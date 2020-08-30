@@ -20,3 +20,7 @@ apps:
     name: 'DMA-ITEM-TAGS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+  - script: ./dma/pets/indexPets.js
+    name: 'DMA-PETS'
+    instances: 1
+    log_date_format: 'DD/MM HH:mm:ss.SSS'

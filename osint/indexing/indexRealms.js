@@ -72,9 +72,12 @@ async function indexRealms() {
     let { realms } = await bnw.WowGameData.getRealmsIndex();
     for (const { id, slug } of realms) {
       await bnw.init(_id, secret, token, 'eu', 'en_GB');
-      let realm = new realms_db({
-        _id: id,
-      });
+      let realm = await realms_db.findById(id);
+      if (!realm) {
+        realm = new realms_db({
+          _id: id,
+        });
+      }
       await bnw.WowGameData.getRealm(slug).then(async r => {
         let connected = await bnw.WowGameData.getConnectedRealm(
           parseInt(r['connected_realm'].href.replace(/\D/g, '')),
@@ -108,14 +111,8 @@ async function indexRealms() {
           realm.slug_locale = realm.name;
         }
       });
-      await realms_db
-        .findByIdAndUpdate(realm.id, realm.toObject(), {
-          upsert: true,
-          new: true,
-          runValidators: true,
-          lean: true,
-        })
-        .then(rl => console.info(`C,${rl._id},${rl.slug}`));
+      await realm.save()
+      console.info(`C,${realm._id},${realm.slug}`)
     }
     connection.close();
     console.timeEnd(`OSINT-${indexRealms.name}`);

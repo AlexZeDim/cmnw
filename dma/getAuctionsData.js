@@ -30,6 +30,7 @@ connection.once('open', () =>
 const keys_db = require('./../db/keys_db');
 const realms_db = require('./../db/realms_db');
 const auctions_db = require('./../db/auctions_db');
+const pets_db = require('./../db/pets_db');
 
 /**
  * B.net wrapper
@@ -99,6 +100,20 @@ async function getAuctionData(
             });
             if (auctions && auctions.length) {
               for (let i = 0; i < auctions.length; i++) {
+                if ('item' in auctions[i]) {
+                  /** Pet fix */
+                  if (auctions[i].item.id && auctions[i].item.id === 82800) {
+                    if (auctions[i].item.modifiers && auctions[i].item.modifiers.length) {
+                      const display_id = auctions[i].item.modifiers.find(m => m.type === 6);
+                      if (display_id) {
+                        let pet = await pets_db.findOne({display_id: display_id.value})
+                        if (pet) {
+                          auctions[i].item.id = pet.creature_id;
+                        }
+                      }
+                    }
+                  }
+                }
                 if ('bid' in auctions[i])
                   auctions[i].bid = Round2(auctions[i].bid / 10000);
                 if ('buyout' in auctions[i])

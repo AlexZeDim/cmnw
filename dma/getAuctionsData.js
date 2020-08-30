@@ -100,8 +100,8 @@ async function getAuctionData(
             });
             if (auctions && auctions.length) {
               for (let i = 0; i < auctions.length; i++) {
-                if ('item' in auctions[i]) {
-                  /** Pet fix */
+/*                if ('item' in auctions[i]) {
+                  /!** Pet fix *!/
                   if (auctions[i].item.id && auctions[i].item.id === 82800) {
                     if (auctions[i].item.modifiers && auctions[i].item.modifiers.length) {
                       const display_id = auctions[i].item.modifiers.find(m => m.type === 6);
@@ -113,7 +113,7 @@ async function getAuctionData(
                       }
                     }
                   }
-                }
+                }*/
                 if ('bid' in auctions[i])
                   auctions[i].bid = Round2(auctions[i].bid / 10000);
                 if ('buyout' in auctions[i])

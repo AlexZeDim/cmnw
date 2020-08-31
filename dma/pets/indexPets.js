@@ -38,6 +38,8 @@ const battleNetWrapper = require('battlenet-api-wrapper');
 const csv = require('csv');
 const fs = require('fs');
 const { normalize } = require('path');
+const { promisify } = require('util');
+const readFile = promisify(fs.readFile);
 
 async function indexPets (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\uploads\\creaturexdisplayinfo.csv') {
   try {
@@ -92,7 +94,9 @@ async function indexPets (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\
     } else {
       path_ = path;
     }
-    let fileSync = fs.readFileSync(path_, 'utf8');
+    let fileSync = await readFile(path_, {
+      encoding: 'utf8',
+    });
     await csv.parse(fileSync, async function (err, data) {
       for (let i = 1; i < data.length; i++) {
         let pet = await pets_db.findOne({creature_id: parseInt(data[i][5])})
@@ -103,7 +107,42 @@ async function indexPets (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\
         }
       }
     });
-    await connection.close();
+    if (process.env.PWD) {
+      path_ = normalize(`${process.env.PWD}/uploads/battlepetspecies.csv`);
+    } else {
+      path_ = 'C:\\Projects\\conglomerat\\uploads\\battlepetspecies.csv';
+    }
+    fileSync = await readFile(path_, {
+      encoding: 'utf8',
+    });
+    await csv.parse(fileSync, async function (err, data) {
+      for (let i = 1; i < data.length; i++) {
+        let pet = await pets_db.findOne({creature_id: parseInt(data[i][3])})
+        if (pet) {
+          pet.spell_id = parseInt(data[i][4])
+          await pet.save();
+          console.info(`${pet._id}, ${pet.creature_id}, ${pet.spell_id}`)
+        }
+      }
+    });
+    if (process.env.PWD) {
+      path_ = normalize(`${process.env.PWD}/uploads/itemeffect.csv`);
+    } else {
+      path_ = 'C:\\Projects\\conglomerat\\uploads\\itemeffect.csv';
+    }
+    fileSync = await readFile(path_, {
+      encoding: 'utf8',
+    });
+    await csv.parse(fileSync, async function (err, data) {
+      for (let i = 1; i < data.length; i++) {
+        let pet = await pets_db.findOne({spell_id: parseInt(data[i][7])})
+        if (pet) {
+          pet.item_id = parseInt(data[i][9])
+          await pet.save();
+          console.info(`${pet._id}, ${pet.spell_id}, ${pet.item_id}`)
+        }
+      }
+    });
     console.timeEnd(`DMA-${indexPets.name}`)
   } catch (error) {
     console.error(error)

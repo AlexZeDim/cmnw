@@ -59,6 +59,20 @@ let schema = new mongoose.Schema(
     display_id: {
       type: Number,
     },
+    /**
+     * creature_id => spell_id
+     * BattlePetSpecies.db2
+     */
+    spell_id: {
+      type: Number,
+    },
+    /**
+     * spell_id => item_id
+     * ItemEffect.db2
+     */
+    item_id: {
+      type: Number,
+    },
   },
   {
     timestamps: true,
@@ -67,6 +81,8 @@ let schema = new mongoose.Schema(
 
 schema.index({ 'creature_id': 1, }, { name: 'CreatureID' });
 schema.index({ 'display_id': 1, }, { name: 'DisplayID' });
+schema.index({ 'item_id': 1, }, { name: 'ItemID' });
+schema.index({ 'spell_id': 1, }, { name: 'SpellID' });
 
 let pets_db = mongoose.model('pets', schema, 'pets');
 

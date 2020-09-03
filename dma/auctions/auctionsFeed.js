@@ -33,7 +33,7 @@ async function auctionsFeed(item_id = 168487, connected_realm_id) {
         $match: query,
       },
       {
-        $limit: 1000
+        $limit: 2000
       },
       {
         $lookup: {

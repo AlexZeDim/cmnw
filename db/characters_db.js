@@ -119,6 +119,7 @@ let schema = new mongoose.Schema(
 schema.index({ 'name': 1 }, { name: 'Name' });
 schema.index({ 'guild.name': 1 }, { name: 'Guild' });
 schema.index({ 'id': 1 }, { name: 'ID' });
+schema.index({ 'isWatched': 1 }, { name: 'LFG' });
 
 schema.index({ 'hash.a': 1 }, { name: 'Hash A' });
 schema.index({ 'hash.b': 1 }, { name: 'Hash B' });

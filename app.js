@@ -6,6 +6,7 @@ const cors = require('cors');
 
 const character = require('./routes/api/characters/character');
 const character_logs = require('./routes/api/characters/character_logs');
+const character_lfg = require('./routes/api/characters/lfg');
 const guild = require('./routes/api/guilds/guild');
 const guild_logs = require('./routes/api/guilds/guild_logs');
 const items = require('./routes/api/items/item');
@@ -45,6 +46,7 @@ app.use('/api/contracts/last_month', contracts_lastMonth);
 
 app.use('/api/characters/character', character);
 app.use('/api/characters/character_logs', character_logs);
+app.use('/api/characters/lfg', character_lfg);
 
 /** Guilds */
 

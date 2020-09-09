@@ -107,6 +107,9 @@ let schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    wcl_percentile: {
+      type: Number,
+    },
     personality: {
       type: String,
     },

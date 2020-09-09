@@ -206,7 +206,7 @@ async function getGuild(
                   if (gm_old.id !== guild_member.id) {
                     const [nameO, realmO] = gm_old._id.split('@');
                     const [nameN, realmN] = guild_member._id.split('@');
-                    /** Request force update for hash comparision */
+                    /** Request force update for hash comparison */
                     await Promise.all([
                       await getCharacter(
                         realmO,

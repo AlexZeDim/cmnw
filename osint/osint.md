@@ -12,18 +12,20 @@ And so on, this process will never be finished.
 
 ## Characters
 
-Characters collection includes over **1M** active characters, most of them are at Russian locale region,
-but there aren't any limitation within EU. New characters could come via different ways, like: guild roster, warcraft logs or via Conglomerat-OSINT addon.
-Main index character script runs at 06:00 every 2nd day. The index script could run in multiple sessions.
+Characters collection includes over **6M** active characters, all across European region. New characters could come via different ways, like: guild roster, warcraft logs or via Conglomerat-OSINT addon.
+The index script could run in multiple sessions.
 
 Every character has an object, called `Hashes`, within it stores unique different values based on pets and mounts collection, active pet slots, class, id and title combinations.
 With the help of this data, you could always find connections between people and characters / guilds that they own.
 
 Also, characters have also checked for different operations, such as name, faction, race, gender and guild change.
 
+The LookingForGuild indexing is extracting data from Kernel's WoWProgress site every 10 minutes and announce it publicly via Discord.
+
 #### Endpoints
 
 - character
+- lfg
 
 ## Guilds
 

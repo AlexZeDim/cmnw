@@ -1,3 +1,28 @@
+/**
+ * Connection with DB
+ */
+
+const { connect, connection } = require('mongoose');
+require('dotenv').config();
+connect(
+  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
+  {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    bufferMaxEntries: 0,
+    retryWrites: true,
+    useCreateIndex: true,
+    w: 'majority',
+    family: 4,
+  },
+);
+
+connection.on('error', console.error.bind(console, 'connection error:'));
+connection.once('open', () =>
+  console.log('Connected to database on ' + process.env.hostname),
+);
+
 const discord_db = require('../../db/discord_db')
 require('dotenv').config();
 
@@ -25,6 +50,7 @@ module.exports = {
       let { name } = await message.channel.guild.channels.cache.get((channel._id).toString());
       channel.name = name;
     }
+    console.log(discord_db);
     let discord_server = await discord_db.findById(parseInt(message.channel.guild.id))
     if (!discord_server) {
       discord_server = new discord_db({
@@ -37,6 +63,7 @@ module.exports = {
     discord_server.channel = channel;
     await discord_server.save()
     await message.channel.send(notification);
+    connection.close();
   },
 };
 

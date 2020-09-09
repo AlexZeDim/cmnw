@@ -1,6 +1,4 @@
-const { MessageEmbed } = require('discord.js');
-const axios = require('axios');
-const humanizeString = require('humanize-string');
+const discord_db = require('../../db/discord_db')
 require('dotenv').config();
 
 /***
@@ -9,12 +7,36 @@ require('dotenv').config();
 module.exports = {
   name: 'recruiting',
   description:
-    'Return information about specific character. Example usage: `char блюрателла@гордунни`',
+    'Subscribes Discord server and selected channel (via ID, *current by default*) for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently `recruiting`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],
   cooldown: 60,
+  guildOnly: true,
   args: true,
   async execute(message, args) {
-    console.log(message)
+    const params = args.split(' ');
+    let notification = 'Your subscription has been successfully updated';
+    let channel = {
+      _id: message.channel.id,
+      name: message.channel.name
+    };
+    /** Set channelID */
+    if (params.includes('-channel')) {
+      channel._id = parseInt(params[params.indexOf('-channel') + 1]);
+      let { name } = await message.channel.guild.channels.cache.get((channel._id).toString());
+      channel.name = name;
+    }
+    let discord_server = await discord_db.findById(parseInt(message.channel.guild.id))
+    if (!discord_server) {
+      discord_server = new discord_db({
+        _id: message.channel.guild.id,
+        name: message.channel.guild.name,
+        channel: channel
+      })
+      notification = 'You have been successfully subscribed';
+    }
+    discord_server.channel = channel;
+    await discord_server.save()
+    await message.channel.send(notification);
   },
 };
 

@@ -3,7 +3,6 @@ apps:
     name: 'OSINT-CH-ALL'
     autorestart: true
     instances: 1
-    cron_restart: '0 6 */3 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: NULL
     min_uptime: 5000

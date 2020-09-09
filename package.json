@@ -1,6 +1,6 @@
 {
   "name": "conglomerat",
-  "version": "4.0.7",
+  "version": "4.0.9",
   "private": true,
   "homepage": "https://conglomerat.group",
   "bugs": {
@@ -44,6 +44,7 @@
     "pm2": "3.2.2",
     "promptly": "^3.0.3",
     "request-x-ray": "^0.1.4",
+    "table-scraper": "^1.0.3",
     "x-ray": "latest"
   },
   "devDependencies": {

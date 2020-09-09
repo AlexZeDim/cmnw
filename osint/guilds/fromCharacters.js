@@ -76,7 +76,7 @@ async function fromCharacters(
                * Check guild before insert
                */
               let guild = await guilds_db
-                .findById(toSlug(`${guild_slug}@${realm.slug}`))
+                .findById(`${toSlug(guild_slug)}@${realm.slug}`)
                 .lean();
               if (!guild) {
                 await getGuild(

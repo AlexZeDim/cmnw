@@ -139,7 +139,7 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                   }
                 })
               }
-              const LFG_NEW = await characters_db.find(query).limit(3)
+              const LFG_NEW = await characters_db.find(query).limit(10)
               if (LFG_NEW && LFG_NEW.length) {
                 let embed = new Discord.MessageEmbed();
                 embed.setTitle(`Mark II`);

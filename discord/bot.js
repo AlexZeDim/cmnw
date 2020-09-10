@@ -142,7 +142,7 @@ schedule.scheduleJob('05/10 * * * *', async function() {
               const LFG_NEW = await characters_db.find(query).limit(10)
               if (LFG_NEW && LFG_NEW.length) {
                 let embed = new Discord.MessageEmbed();
-                embed.setTitle(`WOWPROGRESS LOOKING FOR GUILD`);
+                embed.setTitle(`WOWPROGRESS LFG`);
                 for (let character_lfg of LFG_NEW) {
                   embed.addField(
                     `─────────────`,
@@ -190,7 +190,7 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                     true,
                   );
                 }
-                embed.setFooter(`OSINT-LFG, Сакросантус, Форжспирит`);
+                embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
                 guild_channel.send(embed)
               }
             }

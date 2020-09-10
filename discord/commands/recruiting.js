@@ -4,7 +4,7 @@ require('dotenv').config();
 module.exports = {
   name: 'recruiting',
   description:
-    'Subscribes Discord server and selected channel (requires channel_id, *uses current channel by default*) for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently.' +
+    'Subscribes Discord server and selected channel (requires channel_id, *uses current channel by default*) for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently. ' +
     'Also, you could clarify the request, by adding realm and item level. Example `recruiting -ch channel_number -realm twisted-nether -ilvl 450`. To update or modify the parameters just re-type the command with necessary filters. ' +
     'To unsubscribe from updates, use: `recruiting -rm`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],

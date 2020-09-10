@@ -112,7 +112,7 @@ const { toSlug } = require('../../db/setters');
               character.updatedBy = 'OSINT-LFG'
             } else {
               /** Evaluate Logs Performance */
-              const browser = await puppeteer.launch({headless: false});
+              const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox']});
               const page = await browser.newPage();
               await page.goto(`https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}`);
               const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');

@@ -34,12 +34,15 @@ const characters_db = require('../../db/characters_db');
  * Modules
  */
 
+const { Builder, By } = require('selenium-webdriver');
 const scraper = require('table-scraper');
+//const axios = require('axios');
 
 const { toSlug } = require('../../db/setters');
-
+//const api_key = '71255109b6687eb1afa4d23f39f2fa76';
 
 (async function IndexLFG() {
+  const driver = await new Builder().forBrowser('firefox').build();
   try {
     let exist_flag;
     let OSINT_LFG = await characters_db.find({isWatched: true}).lean();
@@ -50,7 +53,7 @@ const { toSlug } = require('../../db/setters');
      * for future diffCompare
      * */
     if (exist_flag) {
-      await characters_db.updateMany({ isWatched: true }, { isWatched: false })
+      await characters_db.updateMany({ isWatched: true }, { isWatched: false, wcl_percentile: undefined })
       console.info(`LFG status revoked for ${OSINT_LFG.length} characters`)
     }
     /**
@@ -109,6 +112,12 @@ const { toSlug } = require('../../db/setters');
             if (player_flag) {
               character.updatedBy = 'OSINT-LFG'
             } else {
+              /** Evaluate Logs Performance */
+              await driver.get(`https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}`);
+              const bestPrefAvg = await driver.findElement(By.xpath(`//div[@class='best-perf-avg']/b`)).getText();
+              if (bestPrefAvg !== "-") {
+                character.wcl_percentile = parseFloat(bestPrefAvg)
+              }
               character.updatedBy = 'OSINT-LFG-NEW'
             }
           }
@@ -121,6 +130,8 @@ const { toSlug } = require('../../db/setters');
     connection.close();
   } catch (e) {
     console.error(e)
+  } finally {
+    await driver.quit();
   }
 })();
 

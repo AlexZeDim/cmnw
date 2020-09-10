@@ -1,94 +1,59 @@
-/**
- * Connection with DB
- */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
 const discord_db = require('../../db/discord_db')
 require('dotenv').config();
 
-/***
- * @type {{args: boolean, name: string, description: string, execute(*, *): Promise<void>}}
- */
 module.exports = {
   name: 'recruiting',
   description:
-    'Subscribes Discord server and selected channel (via ID, *current by default*) for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently `recruiting`',
+    'Subscribes Discord server and selected channel (requires channel_id, *uses current channel by default*) for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently.' +
+    'Also, you could clarify the request, by adding realm and item level. Example `recruiting -ch channel_number -realm twisted-nether -ilvl 450`. To update or modify the parameters just re-type the command with necessary filters' +
+    'To unsubscribe from updates, use: `recruiting -rm`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],
   cooldown: 60,
   guildOnly: true,
   args: true,
   async execute(message, args) {
-    const params = args.split(' ');
+    let params, coverage = {};
     let notification = 'Your subscription has been successfully updated';
     let channel = {
-      _id: message.channel.id,
+      id: message.channel.id,
       name: message.channel.name
     };
+    let discord_server = await discord_db.findById(message.channel.guild.id)
     /** Set channelID */
-    if (params.includes('-channel')) {
-      channel._id = parseInt(params[params.indexOf('-channel') + 1]);
-      let { name } = await message.channel.guild.channels.cache.get((channel._id).toString());
-      channel.name = name;
+    if (args) {
+      params = args.split(' ');
+      if (params.includes('-ch')) {
+        channel.id = params[params.indexOf('-ch') + 1];
+        let { name } = await message.channel.guild.channels.cache.get(channel.id);
+        channel.name = name;
+      }
+      if (params.includes('-realm')) {
+        coverage.realm = params[params.indexOf('-realm') + 1]
+      }
+      if (params.includes('-ilvl')) {
+        coverage.ilvl = parseInt(params[params.indexOf('-realm') + 1]);
+      }
+      if (params.includes('-rm')) {
+        if (discord_server) {
+          await discord_db.findByIdAndRemove(message.channel.guild.id)
+          notification = 'Your server has been successfully unsubscribed';
+          return message.channel.send(notification);
+        } else {
+          notification = 'Your server has not been subscribed yet!';
+          return message.channel.send(notification);
+        }
+      }
     }
-    console.log(discord_db);
-    let discord_server = await discord_db.findById(parseInt(message.channel.guild.id))
     if (!discord_server) {
       discord_server = new discord_db({
         _id: message.channel.guild.id,
         name: message.channel.guild.name,
-        channel: channel
+        coverage: coverage
       })
       notification = 'You have been successfully subscribed';
     }
     discord_server.channel = channel;
     await discord_server.save()
-    await message.channel.send(notification);
-    connection.close();
+    return message.channel.send(notification);
   },
 };
-
-
-
-
-/*const Xray = require('x-ray');
-const makeDriver = require('request-x-ray');
-const driver = makeDriver({
-  method: 'GET',
-  headers: { 'Accept-Language': 'en-GB,en;q=0.5' },
-});
-const x = Xray();
-x.driver(driver);*/
-
-//const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
-//const x = await characters_db.find({isWatched: true, updatedBy: 'OSINT-LFG-NEW'}).limit(20);
-//console.log(x);
-//console.log(characters_array)
-//for (let { name, realm } of characters_array) {
-//console.log(`https://www.warcraftlogs.com/character/eu/${toSlug(realm)}/${toSlug(name)}#difficulty=5`)
-//let test = await x(encodeURI(`https://www.warcraftlogs.com/character/eu/${toSlug(realm)}/${toSlug(name)}#difficulty=5`), '.best-perf-avg').then(res => res);
-// console.log(test);
-/*        let wcl_log = await axios(encodeURI(`https://www.warcraftlogs.com:443/v1/rankings/character/${toSlug(name)}/${toSlug(realm)}/EU?api_key=${pub_key}`)).then(r => r.data)
-        if (wcl_log) {
-          console.log(wcl_log)
-        }*/
-//}

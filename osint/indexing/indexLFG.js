@@ -52,7 +52,7 @@ const { toSlug } = require('../../db/setters');
      * for future diffCompare
      * */
     if (exist_flag) {
-      await characters_db.updateMany({ isWatched: true }, { isWatched: false, wcl_percentile: undefined })
+      await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { wcl_percentile : 1 } } )
       console.info(`LFG status revoked for ${OSINT_LFG.length} characters`)
     }
     /**

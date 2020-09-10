@@ -109,15 +109,6 @@ const { toSlug } = require('../../db/setters');
           if (exist_flag) {
             let player_flag = OSINT_LFG.some(({name, realm}) => (name === character.name && realm.slug === character.realm.slug));
             if (player_flag) {
-              const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
-              const page = await browser.newPage();
-              await page.goto(`https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}`);
-              const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
-              const bestPrefAvg = await page.evaluate(name => name.innerText, getXpath);
-              console.log(bestPrefAvg)
-              if (bestPrefAvg && bestPrefAvg !== '-') {
-                character.wcl_percentile = parseFloat(bestPrefAvg)
-              }
               character.updatedBy = 'OSINT-LFG'
             } else {
               /** Evaluate Logs Performance */

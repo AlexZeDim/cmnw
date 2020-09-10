@@ -52,21 +52,23 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
     for (let csv of arrayOfLines) {
       let csv_line = csv.split(/(,\s--\s\[\d)/)[0];
       if (csv_line.startsWith('\t\t"') && csv_line.endsWith('"')) {
-        const [name, realm] = csv_line
+        const [name, slug_locale] = csv_line
           .replace(/"/g, '')
           .replace('\t\t', '')
           .split(',');
-        let { slug } = await realms_db.findOne({
-          $text: { $search: realm },
+        const realm = await realms_db.findOne({
+          $text: { $search: slug_locale },
         })
-        await getCharacter(
-          slug,
-          name,
-          {},
-          token,
-          `OSINT-${fromLua.name}`,
-          false,
-        );
+        if (realm.slug) {
+          await getCharacter(
+            realm.slug,
+            name,
+            {},
+            token,
+            `OSINT-${fromLua.name}`,
+            false,
+          );
+        }
       }
     }
     connection.close();

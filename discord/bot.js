@@ -142,14 +142,15 @@ schedule.scheduleJob('05/10 * * * *', async function() {
               const LFG_NEW = await characters_db.find(query).limit(10)
               if (LFG_NEW && LFG_NEW.length) {
                 let embed = new Discord.MessageEmbed();
-                embed.setTitle(`Mark II`);
+                embed.setTitle(`WOWPROGRESS LOOKING FOR GUILD`);
                 for (let character_lfg of LFG_NEW) {
                   embed.addField(
                     `─────────────`,
                     `
-                            Name: [${character_lfg.name}](https://${
+                    :page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name})
+                      Name: [${character_lfg.name}](https://${
                       process.env.domain
-                    }/character/${character_lfg.realm.slug}/${character_lfg.name}) [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name})
+                    }/character/${character_lfg.realm.slug}/${character_lfg.name})
                     ${
                       'realm' in character_lfg
                         ? `Realm: ${character_lfg.realm.name}`
@@ -189,7 +190,7 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                     true,
                   );
                 }
-                embed.setFooter(`OSINT-LFG`);
+                embed.setFooter(`OSINT-LFG, Сакросантус, Форжспирит`);
                 guild_channel.send(embed)
               }
             }

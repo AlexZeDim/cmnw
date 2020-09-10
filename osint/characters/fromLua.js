@@ -28,6 +28,7 @@ connection.once('open', () =>
  */
 
 const keys_db = require('../../db/keys_db');
+const realms_db = require('../../db/realms_db');
 
 /**
  * Modules
@@ -40,9 +41,10 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
   try {
     console.time(`OSINT-${fromLua.name}`);
     let { token } = await keys_db.findOne(queryKeys);
+    let path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\Гордунни\\Инициатива\\SavedVariables\\OSINT.lua';
     let osint = fs
       .readFileSync(
-        'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\Гордунни\\Бэквордация\\SavedVariables\\OSINT.lua',
+        path,
         'utf8',
       )
       .split('["csv"] = ')[1];
@@ -54,8 +56,11 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
           .replace(/"/g, '')
           .replace('\t\t', '')
           .split(',');
+        let { slug } = await realms_db.findOne({
+          $text: { $search: realm },
+        })
         await getCharacter(
-          realm,
+          slug,
           name,
           {},
           token,
@@ -65,6 +70,7 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
       }
     }
     connection.close();
+    await fs.unlinkSync(path)
     console.timeEnd(`OSINT-${fromLua.name}`);
   } catch (e) {
     console.error(e);

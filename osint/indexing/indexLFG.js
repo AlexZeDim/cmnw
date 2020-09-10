@@ -118,6 +118,7 @@ const { toSlug } = require('../../db/setters');
               if (bestPrefAvg !== "-") {
                 character.wcl_percentile = parseFloat(bestPrefAvg)
               }
+              await driver.quit();
               character.updatedBy = 'OSINT-LFG-NEW'
             }
           }
@@ -130,8 +131,6 @@ const { toSlug } = require('../../db/setters');
     connection.close();
   } catch (e) {
     console.error(e)
-  } finally {
-    await driver.quit();
   }
 })();
 

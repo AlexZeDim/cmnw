@@ -149,33 +149,33 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                     `
                             Name: [${character_lfg.name}](https://${
                       process.env.domain
-                    }/character/${character_lfg.realm.slug}/${character_lfg.name})
-                            ${
+                    }/character/${character_lfg.realm.slug}/${character_lfg.name}) [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name})
+                    ${
                       'realm' in character_lfg
                         ? `Realm: ${character_lfg.realm.name}`
                         : ``
                     } 
-                            ${
+                    ${
                       'faction' in character_lfg
                         ? `Faction: ${character_lfg.faction}`
                         : ``
                     } 
-                            ${
-                      character_lfg.wcl_percentile
-                        ? `Best Perf. Avg: ${character_lfg.wcl_percentile}`
-                        : ``
-                    } 
-                            ${
+                    ${
                       character_lfg.ilvl
                         ? `Item Level: ${character_lfg.ilvl.avg}`
                         : ``
                     } 
-                            ${
+                    ${
+                      character_lfg.wcl_percentile
+                        ? `Best Perf. Avg: ${character_lfg.wcl_percentile}`
+                        : ``
+                    } 
+                    ${
                       character_lfg.guild && character_lfg.guild.name
                         ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})`
                         : ``
                     } 
-                            ${
+                    ${
                       character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined'
                         ? `Rank: ${
                           parseInt(character_lfg.guild.rank) === 0

@@ -162,8 +162,13 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                         : ``
                     } 
                     ${
-                      character_lfg.ilvl
+                      'ilvl' in character_lfg
                         ? `Item Level: ${character_lfg.ilvl.avg}`
+                        : ``
+                    } 
+                    ${
+                      'character_class' in character_lfg
+                        ? `Item Level: ${character_lfg.character_class}`
                         : ``
                     } 
                     ${

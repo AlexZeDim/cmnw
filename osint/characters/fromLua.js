@@ -59,7 +59,7 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
         const realm = await realms_db.findOne({
           $text: { $search: slug_locale },
         })
-        if (realm.slug) {
+        if (realm && realm.slug) {
           await getCharacter(
             realm.slug,
             name,

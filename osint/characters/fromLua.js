@@ -41,7 +41,7 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
   try {
     console.time(`OSINT-${fromLua.name}`);
     let { token } = await keys_db.findOne(queryKeys);
-    let path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\Гордунни\\Инициатива\\SavedVariables\\OSINT.lua';
+    let path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\SavedVariables\\OSINT.lua';
     let osint = fs
       .readFileSync(
         path,

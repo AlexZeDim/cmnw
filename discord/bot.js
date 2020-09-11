@@ -144,7 +144,6 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                 let embed = new Discord.MessageEmbed();
                 embed.setTitle(`WOWPROGRESS LFG`);
                 for (let character_lfg of LFG_NEW) {
-                  // prettier-ignore
                   embed.addField(
                     `─────────────`,
                     `

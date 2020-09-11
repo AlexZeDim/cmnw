@@ -36,13 +36,12 @@ module.exports = {
               embed.addField(
                 `─────────────`,
                 `
-                            Want 
-                            More
-                            To
-                            Find?
-                            [Conglomerat](https://${process.env.domain}/find/any/${query})
-                            ─────────────
-                            `,
+                  Want 
+                  More
+                  To
+                  Find?
+                  [Conglomerat](https://${process.env.domain}/find/a/${query})
+                  ─────────────`,
                 true,
               );
               break;

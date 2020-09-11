@@ -30,53 +30,28 @@ module.exports = {
           for (let i = 0; i < match.length; i++) {
             if (i === 19) {
               embed.addField(
-                `─────────────`,
-                `
-                            Want 
-                            More
-                            To
-                            Find?
-                            [Conglomerat](https://${process.env.domain}/find/a/${query})
-                            ─────────────
-                            `,
+          `─────────────`,
+          `
+                  Want 
+                  More
+                  To
+                  Find?
+                  [Conglomerat](https://${process.env.domain}/find/a/${query})
+                  ─────────────`,
                 true,
               );
               break;
             }
             let { guild } = match[i];
             embed.addField(
-              `─────────────`,
-              `
-                        Name: [${match[i].name}](https://${
-                process.env.domain
-              }/character/${match[i].realm.slug}/${match[i].name})
-                        ${
-                          'realm' in match[i]
-                            ? `Realm: ${match[i].realm.name}`
-                            : ``
-                        } 
-                        ${
-                          'faction' in match[i]
-                            ? `Faction: ${match[i].faction}`
-                            : ``
-                        } 
-                        ${
-                          guild
-                            ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${match[i].realm.slug}/${guild.slug})`
-                            : ``
-                        } 
-                        ${
-                          guild && typeof guild.rank !== 'undefined'
-                            ? `Rank: ${
-                                parseInt(guild.rank) === 0
-                                  ? 'GM'
-                                  : `R${guild.rank}`
-                              }`
-                            : ``
-                        } 
-                        ─────────────
-                        `,
-              true,
+        `─────────────`,
+        `Name: [${match[i].name}](https://${process.env.domain}/character/${match[i].realm.slug}/${match[i].name})
+              ${'realm' in match[i] ? `Realm: ${match[i].realm.name}` : ``} 
+              ${'faction' in match[i] ? `Faction: ${match[i].faction}` : ``} 
+              ${guild ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${match[i].realm.slug}/${guild.slug})` : ``} 
+              ${guild && typeof guild.rank !== 'undefined' ? `Rank: ${parseInt(guild.rank) === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
+              ─────────────
+              `, true,
             );
           }
         } else {

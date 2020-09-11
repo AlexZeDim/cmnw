@@ -23,13 +23,7 @@ module.exports = {
       )
       .then(({ data }) => {
         let { _id, name, realm, members } = data;
-        embed.setAuthor(
-          `${(name + '@' + realm.name).toUpperCase()}`,
-          '',
-          encodeURI(
-            `https://${process.env.domain}/guild/${realm.slug}/${name}`,
-          ),
-        );
+        embed.setAuthor(`${(name + '@' + realm.name).toUpperCase()}`, '', encodeURI(`https://${process.env.domain}/guild/${realm.slug}/${name}`,),);
 
         const fieldsToCheck = [
           'id',
@@ -72,32 +66,21 @@ module.exports = {
           for (let i = 0; i < members.length; i++) {
             if (i === 9) {
               embed.addField(
-                `─────────────`,
-                `
-                            Want Full Roster?
-                            Check [Conglomerat](https://${
-                              process.env.domain
-                            }/guild/${realm.slug}/${_id.split('@')[0]})
-                            ─────────────
-                            `,
-                true,
+        `─────────────`,
+        `
+                Want Full Roster?
+                Check [Conglomerat](https://${process.env.domain}/guild/${realm.slug}/${_id.split('@')[0]})
+                ────────────`,
+          true,
               );
               break;
             }
             embed.addField(
-              `─────────────`,
-              `
-                        ID: [${members[i]._id}](https://${
-                process.env.domain
-              }/character/${realm.slug}/${members[i].name})
-                        R: ${
-                          members[i].guild.rank === 0
-                            ? 'GM'
-                            : members[i].guild.rank
-                        }
-                        ─────────────
-                        `,
-              true,
+      `─────────────`,
+      `ID: [${members[i]._id}](https://${process.env.domain}/character/${realm.slug}/${members[i].name})
+              R: ${members[i].guild.rank === 0 ? 'GM' : members[i].guild.rank}
+              ─────────────`,
+            true,
             );
           }
         }

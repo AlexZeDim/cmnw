@@ -1,3 +1,5 @@
 # Ignore all HTML files:
 *.html
 *.csv
+# Ignore discord formatting:
+discord

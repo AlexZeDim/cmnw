@@ -1,6 +1,6 @@
 {
   "name": "conglomerat",
-  "version": "4.0.9",
+  "version": "4.1.0",
   "private": true,
   "homepage": "https://conglomerat.group",
   "bugs": {
@@ -14,8 +14,9 @@
   },
   "scripts": {
     "tokens": "node bin/getTokens.js",
-    "start": "node discord/bot.js",
-    "core": "node ./bin/www.js"
+    "discord": "node discord/bot.js",
+    "core": "node ./bin/www.js",
+    "osint": "node osint/characters/fromLua.js"
   },
   "languageName": "node",
   "repository": {

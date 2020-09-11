@@ -69,27 +69,26 @@ module.exports = {
               break;
             }
             embed.addField(
-              `─────────────`,
-              `
-                  Name: ${data[i].name}
-                  Type: ${name_locale}
-                  Locale: ${data[i].locale}
-                  ──────
-                  **Characters**
-                  ──────
-                  Total: ${characters_total}
-                  Alliance: ${characters_alliance}
-                  Horde: ${characters_horde}
-                  Max Level: ${characters_max_level}
-                  Unique: ${characters_unique}
-                  ──────
-                  **Guilds**
-                  ──────
-                  Total: ${guilds_total}
-                  Alliance: ${guilds_alliance}
-                  Horde: ${guilds_horde}
-                  ─────────────
-                  `,
+          `─────────────`,
+          `
+              Name: ${data[i].name}
+              Type: ${name_locale}
+              Locale: ${data[i].locale}
+              ──────
+              **Characters**
+              ──────
+              Total: ${characters_total}
+              Alliance: ${characters_alliance}
+              Horde: ${characters_horde}
+              Max Level: ${characters_max_level}
+              Unique: ${characters_unique}
+              ──────
+              **Guilds**
+              ──────
+              Total: ${guilds_total}
+              Alliance: ${guilds_alliance}
+              Horde: ${guilds_horde}
+              ─────────────`,
               true,
             );
           }

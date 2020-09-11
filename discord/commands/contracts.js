@@ -30,12 +30,7 @@ module.exports = {
         )
         .then(({ data }) => {
           let { item, realm, snapshot, contracts } = data;
-          embed.setAuthor(
-            `${item.name.en_GB}@${realm.name}`.toUpperCase(),
-            '',
-            encodeURI(
-              `https://${process.env.domain}/contracts/${realm.slug}/${item._id}/${tenor}`,
-            ),
+          embed.setAuthor(`${item.name.en_GB}@${realm.name}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/contracts/${realm.slug}/${item._id}/${tenor}`),
           );
 
           if ('icon' in item) {

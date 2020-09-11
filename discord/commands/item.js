@@ -43,16 +43,15 @@ module.exports = {
         for (let i = 0; i < valuations.length; i++) {
           if (i === 19) {
             embed.addField(
-              `─────────────`,
-              `
-                        Full
-                        Pricing
-                        Available
-                        At
-                        [Conglomerat](https://${process.env.domain}/item/${realm.slug}/${item._id})
-                        ─────────────
-                        `,
-              true,
+        `─────────────`,
+        `
+                Full
+                Pricing
+                Available
+                At
+                [Conglomerat](https://${process.env.domain}/item/${realm.slug}/${item._id})
+                ─────────────`,
+          true,
             );
             break;
           }
@@ -74,14 +73,14 @@ module.exports = {
           }
 
           embed.addField(
-            `─────────────`,
-            `
-                    Name: ${valuations[i].name}
-                    Type: ${valuations[i].type}
-                    Value: ${valuations[i].value}
-                    ─────────────
-                    `,
-            true,
+      `─────────────`,
+      `
+              Name: ${valuations[i].name}
+              Type: ${valuations[i].type}
+              Value: ${valuations[i].value}
+              ─────────────
+              `,
+      true,
           );
         }
 

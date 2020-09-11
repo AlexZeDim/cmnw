@@ -30,29 +30,25 @@ module.exports = {
               embed.addField(
                 `─────────────`,
                 `
-                        Guild 
-                        Is
-                        Looking
-                        For you?
-                        [Conglomerat](https://${process.env.domain}/guild/${
-                  data._id.split('@')[1]
-                }/${data._id.split('@')[0]})
-                        ─────────────
-                        `,
+                  Want 
+                  More
+                  To
+                  Find?
+                  [Conglomerat](https://${process.env.domain}/find/a/${query})
+                  ─────────────`,
                 true,
               );
               break;
             }
             embed.addField(
-              `─────────────`,
-              `
-                    Event: ${data[i].action}
-                    Message: ${data[i].message}
-                    After: ${new Date(data[i].after).toLocaleString('en-GB')}
-                    Before: ${new Date(data[i].before).toLocaleString('en-GB')}
-                    ─────────────
-                    `,
-              true,
+        `─────────────`,
+        `
+              Event: ${data[i].action}
+              Message: ${data[i].message}
+              After: ${new Date(data[i].after).toLocaleString('en-GB')}
+              Before: ${new Date(data[i].before).toLocaleString('en-GB')}
+              ─────────────`,
+        true,
             );
           }
           embed.setFooter(`OSINT-Logs`);

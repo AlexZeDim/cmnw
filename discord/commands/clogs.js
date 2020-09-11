@@ -32,28 +32,26 @@ module.exports = {
           for (let i = 0; i < data.length; i++) {
             if (i === 19) {
               embed.addField(
-                `─────────────`,
-                `
-                        Full
-                        Log
-                        Available
-                        At
-                        [Conglomerat](https://${process.env.domain}/character/${realm}/${data[i].root_id})
-                        ─────────────
-                        `,
-                true,
+        `─────────────`,
+        `
+                Full
+                Log
+                Available
+                At
+                [Conglomerat](https://${process.env.domain}/character/${realm}/${data[i].root_id})
+                ─────────────`,
+        true,
               );
               break;
             }
             embed.addField(
-              `─────────────`,
-              `
-                    Event: ${data[i].action}
-                    Message: ${data[i].message}
-                    After: ${new Date(data[i].after).toLocaleString('en-GB')}
-                    Before: ${new Date(data[i].before).toLocaleString('en-GB')}
-                    ─────────────
-                    `,
+        `─────────────`,
+        `
+              Event: ${data[i].action}
+              Message: ${data[i].message}
+              After: ${new Date(data[i].after).toLocaleString('en-GB')}
+              Before: ${new Date(data[i].before).toLocaleString('en-GB')}
+              ─────────────`,
               true,
             );
           }

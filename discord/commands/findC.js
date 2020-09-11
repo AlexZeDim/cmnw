@@ -27,16 +27,15 @@ module.exports = {
           for (let i = 0; i < match.length; i++) {
             if (i === 19) {
               embed.addField(
-                `─────────────`,
-                `
-                            Want 
-                            More
-                            To
-                            Find?
-                            [Conglomerat](https://${process.env.domain}/find/c/${query})
-                            ─────────────
-                            `,
-                true,
+              `─────────────`,
+              `
+                Want 
+                More
+                To
+                Find?
+                [Conglomerat](https://${process.env.domain}/find/a/${query})
+                ─────────────`,
+              true,
               );
               break;
             }

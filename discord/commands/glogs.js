@@ -40,14 +40,11 @@ module.exports = {
               );
               break;
             }
-            embed.addField(
-        `─────────────`,
-        `
-              Event: ${data[i].action}
-              Message: ${data[i].message}
-              After: ${new Date(data[i].after).toLocaleString('en-GB')}
-              Before: ${new Date(data[i].before).toLocaleString('en-GB')}
-              ─────────────`,
+            embed.addField(`─────────────`, `Event: ${data[i].action}
+            Message: ${data[i].message}
+            After: ${new Date(data[i].after).toLocaleString('en-GB')}
+            Before: ${new Date(data[i].before).toLocaleString('en-GB')}
+            ─────────────`,
         true,
             );
           }

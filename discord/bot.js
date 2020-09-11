@@ -153,8 +153,7 @@ ${'character_class' in character_lfg ? `Item Level: ${character_lfg.character_cl
 ${character_lfg.wcl_percentile ? `Best Perf. Avg: ${character_lfg.wcl_percentile}` : ``} 
 ${character_lfg.guild && character_lfg.guild.name ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})` : ``} 
 ${character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined' ? `Rank: ${parseInt(character_lfg.guild.rank) === 0 ? 'GM' : `R${character_lfg.guild.rank}`}` : ``} 
-─────────────`,
-                    true,
+─────────────`, true,
                   );
                 }
                 embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);

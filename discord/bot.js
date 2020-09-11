@@ -144,19 +144,16 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                 let embed = new Discord.MessageEmbed();
                 embed.setTitle(`WOWPROGRESS LFG`);
                 for (let character_lfg of LFG_NEW) {
-                  embed.addField(
-                    `─────────────`,
-                    `
-                    :page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name})
-                    Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
-                    ${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name}` : ``} 
-                    ${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 
-                    ${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``} 
-                    ${'character_class' in character_lfg ? `Item Level: ${character_lfg.character_class}` : ``} 
-                    ${character_lfg.wcl_percentile ? `Best Perf. Avg: ${character_lfg.wcl_percentile}` : ``} 
-                    ${character_lfg.guild && character_lfg.guild.name ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})` : ``} 
-                    ${character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined' ? `Rank: ${parseInt(character_lfg.guild.rank) === 0 ? 'GM' : `R${character_lfg.guild.rank}`}` : ``} 
-                    ─────────────`,
+                  embed.addField(`─────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name})
+Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
+${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name}` : ``} 
+${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 
+${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``} 
+${'character_class' in character_lfg ? `Item Level: ${character_lfg.character_class}` : ``} 
+${character_lfg.wcl_percentile ? `Best Perf. Avg: ${character_lfg.wcl_percentile}` : ``} 
+${character_lfg.guild && character_lfg.guild.name ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})` : ``} 
+${character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined' ? `Rank: ${parseInt(character_lfg.guild.rank) === 0 ? 'GM' : `R${character_lfg.guild.rank}`}` : ``} 
+─────────────`,
                     true,
                   );
                 }

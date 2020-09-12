@@ -42,6 +42,7 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
     console.time(`OSINT-${fromLua.name}`);
     let { token } = await keys_db.findOne(queryKeys);
     let path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\SavedVariables\\OSINT.lua';
+    let array = [];
     let osint = fs
       .readFileSync(
         path,
@@ -60,14 +61,31 @@ const fromLua = async (queryKeys = { tags: `OSINT-indexCharacters` }) => {
           $text: { $search: slug_locale },
         })
         if (realm && realm.slug) {
-          await getCharacter(
-            realm.slug,
-            name,
-            {},
-            token,
-            `OSINT-${fromLua.name}`,
-            false,
-          );
+          if (array.length <= 10) {
+            array.push(
+              getCharacter(
+                realm.slug,
+                name,
+                {},
+                token,
+                `OSINT-${fromLua.name}`,
+                false,
+              )
+            )
+          } else {
+            await Promise.allSettled(array)
+            array.length = 0;
+            array.push(
+              getCharacter(
+                realm.slug,
+                name,
+                {},
+                token,
+                `OSINT-${fromLua.name}`,
+                false,
+              )
+            )
+          }
         }
       }
     }

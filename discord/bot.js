@@ -144,7 +144,7 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                 let embed = new Discord.MessageEmbed();
                 embed.setTitle(`WOWPROGRESS LFG`);
                 for (let character_lfg of LFG_NEW) {
-                  embed.addField(`─────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name})
+                  embed.addField(`─────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
 Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
 ${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name}` : ``} 
 ${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 

@@ -30,13 +30,13 @@ module.exports = {
       if (params.includes('-realm')) {
         coverage.realm = params[params.indexOf('-realm') + 1]
         if (discord_server) {
-          discord_server.channel.realm = channel.realm
+          discord_server.coverage.realm = coverage.realm
         }
       }
       if (params.includes('-ilvl')) {
         coverage.ilvl = parseInt(params[params.indexOf('-realm') + 1]);
         if (discord_server) {
-          discord_server.channel.realm = channel.realm
+          discord_server.coverage.realm = coverage.ilvl
         }
       }
       if (params.includes('-rm')) {
@@ -59,6 +59,7 @@ module.exports = {
       notification = 'You have been successfully subscribed';
     }
     discord_server.channel = channel;
+    console.log(discord_server)
     await discord_server.save()
     return message.channel.send(notification);
   },

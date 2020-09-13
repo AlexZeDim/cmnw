@@ -45,6 +45,7 @@ module.exports = {
         }
       }
     }
+    console.log(discord_server)
     if (!discord_server) {
       discord_server = new discord_db({
         _id: message.channel.guild.id,

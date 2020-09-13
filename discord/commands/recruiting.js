@@ -38,11 +38,13 @@ module.exports = {
       }
       if (params.includes('-realm')) {
         let filter_realm = params[params.indexOf('-realm') + 1]
-        let realm = await realms_db.findOne({
-          $text: { $search: filter_realm },
-        });
-        if (realm && discord_server) {
-          discord_server.coverage.realm = realm.name_locale
+        if (filter_realm) {
+          let realm = await realms_db.findOne({
+            $text: { $search: filter_realm },
+          });
+          if (realm && discord_server) {
+            discord_server.coverage.realm = realm.name_locale
+          }
         }
       }
       if (params.includes('-ilvl')) {

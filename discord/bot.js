@@ -146,7 +146,7 @@ schedule.scheduleJob('05/10 * * * *', async function() {
                 for (let character_lfg of LFG_NEW) {
                   embed.addField(`─────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
 Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
-${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name}` : ``} 
+${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name_locale}` : ``} 
 ${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 
 ${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``} 
 ${'character_class' in character_lfg ? `Class: ${character_lfg.character_class}` : ``} 

@@ -17,13 +17,11 @@ module.exports = {
     let channel = {
       id: message.channel.id,
       name: message.channel.name,
-      coverage: {}
     };
     let discord_server = await discord_db.findById(message.channel.guild.id)
     /** Set channelID */
     if (args) {
       params = args.split(' ');
-      console.log(args, params)
       if (params.includes('-ch')) {
         channel.id = params[params.indexOf('-ch') + 1];
         let { name } = await message.channel.guild.channels.cache.get(channel.id);
@@ -31,9 +29,15 @@ module.exports = {
       }
       if (params.includes('-realm')) {
         coverage.realm = params[params.indexOf('-realm') + 1]
+        if (discord_server) {
+          discord_server.channel.realm = channel.realm
+        }
       }
       if (params.includes('-ilvl')) {
         coverage.ilvl = parseInt(params[params.indexOf('-realm') + 1]);
+        if (discord_server) {
+          discord_server.channel.realm = channel.realm
+        }
       }
       if (params.includes('-rm')) {
         if (discord_server) {
@@ -46,7 +50,6 @@ module.exports = {
         }
       }
     }
-    console.log(discord_server)
     if (!discord_server) {
       discord_server = new discord_db({
         _id: message.channel.guild.id,

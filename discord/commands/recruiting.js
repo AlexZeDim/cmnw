@@ -23,6 +23,7 @@ module.exports = {
     /** Set channelID */
     if (args) {
       params = args.split(' ');
+      console.log(args, params)
       if (params.includes('-ch')) {
         channel.id = params[params.indexOf('-ch') + 1];
         let { name } = await message.channel.guild.channels.cache.get(channel.id);

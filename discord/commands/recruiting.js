@@ -1,4 +1,5 @@
 const discord_db = require('../../db/discord_db')
+const realms_db = require('../../db/realms_db')
 require('dotenv').config();
 
 module.exports = {
@@ -12,13 +13,21 @@ module.exports = {
   guildOnly: true,
   args: true,
   async execute(message, args) {
-    let params, coverage = {};
+    let params;
     let notification = 'Your subscription has been successfully updated';
     let channel = {
       id: message.channel.id,
       name: message.channel.name,
     };
     let discord_server = await discord_db.findById(message.channel.guild.id)
+    if (!discord_server) {
+      discord_server = new discord_db({
+        _id: message.channel.guild.id,
+        name: message.channel.guild.name,
+        coverage: {}
+      })
+      notification = 'You have been successfully subscribed';
+    }
     /** Set channelID */
     if (args) {
       params = args.split(' ');
@@ -28,15 +37,18 @@ module.exports = {
         channel.name = name;
       }
       if (params.includes('-realm')) {
-        coverage.realm = params[params.indexOf('-realm') + 1]
-        if (discord_server) {
-          discord_server.coverage.realm = coverage.realm
+        let filter_realm = params[params.indexOf('-realm') + 1]
+        let realm = await realms_db.findOne({
+          $text: { $search: filter_realm },
+        });
+        if (realm && discord_server) {
+          discord_server.coverage.realm = realm.name_locale
         }
       }
       if (params.includes('-ilvl')) {
-        coverage.ilvl = parseInt(params[params.indexOf('-realm') + 1]);
-        if (discord_server) {
-          discord_server.coverage.ilvl = coverage.ilvl
+        let filter_ilvl = parseInt(params[params.indexOf('-ilvl') + 1]);
+        if (filter_ilvl && discord_server) {
+          discord_server.coverage.ilvl = filter_ilvl
         }
       }
       if (params.includes('-rm')) {
@@ -49,14 +61,6 @@ module.exports = {
           return message.channel.send(notification);
         }
       }
-    }
-    if (!discord_server) {
-      discord_server = new discord_db({
-        _id: message.channel.guild.id,
-        name: message.channel.guild.name,
-        coverage: coverage
-      })
-      notification = 'You have been successfully subscribed';
     }
     discord_server.channel = channel;
     console.log(discord_server)

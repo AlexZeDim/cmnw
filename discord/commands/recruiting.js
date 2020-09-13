@@ -36,7 +36,7 @@ module.exports = {
       if (params.includes('-ilvl')) {
         coverage.ilvl = parseInt(params[params.indexOf('-realm') + 1]);
         if (discord_server) {
-          discord_server.coverage.realm = coverage.ilvl
+          discord_server.coverage.ilvl = coverage.ilvl
         }
       }
       if (params.includes('-rm')) {

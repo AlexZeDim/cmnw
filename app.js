@@ -10,6 +10,7 @@ const character_lfg = require('./routes/api/characters/lfg');
 const guild = require('./routes/api/guilds/guild');
 const guild_logs = require('./routes/api/guilds/guild_logs');
 const items = require('./routes/api/items/item');
+const info = require('./routes/api/items/info');
 const find = require('./routes/api/find');
 const contracts_tod = require('./routes/api/contracts/tod');
 const contracts_ytd = require('./routes/api/contracts/ytd');
@@ -56,6 +57,7 @@ app.use('/api/guilds/guild_logs', guild_logs);
 /** Items */
 
 app.use('/api/items/item', items);
+app.use('/api/items/info', cors(), info);
 app.use('/api/items/eva', cors(), eva);
 app.use('/api/items/xrs_item', cors(), xrs_item);
 app.use('/api/items/xrs_eva', cors(), xrs_eva);

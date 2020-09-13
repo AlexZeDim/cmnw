@@ -42,8 +42,9 @@ module.exports = {
           let realm = await realms_db.findOne({
             $text: { $search: filter_realm },
           });
+          console.log(realm)
           if (realm && discord_server) {
-            discord_server.coverage.realm = realm.name_locale
+            discord_server.coverage.realm = realm.slug
           }
         }
       }

@@ -31,7 +31,6 @@ module.exports = {
     /** Set channelID */
     if (args) {
       params = args.split(' ');
-      console.log(params)
       if (params.includes('-ch')) {
         channel.id = params[params.indexOf('-ch') + 1];
         let { name } = await message.channel.guild.channels.cache.get(channel.id);
@@ -39,12 +38,10 @@ module.exports = {
       }
       if (params.includes('-realm')) {
         let filter_realm = params[params.indexOf('-realm') + 1]
-        console.log(filter_realm)
         if (filter_realm) {
           let realm = await realms_db.findOne({
             $text: { $search: filter_realm },
           });
-          console.log(realm)
           if (realm && discord_server) {
             discord_server.coverage.realm = realm.slug
           }
@@ -68,7 +65,6 @@ module.exports = {
       }
     }
     discord_server.channel = channel;
-    console.log(discord_server)
     await discord_server.save()
     return message.channel.send(notification);
   },

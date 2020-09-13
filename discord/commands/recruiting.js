@@ -16,7 +16,8 @@ module.exports = {
     let notification = 'Your subscription has been successfully updated';
     let channel = {
       id: message.channel.id,
-      name: message.channel.name
+      name: message.channel.name,
+      coverage: {}
     };
     let discord_server = await discord_db.findById(message.channel.guild.id)
     /** Set channelID */

@@ -30,7 +30,7 @@ exports.fromSlug = string => {
  */
 
 exports.Round2 = number => {
-  return parseFloat(number.toString().toFixed(2));
+  return parseFloat(number.toFixed(2));
 };
 
 /**

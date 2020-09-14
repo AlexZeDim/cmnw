@@ -151,9 +151,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   let embed = new Discord.MessageEmbed();
                   embed.setTitle(`WOWPROGRESS LFG`);
                   for (let character_lfg of LFG_NEW) {
-                    console.log("T")
                     let raid_progress = '', raider_io_score;
-
                     await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character_lfg.realm.slug}&name=${character_lfg.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
                       if (response.data) {
                         if ('raid_progression' in response.data) {
@@ -186,10 +184,10 @@ ${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``}
 ${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``} 
 ${'character_class' in character_lfg ? `Class: ${character_lfg.character_class}` : ``} 
 ${raider_io_score ? `RIO: ${raider_io_score}` : ``} 
-${raid_progress !== '' ? `${raid_progress}` : ``} 
 ${character_lfg.wcl_percentile ? `Best Perf. Avg: ${character_lfg.wcl_percentile}` : ``} 
 ${character_lfg.guild && character_lfg.guild.name ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})` : ``} 
 ${character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined' ? `Rank: ${parseInt(character_lfg.guild.rank) === 0 ? 'GM' : `R${character_lfg.guild.rank}`}` : ``} 
+${raid_progress !== '' ? `${raid_progress}` : ``} 
 ─────────────`, true,
                     );
                   }

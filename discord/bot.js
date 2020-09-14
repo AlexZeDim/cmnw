@@ -154,19 +154,19 @@ schedule.scheduleJob('01/5 * * * *', async function() {
 
                     let raid_progress = '', raider_io_score;
 
-                    await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=howling-fjord&name=Акулов&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(responce => {
-                      console.log(responce.data)
-                      if (responce.data) {
-                        if ('raid_progression' in responce.data) {
-                          let raid_progression = responce.data.raid_progression;
+                    await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=howling-fjord&name=Акулов&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
+                      console.log(response.data)
+                      if (response.data) {
+                        if ('raid_progression' in response.data) {
+                          let raid_progression = response.data.raid_progression;
                           if (raid_progression) {
                             for (const property in raid_progression) {
                               raid_progress += `${fromSlug(property)}: ${raid_progression[property].summary} \n`
                             }
                           }
                         }
-                        if ('mythic_plus_scores_by_season' in responce.data) {
-                          let rio_score = responce.data.mythic_plus_scores_by_season
+                        if ('mythic_plus_scores_by_season' in response.data) {
+                          let rio_score = response.data.mythic_plus_scores_by_season
                           if (rio_score && rio_score.length) {
                             for (let rio of rio_score) {
                               if ('scores' in rio) {

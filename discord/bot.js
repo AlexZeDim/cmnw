@@ -130,7 +130,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
           let guild = await bot.guilds.cache.get(_id)
           if (guild) {
             for (let channel of channels) {
-              let guild_channel = await guild.channels.cache.get(channel.id);
+              let guild_channel = await guild.channels.cache.get(channel._id);
               if (guild_channel) {
                 let query = { isWatched: true, updatedBy: 'OSINT-LFG-NEW' }
                 if (channel.filters) {

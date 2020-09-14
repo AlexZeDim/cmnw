@@ -160,7 +160,9 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                           let raid_progression = response.data.raid_progression;
                           if (raid_progression) {
                             for (const property in raid_progression) {
-                              raid_progress += `${fromSlug(property)}: ${raid_progression[property].summary} \n`
+                              if (raid_progression.hasOwnProperty(property)) {
+                                raid_progress += `${fromSlug(property)}: ${raid_progression[property].summary} \n`
+                              }
                             }
                           }
                         }

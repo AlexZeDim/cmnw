@@ -37,7 +37,7 @@ User: members
 Bot: Name: Depo. Total members: 254. Attached files: members.json
 ```
 
-### EVA [item]@[realm]
+### ITEM [item]@[realm]
 
 Will send you first 30 valuations (in ascending order) for a selected game item. Item can be queried via it's ID (_number_), or via a name (any string, any locale, case-insensitive)
 or even TICKER (FLASK.INT). So does for the realm argument. Please notice that item should have an asset class for being valuated. And if it doesn't, the command will return nothing,

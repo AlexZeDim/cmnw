@@ -8,9 +8,9 @@ const realms_db = require('../../db/realms_db')
 module.exports = {
   name: 'recruiting',
   description:
-    'Subscribes Discord server and selected channel (requires channel_id, *uses current channel by default*) for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently. ' +
-    'Also, you could clarify the request, by adding realm and item level. ' +
-    '*If realm\'s name consist of two words, please remove space between by `-` symbol* Example `recruiting -ch channel_number -realm twisted-nether -ilvl 450`. To update or modify the parameters just re-type the command with necessary filters. ' +
+    'Subscribes discord server and selected channel for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently. ' +
+    'Also, you could filter the results by certain different arguments. Like `realm`, `ilvl`, `faction` ' +
+    '**If realm\'s name consist of two words, please remove space between by `-` symbol.** Example: `recruiting -ch channel_number -realm twisted-nether -ilvl 450`. To update or modify the parameters just re-type the command with necessary filters. ' +
     'To unsubscribe from updates, use: `recruiting -rm`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],
   cooldown: 30,
@@ -29,7 +29,6 @@ module.exports = {
           _id: message.channel.id,
           name: message.channel.name
         }]
-
       })
       notification = 'You have been successfully subscribed';
     } else {
@@ -85,14 +84,16 @@ module.exports = {
       }
     }
 
-    let channel_index = discord_server.channels.findIndex(o => o._id === message.channel.id);
+    let channel_index = discord_server.channels.findIndex(c => c._id === message.channel.id);
     if (channel_index === -1) {
-      //TODO exception
+      notification = 'I can\'t find you channel as subscriber on selected discord server';
+      return message.channel.send(notification);
     } else {
-      //TODO for of
-      discord_server.channels[channel_index].filters
+      for (const filter in filters) {
+        discord_server.channels[channel_index].filters[filter] = filters[filter]
+      }
     }
-
+    /** if argument for deletion then we don't save it */
     if (!is_deleted) {
       await discord_server.save()
     }

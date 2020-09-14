@@ -155,7 +155,6 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     let raid_progress = '', raider_io_score;
 
                     await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=howling-fjord&name=Акулов&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
-                      console.log(response.data)
                       if (response.data) {
                         if ('raid_progression' in response.data) {
                           let raid_progression = response.data.raid_progression;
@@ -176,7 +175,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                           }
                         }
                       }
-                    })
+                    }).catch(e => e)
                     //TODO wowprogress battle.tag and days
                     embed.addField(`─────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
 Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})

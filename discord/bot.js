@@ -151,7 +151,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   let embed = new Discord.MessageEmbed();
                   embed.setTitle(`WOWPROGRESS LFG`);
                   for (let character_lfg of LFG_NEW) {
-
+                    console.log("T")
                     let raid_progress = '', raider_io_score;
 
                     await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character_lfg.realm.slug}&name=${character_lfg.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {

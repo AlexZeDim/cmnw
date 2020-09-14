@@ -5,14 +5,15 @@ let schema = new mongoose.Schema(
   {
     _id: String,
     name: String,
-    coverage: {
-      realm: String,
-      ilvl: Number
-    },
-    channel: {
-      id: String,
+    channels: [{
+      _id: String,
       name: String,
-    },
+      filters: {
+        realm: String,
+        faction: String,
+        ilvl: Number
+      }
+    }]
   },
   {
     timestamps: true,

@@ -154,7 +154,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
 
                     let raid_progress = '', raider_io_score;
 
-                    await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=howling-fjord&name=Акулов&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
+                    await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character_lfg.realm.slug}&name=${character_lfg.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
                       if (response.data) {
                         if ('raid_progression' in response.data) {
                           let raid_progression = response.data.raid_progression;

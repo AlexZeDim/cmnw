@@ -30,5 +30,15 @@ exports.fromSlug = string => {
  */
 
 exports.Round2 = number => {
-  return parseFloat(number.toFixed(2));
+  return parseFloat(number.toString().toFixed(2));
 };
+
+/**
+ * @param string
+ * @returns {string}
+ */
+
+exports.capitalize = (string) => {
+  if (typeof string !== 'string') return ''
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}

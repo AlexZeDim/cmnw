@@ -119,7 +119,7 @@ bot.on('message', async message => {
   }
 });
 
-schedule.scheduleJob('05/10 * * * *', async function() {
+schedule.scheduleJob('01/5 * * * *', async function() {
   try {
     await discord_db
       .find({})

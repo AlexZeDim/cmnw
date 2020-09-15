@@ -264,7 +264,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                         message += `───────────────\n`
                         if (character_.lfg.days_from && character_.lfg.days_to) {
-                          message += `RT days: ${character_.lfg.days_from}-${character_.lfg.days_to}`
+                          message += `RT days: ${character_.lfg.days_from}-${character_.lfg.days_to}\n`
                         }
                         if (character_.lfg.battle_tag) {
                           message += `Battle.tag: ${character_.lfg.battle_tag}`
@@ -274,7 +274,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       embed.addField(`───────────────`, message, true,
                       );
                     }
-                    embed.setFooter(`OSINT-LFG | <@240464611562881024> |Сакросантус | Форжспирит`);
+                    embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
                     guild_channel.send(embed)
                   }
                 }

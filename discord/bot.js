@@ -218,7 +218,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                     }
-                    message += `───────────────`
+                    message += `───────────────\n`
                     if (character_.lfg) {
                       if (character_.lfg.rio) {
                         message += `RIO: ${character_.lfg.rio}\n`

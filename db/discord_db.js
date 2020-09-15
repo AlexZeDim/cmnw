@@ -11,7 +11,10 @@ let schema = new mongoose.Schema(
       filters: {
         realm: String,
         faction: String,
-        ilvl: Number
+        ilvl: Number,
+        days_from: Number,
+        wcl: Number,
+        rio: Number,
       }
     }]
   },

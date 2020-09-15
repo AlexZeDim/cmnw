@@ -107,8 +107,13 @@ let schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    wcl_percentile: {
-      type: Number,
+    lfg: {
+      battle_tag: Number,
+      rio: Number,
+      days_from: Number,
+      days_to: Number,
+      wcl_percentile: Number,
+      progress: Object,
     },
     personality: {
       type: String,

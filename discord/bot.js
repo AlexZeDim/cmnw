@@ -274,7 +274,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       embed.addField(`───────────────`, message, true,
                       );
                     }
-                    embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
+                    embed.setFooter(`OSINT-LFG | <@240464611562881024> |Сакросантус | Форжспирит`);
                     guild_channel.send(embed)
                   }
                 }

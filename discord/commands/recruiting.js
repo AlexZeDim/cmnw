@@ -102,10 +102,8 @@ module.exports = {
         }
         /** faction */
         let filters = parse_arguments(params, ['-filters'])
-        console.log(filters)
         if (filters) {
           let current_filters = discord_server.channels[channel_index].filters
-          console.log(current_filters)
           let message_filters = '';
           if (current_filters) {
             for (const [key, value] of Object.entries(current_filters)) {
@@ -130,10 +128,10 @@ module.exports = {
           is_deleted = true;
           if (discord_server) {
             await discord_db.findByIdAndRemove(message.channel.guild.id)
-            notification = 'Your server has been successfully unsubscribed';
+            notification = 'Your **server** has been successfully unsubscribed';
             return message.channel.send(notification);
           } else {
-            notification = 'Your server has not been subscribed yet!';
+            notification = 'Your **server** has not been subscribed yet!';
             return message.channel.send(notification);
           }
         }

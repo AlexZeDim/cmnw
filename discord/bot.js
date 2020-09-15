@@ -205,17 +205,17 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     for (let character_ of filtered_characters) {
                       /** Additional filters check */
                       if (channel.filters) {
-                        if (channel.filters.days_from) {
+                        if (channel.filters.days_from && character_.lfg.days_from) {
                           if (channel.filters.days_from < character_.lfg.days_from) {
                             continue
                           }
                         }
-                        if (channel.filters.wcl) {
+                        if (channel.filters.wcl && character_.lfg.wcl_percentile) {
                           if (channel.filters.wcl > character_.lfg.wcl_percentile) {
                             continue
                           }
                         }
-                        if (channel.filters.rio) {
+                        if (channel.filters.rio && character_.lfg.rio) {
                           if (channel.filters.rio > character_.lfg.rio) {
                             continue
                           }

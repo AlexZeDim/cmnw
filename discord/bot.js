@@ -196,7 +196,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                     }).catch(e => e)
-                    embed.addField(`────────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
+                    embed.addField(`───────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
 Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
 ${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name_locale}` : ``} 
 ${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 
@@ -204,11 +204,11 @@ ${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``}
 ${'character_class' in character_lfg ? `Class: ${character_lfg.character_class}` : ``} 
 ${character_lfg.guild && character_lfg.guild.name ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})` : ``} 
 ${character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined' ? `Rank: ${parseInt(character_lfg.guild.rank) === 0 ? 'GM' : `R${character_lfg.guild.rank}`}` : ``} 
-────────────────
+───────────────
 ${raider_io_score ? `RIO: ${raider_io_score}` : ``} 
 ${character_lfg.wcl_percentile ? `Best Perf. Avg: ${character_lfg.wcl_percentile}` : ``} 
 ${raid_progress !== '' ? `${raid_progress}` : ``} 
-────────────────`, true,
+───────────────`, true,
                     );
                   }
                   embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);

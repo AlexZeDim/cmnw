@@ -141,8 +141,8 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                 let query = { isWatched: true, updatedBy: 'OSINT-LFG-NEW' }
                 if (channel.filters) {
                   for (const property in channel.filters) {
-                    if (property === 'realm') {
-                      Object.assign(query, {'realm.slug': channel.filters[property]})
+                    if (property === 'realm' && channel.filters.realm && channel.filters.realm.length) {
+                      Object.assign(query, {'realm.slug': { '$in': channel.filters[property] } })
                     }
                     if (property === 'faction') {
                       Object.assign(query, {'faction': channel.filters[property]})

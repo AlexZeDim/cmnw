@@ -239,7 +239,10 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                           message += `${key}: ${value}\n`
                         }
                       }
-                      message += `───────────────`
+                      message += `───────────────\n`
+                      if (character_.lfg.battle_tag) {
+                        message += `Battle.tag: ${character_.lfg.battle_tag}`
+                      }
                     }
                     embed.addField(`───────────────`, message, true,
                     );

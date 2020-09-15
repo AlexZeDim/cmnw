@@ -29,7 +29,6 @@ connection.once('open', () =>
 
 const discord_db = require('../db/discord_db')
 const characters_db = require('../db/characters_db')
-const { fromSlug } = require('../db/setters')
 
 /**
  * Modules
@@ -37,7 +36,6 @@ const { fromSlug } = require('../db/setters')
 
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
 
@@ -121,17 +119,24 @@ bot.on('message', async message => {
 
 schedule.scheduleJob('01/5 * * * *', async function() {
   try {
+    /** Every discord subscriber */
     await discord_db
       .find({})
       .lean()
       .cursor({ batchSize: 10 })
       .eachAsync(
         async ({ _id, channels }) => {
+          /** Get by server ID  */
           let guild = await bot.guilds.cache.get(_id)
           if (guild) {
+            /** For every channel */
             for (let channel of channels) {
               let guild_channel = await guild.channels.cache.get(channel._id);
               if (guild_channel) {
+                /**
+                 * If channel exists, take filters and form query
+                 * @type {{updatedBy: string, isWatched: boolean}}
+                 */
                 let query = { isWatched: true, updatedBy: 'OSINT-LFG-NEW' }
                 if (channel.filters) {
                   for (const property in channel.filters) {
@@ -146,6 +151,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     }
                   }
                 }
+                /** Request characters by OSINT-LFG-NEW with query */
                 const LFG_NEW = await characters_db.aggregate([
                   {
                     $match: query
@@ -167,48 +173,68 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     }
                   }
                 ]);
+                /** If characters exists */
                 if (LFG_NEW && LFG_NEW.length) {
+                  /** Form discord message */
                   let embed = new Discord.MessageEmbed();
                   embed.setTitle(`WOWPROGRESS LFG`);
-                  for (let character_lfg of LFG_NEW) {
-                    let raid_progress = '', raider_io_score;
-                    await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character_lfg.realm.slug}&name=${character_lfg.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
-                      if (response.data) {
-                        if ('raid_progression' in response.data) {
-                          let raid_progression = response.data.raid_progression;
-                          if (raid_progression) {
-                            for (const property in raid_progression) {
-                              if (raid_progression.hasOwnProperty(property)) {
-                                raid_progress += `${fromSlug(property)}: ${raid_progression[property].summary} \n`
-                              }
-                            }
-                          }
-                        }
-                        if ('mythic_plus_scores_by_season' in response.data) {
-                          let rio_score = response.data.mythic_plus_scores_by_season
-                          if (rio_score && rio_score.length) {
-                            for (let rio of rio_score) {
-                              if ('scores' in rio) {
-                                raider_io_score = rio.scores.all
-                              }
-                            }
-                          }
+                  for (let character_ of LFG_NEW) {
+                    /** Additional filters check */
+                    if (channel.filters) {
+                      if (channel.filters.days_from < character_.lfg.days_from) {
+                        continue
+                      }
+                      if (channel.filters.wcl > character_.lfg.wcl_percentile) {
+                        continue
+                      }
+                      if (channel.filters.rio > character_.lfg.rio) {
+                        continue
+                      }
+                    }
+                    /** Initialize variables for character */
+                    let message = `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`;
+                    if (character_.name) {
+                      message += `Name: [${character_.name}](https://${process.env.domain}/character/${character_.realm.slug}/${character_.name})\n`
+                    }
+                    if (character_.realm) {
+                      message += `Realm: ${character_.realm.name_locale}\n`
+                    }
+                    if (character_.faction) {
+                      message += `Faction: ${character_.faction}\n`
+                    }
+                    if (character_.ilvl) {
+                      message += `Item Level: ${character_.ilvl.avg}\n`
+                    }
+                    if (character_.character_class) {
+                      message += `Class: ${character_.character_class}\n`
+                    }
+                    if (character_.guild) {
+                      message += `Guild: [${character_.guild.name}](https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.slug})\n`
+                      if (typeof character_.guild.rank !== 'undefined') {
+                        if (parseInt(character_.guild.rank) === 0) {
+                          message = 'GM\n';
+                        } else {
+                          message = `R${character_.guild.rank}\n`;
                         }
                       }
-                    }).catch(e => e)
-                    embed.addField(`───────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
-Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
-${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name_locale}` : ``} 
-${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 
-${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``} 
-${'character_class' in character_lfg ? `Class: ${character_lfg.character_class}` : ``} 
-${character_lfg.guild && character_lfg.guild.name ? `Guild: [${character_lfg.guild.name}](https://${process.env.domain}/guild/${character_lfg.realm.slug}/${character_lfg.guild.slug})` : ``} 
-${character_lfg.guild && typeof character_lfg.guild.rank !== 'undefined' ? `Rank: ${parseInt(character_lfg.guild.rank) === 0 ? 'GM' : `R${character_lfg.guild.rank}`}` : ``} 
-───────────────
-${raider_io_score ? `RIO: ${raider_io_score}` : ``} 
-${character_lfg.wcl_percentile ? `Best Perf. Avg: ${character_lfg.wcl_percentile}` : ``} 
-${raid_progress !== '' ? `${raid_progress}` : ``} 
-───────────────`, true,
+                    }
+                    message += `───────────────`
+                    if (character_.lfg) {
+                      if (character_.lfg.rio) {
+                        message += `RIO: ${character_.lfg.rio}\n`
+                      }
+                      if (character_.lfg.wcl_percentile) {
+                        message += `Best.Perf.Avg: ${character_.lfg.wcl_percentile} Mythic\n`
+                      }
+                      if (character_.lfg.progress) {
+                        let pve_progress = character_.lfg.progress
+                        for (const [key, value] of Object.entries(pve_progress)) {
+                          message += `${key}: ${value}\n`
+                        }
+                      }
+                      message += `───────────────`
+                    }
+                    embed.addField(`───────────────`, message, true,
                     );
                   }
                   embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);

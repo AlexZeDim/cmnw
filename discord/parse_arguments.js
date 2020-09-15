@@ -6,24 +6,21 @@
  */
 
 function parse_arguments (args, keywords) {
-  console.log(args, keywords)
   if (keywords && keywords.length) {
-    keywords.forEach(k => {
-      console.log(k)
+    for (let k of keywords) {
       let index = args.indexOf(k)
-      console.log(index)
-      if (index === -1) {
-        return void 0
-      } else {
-        if (args.length <= index + 1) {
+      if (index !== -1) {
+        if (args.length < index + 1) {
           return true
         } else {
           return args[index + 1]
         }
       }
-    })
+    }
+    return void 0
+  } else {
+    return void 0
   }
-  return void 0
 }
 
 module.exports = parse_arguments;

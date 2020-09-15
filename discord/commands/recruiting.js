@@ -69,7 +69,6 @@ module.exports = {
         filters.rio = parseInt(rio)
       }
       let days_from = parse_arguments(params, ['-days_from', '-from'])
-      console.log(days_from)
       if (!isNaN(days_from)) {
         filters.days_from = parseInt(days_from)
       }
@@ -99,15 +98,12 @@ module.exports = {
       }
     }
 
-    console.log(filters)
     let channel_index = discord_server.channels.findIndex(c => c._id === message.channel.id);
     if (channel_index === -1) {
       notification = 'I can\'t find you channel as subscriber on selected discord server';
       return message.channel.send(notification);
     } else {
       for (const filter in filters) {
-        console.log(filter)
-        console.log(discord_server.channels[channel_index].filters[filter])
         discord_server.channels[channel_index].filters[filter] = filters[filter]
       }
     }

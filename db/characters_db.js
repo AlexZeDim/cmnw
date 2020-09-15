@@ -108,7 +108,7 @@ let schema = new mongoose.Schema(
       default: false,
     },
     lfg: {
-      battle_tag: Number,
+      battle_tag: String,
       rio: Number,
       days_from: Number,
       days_to: Number,

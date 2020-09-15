@@ -146,7 +146,27 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     }
                   }
                 }
-                const LFG_NEW = await characters_db.find(query).limit(10)
+                const LFG_NEW = await characters_db.aggregate([
+                  {
+                    $match: query
+                  },
+                  {
+                    $limit: 10
+                  },
+                  {
+                    $lookup: {
+                      from: "realms",
+                      localField: "realm.id",
+                      foreignField: "_id",
+                      as: "realm"
+                    }
+                  },
+                  {
+                    $addFields: {
+                      realm: { $arrayElemAt: ["$realm", 0] },
+                    }
+                  }
+                ]);
                 if (LFG_NEW && LFG_NEW.length) {
                   let embed = new Discord.MessageEmbed();
                   embed.setTitle(`WOWPROGRESS LFG`);
@@ -178,7 +198,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     }).catch(e => e)
                     embed.addField(`────────────────`, `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_lfg.realm.slug}/${character_lfg.name}) :key: [RIO](https://raider.io/characters/eu/${character_lfg.realm.slug}/${character_lfg.name})
 Name: [${character_lfg.name}](https://${process.env.domain}/character/${character_lfg.realm.slug}/${character_lfg.name})
-${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name}` : ``} 
+${'realm' in character_lfg ? `Realm: ${character_lfg.realm.name_locale}` : ``} 
 ${'faction' in character_lfg ? `Faction: ${character_lfg.faction}` : ``} 
 ${'ilvl' in character_lfg ? `Item Level: ${character_lfg.ilvl.avg}` : ``} 
 ${'character_class' in character_lfg ? `Class: ${character_lfg.character_class}` : ``} 

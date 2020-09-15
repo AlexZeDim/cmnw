@@ -181,14 +181,20 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   for (let character_ of LFG_NEW) {
                     /** Additional filters check */
                     if (channel.filters) {
-                      if (channel.filters.days_from < character_.lfg.days_from) {
-                        continue
+                      if (channel.filters.days_from) {
+                        if (channel.filters.days_from < character_.lfg.days_from) {
+                          continue
+                        }
                       }
-                      if (channel.filters.wcl > character_.lfg.wcl_percentile) {
-                        continue
+                      if (channel.filters.wcl) {
+                        if (channel.filters.wcl > character_.lfg.wcl_percentile) {
+                          continue
+                        }
                       }
-                      if (channel.filters.rio > character_.lfg.rio) {
-                        continue
+                      if (channel.filters.rio) {
+                        if (channel.filters.rio > character_.lfg.rio) {
+                          continue
+                        }
                       }
                     }
                     /** Initialize variables for character */
@@ -208,6 +214,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     if (character_.character_class) {
                       message += `Class: ${character_.character_class}\n`
                     }
+                    console.log(message)
                     if (character_.guild) {
                       message += `Guild: [${character_.guild.name}](https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.slug})\n`
                       if (typeof character_.guild.rank !== 'undefined') {

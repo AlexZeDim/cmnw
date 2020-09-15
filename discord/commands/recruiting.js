@@ -39,6 +39,7 @@ module.exports = {
     }
     /** Arguments */
     if (args) {
+      params = args.split(' ')
       /** realm */
       let realm = parse_arguments(params, ['-realm', '-realms', '-r'])
       if (realm) {

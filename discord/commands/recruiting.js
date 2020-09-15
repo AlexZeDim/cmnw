@@ -58,6 +58,19 @@ module.exports = {
       if (!isNaN(ilvl)) {
         filters.ilvl = parseInt(ilvl)
       }
+      /** WCL */
+      let wcl = parse_arguments(params, ['-wcl', '-logs', '-log'])
+      if (!isNaN(wcl)) {
+        filters.wcl = parseInt(wcl)
+      }
+      let rio = parse_arguments(params, ['-rio', '-mythic_keys', '-keys'])
+      if (!isNaN(rio)) {
+        filters.rio = parseInt(rio)
+      }
+      let days_from = parse_arguments(params, ['-days_from', '-from'])
+      if (!isNaN(days_from)) {
+        filters.days_from = parseInt(days_from)
+      }
       /** faction */
       let faction = parse_arguments(params, ['-faction', '-f'])
       if (faction) {

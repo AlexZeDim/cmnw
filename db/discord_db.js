@@ -9,7 +9,7 @@ let schema = new mongoose.Schema(
       _id: String,
       name: String,
       filters: {
-        realm: String,
+        realm: [String],
         faction: String,
         ilvl: Number,
         days_from: Number,

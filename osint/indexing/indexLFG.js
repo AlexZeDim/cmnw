@@ -29,6 +29,7 @@ connection.once('open', () =>
 
 const realms_db = require('../../db/realms_db');
 const characters_db = require('../../db/characters_db');
+const persona_db = require('../../db/personalities_db');
 
 /**
  * Modules
@@ -36,13 +37,15 @@ const characters_db = require('../../db/characters_db');
 
 const puppeteer = require('puppeteer');
 const scraper = require('table-scraper');
-//const axios = require('axios');
+const axios = require('axios');
+const Xray = require('x-ray');
+let x = Xray();
 
 const { toSlug } = require('../../db/setters');
-//const api_key = '71255109b6687eb1afa4d23f39f2fa76';
 
 (async function IndexLFG() {
   try {
+    console.time(`OSINT-${IndexLFG.name}`)
     let exist_flag;
     let OSINT_LFG = await characters_db.find({isWatched: true}).lean();
     exist_flag = OSINT_LFG && OSINT_LFG.length;
@@ -52,7 +55,7 @@ const { toSlug } = require('../../db/setters');
      * for future diffCompare
      * */
     if (exist_flag) {
-      await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { wcl_percentile : 1 } } )
+      await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { lfg : 1 } } )
       console.info(`LFG status revoked for ${OSINT_LFG.length} characters`)
     }
     /**
@@ -118,21 +121,80 @@ const { toSlug } = require('../../db/setters');
               const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
               const bestPrefAvg = await page.evaluate(name => name.innerText, getXpath);
               if (bestPrefAvg && bestPrefAvg !== '-') {
-                character.wcl_percentile = parseFloat(bestPrefAvg)
+                character.lfg.wcl_percentile = parseFloat(bestPrefAvg)
               }
               await browser.close();
+
+              /** Request wow_progress and RIO for m+, pve progress and contacts */
+              await Promise.allSettled([
+                await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character.realm.slug}&name=${character.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
+                  if (response.data) {
+                    if ('raid_progression' in response.data) {
+                      character.lfg.progress = response.data.raid_progression;
+                    }
+                    if ('mythic_plus_scores_by_season' in response.data) {
+                      let rio_score = response.data.mythic_plus_scores_by_season
+                      if (rio_score && rio_score.length) {
+                        for (let rio of rio_score) {
+                          if ('scores' in rio) {
+                            character.lfg.rio = rio.scores.all
+                          }
+                        }
+                      }
+                    }
+                  }
+                }).catch(e => e),
+                await x(
+                  encodeURI(`https://www.wowprogress.com/character/eu/${character.realm.slug}/${character.name}`),
+                  '.registeredTo',
+                  { battle_tag: '.profileBattletag', info: ['.language strong']}
+                ).then(wow_progress => {
+                  if (wow_progress) {
+                    if (wow_progress.battle_tag) {
+                      character.lfg.battle_tag = wow_progress.battle_tag;
+                    }
+                    if (wow_progress.info && wow_progress.info.length) {
+                      for (let i = 0; i < wow_progress.info.length; i++) {
+                        if (wow_progress.info[i].includes(' - ')) {
+                          let [from, to] = wow_progress.info[i].split(' - ');
+                          character.lfg.days_from = parseInt(from);
+                          character.lfg.days_to = parseInt(to)
+                        }
+                      }
+                    }
+                  }
+                })
+              ])
+
+              /** Update alias and codename for persona_db */
+              if (character.personality) {
+                let persona = await persona_db.findById(character.personality)
+                if (persona && character.lfg.battle_tag) {
+                  persona.aliases.addToSet({
+                    type: 'battle.tag',
+                    value: character.lfg.battle_tag
+                  })
+                  persona.codename = character.lfg.battle_tag.toString().split('#')[0]
+                  console.info(`U,${persona._id},${character.lfg.battle_tag}`)
+                  await persona.save();
+                }
+              }
+
+              /** Update status */
               character.updatedBy = 'OSINT-LFG-NEW'
             }
           }
+
           character.isWatched = true;
           await character.save()
           console.info(`U,${character._id},${character.updatedBy}`)
         }
       }
     }
+    console.timeEnd(`OSINT-${IndexLFG.name}`)
     connection.close();
-  } catch (e) {
-    console.error(e)
+  } catch (error) {
+    console.error(error)
   }
 })();
 

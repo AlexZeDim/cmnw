@@ -13,7 +13,7 @@ module.exports = {
     'ATTENTION! If realm\'s name consist of two words, please remove space between by `-` symbol. Example: `recruiting -realm twisted-nether -ilvl 450`. \n' +
     'To update or modify the parameters just re-type the command with necessary filters. ' +
     'To unsubscribe from updates, use: `recruiting -rm`\n' +
-    'To check already enables channel filters use: `recruiting -params`',
+    'To check already enables channel filters use: `recruiting -filters`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],
   cooldown: 30,
   guildOnly: true,
@@ -102,8 +102,10 @@ module.exports = {
         }
         /** faction */
         let filters = parse_arguments(params, ['-filters'])
+        console.log(filters)
         if (filters) {
           let current_filters = discord_server.channels[channel_index].filters
+          console.log(current_filters)
           let message_filters = '';
           if (current_filters) {
             for (const [key, value] of Object.entries(current_filters)) {

@@ -179,7 +179,9 @@ const { toSlug } = require('../../db/setters');
                     type: 'battle.tag',
                     value: character.lfg.battle_tag
                   })
-                  persona.codename = character.lfg.battle_tag.toString().split('#')[0]
+                  if (!persona.codename) {
+                    persona.codename = character.lfg.battle_tag.toString().split('#')[0]
+                  }
                   console.info(`U,${persona._id},${character.lfg.battle_tag}`)
                   await persona.save();
                 }

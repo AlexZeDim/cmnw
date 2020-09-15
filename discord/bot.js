@@ -29,6 +29,7 @@ connection.once('open', () =>
 
 const discord_db = require('../db/discord_db')
 const characters_db = require('../db/characters_db')
+const { fromSlug } = require('../db/setters')
 
 /**
  * Modules
@@ -152,7 +153,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   }
                 }
                 /** Request characters by OSINT-LFG-NEW with query */
-                const LFG_NEW = await characters_db.aggregate([
+                const charactersNewLfg = await characters_db.aggregate([
                   {
                     $match: query
                   },
@@ -174,11 +175,9 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   }
                 ]);
                 /** If characters exists */
-                if (LFG_NEW && LFG_NEW.length) {
-                  /** Form discord message */
-                  let embed = new Discord.MessageEmbed();
-                  embed.setTitle(`WOWPROGRESS LFG`);
-                  for (let character_ of LFG_NEW) {
+                if (charactersNewLfg && charactersNewLfg.length) {
+                  let filtered_characters = [];
+                  for (let character_ of charactersNewLfg) {
                     /** Additional filters check */
                     if (channel.filters) {
                       if (channel.filters.days_from) {
@@ -197,58 +196,84 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                     }
-                    /** Initialize variables for character */
-                    let message = `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`;
-                    if (character_.name) {
-                      message += `Name: [${character_.name}](https://${process.env.domain}/character/${character_.realm.slug}/${character_.name})\n`
-                    }
-                    if (character_.realm) {
-                      message += `Realm: ${character_.realm.name_locale}\n`
-                    }
-                    if (character_.faction) {
-                      message += `Faction: ${character_.faction}\n`
-                    }
-                    if (character_.ilvl) {
-                      message += `Item Level: ${character_.ilvl.avg}\n`
-                    }
-                    if (character_.character_class) {
-                      message += `Class: ${character_.character_class}\n`
-                    }
-                    console.log(message)
-                    if (character_.guild) {
-                      message += `Guild: [${character_.guild.name}](https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.slug})\n`
-                      if (typeof character_.guild.rank !== 'undefined') {
-                        if (parseInt(character_.guild.rank) === 0) {
-                          message = 'GM\n';
-                        } else {
-                          message = `R${character_.guild.rank}\n`;
+                    filtered_characters.push(character_)
+                  }
+                  if (filtered_characters && filtered_characters.length) {
+                    /** Form discord message */
+                    let embed = new Discord.MessageEmbed();
+                    embed.setTitle(`WOWPROGRESS LFG`);
+                    for (let character_ of filtered_characters) {
+                      /** Additional filters check */
+                      if (channel.filters) {
+                        if (channel.filters.days_from) {
+                          if (channel.filters.days_from < character_.lfg.days_from) {
+                            continue
+                          }
+                        }
+                        if (channel.filters.wcl) {
+                          if (channel.filters.wcl > character_.lfg.wcl_percentile) {
+                            continue
+                          }
+                        }
+                        if (channel.filters.rio) {
+                          if (channel.filters.rio > character_.lfg.rio) {
+                            continue
+                          }
                         }
                       }
-                    }
-                    message += `───────────────\n`
-                    if (character_.lfg) {
-                      if (character_.lfg.rio) {
-                        message += `RIO: ${character_.lfg.rio}\n`
+                      /** Initialize variables for character */
+                      let message = `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`;
+                      if (character_.name) {
+                        message += `Name: [${character_.name}](https://${process.env.domain}/character/${character_.realm.slug}/${character_.name})\n`
                       }
-                      if (character_.lfg.wcl_percentile) {
-                        message += `Best.Perf.Avg: ${character_.lfg.wcl_percentile} Mythic\n`
+                      if (character_.realm) {
+                        message += `Realm: ${character_.realm.name_locale}\n`
                       }
-                      if (character_.lfg.progress) {
-                        let pve_progress = character_.lfg.progress
-                        for (const [key, value] of Object.entries(pve_progress)) {
-                          message += `${key}: ${value}\n`
+                      if (character_.faction) {
+                        message += `Faction: ${character_.faction}\n`
+                      }
+                      if (character_.ilvl) {
+                        message += `Item Level: ${character_.ilvl.avg}\n`
+                      }
+                      if (character_.character_class) {
+                        message += `Class: ${character_.character_class}\n`
+                      }
+                      console.log(message)
+                      if (character_.guild) {
+                        message += `Guild: [${character_.guild.name}](https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.slug})\n`
+                        if (typeof character_.guild.rank !== 'undefined') {
+                          if (parseInt(character_.guild.rank) === 0) {
+                            message = 'GM\n';
+                          } else {
+                            message = `R${character_.guild.rank}\n`;
+                          }
                         }
                       }
                       message += `───────────────\n`
-                      if (character_.lfg.battle_tag) {
-                        message += `Battle.tag: ${character_.lfg.battle_tag}`
+                      if (character_.lfg) {
+                        if (character_.lfg.rio) {
+                          message += `RIO: ${character_.lfg.rio}\n`
+                        }
+                        if (character_.lfg.wcl_percentile) {
+                          message += `Best.Perf.Avg: ${character_.lfg.wcl_percentile} Mythic\n`
+                        }
+                        if (character_.lfg.progress) {
+                          let pve_progress = character_.lfg.progress
+                          for (const [key, value] of Object.entries(pve_progress)) {
+                            message += `${fromSlug(key)}: ${value}\n`
+                          }
+                        }
+                        message += `───────────────\n`
+                        if (character_.lfg.battle_tag) {
+                          message += `Battle.tag: ${character_.lfg.battle_tag}`
+                        }
                       }
+                      embed.addField(`───────────────`, message, true,
+                      );
                     }
-                    embed.addField(`───────────────`, message, true,
-                    );
+                    embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
+                    guild_channel.send(embed)
                   }
-                  embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
-                  guild_channel.send(embed)
                 }
               }
             }

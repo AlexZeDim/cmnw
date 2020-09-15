@@ -15,7 +15,7 @@ module.exports = {
     'To unsubscribe from updates, use: `recruiting -rm`\n' +
     'To check already enables channel filters use: `recruiting -filters`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],
-  cooldown: 30,
+  cooldown: 10,
   guildOnly: true,
   args: true,
   async execute(message, args) {

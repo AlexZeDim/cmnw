@@ -242,9 +242,9 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         message += `Guild: [${character_.guild.name}](https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.slug})\n`
                         if (typeof character_.guild.rank !== 'undefined') {
                           if (parseInt(character_.guild.rank) === 0) {
-                            message += 'GM\n';
+                            message += 'Rank: GM\n';
                           } else {
-                            message += `R${character_.guild.rank}\n`;
+                            message += `Rank: R${character_.guild.rank}\n`;
                           }
                         }
                       }

@@ -263,10 +263,14 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                           }
                         }
                         message += `───────────────\n`
+                        if (character_.lfg.days_from && character_.lfg.days_to) {
+                          message += `RT days: ${character_.lfg.days_from}-${character_.lfg.days_to}`
+                        }
                         if (character_.lfg.battle_tag) {
                           message += `Battle.tag: ${character_.lfg.battle_tag}`
                         }
                       }
+                      console.log(message.length)
                       embed.addField(`───────────────`, message, true,
                       );
                     }

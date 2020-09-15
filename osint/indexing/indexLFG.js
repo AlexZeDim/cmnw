@@ -43,9 +43,9 @@ let x = Xray();
 
 const { toSlug } = require('../../db/setters');
 
-(async function IndexLFG() {
+(async function indexLFG() {
   try {
-    console.time(`OSINT-${IndexLFG.name}`)
+    console.time(`OSINT-${indexLFG.name}`)
     let exist_flag;
     let OSINT_LFG = await characters_db.find({isWatched: true}).lean();
     exist_flag = OSINT_LFG && OSINT_LFG.length;
@@ -130,7 +130,12 @@ const { toSlug } = require('../../db/setters');
                 await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character.realm.slug}&name=${character.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
                   if (response.data) {
                     if ('raid_progression' in response.data) {
-                      character.lfg.progress = response.data.raid_progression;
+                      let raid_progress = response.data.raid_progression;
+                      let pve_progress = {};
+                      for (const [key, value] of Object.entries(raid_progress)) {
+                        pve_progress[key] = value.summary
+                      }
+                      character.lfg.progress = pve_progress;
                     }
                     if ('mythic_plus_scores_by_season' in response.data) {
                       let rio_score = response.data.mythic_plus_scores_by_season
@@ -191,7 +196,7 @@ const { toSlug } = require('../../db/setters');
         }
       }
     }
-    console.timeEnd(`OSINT-${IndexLFG.name}`)
+    console.timeEnd(`OSINT-${indexLFG.name}`)
     connection.close();
   } catch (error) {
     console.error(error)

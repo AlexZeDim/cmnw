@@ -204,7 +204,6 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     let i = 0;
                     let L = 0;
                     let message = '';
-                    let embedFields = [];
                     embed.setTitle(`WOWPROGRESS LFG`);
                     embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
                     for (let character_ of filtered_characters) {
@@ -277,26 +276,21 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                       L += message.length;
-                      embedFields.push({
-                        name: `───────────────`,
-                        value: message,
-                        inline: true
-                      })
+                      embed.addField(`───────────────`, message, true,);
                       if ((i !== filtered_characters.length) && ((L + message.length) > 2048)) {
                         /** Send previous message */
                         guild_channel.send(embed)
+                        /** Clear array after addFields */
+                        embed.fields.length = 0;
                         /** Generate new embed message */
                         embed = new Discord.MessageEmbed();
                         message = '';
                         L = 0;
                         embed.setTitle(`WOWPROGRESS LFG`);
+                        embed.addField(`───────────────`, message, true,);
                         embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
-                        embed.addFields(embedFields);
-                        /** Clear array after addFields */
-                        embedFields.length = 0
                       }
                     }
-                    embed.addFields(embedFields);
                     guild_channel.send(embed)
                   }
                 }

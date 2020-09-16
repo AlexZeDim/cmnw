@@ -201,8 +201,14 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   if (filtered_characters && filtered_characters.length) {
                     /** Form discord message */
                     let embed = new Discord.MessageEmbed();
+                    let i = 0;
+                    let L = 0;
+                    let message = '';
+                    let embedFields = [];
                     embed.setTitle(`WOWPROGRESS LFG`);
+                    embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
                     for (let character_ of filtered_characters) {
+                      i++
                       /** Additional filters check */
                       if (channel.filters) {
                         if (channel.filters.days_from && character_.lfg.days_from) {
@@ -222,7 +228,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                       /** Initialize variables for character */
-                      let message = `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`;
+                      message += `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`;
                       if (character_.name) {
                         message += `Name: [${character_.name}](https://${process.env.domain}/character/${character_.realm.slug}/${character_.name})\n`
                       }
@@ -270,11 +276,27 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                           message += `Battle.tag: ${character_.lfg.battle_tag}`
                         }
                       }
-                      console.log(message.length)
-                      embed.addField(`───────────────`, message, true,
-                      );
+                      L += message.length;
+                      embedFields.push({
+                        name: `───────────────`,
+                        value: message,
+                        inline: true
+                      })
+                      if ((i !== filtered_characters.length) && ((L + message.length) > 2048)) {
+                        /** Send previous message */
+                        guild_channel.send(embed)
+                        /** Generate new embed message */
+                        embed = new Discord.MessageEmbed();
+                        message = '';
+                        L = 0;
+                        embed.setTitle(`WOWPROGRESS LFG`);
+                        embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
+                        embed.addFields(embedFields);
+                        /** Clear array after addFields */
+                        embedFields.length = 0
+                      }
                     }
-                    embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
+                    embed.addFields(embedFields);
                     guild_channel.send(embed)
                   }
                 }

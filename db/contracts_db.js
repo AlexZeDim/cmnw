@@ -51,17 +51,13 @@ let schema = new mongoose.Schema(
   },
 );
 
-schema.index(
+schema.ndex(
   { 'date.month': -1, connected_realm_id: 1, item_id: -1 },
   { name: 'M' },
 );
 schema.index(
   { 'date.week': -1, connected_realm_id: 1, item_id: -1 },
   { name: 'W' },
-);
-schema.index(
-  { 'date.month': -1, connected_realm_id: 1, item_id: -1 },
-  { name: 'M' },
 );
 
 let contracts_db = mongoose.model('contracts', schema, 'contracts');

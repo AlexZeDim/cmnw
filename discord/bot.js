@@ -278,7 +278,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       L += message.length;
                       embed.addField(`───────────────`, message, true,);
                       if ((i !== filtered_characters.length) && ((L + message.length) > 2048)) {
-                        console.log('BIG NEW MESSAGE', 'L')
+                        console.log('BIG NEW MESSAGE', L)
                         /** Send previous message */
                         guild_channel.send(embed)
                         /** Clear array after addFields */

@@ -276,8 +276,8 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                       L += message.length;
-                      embed.addField(`───────────────`, message, true,);
-                      if ((i !== filtered_characters.length) && ((L + message.length) > 2048)) {
+                      embed.addField(`───────────────`, message, true);
+                      if ((i !== filtered_characters.length) && ((L + message.length) > 1024)) {
                         console.log('BIG NEW MESSAGE', L)
                         /** Send previous message */
                         guild_channel.send(embed)
@@ -288,7 +288,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         message = '';
                         L = 0;
                         embed.setTitle(`WOWPROGRESS LFG`);
-                        embed.addField(`───────────────`, message, true,);
+                        embed.addField(`───────────────`, message, true);
                         embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
                       }
                     }

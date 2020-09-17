@@ -50,16 +50,14 @@ module.exports = {
           if (typeof data[field] === 'object') {
             if (field === 'hash') {
               delete data[field].t;
-            }
-            if (field === 'media') {
+              Object.entries(data[field]).map(([k, v]) => {
+                embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, `[${v}](https://${process.env.domain}/find/${k}/${v})`, true);
+              });
+            } else if (field === 'media') {
               embed.setThumbnail(data[field].avatar_url);
             } else {
               Object.entries(data[field]).map(([k, v]) => {
-                embed.addField(
-                  `${humanizeString(field)} ${humanizeString(k)}`,
-                  v,
-                  true,
-                );
+                embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
               });
             }
           } else {

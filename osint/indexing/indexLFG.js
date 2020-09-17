@@ -30,12 +30,14 @@ connection.once('open', () =>
 const realms_db = require('../../db/realms_db');
 const characters_db = require('../../db/characters_db');
 const persona_db = require('../../db/personalities_db');
+const keys_db = require('../../db/keys_db');
 
 /**
  * Modules
  */
 
 const puppeteer = require('puppeteer');
+const getCharacter = require('../getCharacter');
 const scraper = require('table-scraper');
 const axios = require('axios');
 const Xray = require('x-ray');
@@ -47,6 +49,7 @@ const { capitalize, toSlug } = require('../../db/setters');
   try {
     console.time(`OSINT-${indexLFG.name}`)
     let exist_flag;
+    const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters`, });
     let OSINT_LFG = await characters_db.find({isWatched: true}).lean();
     exist_flag = OSINT_LFG && OSINT_LFG.length;
     /**
@@ -92,11 +95,6 @@ const { capitalize, toSlug } = require('../../db/setters');
           let character = await characters_db.findById(`${toSlug(character_name)}@${character_realm}`)
           /** Create it, if it doesn't exist */
           if (!character) {
-            const getCharacter = require('../getCharacter');
-            const keys_db = require('../../db/keys_db');
-            const { token } = await keys_db.findOne({
-              tags: `OSINT-indexCharacters`,
-            });
             await getCharacter(
               character_realm,
               character_name,
@@ -105,8 +103,16 @@ const { capitalize, toSlug } = require('../../db/setters');
               `OSINT-LFG`,
               true,
             );
-            character = await characters_db
-              .findById(`${toSlug(character_name)}@${character_realm}`)
+            character = await characters_db.findById(`${toSlug(character_name)}@${character_realm}`)
+          } else {
+            await getCharacter(
+              character_realm,
+              character_name,
+              {},
+              token,
+              `OSINT-LFG`,
+              true,
+            )
           }
           /** If we have something to compare with */
           if (exist_flag) {

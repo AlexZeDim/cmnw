@@ -211,6 +211,10 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       embed.setAuthor(character_._id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character_.realm.slug}/${character_.name}`));
                     }
 
+                    if (character_.media) {
+                      embed.setThumbnail(character_.media.avatar_url);
+                    }
+
                     if (character_.faction) {
                       if (character_.faction === 'Alliance') {
                         embed.setColor('#006aff');

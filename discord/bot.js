@@ -158,7 +158,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     $match: query
                   },
                   {
-                    $limit: 10
+                    $limit: 20
                   },
                   {
                     $lookup: {
@@ -176,7 +176,6 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                 ]);
                 /** If characters exists */
                 if (charactersNewLfg && charactersNewLfg.length) {
-                  let filtered_characters = [];
                   for (let character_ of charactersNewLfg) {
                     /** Additional filters check */
                     if (channel.filters) {
@@ -196,85 +195,70 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                     }
-                    filtered_characters.push(character_)
-                  }
-                  if (filtered_characters && filtered_characters.length) {
-                    /** Form discord message */
+                    /** For each character create new embed message */
                     let embed = new Discord.MessageEmbed();
-                    embed.setTitle(`WOWPROGRESS LFG`);
-                    for (let character_ of filtered_characters) {
-                      /** Additional filters check */
-                      if (channel.filters) {
-                        if (channel.filters.days_from && character_.lfg.days_from) {
-                          if (channel.filters.days_from < character_.lfg.days_from) {
-                            continue
-                          }
-                        }
-                        if (channel.filters.wcl && character_.lfg.wcl_percentile) {
-                          if (channel.filters.wcl > character_.lfg.wcl_percentile) {
-                            continue
-                          }
-                        }
-                        if (channel.filters.rio && character_.lfg.rio) {
-                          if (channel.filters.rio > character_.lfg.rio) {
-                            continue
-                          }
-                        }
+
+                    if (character_.guild) {
+                      let guild_string = character_.guild.name.toString().toUpperCase()
+                      if (typeof character_.guild.rank !== 'undefined') {
+                        guild_string = guild_string.concat(` // ${parseInt(character_.guild.rank) === 0 ? 'GM' : 'R' + character_.guild.rank}`);
                       }
-                      /** Initialize variables for character */
-                      let message = `:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`;
-                      if (character_.name) {
-                        message += `Name: [${character_.name}](https://${process.env.domain}/character/${character_.realm.slug}/${character_.name})\n`
-                      }
-                      if (character_.realm) {
-                        message += `Realm: ${character_.realm.name_locale}\n`
-                      }
-                      if (character_.faction) {
-                        message += `Faction: ${character_.faction}\n`
-                      }
-                      if (character_.ilvl) {
-                        message += `Item Level: ${character_.ilvl.avg}\n`
-                      }
-                      if (character_.character_class) {
-                        message += `Class: ${character_.character_class}\n`
-                      }
-                      if (character_.guild) {
-                        message += `Guild: [${character_.guild.name}](https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.slug})\n`
-                        if (typeof character_.guild.rank !== 'undefined') {
-                          if (parseInt(character_.guild.rank) === 0) {
-                            message += 'Rank: GM\n';
-                          } else {
-                            message += `Rank: R${character_.guild.rank}\n`;
-                          }
-                        }
-                      }
-                      message += `───────────────\n`
-                      if (character_.lfg) {
-                        if (character_.lfg.rio) {
-                          message += `RIO: ${character_.lfg.rio}\n`
-                        }
-                        if (character_.lfg.wcl_percentile) {
-                          message += `Best.Perf.Avg: ${character_.lfg.wcl_percentile} Mythic\n`
-                        }
-                        if (character_.lfg.progress) {
-                          let pve_progress = character_.lfg.progress
-                          for (const [key, value] of Object.entries(pve_progress)) {
-                            message += `${fromSlug(key)}: ${value}\n`
-                          }
-                        }
-                        message += `───────────────\n`
-                        if (character_.lfg.days_from && character_.lfg.days_to) {
-                          message += `RT days: ${character_.lfg.days_from}-${character_.lfg.days_to}\n`
-                        }
-                        if (character_.lfg.battle_tag) {
-                          message += `Battle.tag: ${character_.lfg.battle_tag}`
-                        }
-                      }
-                      embed.addField(`───────────────`, message, true,
-                      );
+                      embed.setTitle(guild_string);
+                      embed.setURL(encodeURI(`https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.name}`));
                     }
-                    embed.setFooter(`OSINT-LFG | Сакросантус | Форжспирит`);
-                    guild_channel.send(embed)
+
+                    if (character_._id) {
+                      embed.setAuthor(character_._id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character_.realm.slug}/${character_.name}`));
+                    }
+
+                    if (character_.faction) {
+                      if (character_.faction === 'Alliance') {
+                        embed.setColor('#006aff');
+                      } else if (character_.faction === 'Horde') {
+                        embed.setColor('#ff0000');
+                      }
+                    }
+                    if (character_.lastModified) {
+                      embed.setTimestamp(character_.lastModified);
+                    }
+                    if (character_.ilvl) {
+                      embed.addField('Item Level', character_.ilvl.avg, true)
+                    }
+                    if (character_.character_class) {
+                      embed.addField('Class', character_.character_class, true)
+                    }
+                    if (character_.spec) {
+                      embed.addField('Spec', character_.spec, true)
+                    }
+                    if (character_.hash && character_.hash.a) {
+                      embed.addField('Hash A', character_.hash.a, true)
+                    }
+                    if (character_.lfg) {
+                      if (character_.lfg.rio) {
+                        embed.addField('RIO', character_.lfg.rio, true)
+                      }
+                      if (character_.lfg.wcl_percentile) {
+                        embed.addField('Best.Perf.Avg', `${character_.lfg.wcl_percentile} Mythic`, true)
+                      }
+                      if (character_.lfg.role) {
+                        embed.addField('Role', `${character_.lfg.role}`, true)
+                      }
+                      if (character_.lfg.days_from && character_.lfg.days_to) {
+                        embed.addField('RT days', `${character_.lfg.days_from} - ${character_.lfg.days_to}`, true)
+                      }
+                      if (character_.lfg.battle_tag) {
+                        embed.addField('Battle.tag', character_.lfg.battle_tag, true)
+                      }
+                      if (character_.lfg.progress) {
+                        let pve_progress = character_.lfg.progress
+                        for (const [key, value] of Object.entries(pve_progress)) {
+                          embed.addField(fromSlug(key), value, true)
+                        }
+                      }
+                    }
+                    embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`)
+                    embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус | Форжспирит`);
+                    await guild_channel.send(embed)
                   }
                 }
               }

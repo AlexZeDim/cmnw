@@ -113,6 +113,7 @@ const { toSlug } = require('../../db/setters');
                 const page = await browser.newPage();
                 await page.goto(`https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}#difficulty=5`);
                 const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
+                console.log(getXpath)
                 const bestPrefAvg = await page.evaluate(name => name.innerText, getXpath);
                 if (bestPrefAvg && bestPrefAvg !== '-') {
                   character.lfg.wcl_percentile = parseFloat(bestPrefAvg)

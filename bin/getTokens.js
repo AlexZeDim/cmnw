@@ -34,6 +34,7 @@ const keys_db = require('../db/keys_db');
  */
 
 const axios = require('axios');
+//const qs = require('querystring')
 
 /**
  * Update tokens from Blizzard API as a separate task
@@ -48,13 +49,23 @@ async function getTokens() {
       auth != null;
       auth = await cursor.next()
     ) {
-      const { access_token, expires_in } = await axios
-        .get(
-          `https://eu.battle.net/oauth/token?grant_type=client_credentials&client_id=${auth._id}&client_secret=${auth.secret}`,
-        )
-        .then(res => {
-          return res.data;
-        });
+      const { access_token, expires_in } = await axios({
+        url: `https://eu.battle.net/oauth/token`,
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        params: {
+          grant_type: 'client_credentials'
+        },
+        auth: {
+          username: auth._id,
+          password: auth.secret
+        }
+      })
+      .then(res => {
+        return res.data;
+      });
       let token = await keys_db.updateOne(
         { _id: auth._id },
         { token: access_token, expired_in: expires_in },

@@ -263,7 +263,10 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       }
                       if (character_.lfg.progress) {
                         let pve_progress = character_.lfg.progress
-                        for (const [key, value] of Object.entries(pve_progress)) {
+                        for (let [key, value] of Object.entries(pve_progress)) {
+                          if (key.includes('Nyalota')) {
+                            key = 'Nyalota'
+                          }
                           embed.addField(capitalCase(key), value, true)
                         }
                       }

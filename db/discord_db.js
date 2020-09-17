@@ -15,6 +15,7 @@ let schema = new mongoose.Schema(
         days_from: Number,
         wcl: Number,
         rio: Number,
+        character_class: [String],
       }
     }]
   },

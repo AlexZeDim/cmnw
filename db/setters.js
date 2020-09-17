@@ -29,8 +29,8 @@ exports.fromSlug = string => {
  * @constructor
  */
 
-exports.Round2 = number => {
-  return parseFloat(number.toFixed(2));
+exports.Round2 = num => {
+  return parseFloat(num.toFixed(2));
 };
 
 /**

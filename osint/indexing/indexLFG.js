@@ -152,22 +152,35 @@ const { capitalize, toSlug } = require('../../db/setters');
                 await x(
                   encodeURI(`https://www.wowprogress.com/character/eu/${character.realm.slug}/${character.name}`),
                   '.registeredTo',
-                  { battle_tag: '.profileBattletag', info: ['.language strong']}
+                  ['.language']
                 ).then(wow_progress => {
-                  if (wow_progress) {
-                    if (wow_progress.battle_tag) {
-                      character.lfg.battle_tag = wow_progress.battle_tag;
-                    }
-                    if (wow_progress.info && wow_progress.info.length) {
-                      for (let i = 0; i < wow_progress.info.length; i++) {
-                        if (wow_progress.info[i].includes(' - ')) {
-                          let [from, to] = wow_progress.info[i].split(' - ');
+                  if (wow_progress && wow_progress.length) {
+                    for (let info of wow_progress) {
+                      let [key, value] = info.split(':')
+                      if (key === 'Battletag') {
+                        character.lfg.battle_tag = value;
+                      }
+                      if (key === 'Looking for guild') {
+                        if (value.includes('ready to transfer')) {
+                          character.lfg.transfer = true;
+                        }
+                        if (value.includes('without transfer')) {
+                          character.lfg.transfer = false;
+                        }
+                      }
+                      if (key === 'Raids per week') {
+                        if (value.includes(' - ')) {
+                          let [from, to] = value.split(' - ');
                           character.lfg.days_from = parseInt(from);
                           character.lfg.days_to = parseInt(to)
                         }
                       }
-                      if (typeof wow_progress.info[3] === 'undefined') {
-                        character.lfg.role = capitalize(wow_progress.info[3])
+                      if (key === 'Specs playing') {
+                        if (value === 'dd') {
+                          character.lfg.role = 'DPS'
+                        } else {
+                          character.lfg.role = capitalize(value)
+                        }
                       }
                     }
                   }

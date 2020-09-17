@@ -38,7 +38,7 @@ const fs = require('fs');
 const path = require('path');
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
-const humanizeString = require('humanize-string');
+const { capitalCase }  = require("capital-case");
 
 /** Init Bot Client */
 
@@ -148,6 +148,9 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     if (property === 'ilvl') {
                       Object.assign(query, {'ilvl.avg': { '$gte': channel.filters[property]}})
                     }
+                    if (property === 'character_class') {
+                      Object.assign(query, {'character_class': { '$in': channel.filters[property] } })
+                    }
                   }
                 }
                 /** Request characters by OSINT-LFG-NEW with query */
@@ -243,7 +246,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         embed.addField('Best.Perf.Avg', `${character_.lfg.wcl_percentile} Mythic`, true)
                       }
                       if (character_.lfg.role) {
-                        embed.addField('Role', humanizeString(character_.lfg.role), true)
+                        embed.addField('Role', character_.lfg.role.toString().toUpperCase(), true)
                       }
                       if (character_.lfg.days_from && character_.lfg.days_to) {
                         embed.addField('RT days', `${character_.lfg.days_from} - ${character_.lfg.days_to}`, true)
@@ -261,7 +264,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       if (character_.lfg.progress) {
                         let pve_progress = character_.lfg.progress
                         for (const [key, value] of Object.entries(pve_progress)) {
-                          embed.addField(humanizeString(key), value, true)
+                          embed.addField(capitalCase(key), value, true)
                         }
                       }
                     }

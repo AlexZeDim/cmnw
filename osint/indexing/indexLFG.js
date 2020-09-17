@@ -41,7 +41,7 @@ const axios = require('axios');
 const Xray = require('x-ray');
 let x = Xray();
 
-const { toSlug } = require('../../db/setters');
+const { capitalize, toSlug } = require('../../db/setters');
 
 (async function indexLFG() {
   try {
@@ -165,6 +165,9 @@ const { toSlug } = require('../../db/setters');
                           character.lfg.days_from = parseInt(from);
                           character.lfg.days_to = parseInt(to)
                         }
+                      }
+                      if (typeof wow_progress.info[3] === 'undefined') {
+                        character.lfg.role = capitalize(wow_progress.info[3])
                       }
                     }
                   }

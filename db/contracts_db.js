@@ -51,7 +51,7 @@ let schema = new mongoose.Schema(
   },
 );
 
-schema.ndex(
+schema.index(
   { 'date.month': -1, connected_realm_id: 1, item_id: -1 },
   { name: 'M' },
 );

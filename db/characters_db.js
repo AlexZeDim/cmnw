@@ -102,7 +102,8 @@ let schema = new mongoose.Schema(
       days_to: Number,
       wcl_percentile: Number,
       progress: Object,
-      role: String
+      role: String,
+      transfer: Boolean
     },
     personality: {
       type: String,

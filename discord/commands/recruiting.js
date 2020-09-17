@@ -119,6 +119,9 @@ module.exports = {
                   }
               }
             }
+            if (message_filters === '') {
+              message_filters += 'There are no filters yet, please enable them, if you want. Use command `help recruiting` for more info'
+            }
             return message.channel.send(message_filters);
           }
         }

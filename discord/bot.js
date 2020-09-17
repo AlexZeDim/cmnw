@@ -236,7 +236,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       embed.addField('Spec', character_.spec, true)
                     }
                     if (character_.hash && character_.hash.a) {
-                      embed.addField('Hash A', character_.hash.a, true)
+                      embed.addField('Hash A', `[${character_.hash.a}](https://${process.env.domain}/find/a/${character_.hash.a})`, true)
                     }
                     if (character_.lfg) {
                       if (character_.lfg.rio) {

@@ -202,7 +202,6 @@ const { toSlug } = require('../../db/setters');
 
             character.isWatched = true;
             await character.save()
-            console.info(`U,${character._id},${character.updatedBy}`)
           } else {
             console.info(`E,${character_name},${character_name}`)
           }

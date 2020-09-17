@@ -9,7 +9,7 @@ module.exports = {
   name: 'recruiting',
   description:
     'Subscribes discord server and selected channel for announcements of characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently. ' +
-    'Also, you could filter the results by certain different arguments. Like:\n `-realm` (w/o spaces || all || ru) for realms\n `-ilvl` (number) for item level\n `-faction` (Alliance or Horde) for faction\n `-wcl` (number) for Mythic Performance from Kihra\'s WCL\n `-rio` (number) for RIO score from Aspyr\'s raider.io\n' +
+    'Also, you could filter the results by certain different arguments. Like:\n `-realm` (realm name w/o spaces `recruiting -realm howling-fjord` or `all` or `ru`) for realms\n `-ilvl` (number) for item level\n `-faction` (Alliance or Horde) for faction\n `-wcl` (number) for Mythic Performance from Kihra\'s WCL\n `-rio` (number) for RIO score from Aspyr\'s raider.io\n' +
     'ATTENTION! If realm\'s name consist of two words, please remove space between by `-` symbol. Example: `recruiting -realm twisted-nether -ilvl 450`. \n' +
     'To update or modify the parameters just re-type the command with necessary filters. ' +
     'To unsubscribe from updates, use: `recruiting -rm`\n' +

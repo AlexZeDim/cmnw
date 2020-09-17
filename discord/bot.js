@@ -253,6 +253,13 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       if (character_.lfg.battle_tag) {
                         embed.addField('Battle.tag', character_.lfg.battle_tag, true)
                       }
+                      if (typeof character_.lfg.transfer !== 'undefined') {
+                        if (character_.lfg.transfer) {
+                          embed.addField('Transfer', `:white_check_mark:`, true)
+                        } else {
+                          embed.addField('Transfer', `:x:`, true)
+                        }
+                      }
                       if (character_.lfg.progress) {
                         let pve_progress = character_.lfg.progress
                         for (const [key, value] of Object.entries(pve_progress)) {

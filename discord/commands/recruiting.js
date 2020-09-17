@@ -1,6 +1,7 @@
 require('dotenv').config();
 const parse_arguments = require('../parse_arguments')
 const { capitalize } = require('../../db/setters')
+const { capitalCase }  = require("capital-case");
 
 const discord_db = require('../../db/discord_db')
 const realms_db = require('../../db/realms_db')
@@ -15,7 +16,7 @@ module.exports = {
     'To unsubscribe from updates, use: `recruiting -rm`\n' +
     'To check already enables channel filters use: `recruiting -filters`',
   aliases: ['recruiting', 'recruting', 'Recruiting', 'Recruting', 'RECRUTING', "RECRUITING"],
-  cooldown: 10,
+  cooldown: 5,
   guildOnly: true,
   args: true,
   async execute(message, args) {
@@ -69,6 +70,18 @@ module.exports = {
             if (realm) {
               discord_server.channels[channel_index].filters.realm.addToSet(realm_.slug)
             }
+          }
+        }
+        /** class */
+        let _class = parse_arguments(params, ['-class', '-classes', '-c'])
+        if (_class) {
+          _class = capitalCase(_class)
+          const classes = new Set(['Rogue', 'Monk', 'Death Knight', 'Druid', 'Paladin', 'Warrior', 'Hunter', 'Priest', 'Shaman', 'Mage', 'Warlock', 'Demon Hunter']);
+          if (classes.has(_class)) {
+            discord_server.channels[channel_index].filters.character_class.addToSet(_class)
+          } else {
+            let notification = `Class ${_class} not found. If class name has spaces, try to remove them with \`-\`. Example: \`recruiting -class death-knight\` `
+            return message.channel.send(notification);
           }
         }
         /** item level */

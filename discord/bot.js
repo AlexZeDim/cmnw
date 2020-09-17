@@ -29,7 +29,6 @@ connection.once('open', () =>
 
 const discord_db = require('../db/discord_db')
 const characters_db = require('../db/characters_db')
-const { fromSlug } = require('../db/setters')
 
 /**
  * Modules
@@ -39,6 +38,7 @@ const fs = require('fs');
 const path = require('path');
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
+const humanizeString = require('humanize-string');
 
 /** Init Bot Client */
 
@@ -100,9 +100,7 @@ bot.on('message', async message => {
     if (now < expirationTime) {
       const timeLeft = (expirationTime - now) / 1000;
       return message.reply(
-        `Please wait ${timeLeft.toFixed(1)} more second(s) before using \`${
-          command.name
-        }\` command.`,
+        `Please wait ${timeLeft.toFixed(1)} more second(s) before using \`${command.name}\` command.`,
       );
     }
   }
@@ -245,7 +243,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         embed.addField('Best.Perf.Avg', `${character_.lfg.wcl_percentile} Mythic`, true)
                       }
                       if (character_.lfg.role) {
-                        embed.addField('Role', `${character_.lfg.role}`, true)
+                        embed.addField('Role', humanizeString(character_.lfg.role), true)
                       }
                       if (character_.lfg.days_from && character_.lfg.days_to) {
                         embed.addField('RT days', `${character_.lfg.days_from} - ${character_.lfg.days_to}`, true)
@@ -263,7 +261,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                       if (character_.lfg.progress) {
                         let pve_progress = character_.lfg.progress
                         for (const [key, value] of Object.entries(pve_progress)) {
-                          embed.addField(fromSlug(key), value, true)
+                          embed.addField(humanizeString(key), value, true)
                         }
                       }
                     }

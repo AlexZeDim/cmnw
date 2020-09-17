@@ -2,18 +2,6 @@ const mongoose = require('mongoose');
 const { toSlug, fromSlug } = require('./setters');
 mongoose.Promise = global.Promise;
 
-/*require('dotenv').config();
-mongoose.connect(`mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`, {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: "majority",
-    family: 4
-});*/
-
 let schema = new mongoose.Schema(
   {
     /**
@@ -114,6 +102,7 @@ let schema = new mongoose.Schema(
       days_to: Number,
       wcl_percentile: Number,
       progress: Object,
+      role: String
     },
     personality: {
       type: String,
@@ -140,7 +129,5 @@ schema.index({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' });
 schema.index({ 'realm.slug': 1, 'id': 1 }, { name: 'ByGUID' });
 
 let characters_db = mongoose.model('characters', schema, 'characters');
-
-//connection.close()
 
 module.exports = characters_db;

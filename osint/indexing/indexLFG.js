@@ -43,7 +43,7 @@ const axios = require('axios');
 const Xray = require('x-ray');
 let x = Xray();
 
-const { capitalize, toSlug } = require('../../db/setters');
+const { toSlug } = require('../../db/setters');
 
 (async function indexLFG() {
   try {
@@ -182,11 +182,7 @@ const { capitalize, toSlug } = require('../../db/setters');
                         }
                       }
                       if (key === 'Specs playing') {
-                        if (value === 'dd') {
-                          character.lfg.role = 'DPS'
-                        } else {
-                          character.lfg.role = capitalize(value)
-                        }
+                        character.lfg.role = value
                       }
                     }
                   }

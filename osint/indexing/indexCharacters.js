@@ -47,7 +47,7 @@ const getCharacter = require('../getCharacter');
 async function indexCharacters(
   queryFind = {},
   queryKeys = { tags: `OSINT-${indexCharacters.name}` },
-  bulkSize = 10,
+  bulkSize = 15,
 ) {
   try {
     console.time(`OSINT-${indexCharacters.name}`);

@@ -34,7 +34,6 @@ const keys_db = require('../db/keys_db');
  */
 
 const axios = require('axios');
-//const qs = require('querystring')
 
 /**
  * Update tokens from Blizzard API as a separate task

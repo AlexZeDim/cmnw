@@ -66,6 +66,7 @@ async function indexCharacters(
             token,
             `OSINT-${indexCharacters.name}`,
             false,
+            false
           );
         },
         { parallel: bulkSize },

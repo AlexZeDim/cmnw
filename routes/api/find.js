@@ -44,6 +44,7 @@ router.get('/:type/:query', async function (req, res) {
               token,
               `OSINT-userInput`,
               true,
+              true
             );
             if (!character) {
               /** Return 404, if still no character found */

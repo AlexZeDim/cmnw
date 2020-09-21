@@ -83,7 +83,7 @@ async function fromCharacters(
                   realm.slug,
                   guild_slug,
                   token,
-                  `OSINT-${fromCharacters.name}`,
+                  `OSINT-${fromCharacters.name}`
                 );
               }
             }

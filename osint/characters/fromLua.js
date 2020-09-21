@@ -70,6 +70,7 @@ const fromLua = async (queryKeys = { tags: `Depo` }) => {
                 token,
                 `OSINT-${fromLua.name}`,
                 false,
+                false
               )
             )
           } else {
@@ -83,6 +84,7 @@ const fromLua = async (queryKeys = { tags: `Depo` }) => {
                 token,
                 `OSINT-${fromLua.name}`,
                 false,
+                true,
               )
             )
           }

@@ -99,6 +99,7 @@ const { toSlug } = require('../../db/setters');
             token,
             `OSINT-LFG`,
             true,
+            false
           )
           let character = await characters_db.findById(`${toSlug(character_name)}@${character_realm}`)
           if (character) {

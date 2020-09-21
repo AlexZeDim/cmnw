@@ -20,12 +20,13 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 /**
  * Request characters from Blizzard API and add it to OSINT-DB (guilds)
- * @param realmSlug
- * @param characterName
- * @param characterObject
- * @param token
- * @param updatedBy
- * @param guildRank
+ * @param realmSlug {String} - realm slug
+ * @param characterName {String} - character name
+ * @param characterObject {Object} - provides any additional data for requested character
+ * @param token {String} - provide a battle.net token
+ * @param updatedBy {String} - fingerprinting function name for create and update operations
+ * @param guildRank {Boolean} - if this value true, we will request guild roster to check guild rank of this character
+ * @param createOnlyUnique {Boolean} - if value is true, we create characters only that doesn't exist. Ignore update dont update them.
  */
 
 async function getCharacter(
@@ -35,13 +36,26 @@ async function getCharacter(
   token = '',
   updatedBy = 'OSINT-getCharacter',
   guildRank = false,
+  createOnlyUnique = false,
 ) {
   try {
+
     /**
      * Convert to Slug
      */
     realmSlug = toSlug(realmSlug);
     characterName = toSlug(characterName);
+
+    if (!createOnlyUnique) {
+      let realm = await realms_db.findOne({ $text: { $search: realmSlug } }).lean();
+      if (realm && realm.slug) {
+        realmSlug = realm.slug
+      }
+      if (!realm) {
+        console.info(`E:${characterName}@${realmSlug} not found`);
+        return void 0
+      }
+    }
 
     /**
      * B.net wrapper
@@ -49,12 +63,16 @@ async function getCharacter(
     const bnw = new battleNetWrapper();
     await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
 
-    /**
-     * Check if character exists
-     */
+    /** Check if character exists */
     let character = await characters_db.findById(
       `${characterName}@${realmSlug}`,
     );
+
+    /** If character exists and force not initiated, then return */
+    if (character && !createOnlyUnique) {
+      console.info(`E:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`);
+      return void 0
+    }
 
     const [
       characterData,
@@ -128,11 +146,7 @@ async function getCharacter(
         /**
          * Find realm from slug is it's not provided
          */
-        let realm = await realms_db
-          .findOne({
-            $or: [{ slug: realmSlug }, { slug_locale: realmSlug }],
-          })
-          .lean();
+        let realm = await realms_db.findOne({ $text: { $search: realmSlug } });
         /**
          * If realm exists, add it
          */
@@ -207,11 +221,7 @@ async function getCharacter(
       /**
        * Find realm from slug is it's not provided
        */
-      let realm = await realms_db
-        .findOne({
-          $or: [{ slug: realmSlug }, { slug_locale: realmSlug }],
-        })
-        .lean();
+      let realm = await realms_db.findOne({ $text: { $search: realmSlug } });
       /**
        * If realm exists, add it
        */
@@ -241,7 +251,7 @@ async function getCharacter(
         }
       }
       /**
-       * Status Code, received, but no updated
+       * Status Code, received, but not updated
        */
       character.statusCode = 400;
     }
@@ -340,7 +350,7 @@ async function getCharacter(
       let shadowCopy, renamedCopy, transferCopy;
 
       /**
-       * If we found rename and anything else
+       * If we found rename within one realm and anything else
        */
       renamedCopy = await characters_db.findOne({
         'realm.slug': realmSlug,
@@ -348,6 +358,7 @@ async function getCharacter(
         character_class: character.character_class,
       });
       if (renamedCopy) {
+        /** Check any other changes */
         let renameCheck = ['race', 'gender', 'faction'];
         for (let check of renameCheck) {
           if (check in character && check in renamedCopy) {
@@ -362,6 +373,7 @@ async function getCharacter(
             );
           }
         }
+        /** Name change */
         indexDetective(
           character._id,
           'character',
@@ -388,28 +400,30 @@ async function getCharacter(
        * Shadow copy
        */
       if (!renamedCopy) {
+        /** Setting confidence and flag */
+        let transfer_flag = false;
+        let confidence = 0;
+        let transfer_character;
         /**
          * Transfer without rename
          * allows us to find yourself in past
          */
         let transfer_query = {
-          'realm.slug': { $ne: realmSlug },
+          'realm.slug': { "$ne": realmSlug },
           name: character.name,
           character_class: character.character_class,
           level: character.level,
-          statusCode: 200,
         };
-        if (character.hash.a && character.hash.c) {
-          transfer_query['hash.a'] = character.hash.a;
-          transfer_query['hash.c'] = character.hash.c;
+        if (character.hash.a) {
+          Object.assign(transfer_query, {'hash.a': character.hash.a})
         }
-        if (character.hash.b) {
-          transfer_query['hash.b'] = character.hash.b;
+        if (character.hash.c) {
+          Object.assign(transfer_query, {'hash.c': character.hash.c})
         }
         /***
-         * If criteria is >6 i.e. 7
+         * If criteria is > 4 of 6
          */
-        if (Object.keys(transfer_query).length > 6) {
+        if (Object.keys(transfer_query).length > 4) {
           transferCopy = await characters_db.find(transfer_query);
         }
         /**
@@ -417,55 +431,104 @@ async function getCharacter(
          * same name and hash on other realm
          */
         if (transferCopy && transferCopy.length) {
-          for (let transfer_character of transferCopy) {
-            /**
-             * Request for every character that has been found by query
-             * and check it on 404 status, if 404 - transfer has been made
-             * @type {Object}
-             */
-            const transfer_ex = await bnw.WowProfileData.getCharacterStatus(
-              transfer_character.realm.slug,
-              transfer_character.name,
-            );
 
-            if (!transfer_ex) {
-              let renameCheck = ['race', 'gender', 'faction'];
-              for (let check of renameCheck) {
-                if (check in character && check in transfer_character) {
-                  indexDetective(
-                    character._id,
-                    'character',
-                    transfer_character[check],
-                    character[check],
-                    check,
-                    new Date(character.lastModified),
-                    new Date(transfer_character.lastModified),
-                  );
+          /**
+           * Filtered characters
+           * @type {*[]}
+           */
+          let transferArray = [];
+
+          /**
+           * Request for every character that has been found by query
+           * and check it on 404 status, if 404 - transfer has been made
+           */
+          for (let transferCopyElement of transferCopy) {
+            await bnw.WowProfileData.getCharacterStatus(
+              transferCopyElement.realm.slug,
+              transferCopyElement.name,
+            ).catch(() => transferArray.push(transferCopyElement));
+          }
+
+          confidence = 1 / transferArray.length;
+
+          if (transferArray.length) {
+            /** if more then 50% */
+            if (confidence > 0.5) {
+              transfer_flag = true;
+              transfer_character = transferArray[0]
+            } else {
+              let t_flag = false;
+              if (character.hash && character.hash.t) {
+                t_flag = true;
+              }
+              for (let transferArrayElement of transferArray) {
+                /** If character has T */
+                if (t_flag) {
+                  /** Check for rejected T */
+                  if (transferArrayElement.hash && transferArrayElement.hash.t) {
+                    if (character.hash.t === transferArrayElement.hash.t) {
+                      transfer_flag = true
+                      transfer_character = transferArrayElement
+                      break
+                    }
+                  }
+                } else {
+                  /** If character has no T and rejected character has no T also */
+                  if (transferArrayElement.hash && !transferArrayElement.hash.t) {
+                    transfer_flag = true
+                    transfer_character = transferArrayElement
+                    break
+                  }
                 }
               }
-              indexDetective(
-                character._id,
-                'character',
-                transfer_character['realm'].slug,
-                character['realm'].slug,
-                'realm',
-                new Date(character.lastModified),
-                new Date(transfer_character.lastModified),
-              );
-              /** Update all osint logs */
-              await osint_logs_db.updateMany(
-                {
-                  root_id: transfer_character._id,
-                },
-                {
-                  root_id: character._id,
-                  $push: { root_history: character._id },
-                },
-              );
-              transfer_character.deleteOne();
             }
           }
+          /**
+           * if else, we can't detect it
+           *
+           * if transfer flag === true
+           * */
+          if (transfer_flag) {
+            let renameCheck = ['race', 'gender', 'faction'];
+            for (let check of renameCheck) {
+              if (check in character && check in transfer_character) {
+                indexDetective(
+                  character._id,
+                  'character',
+                  transfer_character[check],
+                  character[check],
+                  check,
+                  new Date(character.lastModified),
+                  new Date(transfer_character.lastModified),
+                );
+              }
+            }
+            indexDetective(
+              character._id,
+              'character',
+              transfer_character['realm'].slug,
+              character['realm'].slug,
+              'realm',
+              new Date(character.lastModified),
+              new Date(transfer_character.lastModified),
+            );
+            /** Update all osint logs */
+            await osint_logs_db.updateMany(
+              {
+                root_id: transfer_character._id,
+              },
+              {
+                root_id: character._id,
+                $push: { root_history: character._id },
+              },
+            );
+            transfer_character.deleteOne();
+          }
         } else {
+          /** Setting confidence and flag */
+          let transfer_flag = false;
+          let confidence = 0;
+          let shadow_character;
           /**
            * If transfer has been made rename, then
            * search via shadow_query
@@ -475,19 +538,17 @@ async function getCharacter(
             name: { $ne: character.name },
             character_class: character.character_class,
             level: character.level,
-            statusCode: 200,
           };
-          if (character.hash.a && character.hash.c) {
-            shadow_query['hash.a'] = character.hash.a;
-            shadow_query['hash.c'] = character.hash.c;
+          if (character.hash.a) {
+            Object.assign(transfer_query, {'hash.a': character.hash.a})
           }
-          if (character.hash.b) {
-            shadow_query['hash.b'] = character.hash.b;
+          if (character.hash.c) {
+            Object.assign(transfer_query, {'hash.c': character.hash.c})
           }
           /***
-           * If criteria is >7 i.e. 8
+           * If criteria is > 4 of 6
            */
-          if (Object.keys(shadow_query).length > 7) {
+          if (Object.keys(shadow_query).length > 4) {
             shadowCopy = await characters_db.find(shadow_query);
           }
           /**
@@ -495,80 +556,108 @@ async function getCharacter(
            * hashed, level, statusCode and class
            */
           if (shadowCopy && shadowCopy.length) {
-            for (let shadow_character of shadowCopy) {
-              /**
-               * Request for every character that has been found by query
-               * and check it on 404 status, if 404 - transfer has been made
-               * @type {Object}
-               */
-              const transfer_ex = await bnw.WowProfileData.getCharacterStatus(
-                shadow_character.realm.slug,
-                shadow_character.name,
-              );
 
-              if (!transfer_ex) {
-                let renameCheck = ['name', 'race', 'gender', 'faction'];
-                for (let check of renameCheck) {
-                  if (check in character && check in shadow_character) {
-                    indexDetective(
-                      character._id,
-                      'character',
-                      shadow_character[check],
-                      character[check],
-                      check,
-                      new Date(character.lastModified),
-                      new Date(shadow_character.lastModified),
-                    );
+            /**
+             * Filtered characters
+             * @type {*[]}
+             */
+            let shadowArray = [];
+
+            /**
+             * Request for every character that has been found by query
+             * and check it on 404 status, if 404 - transfer has been made
+             */
+            for (let shadowCopyElement of shadowCopy) {
+              await bnw.WowProfileData.getCharacterStatus(
+                shadowCopyElement.realm.slug,
+                shadowCopyElement.name,
+              ).catch(() => shadowArray.push(shadowCopyElement));
+            }
+
+            confidence = 1 / shadowArray.length;
+
+            if (shadowArray.length) {
+              /** if more then 50% */
+              if (confidence > 0.5) {
+                transfer_flag = true;
+                shadow_character = shadowArray[0]
+              } else {
+                let t_flag = false;
+                if (character.hash && character.hash.t) {
+                  t_flag = true;
+                }
+                for (let shadowArrayElement of shadowArray) {
+                  /** If character has T */
+                  if (t_flag) {
+                    /** Check for rejected T */
+                    if (shadowArrayElement.hash && shadowArrayElement.hash.t) {
+                      if (character.hash.t === shadowArrayElement.hash.t) {
+                        transfer_flag = true
+                        shadow_character = shadowArrayElement
+                        break
+                      }
+                    }
+                  } else {
+                    /** If character has no T and rejected character has no T also */
+                    if (shadowArrayElement.hash && !shadowArrayElement.hash.t) {
+                      transfer_flag = true
+                      shadow_character = shadowArrayElement
+                      break
+                    }
                   }
                 }
-                indexDetective(
-                  character._id,
-                  'character',
-                  shadow_character.name,
-                  character.name,
-                  'name',
-                  new Date(character.lastModified),
-                  new Date(renamedCopy.lastModified),
-                );
-                indexDetective(
-                  character._id,
-                  'character',
-                  shadow_character['realm'].slug,
-                  character['realm'].slug,
-                  'realm',
-                  new Date(character.lastModified),
-                  new Date(shadow_character.lastModified),
-                );
-
-                /** Update all osint logs */
-                await osint_logs_db.updateMany(
-                  {
-                    root_id: shadow_character._id,
-                  },
-                  {
-                    root_id: character._id,
-                    $push: { root_history: character._id },
-                  },
-                );
-                shadow_character.deleteOne();
               }
+            }
+
+            /**
+             * if else, we can't detect it
+             *
+             * if transfer flag === true
+             * */
+            if (transfer_flag) {
+              let renameCheck = ['race', 'gender', 'faction'];
+              for (let check of renameCheck) {
+                if (check in character && check in shadow_character) {
+                  indexDetective(
+                    character._id,
+                    'character',
+                    shadow_character[check],
+                    character[check],
+                    check,
+                    new Date(character.lastModified),
+                    new Date(shadow_character.lastModified),
+                  );
+                }
+              }
+              indexDetective(
+                character._id,
+                'character',
+                shadow_character['realm'].slug,
+                character['realm'].slug,
+                'realm',
+                new Date(character.lastModified),
+                new Date(shadow_character.lastModified),
+              );
+              /** Update all osint logs */
+              await osint_logs_db.updateMany(
+                {
+                  root_id: shadow_character._id,
+                },
+                {
+                  root_id: character._id,
+                  $push: { root_history: character._id },
+                },
+              );
+              shadow_character.deleteOne();
             }
           }
         }
       }
     }
     await character.save();
-    console.info(
-      `U:${character.name}@${character.realm.name}#${character.id || 0}:${
-        character.statusCode
-      }`,
-    );
+    console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`);
   } catch (error) {
-    console.error(
-      `E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(
-        realmSlug,
-      )},${error}`,
-    );
+    console.error(`E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(realmSlug,)},${error}`);
   }
 }
 

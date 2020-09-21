@@ -29,7 +29,6 @@ connection.once('open', () =>
 
 const logs_db = require('../../db/logs_db');
 const realms_db = require('../../db/realms_db');
-const characters_db = require('../../db/characters_db');
 const keys_db = require('../../db/keys_db');
 
 /**
@@ -37,7 +36,6 @@ const keys_db = require('../../db/keys_db');
  */
 
 const axios = require('axios');
-const { toSlug } = require('../../db/setters');
 
 /**
  * getGuild indexing
@@ -94,18 +92,15 @@ async function indexLogs(
                   })
                   .lean();
                 if (realm && realm.slug) {
-                  let character_OSINT = await characters_db.findById(
-                    toSlug(`${character.name}@${realm.slug}`),
+                  await getCharacter(
+                    realm.slug,
+                    character.name,
+                    {},
+                    token,
+                    `OSINT-${indexLogs.name}`,
+                    false,
+                    true
                   );
-                  if (!character_OSINT) {
-                    await getCharacter(
-                      realm.slug,
-                      character.name,
-                      {},
-                      token,
-                      `OSINT-${indexLogs.name}`,
-                    );
-                  }
                 }
               }
             }

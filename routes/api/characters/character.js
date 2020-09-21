@@ -53,6 +53,7 @@ router.get('/:nameSlug@:realmSlug', async function (req, res) {
               token,
               `OSINT-userInput`,
               true,
+              true
             );
             characterData = await characters_db
               .findById(`${nameSlug}@${realm.slug}`)

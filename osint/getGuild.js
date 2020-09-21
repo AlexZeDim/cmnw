@@ -188,6 +188,7 @@ async function getGuild(
                   token,
                   updatedBy,
                   false,
+                  false
                 );
               }
 
@@ -198,7 +199,7 @@ async function getGuild(
                 /**
                  * It's GM, check the older one
                  */
-                if (member.rank === 0) {
+                if (parseInt(member.rank) === 0) {
                   /** Find old GM */
                   let gm_old = members.find(m => parseInt(m.rank) === 0);
 
@@ -215,6 +216,7 @@ async function getGuild(
                         token,
                         updatedBy,
                         false,
+                        false
                       ),
                       await getCharacter(
                         realmN,
@@ -223,6 +225,7 @@ async function getGuild(
                         token,
                         updatedBy,
                         false,
+                        false
                       ),
                     ]);
                     /** Receive both characters */

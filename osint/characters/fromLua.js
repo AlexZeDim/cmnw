@@ -89,7 +89,7 @@ const fromLua = async (queryKeys = { tags: `Depo` }) => {
         }
       }
     }
-    connection.close();
+    await connection.close();
     await fs.unlinkSync(path)
     console.timeEnd(`OSINT-${fromLua.name}`);
   } catch (e) {

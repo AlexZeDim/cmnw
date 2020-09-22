@@ -44,17 +44,11 @@ async function getPersonalities() {
         {
           $group: {
             _id: {
-              realm: '$realm.slug',
               hash_a: '$hash.a',
               hash_c: '$hash.c',
             },
             characters: { $addToSet: '$_id' },
-            personality: { $addToSet: '$personality' },
-            guild: {
-              $addToSet: {
-                $concat: ['$guild.slug', '@', '$realm.slug'],
-              },
-            },
+            personality: { $addToSet: '$personality' }
           },
         },
       ])
@@ -65,24 +59,19 @@ async function getPersonalities() {
         async identity => {
           let persona;
           let flag = 'E'
-          /** Clearance by guild */
-          let clearance = identity.guild.map(g => ({
-            access: 0,
-            codeword: g,
-          }));
           /** Default clearance */
-          clearance.push({
+          let clearance = [{
             access: 0,
             codeword: 'WoW',
-          });
+          }];
           /** Check is such persona ID exists */
           if (identity.personality.length) {
+            /** Find persona by ID */
+            persona = await personalities_db.findById(identity.personality[0])
             /** If personas more then one, then report it */
             if (identity.personality.length > 1) {
               console.error(`E,${identity.personality.length},${identity._id.realm},${identity._id.hash_a},${identity._id.hash_c}`)
             }
-            /** Find persona by ID */
-            persona = await personalities_db.findById(identity.personality[0])
           } else {
             /** Create new persona and save it */
             persona = new personalities_db({

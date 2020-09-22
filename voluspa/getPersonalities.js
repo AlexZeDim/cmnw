@@ -39,6 +39,7 @@ async function getPersonalities() {
         {
           $match: {
             hash: { $exists: true },
+            'hash.a': { $exists: true, $ne: null },
           },
         },
         {

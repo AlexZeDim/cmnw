@@ -186,10 +186,10 @@ const { toSlug } = require('../../db/setters');
                   if (persona && character.lfg.battle_tag) {
                     persona.aliases.addToSet({
                       type: 'battle.tag',
-                      value: character.lfg.battle_tag
+                      value: character.lfg.battle_tag.toString().replace(' ', '')
                     })
                     if (persona.codename && persona.codename === 'Unknown') {
-                      persona.codename = character.lfg.battle_tag.toString().split('#')[0]
+                      persona.codename = character.lfg.battle_tag.toString().split('#')[0].replace(' ', '')
                     }
                     console.info(`U,${persona._id},${character.lfg.battle_tag}`)
                     await persona.save();

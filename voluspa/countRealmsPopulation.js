@@ -34,7 +34,7 @@ const guilds_db = require('../db/guilds_db');
 async function countRealmsPopulation() {
   try {
     console.time(`VOLUSPA-${countRealmsPopulation.name}`);
-    await realms_db.find({locale: 'ru_RU'}).cursor().eachAsync(async realm => {
+    await realms_db.find().cursor().eachAsync(async realm => {
       let players_total = await characters_db.find({'realm.slug': realm.slug}).distinct('_id')
       let players_alliance = await characters_db.find({'realm.slug': realm.slug, faction: 'Alliance'}).distinct('_id')
       let players_horde = await characters_db.find({'realm.slug': realm.slug, faction: 'Horde'}).distinct('_id')

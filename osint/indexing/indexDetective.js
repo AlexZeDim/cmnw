@@ -105,7 +105,7 @@ function indexDetective(
           message = `${root_id} GM ownership was transferred from ${original_value} to ${new_value}`;
         }
         if (type === 'character') {
-          message = `${original_value} has GM ownership to ${new_value}`;
+          message = `${original_value} has transferred GM ownership to ${new_value}`;
         }
         break;
       default:

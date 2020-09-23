@@ -37,7 +37,7 @@ const realms_db = require('../../db/realms_db');
 const fs = require('fs');
 const getCharacter = require('../getCharacter');
 
-const fromLua = async (queryKeys = { tags: `Depo` }) => {
+const fromLua = async (queryKeys = { tags: `conglomerat` }) => {
   try {
     console.time(`OSINT-${fromLua.name}`);
     let { token } = await keys_db.findOne(queryKeys);

@@ -54,6 +54,7 @@ async function indexCharacters(
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind)
+      .sort({updatedAt: -1})
       .lean()
       .cursor({ batchSize: bulkSize })
       .eachAsync(
@@ -71,7 +72,7 @@ async function indexCharacters(
         },
         { parallel: bulkSize },
       );
-    connection.close();
+    await connection.close();
     console.timeEnd(`OSINT-${indexCharacters.name}`);
   } catch (err) {
     console.error(`${indexCharacters.name},${err}`);

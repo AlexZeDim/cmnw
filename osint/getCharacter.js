@@ -68,8 +68,8 @@ async function getCharacter(
       `${characterName}@${realmSlug}`,
     );
 
-    /** If character exists and force not initiated, then return */
-    if (character && !createOnlyUnique) {
+    /** If character exists and force initiated, then return */
+    if (character && createOnlyUnique) {
       console.info(`E:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`);
       return void 0
     }

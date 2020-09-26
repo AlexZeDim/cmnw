@@ -47,14 +47,13 @@ const getCharacter = require('../getCharacter');
 async function indexCharacters(
   queryFind = {},
   queryKeys = { tags: `OSINT-${indexCharacters.name}` },
-  bulkSize = 8,
+  bulkSize = 10,
 ) {
   try {
     console.time(`OSINT-${indexCharacters.name}`);
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind)
-      .sort({updatedAt: -1})
       .lean()
       .cursor({ batchSize: bulkSize })
       .eachAsync(

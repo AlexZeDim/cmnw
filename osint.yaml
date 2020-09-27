@@ -4,7 +4,7 @@ apps:
     autorestart: true
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    out_file: NULL
+    out_file: "/dev/null"
     min_uptime: 5000
     restart_delay: 3600000
   - script: ./osint/indexing/indexGuilds.js
@@ -13,7 +13,7 @@ apps:
     autorestart: true
     cron_restart: '15 */12 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    out_file: NULL
+    out_file: "/dev/null"
     min_uptime: 5000
     restart_delay: 1800000
   - script: ./osint/indexing/indexLFG.js
@@ -22,7 +22,7 @@ apps:
     autorestart: true
     cron_restart: '*/5 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    out_file: NULL
+    out_file: "/dev/null"
     min_uptime: 5000
     restart_delay: 1800000
   - script: ./osint/characters/fromLogs.js
@@ -37,7 +37,7 @@ apps:
     name: 'OSINT-LOGS'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     max_memory_restart: '1G'
     cron_restart: '0 3 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -46,7 +46,7 @@ apps:
     name: 'OSINT-GUILD-CH'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     cron_restart: '30 3 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
@@ -54,14 +54,14 @@ apps:
     name: 'OSINT-WP'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     cron_restart: '0 5 1,15 * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./voluspa/getPersonalities.js
     name: 'VOLUSPA-PERSONA'
     instances: 1
-    out_file: NULL
+    out_file: "/dev/null"
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
@@ -69,7 +69,7 @@ apps:
     name: 'VOLUSPA-COUNT-P'
     instances: 1
     cron_restart: '0 5 */7 * *'
-    out_file: NULL
+    out_file: "/dev/null"
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

@@ -3,7 +3,7 @@ apps:
     name: 'DMA-WT'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     cron_restart: '*/10 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
@@ -11,14 +11,14 @@ apps:
     name: 'DMA-XVA'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     cron_restart: '15 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/getAuctionsData.js
     name: 'DMA-MARKET'
     instances: 1
-    out_file: NULL
+    out_file: "/dev/null"
     autorestart: true
     cron_restart: '*/30 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
@@ -28,14 +28,14 @@ apps:
     instances: 1
     autorestart: true
     cron_restart: '00 */1 * * *'
-    out_file: NULL
+    out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/contracts/contracts.js
     name: 'DMA-CONTRACTS'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     cron_restart: '45 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

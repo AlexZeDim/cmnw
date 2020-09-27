@@ -3,7 +3,7 @@ apps:
     name: 'CORE-TOKEN'
     instances: 1
     autorestart: true
-    out_file: NULL
+    out_file: "/dev/null"
     max_memory_restart: '100M'
     cron_restart: '*/1 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

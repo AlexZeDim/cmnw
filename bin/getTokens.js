@@ -11,12 +11,11 @@ connect(
     useFindAndModify: false,
     useUnifiedTopology: true,
     bufferMaxEntries: 0,
-    retryWrites: true,
     useCreateIndex: true,
     w: 'majority',
     family: 4,
   },
-);
+).then(r => r);
 
 connection.on('error', console.error.bind(console, 'connection error:'));
 connection.once('open', () =>
@@ -40,14 +39,9 @@ const axios = require('axios');
  * @returns {Promise<void>}
  */
 
-async function getTokens() {
+(async () =>{
   try {
-    const cursor = await keys_db.find({}).cursor();
-    for (
-      let auth = await cursor.next();
-      auth != null;
-      auth = await cursor.next()
-    ) {
+    await keys_db.find().cursor().eachAsync(async ({_id, secret} )=> {
       const { access_token, expires_in } = await axios({
         url: `https://eu.battle.net/oauth/token`,
         method: 'post',
@@ -58,23 +52,18 @@ async function getTokens() {
           grant_type: 'client_credentials'
         },
         auth: {
-          username: auth._id,
-          password: auth.secret
+          username: _id,
+          password: secret
         }
-      })
-      .then(res => {
-        return res.data;
-      });
+      }).then(res => { return res.data } );
       let token = await keys_db.updateOne(
-        { _id: auth._id },
+        { _id: _id },
         { token: access_token, expired_in: expires_in },
       );
-      if (token) console.info(`U,${auth._id},${expires_in}`);
-    }
-    connection.close();
+      if (token) console.info(`U,${_id},${expires_in}`);
+    });
+    await connection.close();
   } catch (e) {
     console.error(e);
   }
-}
-
-getTokens().then(r => r);
+})();

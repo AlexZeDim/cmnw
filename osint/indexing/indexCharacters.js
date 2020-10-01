@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const characters_db = require('../../db/characters_db');
 const keys_db = require('../../db/keys_db');
 
@@ -44,13 +20,13 @@ const getCharacter = require('../getCharacter');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters(
+(async (
   queryFind = {},
-  queryKeys = { tags: `OSINT-${indexCharacters.name}` },
+  queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 10,
-) {
+) => {
   try {
-    console.time(`OSINT-${indexCharacters.name}`);
+    console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind)
@@ -59,23 +35,14 @@ async function indexCharacters(
       .eachAsync(
         async ({ _id }) => {
           const [characterName, realmSlug] = _id.split('@');
-          await getCharacter(
-            realmSlug,
-            characterName,
-            {},
-            token,
-            `OSINT-${indexCharacters.name}`,
-            false,
-            false
-          );
+          await getCharacter(realmSlug, characterName, {}, token, `OSINT-indexCharacters`, false, false);
         },
         { parallel: bulkSize },
       );
-    await connection.close();
-    console.timeEnd(`OSINT-${indexCharacters.name}`);
   } catch (err) {
-    console.error(`${indexCharacters.name},${err}`);
+    console.error(`indexCharacters,${err}`);
+  } finally {
+    await connection.close();
+    console.timeEnd(`OSINT-indexCharacters`);
   }
-}
-
-indexCharacters();
+})();

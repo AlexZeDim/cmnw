@@ -8,7 +8,7 @@ const { Round2 } = require('../../db/setters');
 /**
  *  Modules
  */
-const battleNetWrapper = require('battlenet-api-wrapper');
+const BlizzAPI = require('blizzapi');
 
 /**
  *  Request data about certain item
@@ -23,16 +23,26 @@ async function getItem(id, token) {
     /**
      * B.net API wrapper
      */
-    const bnw = new battleNetWrapper();
-    await bnw.init(_id, secret, token, 'eu', '');
+    const api = new BlizzAPI({
+      region: 'eu',
+      clientId: '60a47891677f4a43bef1bffd9317240e',
+      clientSecret: 'Jdw7vPMKs5JvsZ4CjgYykqFh6yd3Uigz',
+      accessToken: token
+    });
 
     /** Check is exits */
     let item = await items_db.findById(id);
 
     /** Request item data */
     const [getItem, getMedia] = await Promise.allSettled([
-      bnw.WowGameData.getItem(id).catch(e => e),
-      bnw.WowGameData.getItemMedia(id).catch(e => e),
+      api.query(`/data/wow/item/${id}`, {
+        timeout: 10000,
+        headers: { 'Battlenet-Namespace': 'static-eu' }
+      }),
+      api.query(`/data/wow/media/item/${id} `, {
+        timeout: 10000,
+        headers: { 'Battlenet-Namespace': 'static-eu' }
+      })
     ]);
 
     /** If not, create */

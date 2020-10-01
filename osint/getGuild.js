@@ -48,7 +48,8 @@ async function getGuild(
     const api = new BlizzAPI({
       region: 'eu',
       clientId: clientId,
-      clientSecret: clientSecret
+      clientSecret: clientSecret,
+      accessToken: token
     });
 
     /**

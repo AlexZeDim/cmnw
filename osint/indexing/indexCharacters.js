@@ -39,8 +39,8 @@ const getCharacter = require('../getCharacter');
         },
         { parallel: bulkSize },
       );
-  } catch (err) {
-    console.error(`indexCharacters,${err}`);
+  } catch (error) {
+    console.error(error);
   } finally {
     await connection.close();
     console.timeEnd(`OSINT-indexCharacters`);

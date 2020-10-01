@@ -63,6 +63,7 @@ async function getCharacter(
       region: 'eu',
       clientId: clientId,
       clientSecret: clientSecret,
+      accessToken: token
     });
 
     const character_status = await api.query(`/profile/wow/character/${realmSlug}/${characterName}/status`, {

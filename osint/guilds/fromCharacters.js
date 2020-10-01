@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const characters_db = require('../../db/characters_db');
 const realms_db = require('../../db/realms_db');
 const keys_db = require('../../db/keys_db');
@@ -52,12 +28,12 @@ const { toSlug } = require('../../db/setters');
  * @returns {Promise<void>}
  */
 
-async function fromCharacters(
+(async (
   queryFind = { region: 'Europe' },
   queryKeys = { tags: `OSINT-indexGuilds` },
-) {
+) => {
   try {
-    console.time(`OSINT-${fromCharacters.name}`);
+    console.time(`OSINT-fromCharacters`);
     await realms_db
       .find(queryFind)
       .lean()
@@ -83,7 +59,7 @@ async function fromCharacters(
                   realm.slug,
                   guild_slug,
                   token,
-                  `OSINT-${fromCharacters.name}`
+                  `OSINT-fromCharacters`
                 );
               }
             }
@@ -91,11 +67,10 @@ async function fromCharacters(
         },
         { parallel: 1 },
       );
-    connection.close();
-    console.timeEnd(`OSINT-${fromCharacters.name}`);
-  } catch (err) {
-    console.error(`${fromCharacters.name},${err}`);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`OSINT-fromCharacters`);
   }
-}
-
-fromCharacters();
+})();

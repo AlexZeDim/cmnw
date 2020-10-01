@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const keys_db = require('../../db/keys_db');
 const realms_db = require('../../db/realms_db');
 
@@ -37,9 +13,9 @@ const realms_db = require('../../db/realms_db');
 const fs = require('fs');
 const getCharacter = require('../getCharacter');
 
-const fromLua = async (queryKeys = { tags: `conglomerat` }) => {
+(async (queryKeys = { tags: `conglomerat` }) => {
   try {
-    console.time(`OSINT-${fromLua.name}`);
+    console.time(`OSINT-fromLua`);
     let { token } = await keys_db.findOne(queryKeys);
     let path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\SavedVariables\\OSINT.lua';
     let array = [];
@@ -68,7 +44,7 @@ const fromLua = async (queryKeys = { tags: `conglomerat` }) => {
                 name,
                 {},
                 token,
-                `OSINT-${fromLua.name}`,
+                `OSINT-fromLua`,
                 false,
                 false
               )
@@ -82,7 +58,7 @@ const fromLua = async (queryKeys = { tags: `conglomerat` }) => {
                 name,
                 {},
                 token,
-                `OSINT-${fromLua.name}`,
+                `OSINT-fromLua`,
                 false,
                 true,
               )
@@ -91,12 +67,12 @@ const fromLua = async (queryKeys = { tags: `conglomerat` }) => {
         }
       }
     }
-    await connection.close();
     await fs.unlinkSync(path)
-    console.timeEnd(`OSINT-${fromLua.name}`);
-  } catch (e) {
-    console.error(e);
-  }
-};
 
-fromLua();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`OSINT-fromLua`);
+  }
+})();

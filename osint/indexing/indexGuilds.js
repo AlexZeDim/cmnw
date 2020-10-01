@@ -39,8 +39,8 @@ const getGuild = require('../getGuild');
         },
         { parallel: bulkSize },
       );
-  } catch (err) {
-    console.error(`indexGuilds,${err}`);
+  } catch (error) {
+    console.error(error);
   } finally {
     await connection.close();
     console.timeEnd(`OSINT-indexCharacters`);

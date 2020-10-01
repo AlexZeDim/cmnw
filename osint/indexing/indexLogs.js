@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const logs_db = require('../../db/logs_db');
 const realms_db = require('../../db/realms_db');
 const keys_db = require('../../db/keys_db');
@@ -53,13 +29,13 @@ const getCharacter = require('../getCharacter');
 
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 
-async function indexLogs(
+(async (
   queryInput = { isIndexed: false },
   bulkSize = 1,
   queryKeys = { tags: `OSINT-indexCharacters` },
-) {
+) => {
   try {
-    console.time(`OSINT-${indexLogs.name}`);
+    console.time(`OSINT-indexLogs`);
     let { token } = await keys_db.findOne(queryKeys);
     await logs_db
       .find(queryInput)
@@ -97,7 +73,7 @@ async function indexLogs(
                     character.name,
                     {},
                     token,
-                    `OSINT-${indexLogs.name}`,
+                    `OSINT-indexLogs`,
                     false,
                     true
                   );
@@ -109,16 +85,15 @@ async function indexLogs(
             log.save();
             console.info(`U,${log._id}`);
           } catch (error) {
-            console.error(`E,OSINT-${indexLogs.name},${error}`);
+            console.error(`E,OSINT-$indexLogs,${error}`);
           }
         },
         { parallel: bulkSize },
       );
-    connection.close();
-    console.timeEnd(`OSINT-${indexLogs.name}`);
   } catch (error) {
-    console.error(`${indexLogs.name},${error}`);
+    console.error(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`OSINT-indexLogs`);
   }
-}
-
-indexLogs();
+})();

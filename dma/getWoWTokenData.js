@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../db/connection')
+const { connection } = require('mongoose');
 const wowtoken_db = require('../db/wowtoken_db');
 const keys_db = require('../db/keys_db');
 
@@ -34,7 +10,7 @@ const keys_db = require('../db/keys_db');
  * Modules
  */
 
-const battleNetWrapper = require('battlenet-api-wrapper');
+const BlizzAPI = require('blizzapi');
 const { Round2 } = require('../db/setters');
 
 /**
@@ -42,22 +18,29 @@ const { Round2 } = require('../db/setters');
  * @returns {Promise<void>}
  */
 
-async function getWoWTokenData(queryKeys = { tags: `DMA` }) {
+(async (queryKeys = { tags: `DMA` }) => {
   try {
-    console.time(`DMA-${getWoWTokenData.name}`);
+    console.time(`DMA-getWoWTokenData`);
     const { _id, secret, token } = await keys_db.findOne(queryKeys);
-    const bnw = new battleNetWrapper();
-    await bnw.init(_id, secret, token, 'eu', 'en_GB');
+    const api = new BlizzAPI({
+      region: 'eu',
+      clientId: _id,
+      clientSecret: secret,
+      accessToken: token
+    });
     const {
       last_updated_timestamp,
       price,
-      lastModified,
-      statusCode,
-    } = await bnw.WowGameData.getWowTokenIndex();
+      lastModified
+    } = await api.query(`/data/wow/token/index`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+    })
     const wt = await wowtoken_db
       .findOne({ region: 'eu' })
       .sort('-lastModified');
-    if (statusCode === 200) {
+    if (price && lastModified) {
       let wowtoken = new wowtoken_db({
         _id: last_updated_timestamp,
         region: 'eu',
@@ -72,12 +55,10 @@ async function getWoWTokenData(queryKeys = { tags: `DMA` }) {
         await wowtoken.save();
       }
     }
+  } catch (error) {
+    console.error(error);
+  } finally {
     await connection.close();
-    console.timeEnd(`DMA-${getWoWTokenData.name}`);
-  } catch (err) {
-    await connection.close();
-    console.error(`${getWoWTokenData.name},${err}`);
+    console.timeEnd(`DMA-getWoWTokenData`);
   }
-}
-
-getWoWTokenData();
+})();

@@ -32,7 +32,7 @@ function indexDetective(
   new_value,
   action,
   before,
-  after,
+  after
 ) {
   /**
    * Find change

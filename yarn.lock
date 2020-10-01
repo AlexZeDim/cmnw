@@ -938,6 +938,13 @@ axios@^0.19.0, axios@^0.19.2, axios@latest:
   dependencies:
     follow-redirects "1.5.10"
 
+axios@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.20.0.tgz#057ba30f04884694993a8cd07fa394cff11c50bd"
+  integrity sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==
+  dependencies:
+    follow-redirects "^1.10.0"
+
 babel-jest@^26.3.0:
   version "26.3.0"
   resolved "https://registry.yarnpkg.com/babel-jest/-/babel-jest-26.3.0.tgz#10d0ca4b529ca3e7d1417855ef7d7bd6fc0c3463"
@@ -1080,6 +1087,13 @@ blessed@^0.1.81:
   version "0.1.81"
   resolved "https://registry.yarnpkg.com/blessed/-/blessed-0.1.81.tgz#f962d687ec2c369570ae71af843256e6d0ca1129"
   integrity sha1-+WLWh+wsNpVwrnGvhDJW5tDKESk=
+
+blizzapi@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/blizzapi/-/blizzapi-1.2.0.tgz#42533dd1da737bd2a0ae5e7cf4267b576c004bcc"
+  integrity sha512-kUjiJFV0r6acOGKmTVXDvTCUxQ5dAYqZJCIKGT9JYwL9E01PaZnd4Pw3mOuHWWKRsxVIZJobsmfH9OdRhgrKzQ==
+  dependencies:
+    axios "^0.20.0"
 
 bluebird@3.5.1:
   version "3.5.1"
@@ -2322,6 +2336,11 @@ follow-redirects@1.5.10:
   integrity sha512-0V5l4Cizzvqt5D44aTXbFZz+FtyXV1vrDN6qrelxtfYQKW0KO0W2T/hkE8xvGa/540LkZlkaUjO4ailYTFtHVQ==
   dependencies:
     debug "=3.1.0"
+
+follow-redirects@^1.10.0:
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.13.0.tgz#b42e8d93a2a7eea5ed88633676d6597bc8e384db"
+  integrity sha512-aq6gF1BEKje4a9i9+5jimNFIpq4Q1WiwBToeRK5NvZBd/TRsmW8BsJfOEGkr76TbOyPVD3OVDN910EcUNtRYEA==
 
 for-in@^1.0.2:
   version "1.0.2"

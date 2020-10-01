@@ -61,8 +61,8 @@ const { Round2 } = require('../db/setters');
             if (_id.timestamp) {
               _id.timestamp = `${moment.unix(_id.timestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
             }
-            let { auctions, lastModified } = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
-              timeout: 10000,
+            let market = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
+              timeout: 30000,
               params: { locale: 'en_GB' },
               headers: {
                 'Battlenet-Namespace': 'dynamic-eu',
@@ -72,7 +72,8 @@ const { Round2 } = require('../db/setters');
               console.info(`E,${_id.connected_realm_id}:${e}`);
               return void 0;
             });
-            if (auctions && auctions.length) {
+            if (market && market.auctions && market.auctions.length) {
+              let auctions = market.auctions;
               for (let i = 0; i < auctions.length; i++) {
                 if ('item' in auctions[i]) {
                   /** Pet fix */
@@ -98,7 +99,7 @@ const { Round2 } = require('../db/setters');
                   );
                 auctions[i].connected_realm_id = _id.connected_realm_id;
                 auctions[i].last_modified = moment(
-                  new Date(lastModified),
+                  new Date(market.lastModified),
                 ).format('X');
               }
               await auctions_db.insertMany(auctions).then(auctions => {
@@ -107,7 +108,7 @@ const { Round2 } = require('../db/setters');
               await realms_db.updateMany(
                 { connected_realm_id: _id.connected_realm_id },
                 {
-                  auctions: moment(new Date(lastModified)).format('X'),
+                  auctions: moment(new Date(market.lastModified)).format('X'),
                 },
               );
             }

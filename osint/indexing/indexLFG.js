@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const realms_db = require('../../db/realms_db');
 const characters_db = require('../../db/characters_db');
 const persona_db = require('../../db/personalities_db');
@@ -209,10 +185,11 @@ const { toSlug } = require('../../db/setters');
         }
       }
     }
-    console.timeEnd(`OSINT-${indexLFG.name}`)
-    connection.close();
   } catch (error) {
     console.error(error)
+  } finally {
+    await connection.close();
+    console.timeEnd(`OSINT-${indexLFG.name}`)
   }
 })();
 

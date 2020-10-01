@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const realms_db = require('../../db/realms_db');
 
 /**
@@ -44,9 +20,9 @@ let x = Xray();
  * @returns {Promise<void>}
  */
 
-async function indexRealms_WCL(startId = 247, endId = 517) {
+(async (startId = 247, endId = 517) => {
   try {
-    console.time(`OSINT-${indexRealms_WCL.name}`);
+    console.time(`OSINT-indexRealms_WCL`);
     for (let wcl_id = startId; wcl_id < endId; wcl_id++) {
       let realm_name = await x(
         `https://www.warcraftlogs.com/server/id/${wcl_id}`,
@@ -69,11 +45,10 @@ async function indexRealms_WCL(startId = 247, endId = 517) {
         console.info(`E,${wcl_id},${realm_name}`);
       }
     }
-    connection.close();
-    console.timeEnd(`OSINT-${indexRealms_WCL.name}`);
-  } catch (err) {
-    console.error(`E,${err}`);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`OSINT-indexRealms_WCL`);
   }
-}
-
-indexRealms_WCL();
+})();

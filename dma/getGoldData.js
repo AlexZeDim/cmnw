@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../db/connection')
+const { connection } = require('mongoose');
 const golds_db = require('./../db/golds_db');
 const realms_db = require('./../db/realms_db');
 
@@ -49,9 +25,9 @@ x.driver(driver);
  * @returns {Promise<void>}
  */
 
-async function getGoldData() {
+(async () => {
   try {
-    console.time(`DMA-${getGoldData.name}`);
+    console.time(`DMA-getGoldData`);
     const t = moment().format('X');
     let goldData = [];
     let goldOrders = await x('https://funpay.ru/chips/2/', '.tc-item', [
@@ -94,11 +70,11 @@ async function getGoldData() {
         .insertMany(goldData)
         .then(golds => console.info(`U,${golds.length}`));
     }
-    connection.close();
-    console.timeEnd(`DMA-${getGoldData.name}`);
-  } catch (err) {
-    console.log(err);
-  }
-}
 
-getGoldData().then(r => r);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`DMA-getGoldData`);
+  }
+})();

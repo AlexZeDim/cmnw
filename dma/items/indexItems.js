@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const keys_db = require('../../db/keys_db');
 const items_db = require('../../db/items_db');
 
@@ -42,7 +18,7 @@ const getItem = require('./getItem');
  * @returns {Promise<void>}
  */
 
-async function indexItems(queryKeys = 'DMA', operation = 'update') {
+const indexItems = async (queryKeys = 'DMA', operation = 'update') => {
   try {
     console.time(`DMA-${indexItems.name}`);
 
@@ -64,10 +40,11 @@ async function indexItems(queryKeys = 'DMA', operation = 'update') {
         await getItem(_id, token);
       }
     }
-    connection.close();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await connection.close();
     console.timeEnd(`DMA-${indexItems.name}`);
-  } catch (err) {
-    console.error(`${indexItems.name},${err}`);
   }
 }
 

@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const keys_db = require('../../db/keys_db');
 const pets_db = require('../../db/pets_db');
 
@@ -34,26 +10,38 @@ const pets_db = require('../../db/pets_db');
  *  Modules
  */
 
-const battleNetWrapper = require('battlenet-api-wrapper');
+const BlizzAPI = require('blizzapi');
 const csv = require('csv');
 const fs = require('fs');
 const { normalize } = require('path');
 const { promisify } = require('util');
 const readFile = promisify(fs.readFile);
 
-async function indexPets (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\uploads\\creaturexdisplayinfo.csv') {
+const indexPets = async (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\uploads\\creaturexdisplayinfo.csv') => {
   try {
     console.time(`DMA-${indexPets.name}`)
 
     const { _id, secret, token } = await keys_db.findOne({ tags: queryKeys });
 
-    const bnw = new battleNetWrapper();
-    await bnw.init (_id, secret, token, 'eu', 'en_GB');
+    const api = new BlizzAPI({
+      region: 'eu',
+      clientId: _id,
+      clientSecret: secret,
+      accessToken: token
+    });
 
-    let { pets } = await bnw.WowGameData.getPetsIndex()
+    let { pets } = await api.query(`/data/wow/pet/index`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'static-eu' }
+    });
     if (pets && pets.length) {
       for (let { id } of pets) {
-        let petData = await bnw.WowGameData.getPet(id);
+        let petData = await api.query(`/data/wow/pet/${id}`, {
+          timeout: 10000,
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'static-eu' }
+        });
         if (petData) {
           let pet = await pets_db.findById(id)
           if (!pet) {
@@ -143,9 +131,12 @@ async function indexPets (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\
         }
       }
     });
-    console.timeEnd(`DMA-${indexPets.name}`)
+
   } catch (error) {
     console.error(error)
+  } finally {
+    await connection.close()
+    console.timeEnd(`DMA-${indexPets.name}`)
   }
 }
 

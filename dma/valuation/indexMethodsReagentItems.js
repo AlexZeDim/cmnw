@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const pricing_methods = require('../../db/pricing_methods_db');
 
 /**
@@ -34,7 +10,7 @@ const pricing_methods = require('../../db/pricing_methods_db');
  * @returns {Promise<void>}
  */
 
-async function indexMethodsReagentItems() {
+(async () => {
   try {
     let cursor = await pricing_methods
       .aggregate([
@@ -86,13 +62,9 @@ async function indexMethodsReagentItems() {
       console.log(method);
       cursor.resume();
     });
-    cursor.on('close', async () => {
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      connection.close();
-    });
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await connection.close();
   }
-}
-
-indexMethodsReagentItems();
+})();

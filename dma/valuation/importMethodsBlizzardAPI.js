@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const pricing_methods_db = require('../../db/pricing_methods_db');
 const keys_db = require('../../db/keys_db');
 
@@ -34,7 +10,7 @@ const keys_db = require('../../db/keys_db');
  * B.net Wrapper
  */
 
-const battleNetWrapper = require('battlenet-api-wrapper');
+const BlizzAPI = require('blizzapi');
 
 /**
  * This function is based on Blizzard API or skilllineability.csv file
@@ -42,9 +18,9 @@ const battleNetWrapper = require('battlenet-api-wrapper');
  * @returns {Promise<void>}
  */
 
-async function importMethodsBlizzardAPI() {
+(async () => {
   try {
-    console.time(`DMA-${importMethodsBlizzardAPI.name}`);
+    console.time(`DMA-importMethodsBlizzardAPI`);
     const professionsTicker = new Map([
       [164, 'BSMT'],
       [165, 'LTHR'],
@@ -72,29 +48,50 @@ async function importMethodsBlizzardAPI() {
       ['Outland', 'TBC'],
     ]);
     const { _id, secret, token } = await keys_db.findOne({ tags: `Depo` });
-    const bnw = new battleNetWrapper();
-    await bnw.init(_id, secret, token, 'eu', '');
-    let { professions } = await bnw.WowGameData.getProfessionsIndex();
+    const api = new BlizzAPI({
+      region: 'eu',
+      clientId: _id,
+      clientSecret: secret,
+      accessToken: token
+    });
+    const { professions } = await api.query(`/data/wow/profession/index`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'static-eu' }
+    });
     for (let profession of professions) {
-      let { skill_tiers } = await bnw.WowGameData.getProfession(profession.id);
+      let { skill_tiers } = await api.query(`/data/wow/profession/${profession.id}`, {
+        timeout: 10000,
+        params: { locale: 'en_GB' },
+        headers: { 'Battlenet-Namespace': 'static-eu' }
+      });
       if (skill_tiers) {
         for (let tier of skill_tiers) {
           let expansion_ticker = 'CLSC';
           [...expansionTicker.entries()].some(([k, v]) => {
             tier.name.en_GB.includes(k) ? (expansion_ticker = v) : '';
           });
-          let { categories } = await bnw.WowGameData.getProfessionSkillTier(
-            profession.id,
-            tier.id,
-          );
+          let { categories } = await api.query(`/data/wow/profession/${profession.id}/skill-tier/${tier.id}`, {
+            timeout: 10000,
+            params: { locale: 'en_GB' },
+            headers: { 'Battlenet-Namespace': 'static-eu' }
+          })
           if (categories) {
             for (let category of categories) {
               let { recipes } = category;
 
               for (let recipe of recipes) {
                 const [RecipeData, RecipeMedia] = await Promise.allSettled([
-                  bnw.WowGameData.getRecipe(recipe.id),
-                  bnw.WowGameData.getRecipeMedia(recipe.id),
+                  api.query(`/data/wow/recipe/${recipe.id}`, {
+                    timeout: 10000,
+                    params: { locale: 'en_GB' },
+                    headers: { 'Battlenet-Namespace': 'static-eu' }
+                  }),
+                  api.query(` /data/wow/media/recipe/${recipe.id}`, {
+                    timeout: 10000,
+                    params: { locale: 'en_GB' },
+                    headers: { 'Battlenet-Namespace': 'static-eu' }
+                  })
                 ]);
 
                 if (RecipeData.value) {
@@ -110,8 +107,8 @@ async function importMethodsBlizzardAPI() {
                       recipe_id: parseInt(recipe_data.id),
                       name: recipe_data.name,
                       type: `primary`,
-                      createdBy: `DMA-${importMethodsBlizzardAPI.name}`,
-                      updatedBy: `DMA-${importMethodsBlizzardAPI.name}`,
+                      createdBy: `DMA-importMethodsBlizzardAPI`,
+                      updatedBy: `DMA-importMethodsBlizzardAPI`,
                     });
                   }
 
@@ -154,15 +151,11 @@ async function importMethodsBlizzardAPI() {
                       };
                     },
                   );
-
                   if (RecipeMedia.value) {
                     pricing_method.media = RecipeMedia.value.assets[0].value;
                   }
-
                   await pricing_method.save();
-                  console.info(
-                    `F:U,${pricing_method.expansion}:${pricing_method.profession}:${pricing_method._id},${pricing_method.name.en_GB}`,
-                  );
+                  console.info(`F:U,${pricing_method.expansion}:${pricing_method.profession}:${pricing_method._id},${pricing_method.name.en_GB}`);
                 }
               }
             }
@@ -170,11 +163,11 @@ async function importMethodsBlizzardAPI() {
         }
       }
     }
-    connection.close();
-    console.timeEnd(`DMA-${importMethodsBlizzardAPI.name}`);
-  } catch (error) {
-    console.error(`DMA-${importMethodsBlizzardAPI.name}`, error);
-  }
-}
 
-importMethodsBlizzardAPI();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`DMA-importMethodsBlizzardAPI`);
+  }
+})();

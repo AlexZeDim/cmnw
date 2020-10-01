@@ -51,9 +51,7 @@ const { toSlug } = require('../../db/setters');
               /**
                * Check guild before insert
                */
-              let guild = await guilds_db
-                .findById(`${toSlug(guild_slug)}@${realm.slug}`)
-                .lean();
+              let guild = await guilds_db.findById(`${toSlug(guild_slug)}@${realm.slug}`).lean();
               if (!guild) {
                 await getGuild(
                   realm.slug,

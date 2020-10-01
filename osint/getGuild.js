@@ -10,7 +10,7 @@ const osint_logs_db = require('../db/osint_logs_db');
  * Modules
  */
 
-const battleNetWrapper = require('battlenet-api-wrapper');
+const BlizzAPI = require('blizzapi');
 const getCharacter = require('./getCharacter');
 const indexDetective = require('./indexing/indexDetective');
 const { toSlug } = require('../db/setters');
@@ -43,10 +43,13 @@ async function getGuild(
     nameSlug = toSlug(nameSlug);
 
     /**
-     * B.net wrapper
+     * BlizzAPI
      */
-    const bnw = new battleNetWrapper();
-    await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
+    const api = new BlizzAPI({
+      region: 'eu',
+      clientId: clientId,
+      clientSecret: clientSecret
+    });
 
     /**
      * Check if character exists
@@ -57,12 +60,20 @@ async function getGuild(
      * Request Data for Guild
      */
     const [guildData, guildRoster] = await Promise.allSettled([
-      await bnw.WowProfileData.getGuildSummary(realmSlug, nameSlug),
-      await bnw.WowProfileData.getGuildRoster(realmSlug, nameSlug),
+      api.query(`/data/wow/guild/${realmSlug}/${nameSlug}`, {
+        timeout: 10000,
+        params: { locale: 'en_GB' },
+        headers: { 'Battlenet-Namespace': 'profile-eu' }
+      }),
+      api.query(`/data/wow/guild/${realmSlug}/${nameSlug}/roster`, {
+        timeout: 10000,
+        params: { locale: 'en_GB' },
+        headers: { 'Battlenet-Namespace': 'profile-eu' }
+      }),
     ]);
 
     if (guild) {
-      if (guildData.value) {
+      if (guildData && guildData.value) {
         indexDetective(
           guild._id,
           'guild',
@@ -72,11 +83,11 @@ async function getGuild(
           new Date(guildData.value.lastModified),
           new Date(guild.lastModified),
         );
-
         /**
          * ROSTER
          */
         if (
+          guildRoster &&
           guildRoster.value &&
           guildRoster.value.members &&
           guildRoster.value.members.length
@@ -234,11 +245,11 @@ async function getGuild(
                       character_gm_new,
                     ] = await Promise.all([
                       await characters_db.findOne({
-                        id: gm_old.id,
+                        'id': gm_old.id,
                         'realm.slug': guildData.value.realm.slug,
                       }),
                       await characters_db.findOne({
-                        id: guild_member.id,
+                        'id': guild_member.id,
                         'realm.slug': guildData.value.realm.slug,
                       }),
                     ]);
@@ -449,7 +460,7 @@ async function getGuild(
     if (guild.isNew) {
       /** Check was guild renamed */
       let renamed_guild = await guild_db.findOne({
-        id: guildData.value.id,
+        'id': guildData.value.id,
         'realm.slug': guildData.value.realm.slug,
       });
 
@@ -489,7 +500,7 @@ async function getGuild(
       }
     }
 
-    if (guildData.value) {
+    if (guildData && guildData.value) {
       guild.id = guildData.value.id;
       guild.name = guildData.value.name;
       guild.faction = guildData.value.faction.name;
@@ -503,7 +514,7 @@ async function getGuild(
       guild.member_count = guildData.value.member_count;
       guild.lastModified = new Date(guildData.value.lastModified);
       guild.created_timestamp = guildData.value.created_timestamp;
-      guild.statusCode = guildData.value.statusCode;
+      guild.statusCode = 200;
 
       /** Create roster only if guild is new */
       if (
@@ -527,11 +538,7 @@ async function getGuild(
     }
 
     await guild.save();
-    console.info(
-      `U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${
-        guild.statusCode
-      }`,
-    );
+    console.info(`U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${guild.statusCode}`,);
   } catch (error) {
     console.error(`E,${getGuild.name},${nameSlug}@${realmSlug},${error}`);
   }

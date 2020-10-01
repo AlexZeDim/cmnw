@@ -11,7 +11,7 @@ const osint_logs_db = require('../db/osint_logs_db');
  */
 
 const crc32 = require('fast-crc32c');
-const battleNetWrapper = require('battlenet-api-wrapper');
+const BlizzAPI = require('blizzapi');
 const { toSlug, fromSlug } = require('../db/setters');
 const indexDetective = require('./indexing/indexDetective');
 
@@ -39,13 +39,12 @@ async function getCharacter(
   createOnlyUnique = false,
 ) {
   try {
+    let characterData, characterPets, characterMount, characterMedia
 
-    /**
-     * Convert to Slug
-     */
     realmSlug = toSlug(realmSlug);
     characterName = toSlug(characterName);
 
+    /** Check realm */
     if (!createOnlyUnique) {
       let realm = await realms_db.findOne({ $text: { $search: realmSlug } }).lean();
       if (realm && realm.slug) {
@@ -58,36 +57,57 @@ async function getCharacter(
     }
 
     /**
-     * B.net wrapper
+     * BlizzAPI
      */
-    const bnw = new battleNetWrapper();
-    await bnw.init(clientId, clientSecret, token, 'eu', 'en_GB');
+    const api = new BlizzAPI({
+      region: 'eu',
+      clientId: clientId,
+      clientSecret: clientSecret,
+    });
+
+    const character_status = await api.query(`/profile/wow/character/${realmSlug}/${characterName}/status`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'profile-eu' }
+    }).catch(() => {return void 0})
+
+    if (character_status) {
+      ([characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
+        api.query(`/profile/wow/character/${realmSlug}/${characterName}`, {
+          timeout: 10000,
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'profile-eu' }
+        }),
+        api.query(`/profile/wow/character/${realmSlug}/${characterName}/collections/pets`, {
+          timeout: 10000,
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'profile-eu' }
+        }),
+        api.query(`/profile/wow/character/${realmSlug}/${characterName}/collections/mounts`, {
+          timeout: 10000,
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'profile-eu' }
+        }),
+        api.query(`/profile/wow/character/${realmSlug}/${characterName}/character-media`, {
+          timeout: 10000,
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'profile-eu' }
+        })
+      ]));
+    }
 
     /** Check if character exists */
-    let character = await characters_db.findById(
-      `${characterName}@${realmSlug}`,
-    );
+    let character = await characters_db.findById(`${characterName}@${realmSlug}`);
 
-    /** If character exists and force initiated, then return */
+    /** If character exists and createOnlyUnique initiated, then return */
     if (character && createOnlyUnique) {
       console.info(`E:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`);
       return void 0
     }
 
-    const [
-      characterData,
-      characterPets,
-      characterMount,
-      characterMedia,
-    ] = await Promise.allSettled([
-      bnw.WowProfileData.getCharacterSummary(realmSlug, characterName),
-      bnw.WowProfileData.getCharacterPetsCollection(realmSlug, characterName),
-      bnw.WowProfileData.getCharacterMountsCollection(realmSlug, characterName),
-      bnw.WowProfileData.getCharacterMedia(realmSlug, characterName),
-    ]);
-
+    /** If character exists and */
     if (character) {
-      if (characterData.value) {
+      if (characterData && characterData.value) {
         let detectiveCheck = ['race', 'gender', 'faction'];
         for (let check of detectiveCheck) {
           if (check in character) {
@@ -114,11 +134,15 @@ async function getCharacter(
       });
     }
 
+    if (character_status) {
+      character.id = character_status.id
+    }
+
     /**
      * Character Data
      */
 
-    if (characterData.value) {
+    if (characterData && characterData.value) {
       character.id = characterData.value.id;
       character.name = characterData.value.name;
       character.faction = characterData.value.faction.name;
@@ -126,15 +150,13 @@ async function getCharacter(
       character.race = characterData.value.race.name;
       character.character_class = characterData.value.character_class.name;
       character.level = characterData.value.level;
-      character.statusCode = characterData.value.statusCode;
+      character.statusCode = 200;
 
       /**
        * Timestamp
        */
       if ('last_login_timestamp' in characterData.value) {
-        character.lastModified = new Date(
-          characterData.value.last_login_timestamp,
-        );
+        character.lastModified = new Date(characterData.value.last_login_timestamp);
       }
 
       /**
@@ -175,10 +197,7 @@ async function getCharacter(
       /**
        * Item Level
        */
-      if (
-        'average_item_level' in characterData.value &&
-        'equipped_item_level' in characterData.value
-      ) {
+      if ('average_item_level' in characterData.value && 'equipped_item_level' in characterData.value) {
         character.ilvl = {
           eq: characterData.value.average_item_level,
           avg: characterData.value.equipped_item_level,
@@ -204,14 +223,17 @@ async function getCharacter(
         character.guild.name = characterData.value.guild.name;
         character.guild.slug = characterData.value.guild.name;
         if (guildRank === true) {
-          const { members } = await bnw.WowProfileData.getGuildRoster(
-            characterData.value.realm.slug,
-            toSlug(characterData.value.guild.name),
-          );
-          const { rank } = members.find(
-            ({ character }) => character.id === characterData.value.id,
-          );
-          character.guild.rank = rank;
+          await api.query(`data/wow/guild/${characterData.value.realm.slug}/${toSlug(characterData.value.guild.name)}/roster`, {
+            timeout: 10000,
+            params: { locale: 'en_GB' },
+            headers: { 'Battlenet-Namespace': 'profile-eu' }
+          })
+            .then (({members}) => {
+              const { rank } = members.find(({ character }) => character.id === characterData.value.id);
+              character.guild.rank = rank;
+            })
+            .catch(e => e);
+
         }
       } else {
         character.guild = undefined;
@@ -260,9 +282,11 @@ async function getCharacter(
      * Character Pets
      * Hash A & Hash C
      */
-    if (characterPets.value) {
+    if (characterPets && characterPets.value) {
       let pets_array = [];
       let active_pets = [];
+      let names_a = [];
+      let names_c = [];
 
       let { pets } = characterPets.value;
 
@@ -270,25 +294,29 @@ async function getCharacter(
         for (let pet of pets) {
           if ('is_active' in pet) {
             if ('name' in pet) {
-              active_pets.push(`${pet.name}`);
+              active_pets.push(pet.name);
+              names_c.push(pet.name, pet.level);
             }
-            active_pets.push(pet.species.name);
-            pets_array.push(pet.level);
+            active_pets.push(pet.species.name, pet.level);
           }
           if ('name' in pet) {
-            pets_array.push(`${pet.name}`);
+            pets_array.push(pet.name);
+            names_a.push(pet.name, pet.level)
           }
-          pets_array.push(pet.species.name);
-          pets_array.push(pet.level);
+          pets_array.push(pet.species.name, pet.level);
         }
-        if (active_pets.length) {
-          character.hash.c = crc32
-            .calculate(Buffer.from(active_pets.toString()))
-            .toString(16);
+
+        if (names_c.length > 2) {
+          character.hash.c = crc32.calculate(Buffer.from(names_c.toString())).toString(16);
+        } else if (active_pets.length) {
+          character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
         }
-        character.hash.a = crc32
-          .calculate(Buffer.from(pets_array.toString()))
-          .toString(16);
+
+        if (names_a.length > 2) {
+          character.hash.a = crc32.calculate(Buffer.from(names_a.toString())).toString(16);
+        } else if (pets_array.length) {
+          character.hash.a = crc32.calculate(Buffer.from(pets_array.toString())).toString(16);
+        }
       }
     }
 
@@ -297,7 +325,7 @@ async function getCharacter(
      * Hash B
      */
 
-    if (characterMount.value) {
+    if (characterMount && characterMount.value) {
       let mount_array = [];
 
       let { mounts } = characterMount.value;
@@ -306,9 +334,7 @@ async function getCharacter(
         for (let mount of mounts) {
           mount_array.push(mount.id);
         }
-        character.hash.b = crc32
-          .calculate(Buffer.from(mount_array.toString()))
-          .toString(16);
+        character.hash.b = crc32.calculate(Buffer.from(mount_array.toString())).toString(16);
       }
     }
 
@@ -316,7 +342,7 @@ async function getCharacter(
      * Character Media
      * ID
      */
-    if (characterMedia.value) {
+    if (characterMedia && characterMedia.value) {
       if (!character.id) {
         character.id = parseInt(
           characterMedia.value.avatar_url
@@ -338,9 +364,7 @@ async function getCharacter(
      */
     if (character.id && character.character_class) {
       let hash_ex = [character.id, character.character_class];
-      character.hash.ex = crc32
-        .calculate(Buffer.from(hash_ex.toString()))
-        .toString(16);
+      character.hash.ex = crc32.calculate(Buffer.from(hash_ex.toString())).toString(16);
     }
 
     /**
@@ -443,10 +467,11 @@ async function getCharacter(
            * and check it on 404 status, if 404 - transfer has been made
            */
           for (let transferCopyElement of transferCopy) {
-            await bnw.WowProfileData.getCharacterStatus(
-              transferCopyElement.realm.slug,
-              transferCopyElement.name,
-            ).catch(() => transferArray.push(transferCopyElement));
+            await api.query(`/profile/wow/character/${transferCopyElement.realm.slug}/${transferCopyElement.name}/status`, {
+              timeout: 10000,
+              params: { locale: 'en_GB' },
+              headers: { 'Battlenet-Namespace': 'profile-eu' }
+            }).catch(() => transferArray.push(transferCopyElement));
           }
 
           confidence = 1 / transferArray.length;
@@ -568,10 +593,11 @@ async function getCharacter(
              * and check it on 404 status, if 404 - transfer has been made
              */
             for (let shadowCopyElement of shadowCopy) {
-              await bnw.WowProfileData.getCharacterStatus(
-                shadowCopyElement.realm.slug,
-                shadowCopyElement.name,
-              ).catch(() => shadowArray.push(shadowCopyElement));
+              await api.query(`/profile/wow/character/${shadowCopyElement.realm.slug}/${shadowCopyElement.name}/status`, {
+                timeout: 10000,
+                params: { locale: 'en_GB' },
+                headers: { 'Battlenet-Namespace': 'profile-eu' }
+              }).catch(() => shadowArray.push(shadowCopyElement));
             }
 
             confidence = 1 / shadowArray.length;
@@ -657,7 +683,7 @@ async function getCharacter(
     await character.save();
     console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`);
   } catch (error) {
-    console.error(`E,${getCharacter.name},${fromSlug(characterName)}@${fromSlug(realmSlug,)},${error}`);
+    console.error(`E,${fromSlug(characterName)}@${fromSlug(realmSlug,)},${error}`);
   }
 }
 

@@ -1,32 +1,8 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../../db/connection')
+const { connection } = require('mongoose');
 const items_db = require('../../db/items_db');
 
 /**
@@ -43,9 +19,7 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-async function importTaxonomy_CSV(
-  path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv',
-) {
+const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') => {
   try {
     console.time(`DMA-${importTaxonomy_CSV.name}`);
     let path_, file_;
@@ -108,11 +82,12 @@ async function importTaxonomy_CSV(
         default:
           console.info('Sorry, we got nothing');
       }
-      connection.close();
     });
-    console.timeEnd(`DMA-${importTaxonomy_CSV.name}`);
   } catch (error) {
     console.error(error);
+  } finally {
+    await connection.close();
+    console.timeEnd(`DMA-${importTaxonomy_CSV.name}`);
   }
 }
 

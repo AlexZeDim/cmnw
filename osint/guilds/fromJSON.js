@@ -126,9 +126,7 @@ const { toSlug } = require('../../db/setters');
             if (guildsJSON.length) {
               for (let guild of guildsJSON) {
                 if (!guild.name.includes('[raid]')) {
-                  let guild_ = await guild_db.findById(
-                    toSlug(`${guild.name}@${realms[indexOfRealms].slug}`),
-                  );
+                  let guild_ = await guild_db.findById(toSlug(`${guild.name}@${realms[indexOfRealms].slug}`));
                   if (!guild_) {
                     await getGuild(
                       realms[indexOfRealms].slug,

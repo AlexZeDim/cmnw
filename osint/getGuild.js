@@ -119,9 +119,7 @@ async function getGuild(
           for (let member of guildRoster.value.members) {
             if (member && 'character' in member && 'rank' in member) {
               /** Is every guild member is in OSINT-DB? */
-              let character = await characters_db.findById(
-                toSlug(`${member.character.name}@${guild.realm.slug}`),
-              );
+              let character = await characters_db.findById(toSlug(`${member.character.name}@${guild.realm.slug}`));
 
               /** guild_member object for array.push */
               let guild_member = {
@@ -187,11 +185,7 @@ async function getGuild(
                   lastModified: new Date(guildData.value.lastModified),
                 };
                 if (member.character.hasOwnProperty('playable_class')) {
-                  Object.assign(character_Object, {
-                    character_class: playable_class.get(
-                      member.character.playable_class.id,
-                    ),
-                  });
+                  Object.assign(character_Object, { character_class: playable_class.get(member.character.playable_class.id) });
                 }
                 await getCharacter(
                   realmSlug,

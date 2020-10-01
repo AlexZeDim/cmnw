@@ -3,6 +3,7 @@
  */
 
 const guild_db = require('../db/guilds_db');
+const realms_db = require('../db/realms_db');
 const characters_db = require('../db/characters_db');
 const osint_logs_db = require('../db/osint_logs_db');
 
@@ -73,6 +74,32 @@ async function getGuild(
       }),
     ]);
 
+    if (guildData && guildData.value) {
+      /** Blizzard API return realm as null somehow */
+      if (guildData.value.realm.name === null) {
+        let realm = await realms_db.findOne({ $text: { $search: realmSlug } }).lean();
+        if (realm) {
+          guildData.value.realm = {
+            id: realm._id,
+            name: realm.name,
+            slug: realm.slug
+          }
+        }
+        if (!realm) {
+          console.info(`E:${nameSlug}@${realmSlug} not found`);
+          return void 0
+        }
+      }
+      if (guildData.value.faction.name === null) {
+        if (guildData.value.faction.type.toString().startsWith('A')) {
+          guildData.value.faction.name = 'Alliance'
+        }
+        if (guildData.value.faction.type.toString().startsWith('H')) {
+          guildData.value.faction.name = 'Horde'
+        }
+      }
+    }
+
     if (guild) {
       if (guildData && guildData.value) {
         indexDetective(
@@ -117,6 +144,7 @@ async function getGuild(
 
           /** Members loop */
           for (let member of guildRoster.value.members) {
+
             if (member && 'character' in member && 'rank' in member) {
               /** Is every guild member is in OSINT-DB? */
               let character = await characters_db.findById(toSlug(`${member.character.name}@${guild.realm.slug}`));
@@ -453,45 +481,47 @@ async function getGuild(
     }
 
     if (guild.isNew) {
-      /** Check was guild renamed */
-      let renamed_guild = await guild_db.findOne({
-        'id': guildData.value.id,
-        'realm.slug': guildData.value.realm.slug,
-      });
+      if (guildData && guildData.value) {
+        /** Check was guild renamed */
+        let renamed_guild = await guild_db.findOne({
+          'id': guildData.value.id,
+          'realm.slug': guildData.value.realm.slug,
+        });
 
-      if (renamed_guild) {
-        /** If yes, log rename */
-        indexDetective(
-          renamed_guild._id,
-          'guild',
-          renamed_guild.name,
-          guildData.value.name,
-          'name',
-          new Date(guildData.value.lastModified),
-          new Date(renamed_guild.lastModified),
-        );
-        /** And check faction change */
-        indexDetective(
-          renamed_guild._id,
-          'guild',
-          renamed_guild.faction,
-          guildData.value.faction.name,
-          'faction',
-          new Date(guildData.value.lastModified),
-          new Date(guild.lastModified),
-        );
+        if (renamed_guild) {
+          /** If yes, log rename */
+          indexDetective(
+            renamed_guild._id,
+            'guild',
+            renamed_guild.name,
+            guildData.value.name,
+            'name',
+            new Date(guildData.value.lastModified),
+            new Date(renamed_guild.lastModified),
+          );
+          /** And check faction change */
+          indexDetective(
+            renamed_guild._id,
+            'guild',
+            renamed_guild.faction,
+            guildData.value.faction.name,
+            'faction',
+            new Date(guildData.value.lastModified),
+            new Date(guild.lastModified),
+          );
 
-        /** Update all osint logs */
-        await osint_logs_db.updateMany(
-          {
-            root_id: renamed_guild._id,
-          },
-          {
-            root_id: guild._id,
-            $push: { root_history: guild._id },
-          },
-        );
-        renamed_guild.deleteOne();
+          /** Update all osint logs */
+          await osint_logs_db.updateMany(
+            {
+              root_id: renamed_guild._id,
+            },
+            {
+              root_id: guild._id,
+              $push: { root_history: guild._id },
+            },
+          );
+          renamed_guild.deleteOne();
+        }
       }
     }
 
@@ -530,10 +560,9 @@ async function getGuild(
           }
         }
       }
+      await guild.save();
+      console.info(`U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${guild.statusCode}`);
     }
-
-    await guild.save();
-    console.info(`U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${guild.statusCode}`,);
   } catch (error) {
     console.error(`E,${getGuild.name},${nameSlug}@${realmSlug},${error}`);
   }

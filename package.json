@@ -3,6 +3,7 @@
   "version": "4.2.0",
   "private": true,
   "homepage": "https://conglomerat.group",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/AlexZeDim/conglomerat/issues",
     "discord": "AlexZeDim#2645"
@@ -32,7 +33,9 @@
     "csv": "^5.3.2",
     "debug": "4.1.1",
     "discord.js": "12.3.1",
-    "express": "4.17.1",
+    "express": "^4.17.1",
+    "express-graphql": "^0.11.0",
+    "graphql": "^15.3.0",
     "humanize-string": "^2.1.0",
     "lodash": "4.17.20",
     "moment": "^2.27.0",

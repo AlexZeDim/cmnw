@@ -84,44 +84,30 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
          */
         console.info(`Stage: auctions`);
         console.time(`Stage: auctions`);
-        await auctions_db
-          .aggregate([
-            {
-              $group: {
-                _id: {
-                  id: '$item.id',
-                },
-                is_commdty: { $first: { $ifNull: ['$unit_price', false] } }
-              },
-            },
-            {
-              $project: {
-                _id: '$_id.id',
-                is_commdty: {
-                  $cond: [{ $eq: ['$_id.is_commdty', false] }, false, true],
-                },
-              },
-            },
-          ])
-          .allowDiskUse(true)
-          .cursor({ batchSize: bulkSize })
-          .exec()
-          .eachAsync(
-            async ({ _id, is_commdty }) => {
-              let item = await items_db.findById(_id);
-              if (item) {
-                if (is_commdty) {
-                  item.asset_class.addToSet('COMMDTY');
-                } else {
-                  item.asset_class.addToSet('ITEM');
-                }
-                item.asset_class.addToSet('MARKET');
-                await item.save();
-                console.info(`${item._id}, ${item.asset_class.toString()}`);
-              }
-            },
-            { parallel: bulkSize },
-          );
+        const commodities = await auctions_db.distinct('item.id', {'unit_price': {$exists: true}})
+        if (commodities && commodities.length) {
+          for (let commodity of commodities) {
+            let item = await items_db.findById(commodity);
+            if (item && item.asset_class) {
+              item.asset_class.addToSet('COMMDTY');
+            }
+            item.asset_class.addToSet('MARKET');
+            await item.save();
+            console.info(`${item._id}, ${item.asset_class.toString()}`);
+          }
+        }
+        const items = await auctions_db.distinct('item.id', {'unit_price': {$exists: true}})
+        if (items && items.length) {
+          for (let item of items) {
+            let asset = await items_db.findById(item);
+            if (asset && asset.asset_class) {
+              asset.asset_class.addToSet('COMMDTY');
+            }
+            asset.asset_class.addToSet('MARKET');
+            await asset.save();
+            console.info(`${asset._id}, ${asset.asset_class.toString()}`);
+          }
+        }
         console.timeEnd(`Stage: auctions`);
       case 'contracts':
         /**

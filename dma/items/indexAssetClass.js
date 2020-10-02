@@ -99,10 +99,8 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
             {
               $project: {
                 _id: '$_id.id',
-                is_commdty: {
-                  $cond: [{ $eq: ['$_id.is_commdty', false] }, false, true],
-                },
               },
+              is_commdty: { $first: { $ifNull: ['$unit_price', false] } }
             },
           ])
           .allowDiskUse(true)

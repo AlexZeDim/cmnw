@@ -90,17 +90,17 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
               $group: {
                 _id: {
                   id: '$item.id',
-                  is_commdty: {
-                    $ifNull: ['$unit_price', false],
-                  },
                 },
+                is_commdty: { $first: { $ifNull: ['$unit_price', false] } }
               },
             },
             {
               $project: {
                 _id: '$_id.id',
+                is_commdty: {
+                  $cond: [{ $eq: ['$_id.is_commdty', false] }, false, true],
+                },
               },
-              is_commdty: { $first: { $ifNull: ['$unit_price', false] } }
             },
           ])
           .allowDiskUse(true)

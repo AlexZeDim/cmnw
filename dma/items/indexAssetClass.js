@@ -26,8 +26,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
         console.info(`Stage: pricing methods`);
         console.time(`Stage: pricing methods`);
         await pricing_methods_db
-          .find({})
-          .limit(100)
+          .find()
           .cursor({ batchSize: bulkSize })
           .eachAsync(
             async method => {

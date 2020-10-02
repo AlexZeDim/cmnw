@@ -92,7 +92,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
               item.asset_class.addToSet('COMMDTY');
               item.asset_class.addToSet('MARKET');
               await item.save();
-              console.info(`${item._id}, ${item.asset_class.toString()}`);
+              console.info(`${item._id},${item.asset_class.toString()}`);
             }
           }
         }
@@ -104,7 +104,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
               asset.asset_class.addToSet('COMMDTY');
               asset.asset_class.addToSet('MARKET');
               await asset.save();
-              console.info(`${asset._id}, ${asset.asset_class.toString()}`);
+              console.info(`${asset._id},${asset.asset_class.toString()}`);
             }
           }
         }

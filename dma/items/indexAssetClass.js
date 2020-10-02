@@ -109,6 +109,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
             },
           ])
           .cursor({ batchSize: bulkSize })
+          .allowDiskUse(true)
           .exec()
           .eachAsync(
             async ({ _id, is_commdty }) => {

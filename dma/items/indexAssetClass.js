@@ -40,7 +40,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                   if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
-                    console.info(`${item._id}, ${item.asset_class.toString()}`);
+                    console.info(`${item._id},${item.asset_class.toString()}`);
                   }
                 }
                 if (method.alliance_item_id) {
@@ -48,7 +48,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                   if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
-                    console.info(`${item._id}, ${item.asset_class.toString()}`);
+                    console.info(`${item._id},${item.asset_class.toString()}`);
                   }
                 }
                 if (method.horde_item_id) {
@@ -56,7 +56,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                   if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
-                    console.info(`${item._id}, ${item.asset_class.toString()}`);
+                    console.info(`${item._id},${item.asset_class.toString()}`);
                   }
                 }
                 /** Reagent Asset Class */

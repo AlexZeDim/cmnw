@@ -37,16 +37,15 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                 /** Derivative Asset Class */
                 if (method.item_id) {
                   let item = await items_db.findById(method.item_id);
-                  if (item.asset_class) {
+                  if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
                     console.info(`${item._id}, ${item.asset_class.toString()}`);
                   }
                 }
                 if (method.alliance_item_id) {
-                  console.log();
                   let item = await items_db.findById(method.alliance_item_id);
-                  if (item) {
+                  if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
                     console.info(`${item._id}, ${item.asset_class.toString()}`);
@@ -54,7 +53,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                 }
                 if (method.horde_item_id) {
                   let item = await items_db.findById(method.horde_item_id);
-                  if (item) {
+                  if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
                     console.info(`${item._id}, ${item.asset_class.toString()}`);
@@ -64,7 +63,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                 if (method.reagents && method.reagents.length) {
                   for (let { _id } of method.reagents) {
                     let item = await items_db.findById(_id);
-                    if (item) {
+                    if (item && item.asset_class) {
                       item.asset_class.addToSet('REAGENT');
                       await item.save();
                       console.info(`${item._id},${item.asset_class.toString()}`);
@@ -106,8 +105,8 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
               },
             },
           ])
-          .cursor({ batchSize: bulkSize })
           .allowDiskUse(true)
+          .cursor({ batchSize: bulkSize })
           .exec()
           .eachAsync(
             async ({ _id, is_commdty }) => {

@@ -67,9 +67,7 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                     if (item) {
                       item.asset_class.addToSet('REAGENT');
                       await item.save();
-                      console.info(
-                        `${item._id}, ${item.asset_class.toString()}`,
-                      );
+                      console.info(`${item._id},${item.asset_class.toString()}`);
                     }
                   }
                 }

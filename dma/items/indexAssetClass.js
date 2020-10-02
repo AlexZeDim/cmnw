@@ -9,16 +9,17 @@ const pricing_methods_db = require('../../db/pricing_methods_db');
 
 /**
  * indexItems add is_auction, is_commdty and is_derivative properties to items
- * @param arg
- * @param bulkSize
+ * @param arg {string}
+ * @param bulkSize {number}
  * @returns {Promise<void>}
  */
 
 const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
   try {
     console.time(`DMA-${indexAssetClass.name}`);
-    bulkSize = parseInt(bulkSize)
-    if (typeof bulkSize !== 'number') return
+    if (typeof bulkSize !== 'number') {
+      bulkSize = 10
+    }
     switch (arg) {
       case 'pricing_methods':
         /**

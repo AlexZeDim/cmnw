@@ -90,10 +90,10 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
             let item = await items_db.findById(commodity);
             if (item && item.asset_class) {
               item.asset_class.addToSet('COMMDTY');
+              item.asset_class.addToSet('MARKET');
+              await item.save();
+              console.info(`${item._id}, ${item.asset_class.toString()}`);
             }
-            item.asset_class.addToSet('MARKET');
-            await item.save();
-            console.info(`${item._id}, ${item.asset_class.toString()}`);
           }
         }
         const items = await auctions_db.distinct('item.id', {'unit_price': {$exists: true}})
@@ -102,10 +102,10 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
             let asset = await items_db.findById(item);
             if (asset && asset.asset_class) {
               asset.asset_class.addToSet('COMMDTY');
+              asset.asset_class.addToSet('MARKET');
+              await asset.save();
+              console.info(`${asset._id}, ${asset.asset_class.toString()}`);
             }
-            asset.asset_class.addToSet('MARKET');
-            await asset.save();
-            console.info(`${asset._id}, ${asset.asset_class.toString()}`);
           }
         }
         console.timeEnd(`Stage: auctions`);

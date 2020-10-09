@@ -30,6 +30,7 @@ const getCharacter = require('../getCharacter');
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind)
+      .sort({'updatedAt': 1})
       .lean()
       .cursor({ batchSize: bulkSize })
       .eachAsync(

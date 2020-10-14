@@ -18,7 +18,7 @@ const getItem = require('./getItem');
  * @returns {Promise<void>}
  */
 
-const indexItems = async (queryKeys = 'DMA', operation = 'update') => {
+const indexItems = async (queryKeys = 'DMA', operation = 'create') => {
   try {
     console.time(`DMA-${indexItems.name}`);
 
@@ -36,7 +36,7 @@ const indexItems = async (queryKeys = 'DMA', operation = 'update') => {
           { parallel: 10 },
         );
     } else {
-      for (let _id = 25; _id < 230000; _id++) {
+      for (let _id = 145000; _id < 250000; _id++) {
         await getItem(_id, token);
       }
     }

@@ -5,7 +5,7 @@ apps:
   - script: ./dma/items/indexItems.js
     name: 'DMA-ITEMS'
     instances: 1
-    args: 'DMA update'
+    args: 'DMA create'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./osint/indexing/indexRealms.js
     name: 'OSINT-REALMS'

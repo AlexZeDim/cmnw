@@ -68,8 +68,8 @@ const { Round2 } = require('../db/setters');
                 'Battlenet-Namespace': 'dynamic-eu',
                 'If-Modified-Since': _id.timestamp
               }
-            }).catch(e => {
-              console.info(`E,${_id.connected_realm_id}:${e}`);
+            }).catch(error => {
+              console.info(`E,${_id.connected_realm_id}:${error}`);
               return void 0;
             });
             if (market && market.auctions && market.auctions.length) {

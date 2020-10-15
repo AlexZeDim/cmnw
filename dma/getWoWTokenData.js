@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../db/connection')
-const { connection } = require('mongoose');
 const wowtoken_db = require('../db/wowtoken_db');
 const keys_db = require('../db/keys_db');
 
@@ -10,6 +9,7 @@ const keys_db = require('../db/keys_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const BlizzAPI = require('blizzapi');
 const { Round2 } = require('../db/setters');
 
@@ -18,7 +18,7 @@ const { Round2 } = require('../db/setters');
  * @returns {Promise<void>}
  */
 
-(async (queryKeys = { tags: `DMA` }) => {
+schedule.scheduleJob('*/10 * * * *', async (t, queryKeys = { tags: `DMA` }) => {
   try {
     console.time(`DMA-getWoWTokenData`);
     const { _id, secret, token } = await keys_db.findOne(queryKeys);
@@ -58,7 +58,6 @@ const { Round2 } = require('../db/setters');
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-getWoWTokenData`);
   }
-})();
+})

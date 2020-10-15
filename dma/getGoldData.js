@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../db/connection')
-const { connection } = require('mongoose');
 const golds_db = require('./../db/golds_db');
 const realms_db = require('./../db/realms_db');
 
@@ -10,6 +9,7 @@ const realms_db = require('./../db/realms_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const moment = require('moment');
 const Xray = require('x-ray');
 const makeDriver = require('request-x-ray');
@@ -25,10 +25,10 @@ x.driver(driver);
  * @returns {Promise<void>}
  */
 
-(async () => {
+schedule.scheduleJob('00 */1 * * *', async () => {
   try {
     console.time(`DMA-getGoldData`);
-    const t = moment().format('X');
+    const ts = moment().format('X');
     let goldData = [];
     let goldOrders = await x('https://funpay.ru/chips/2/', '.tc-item', [
       {
@@ -49,7 +49,7 @@ x.driver(driver);
         if (realm && realm.connected_realm_id) {
           await realms_db.updateMany(
             { connected_realm_id: realm.connected_realm_id },
-            { golds: t },
+            { golds: ts },
           );
           if (
             parseFloat(goldOrders[i].quantity.replace(/\s/g, '')) < 15000000
@@ -61,7 +61,7 @@ x.driver(driver);
               status: goldOrders[i].status ? 'Online' : 'Offline',
               owner: goldOrders[i].owner,
               price: +goldOrders[i].price.replace(/ ₽/g, ''),
-              last_modified: t,
+              last_modified: ts,
             });
           }
         }
@@ -70,11 +70,9 @@ x.driver(driver);
         .insertMany(goldData)
         .then(golds => console.info(`U,${golds.length}`));
     }
-
   } catch (error) {
     console.log(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-getGoldData`);
   }
-})();
+});

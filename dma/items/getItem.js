@@ -60,6 +60,7 @@ async function getItem(id, token) {
         'item_subclass',
         'inventory_type',
       ];
+
       const gold = ['purchase_price', 'sell_price'];
 
       /** key value */
@@ -94,7 +95,7 @@ async function getItem(id, token) {
       }
 
       await item.save();
-      console.info(`U,${item}`);
+      console.info(`U,${item._id}`);
     }
   } catch (err) {
     console.error(`${getItem.name},${id},${err}`);

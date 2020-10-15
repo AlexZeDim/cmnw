@@ -18,7 +18,6 @@ apps:
     instances: 1
     out_file: "/dev/null"
     autorestart: true
-    cron_restart: '*/30 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/getGoldData.js

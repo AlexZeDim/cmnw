@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../db/connection')
-const { connection } = require('mongoose');
 const keys_db = require('./../db/keys_db');
 const realms_db = require('./../db/realms_db');
 const auctions_db = require('./../db/auctions_db');
@@ -12,6 +11,7 @@ const pets_db = require('./../db/pets_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const BlizzAPI = require('blizzapi');
 const moment = require('moment');
 const { Round2 } = require('../db/setters');
@@ -24,7 +24,8 @@ const { Round2 } = require('../db/setters');
  * @returns {Promise<void>}
  */
 
-(async (
+schedule.scheduleJob('*/30 * * * *', async (
+  t,
   queryKeys = { tags: `DMA` },
   realmQuery = { region: 'Europe' },
   bulkSize = 2,
@@ -118,11 +119,9 @@ const { Round2 } = require('../db/setters');
         },
         { parallel: bulkSize },
       );
-
   } catch (error) {
     console.error(error);
   } finally {
-    connection.close();
     console.timeEnd(`DMA-getAuctionData`);
   }
-})();
+});

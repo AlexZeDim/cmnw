@@ -24,7 +24,6 @@ apps:
     name: 'DMA-GOLD'
     instances: 1
     autorestart: true
-    cron_restart: '00 */1 * * *'
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000

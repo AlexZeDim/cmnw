@@ -3,7 +3,6 @@
  * Mongo Models
  */
 require('../db/connection')
-const { connection } = require('mongoose');
 
 /**
  * Module dependencies.
@@ -32,8 +31,6 @@ const server = http.createServer(app);
 server.listen(port, '0.0.0.0');
 server.on('error', onError);
 server.on('listening', onListening);
-process.on('beforeExit', shutDown);
-process.on('SIGINT', shutDown);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -89,17 +86,4 @@ function onListening() {
   const addr = server.address();
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   console.log('Listening on ' + bind);
-}
-
-/**
- * Event listener for HTTP server "shutdown" event.
- */
-
-function shutDown() {
-  server.close(() => {
-    console.log('Closed out remaining connections');
-    connection.close(false, () => {});
-    console.log('DB connection closed.');
-    process.exit(0);
-  });
 }

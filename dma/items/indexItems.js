@@ -36,7 +36,7 @@ const indexItems = async (queryKeys = 'DMA', operation = 'create') => {
           { parallel: 10 },
         );
     } else {
-      for (let _id = 145000; _id < 250000; _id++) {
+      for (let _id = 145000; _id < 185000; _id++) {
         await getItem(_id, token);
       }
     }

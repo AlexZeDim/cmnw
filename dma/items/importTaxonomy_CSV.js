@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const items_db = require('../../db/items_db');
 
 /**
@@ -49,9 +48,9 @@ const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\ta
               }
               item.asset_class.addToSet(data[i][3]);
               await item.save();
-              console.info(`U, ${parseFloat(data[i][0])}`);
+              console.info(`U,${parseFloat(data[i][0])}`);
             } else {
-              console.info(`R, ${parseFloat(data[i][0])}`);
+              console.info(`R,${parseFloat(data[i][0])}`);
             }
           }
           break;
@@ -72,11 +71,7 @@ const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\ta
               expansion: expansionTicker.get(parseInt(data[i][68])),
               stackable: parseInt(data[i][32]),
             });
-            console.info(
-              `U, ${parseFloat(data[i][0])}, ${expansionTicker.get(
-                parseInt(data[i][68]),
-              )}, ${parseInt(data[i][32])}`,
-            );
+            console.info(`U, ${parseFloat(data[i][0])}, ${expansionTicker.get(parseInt(data[i][68]))}, ${parseInt(data[i][32])}`);
           }
           break;
         default:
@@ -86,8 +81,8 @@ const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\ta
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-${importTaxonomy_CSV.name}`);
+    process.exit(0)
   }
 }
 

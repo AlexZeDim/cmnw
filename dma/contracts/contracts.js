@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const items_db = require('../../db/items_db');
 const auctions_db = require('../../db/auctions_db');
 const golds_db = require('../../db/golds_db');
@@ -11,9 +10,10 @@ const contracts_db = require('../../db/contracts_db');
 /**
  * Modules
  */
+const schedule = require('node-schedule');
 const moment = require('moment');
 
-(async () => {
+schedule.scheduleJob('45 */1 * * *', async () => {
   try {
     console.time(`DMA-contracts`);
     let d = moment().get('date');
@@ -213,11 +213,9 @@ const moment = require('moment');
         console.error(`E,${item_name}-${moment().format('DD.MMM.WW.YY')}`);
       }
     }
-
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-contracts`);
   }
-})();
+});

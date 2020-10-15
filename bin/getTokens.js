@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../db/connection')
-const { connection } = require('mongoose');
 const keys_db = require('../db/keys_db');
 
 /**
@@ -10,15 +9,16 @@ const keys_db = require('../db/keys_db');
  */
 
 const axios = require('axios');
+const schedule = require('node-schedule');
 
 /**
  * Update tokens from Blizzard API as a separate task
  * @returns {Promise<void>}
  */
 
-(async () => {
+schedule.scheduleJob('*/1 * * * *', async function() {
   try {
-    await keys_db.find().cursor().eachAsync(async ({_id, secret} )=> {
+    await keys_db.find().cursor().eachAsync(async ({ _id, secret })=> {
       const { access_token, expires_in } = await axios({
         url: `https://eu.battle.net/oauth/token`,
         method: 'post',
@@ -41,7 +41,6 @@ const axios = require('axios');
     });
   } catch (e) {
     console.error(e);
-  } finally {
-    await connection.close();
   }
-})();
+});
+

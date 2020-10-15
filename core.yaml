@@ -2,10 +2,9 @@ apps:
   - script: ./bin/getTokens.js
     name: 'CORE-TOKEN'
     instances: 1
-    autorestart: true
     out_file: "/dev/null"
+    autorestart: true
     max_memory_restart: '100M'
-    cron_restart: '*/1 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./bin/www.js
     name: 'CORE-API'

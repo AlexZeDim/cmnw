@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../db/connection')
-const { connection } = require('mongoose');
 const realms_db = require('./../db/realms_db');
 const items_db = require('./../db/items_db');
 
@@ -10,6 +9,7 @@ const items_db = require('./../db/items_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const iva = require('./valuation/eva/iva');
 
 /**
@@ -19,7 +19,8 @@ const iva = require('./valuation/eva/iva');
  * @returns {Promise<void>}
  */
 
-(async (
+schedule.scheduleJob('15 */1 * * *', async (
+  t,
   realmQuery = { region: 'Europe' },
   bulkSize = 1,
 ) => {
@@ -177,7 +178,6 @@ const iva = require('./valuation/eva/iva');
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-getValuationsData`);
   }
-})();
+});

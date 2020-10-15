@@ -11,7 +11,6 @@ apps:
     instances: 1
     autorestart: true
     out_file: "/dev/null"
-    cron_restart: '15 */1 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 300000
   - script: ./dma/getAuctionsData.js

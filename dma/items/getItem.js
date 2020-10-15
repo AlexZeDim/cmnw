@@ -94,7 +94,7 @@ async function getItem(id, token) {
       }
 
       await item.save();
-      console.info(`U,${item._id}`);
+      console.info(`U,${item}`);
     }
   } catch (err) {
     console.error(`${getItem.name},${id},${err}`);

@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const items_db = require('../../db/items_db');
 const auctions_db = require('../../db/auctions_db');
 const pricing_methods_db = require('../../db/pricing_methods_db');
@@ -170,8 +169,8 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-${indexAssetClass.name}`);
+    process.exit(0)
   }
 }
 

@@ -1,7 +1,6 @@
 /**
  * Model importing
  */
-
 const characters_db = require('../db/characters_db');
 const realms_db = require('../db/realms_db');
 const osint_logs_db = require('../db/osint_logs_db');
@@ -234,7 +233,6 @@ async function getCharacter(
               character.guild.rank = rank;
             })
             .catch(e => e);
-
         }
       } else {
         character.guild = undefined;
@@ -343,21 +341,39 @@ async function getCharacter(
      * Character Media
      * ID
      */
-    if (characterMedia && characterMedia.value) {
-      if (!character.id) {
-        character.id = parseInt(
-          characterMedia.value.avatar_url
-            .toString()
-            .split('/')
-            .pop(-1)
-            .match(/([0-9]+)/g)[0],
-        );
+    if (characterMedia && characterMedia.value && characterMedia.value.assets) {
+      const assets = characterMedia.value.assets;
+      if (assets && assets.length) {
+
       }
-      character.media = {
-        avatar_url: characterMedia.value.avatar_url,
-        bust_url: characterMedia.value.bust_url,
-        render_url: characterMedia.value.render_url,
-      };
+      if (assets && assets.length) {
+        let avatar_url, bust_url, render_url;
+        for (let { key , value } of assets) {
+          if (key === 'avatar') {
+            if (!character.id) {
+              character.id = parseInt(
+                value
+                  .toString()
+                  .split('/')
+                  .pop()
+                  .match(/([0-9]+)/g)[0],
+              );
+            }
+            avatar_url = value;
+          }
+          if (key === 'inset') {
+            bust_url = value;
+          }
+          if (key === 'main') {
+            render_url = value;
+          }
+        }
+        character.media = {
+          avatar_url: avatar_url,
+          bust_url: bust_url,
+          render_url: render_url,
+        };
+      }
     }
 
     /**
@@ -684,7 +700,7 @@ async function getCharacter(
     await character.save();
     console.info(`U:${character.name}@${character.realm.name}#${character.id || 0}:${character.statusCode}`);
   } catch (error) {
-    console.error(`E,${fromSlug(characterName)}@${fromSlug(realmSlug,)},${error}`);
+    console.error(`E,${fromSlug(characterName)}@${fromSlug(realmSlug)},${error}`);
   }
 }
 

@@ -21,3 +21,16 @@ connection.on('error', console.error.bind(console, 'connection error:'));
 connection.once('open', () =>
   console.log('Connected to database on ' + process.env.hostname),
 );
+
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+    process.on(eventType, function () {
+        connection.close();
+        connection.once('close', () =>
+          console.log('Connected to database on ' + process.env.hostname + ' closed'),
+        );
+        process.exit(0);
+    });
+})
+
+
+

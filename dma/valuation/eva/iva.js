@@ -32,11 +32,7 @@ async function iva(
   item_depth = 0,
 ) {
   try {
-    console.info(
-      `DMA-${iva.name},${
-        item.ticker ? item.ticker : item.name.en_GB
-      }@${connected_realm_id},${item_depth}`,
-    );
+    console.info(`DMA-${iva.name},${item.ticker ? item.ticker : item.name.en_GB}@${connected_realm_id},${item_depth}`);
 
     /**
      * Getting timestamps

@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const pricing_methods = require('../../db/pricing_methods_db');
 
 /**
@@ -77,7 +76,7 @@ async function importMethodsClientCSV(path, expr) {
           });
           SE_cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 5000));
-            connection.close();
+            process.exit(0)
           });
           break;
         case 'spellreagents':
@@ -168,7 +167,7 @@ async function importMethodsClientCSV(path, expr) {
           });
           SLA_cursor.on('close', async () => {
             await new Promise(resolve => setTimeout(resolve, 5000));
-            connection.close();
+            process.exit(0)
           });
           console.timeEnd('write');
           break;

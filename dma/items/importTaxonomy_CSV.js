@@ -18,7 +18,7 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\itemsparse.csv') => {
+const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') => {
   try {
     console.time(`DMA-${importTaxonomy_CSV.name}`);
     let path_, file_;
@@ -46,13 +46,19 @@ const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\it
               if (data[i][2]) {
                 item.ticker = data[i][2]
               }
-              item.asset_class.addToSet(data[i][3]);
+              if (data[i][3]) {
+                item.asset_class.addToSet(data[i][3]);
+              }
+              if (data[i][4]) {
+                item.profession_class = data[i][4];
+              }
               await item.save();
               console.info(`U,${parseFloat(data[i][0])}`);
             } else {
               console.info(`R,${parseFloat(data[i][0])}`);
             }
           }
+          process.exit(0)
           break;
         case 'itemsparse':
           const expansionTicker = new Map([
@@ -73,6 +79,7 @@ const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\it
             });
             console.info(`U, ${parseFloat(data[i][0])}, ${expansionTicker.get(parseInt(data[i][68]))}, ${parseInt(data[i][32])}`);
           }
+          process.exit(0)
           break;
         default:
           console.info('Sorry, we got nothing');

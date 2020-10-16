@@ -24,7 +24,7 @@ apps:
     name: 'DMA-PETS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/valuations/importMethodsBlizzardAPI.js
+  - script: ./dma/valuation/importMethodsBlizzardAPI.js
     name: 'DMA-METHODS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'

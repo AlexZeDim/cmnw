@@ -71,7 +71,6 @@ const BlizzAPI = require('blizzapi');
           });
           let { categories } = await api.query(`/data/wow/profession/${profession.id}/skill-tier/${tier.id}`, {
             timeout: 10000,
-            params: { locale: 'en_GB' },
             headers: { 'Battlenet-Namespace': 'static-eu' }
           })
           if (categories) {
@@ -82,12 +81,10 @@ const BlizzAPI = require('blizzapi');
                 const [RecipeData, RecipeMedia] = await Promise.allSettled([
                   api.query(`/data/wow/recipe/${recipe.id}`, {
                     timeout: 10000,
-                    params: { locale: 'en_GB' },
                     headers: { 'Battlenet-Namespace': 'static-eu' }
                   }),
                   api.query(` /data/wow/media/recipe/${recipe.id}`, {
                     timeout: 10000,
-                    params: { locale: 'en_GB' },
                     headers: { 'Battlenet-Namespace': 'static-eu' }
                   })
                 ]);
@@ -138,14 +135,16 @@ const BlizzAPI = require('blizzapi');
                     pricing_method.item_quantity =
                       recipe_data.crafted_quantity.value;
                   }
-                  pricing_method.reagents = recipe_data.reagents.map(
-                    ({ reagent, quantity }) => {
-                      return {
-                        _id: parseInt(reagent.id),
-                        quantity: parseInt(quantity),
-                      };
-                    },
-                  );
+                  if (recipe_data.reagents && recipe_data.reagents.length) {
+                    pricing_method.reagents = recipe_data.reagents.map(
+                      ({ reagent, quantity }) => {
+                        return {
+                          _id: parseInt(reagent.id),
+                          quantity: parseInt(quantity),
+                        };
+                      },
+                    );
+                  }
                   if (RecipeMedia.value) {
                     pricing_method.media = RecipeMedia.value.assets[0].value;
                   }

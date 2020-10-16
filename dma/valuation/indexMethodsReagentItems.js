@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const pricing_methods = require('../../db/pricing_methods_db');
 
 /**
@@ -65,6 +64,6 @@ const pricing_methods = require('../../db/pricing_methods_db');
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
+    await process.exit(0)
   }
 })();

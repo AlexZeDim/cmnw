@@ -76,19 +76,17 @@ const BlizzAPI = require('blizzapi');
           if (categories) {
             for (let category of categories) {
               let { recipes } = category;
-
               for (let recipe of recipes) {
                 const [RecipeData, RecipeMedia] = await Promise.allSettled([
                   api.query(`/data/wow/recipe/${recipe.id}`, {
                     timeout: 10000,
                     headers: { 'Battlenet-Namespace': 'static-eu' }
                   }),
-                  api.query(` /data/wow/media/recipe/${recipe.id}`, {
+                  api.query(`/data/wow/media/recipe/${recipe.id}`, {
                     timeout: 10000,
                     headers: { 'Battlenet-Namespace': 'static-eu' }
                   })
                 ]);
-
                 if (RecipeData.value) {
                   const recipe_data = RecipeData.value;
                   let pricing_method = await pricing_methods_db.findById(`P${recipe_data.id}`);
@@ -104,6 +102,10 @@ const BlizzAPI = require('blizzapi');
                     });
                   }
 
+                  if (recipe.name) {
+                    pricing_method.name = recipe_data.name;
+                  }
+
                   if (recipe_data.description) {
                     pricing_method.description = recipe_data.description;
                   }
@@ -117,13 +119,8 @@ const BlizzAPI = require('blizzapi');
                       recipe_data.horde_crafted_item.id,
                     );
                   }
-                  if (
-                    recipe_data.profession &&
-                    professionsTicker.has(recipe_data.profession.id)
-                  ) {
-                    pricing_method.profession = professionsTicker.get(
-                      recipe_data.profession.id,
-                    );
+                  if (profession.id && professionsTicker.has(profession.id)) {
+                    pricing_method.profession = professionsTicker.get(profession.id);
                   }
                   if (expansion_ticker) {
                     pricing_method.expansion = expansion_ticker;

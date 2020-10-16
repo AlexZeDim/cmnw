@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const pricing_methods_db = require('../../db/pricing_methods_db');
 const keys_db = require('../../db/keys_db');
 
@@ -38,6 +37,7 @@ const BlizzAPI = require('blizzapi');
       [794, 'ARCH'],
     ]);
     const expansionTicker = new Map([
+      ['Shadowlands', 'SHDW'],
       ['Kul', 'BFA'],
       ['Zandalari', 'BFA'],
       ['Legion', 'LGN'],
@@ -56,13 +56,11 @@ const BlizzAPI = require('blizzapi');
     });
     const { professions } = await api.query(`/data/wow/profession/index`, {
       timeout: 10000,
-      params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'static-eu' }
     });
     for (let profession of professions) {
       let { skill_tiers } = await api.query(`/data/wow/profession/${profession.id}`, {
         timeout: 10000,
-        params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'static-eu' }
       });
       if (skill_tiers) {
@@ -96,10 +94,7 @@ const BlizzAPI = require('blizzapi');
 
                 if (RecipeData.value) {
                   const recipe_data = RecipeData.value;
-
-                  let pricing_method = await pricing_methods_db.findById(
-                    recipe_data.id,
-                  );
+                  let pricing_method = await pricing_methods_db.findById(`P${recipe_data.id}`);
 
                   if (!pricing_method) {
                     pricing_method = new pricing_methods_db({
@@ -167,7 +162,7 @@ const BlizzAPI = require('blizzapi');
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`DMA-importMethodsBlizzardAPI`);
+    await process.exit(0)
   }
 })();

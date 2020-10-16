@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const items_db = require('../../db/items_db');
 const pricing_methods = require('../../db/pricing_methods_db');
 
@@ -78,7 +77,7 @@ async function importMethodsQuantityTSM(path, expr) {
             }
           }
         }
-        connection.close();
+        process.exit(0)
         break;
       case 'jwlc':
         lua = fs.readFileSync(path + 'Prospect.lua', 'utf8');
@@ -132,7 +131,7 @@ async function importMethodsQuantityTSM(path, expr) {
             }
           }
         }
-        connection.close();
+        process.exit(0)
         break;
       case 'transform':
         lua = fs.readFileSync(path + 'Transform.lua', 'utf8');

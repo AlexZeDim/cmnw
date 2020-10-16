@@ -48,38 +48,38 @@ _id,name,ticker,asset_class,profession_class
 172935,Porous Polishing Abrasive,PSPGAE,,ENG
 172937,Wormfed Gear Assembly,WDGRAY,,ENG
 172936,Mortal Coiled Spring,MLCCSG,,ENG
-309636,Enchanted Elethium Bar,ENC.ELTHUM,,ENC
-309637,Enchanted Heavy Desolate Hide,ENC.,,ENC
-309638,Enchanted Lightless Silk,ENC.LGHTSK,,ENC
-265105,Enchanted Twilight Wand,ENC.,,ENC
+172437,Enchanted Elethium Bar,ENC.ELTHUM,,ENC
+172438,Enchanted Heavy Desolate Hide,ENC.,,ENC
+172439,Enchanted Lightless Silk,ENC.LGHTSK,,ENC
+172462,Enchanted Twilight Wand,ENC.,,ENC
 173172,Essence of Servitude,ESS.SERVITUDE,,JWC
 173173,Essence of Valor,ESS.VALOR,,JWC
 173170,Essence of Rebirth,ESS.REBIRTH,,JWC
 173171,Essence of Suffering,ESS.SUFFER,,JWC
-307101,Spectral Flask of Power,FLASK.POWER,,ALCH
-307103,Spectral Flask of Stamina,FLASK.STM,,ALCH
-307093,Potion of Spectral Agility,POTION.AGI,,ALCH
-307096,Potion of Spectral Intellect,POTION.INT,,ALCH
-307097,Potion of Spectral Stamina,POTION.STM,,ALCH
-307098,Potion of Spectral Strength,POTION.STR,,ALCH
-307384,Potion of Deathly Fixation,POTION.FIX,,ALCH
-307381,Potion of Empowered Exorcisms,POTION.EXO,,ALCH
-307383,Potion of Divine Awakening,POTION.AWAKE,,ALCH
-307382,Potion of Phantom Fire,POTION.FIRE,,ALCH
-322301,Potion of Sacrificial Anima,POTION.ANIMA,,ALCH
-307094,Potion of Hardened Shadows,POTION.ARMOR,,ALCH
-307095,Potion of Spiritual Clarity,POTION.SLEEP,,ALCH
-256133,Potion of Specter Swiftness,POTION.MS,,ALCH
-256134,Potion of Soul Purity,POTION.DISPEL,,ALCH
-342887,Potion of Unhindered Passing,POTION.IMMUNE,,ALCH
-295084,Potion of Shaded Sight,POTION.DETECT,,ALCH
-261424,Potion of the Hidden Spirit,POTION.STEALTH,,ALCH
-307119,Embalmer's Oil,OIL.HEAL,,ALCH
-307118,Shadowcore Oil,OIL.DPS,,ALCH
-307100,Spiritual Anti-Venom,POTION.VENOM,,ALCH
-261423,Spiritual Rejuvenation Potion,POTION.REJUV,,ALCH
-301578,Spiritual Healing Potion,POTION.HP,,ALCH
-301683,Spiritual Mana Potion,POTION.MANA,,ALCH
+171276,Spectral Flask of Power,FLASK.POWER,,ALCH
+171278,Spectral Flask of Stamina,FLASK.STM,,ALCH
+171270,Potion of Spectral Agility,POTION.AGI,,ALCH
+171273,Potion of Spectral Intellect,POTION.INT,,ALCH
+171274,Potion of Spectral Stamina,POTION.STM,,ALCH
+171275,Potion of Spectral Strength,POTION.STR,,ALCH
+171351,Potion of Deathly Fixation,POTION.FIX,,ALCH
+171352,Potion of Empowered Exorcisms,POTION.EXO,,ALCH
+171350,Potion of Divine Awakening,POTION.AWAKE,,ALCH
+171349,Potion of Phantom Fire,POTION.FIRE,,ALCH
+176811,Potion of Sacrificial Anima,POTION.ANIMA,,ALCH
+171271,Potion of Hardened Shadows,POTION.ARMOR,,ALCH
+171272,Potion of Spiritual Clarity,POTION.SLEEP,,ALCH
+171370,Potion of Specter Swiftness,POTION.MS,,ALCH
+171263,Potion of Soul Purity,POTION.DISPEL,,ALCH
+183823,Potion of Unhindered Passing,POTION.IMMUNE,,ALCH
+171264,Potion of Shaded Sight,POTION.DETECT,,ALCH
+171266,Potion of the Hidden Spirit,POTION.STEALTH,,ALCH
+171286,Embalmer's Oil,OIL.HEAL,,ALCH
+171301,Shadowcore Oil,OIL.DPS,,ALCH
+171301,Spiritual Anti-Venom,POTION.VENOM,,ALCH
+171269,Spiritual Rejuvenation Potion,POTION.REJUV,,ALCH
+171267,Spiritual Healing Potion,POTION.HP,,ALCH
+171268,Spiritual Mana Potion,POTION.MANA,,ALCH
 180457,Shadestone,SHDSTN,,ALCH
 171287,Ground Death Blossom,GROUND.DTBLSM,,HRBS
 171290,Ground Marrowroot,GROUND.MRRWRT,,HRBS

@@ -1,100 +1,190 @@
-_id,name,ticker,profession_class,expansion,asset_class[0],asset_class[1],asset_class[2],asset_class[3]
-161131,,,,,VENDOR,,,
-83092,,,,,VENDOR,,,
-65892,,,,,VENDOR,,,
-80433,,,,,VENDOR,,,
-49908,,,,,VENDOR,,,
-43102,,,,,VENDOR,,,
-30183,,,,,VENDOR,,,
-23572,,,,,VENDOR,,,
-136638,,,,,VENDOR,,,
-62323,,,,,VENDOR,,,
-136636,,,,,VENDOR,,,
-40533,,,,,VENDOR,,,
-124436,,,,,VENDOR,,,
-74845,,,,,VENDOR,,,
-38426,,,,,VENDOR,,,
-18567,,,,,VENDOR,,,
-74659,,,,,VENDOR,,,
-85585,,,,,VENDOR,,,
-160399,,,,,VENDOR,,,
-160400,,,,,VENDOR,,,
-160710,,,,,VENDOR,,,
-160398,,,,,VENDOR,,,
-160712,,,,,VENDOR,,,
-160709,,,,,VENDOR,,,
-133591,,,,,VENDOR,,,
-136633,,,,,VENDOR,,,
-133589,,,,,VENDOR,,,
-133592,,,,,VENDOR,,,
-133593,,,,,VENDOR,,,
-133588,,,,,VENDOR,,,
-133590,,,,,VENDOR,,,
-90146,,,,,VENDOR,,,
-85584,,,,,VENDOR,,,
-74852,,,,,VENDOR,,,
-74660,,,,,VENDOR,,,
-52188,,,,,VENDOR,,,
-74851,,,,,VENDOR,,,
-85583,,,,,VENDOR,,,
-74832,,,,,VENDOR,,,
-160502,,,,,VENDOR,,,
-136637,,,,,VENDOR,,,
-39684,,,,,VENDOR,,,
-14256,,,,,VENDOR,,,
-74854,,,,,VENDOR,,,
-159959,,,,,VENDOR,,,
-23783,,,,,VENDOR,,,
-127037,,,,,VENDOR,,,
-127681,,,,,VENDOR,,,
-14341,,,,,VENDOR,,,
-102540,,,,,VENDOR,,,
-102539,,,,,VENDOR,,,
-160298,,,,,VENDOR,,,
-10290,,,,,VENDOR,,,
-4382,,,,,VENDOR,,,
-8343,,,,,VENDOR,,,
-4400,,,,,VENDOR,,,
-10647,,,,,VENDOR,,,
-3466,,,,,VENDOR,,,
-158205,,,,,VENDOR,,,
-2325,,,,,VENDOR,,,
-6261,,,,,VENDOR,,,
-4234,,,,,VENDOR,,,
-3857,,,,,VENDOR,,,
-4232,,,,,VENDOR,,,
-4291,,,,,VENDOR,,,
-4341,,,,,VENDOR,,,
-12037,,,,,VENDOR,,,
-4340,,,,,VENDOR,,,
-158186,,,,,VENDOR,,,
-160059,,,,,VENDOR,,,
-3355,,,,,VENDOR,,,
-4399,,,,,VENDOR,,,
-2996,,,,,VENDOR,,,
-3371,,,,,VENDOR,,,
-163569,,,,,VENDOR,,,
-2453,,,,,VENDOR,,,
-2605,,,,,VENDOR,,,
-2321,,,,,VENDOR,,,
-2880,,,,,VENDOR,,,
-160705,,,,,VENDOR,,,
-4289,,,,,VENDOR,,,
-2604,,,,,VENDOR,,,
-6260,,,,,VENDOR,,,
-30817,,,,,VENDOR,,,
-2324,,,,,VENDOR,,,
-44853,,,,,VENDOR,,,
-39354,,,,,VENDOR,,,
-2320,,,,,VENDOR,,,
-2678,,,,,VENDOR,,,
-17194,,,,,VENDOR,,,
-44835,,,,,VENDOR,,,
-5051,,,,,VENDOR,,,
-65893,,,,,VENDOR,,,
-44501,,,,,VENDOR,,,
-44500,,,,,VENDOR,,,
-44499,,,,,VENDOR,,,
-163203,,,,,VENDOR,,,
-11291,,,,,VENDOR,,,
-4470,,,,,VENDOR,,,
+_id,name,ticker,asset_class,profession_class
+173202,Shrouded Cloth,SHRDCH,,CLTH
+173204,Lightless Silk,LGHTSK,,CLTH
+172230,Soul Dust,SOULDT,,ENC
+172231,Sacred Shard,SCRDSD,,ENC
+172232,Eternal Crystal,ETNLCL,,ENC
+173110,Umbryl,COMMON.BLUE,,JWC
+173108,Oriblase,COMMON.YELLOW,,JWC
+173109,Angerseye,COMMON.RED,,JWC
+173116,9.x Raw Red,RARE.GREEN,,JWC
+173115,9.x Raw Yellow,RARE.YELLOW,,JWC
+173117,9.x Raw Blue,RARE.BLUE,,JWC
+173111,9.x Raw Rare,EPIC.GEM,,JWC
+179314,Creeping Crawler Meat,MEAT.CRCR,,COOK
+179315,Shadowy Shank,MEAT.SHSH,,COOK
+172054,Seraphic Wing,MEAT.SRWG,,COOK
+172055,Phantasmal Haunch,MEAT.PLHH,,COOK
+172053,Tenebrous Ribs,MEAT.TRBS,,COOK
+173035,Pocked Bonefish,FISH.BONE,,COOK
+173034,Silvergill Pike,FISH.PIKE,,COOK
+172052,Aethereal Meat,MEAT.AETH,,COOK
+173036,Spinefin Piranha,FISH.SPNF,,COOK
+173033,Iridescent Amberjack,FISH.AMBR,,COOK
+173037,Elysian Thade,FISH.ELTH,,COOK
+173032,Lost Sole,FISH.LTSL,,COOK
+175111,Marrow Larva,MEAT.LRVA,,COOK
+171428,Shadowghast Ingot,SGHAST,,ORE
+171828,Laestrite Ore,LSTRIT,,ORE
+171833,Elethium Ore,ELTHUM,,ORE
+171831,Phaedrum Ore,PHDRUM,,ORE
+171830,Oxxein Ore,OXXEIN,,ORE
+171840,Porous Stone,POROUS,,ORE
+171832,Sinvyr Ore,SINVYR,,ORE
+171841,Shaded Stone,SHDSTN,,ORE
+171829,Solenium Ore,SLNIUM,,ORE
+171838,Sinvyr Nugget,NUGGET.SINVYR,,ORE
+171834,Laestrite Nugget,NUGGET.LSTRIT,,ORE
+171837,Phaedrum Nugget,NUGGET.PHDRUM,,ORE
+171839,Elethium Nugget,NUGGET.ELTHUM,,ORE
+171836,Oxxein Nugget,NUGGET.OXXEIN,,ORE
+171835,Solenium Nugget,NUGGET.SLNIUM,,ORE
+180060,Relic of the Past V,ROTP5,,INDX
+180055,Relic of the Past I,ROTP1,,INDX
+180059,Relic of the Past IV,ROTP4,,INDX
+180057,Relic of the Past II,ROTP2,,INDX
+180058,Relic of the Past III,ROTP3,,INDX
+172934,Handful of Laestrite Bolts,HLLEBS,,ENG
+172935,Porous Polishing Abrasive,PSPGAE,,ENG
+172937,Wormfed Gear Assembly,WDGRAY,,ENG
+172936,Mortal Coiled Spring,MLCCSG,,ENG
+309636,Enchanted Elethium Bar,ENC.ELTHUM,,ENC
+309637,Enchanted Heavy Desolate Hide,ENC.,,ENC
+309638,Enchanted Lightless Silk,ENC.LGHTSK,,ENC
+265105,Enchanted Twilight Wand,ENC.,,ENC
+173172,Essence of Servitude,ESS.SERVITUDE,,JWC
+173173,Essence of Valor,ESS.VALOR,,JWC
+173170,Essence of Rebirth,ESS.REBIRTH,,JWC
+173171,Essence of Suffering,ESS.SUFFER,,JWC
+307101,Spectral Flask of Power,FLASK.POWER,,ALCH
+307103,Spectral Flask of Stamina,FLASK.STM,,ALCH
+307093,Potion of Spectral Agility,POTION.AGI,,ALCH
+307096,Potion of Spectral Intellect,POTION.INT,,ALCH
+307097,Potion of Spectral Stamina,POTION.STM,,ALCH
+307098,Potion of Spectral Strength,POTION.STR,,ALCH
+307384,Potion of Deathly Fixation,POTION.FIX,,ALCH
+307381,Potion of Empowered Exorcisms,POTION.EXO,,ALCH
+307383,Potion of Divine Awakening,POTION.AWAKE,,ALCH
+307382,Potion of Phantom Fire,POTION.FIRE,,ALCH
+322301,Potion of Sacrificial Anima,POTION.ANIMA,,ALCH
+307094,Potion of Hardened Shadows,POTION.ARMOR,,ALCH
+307095,Potion of Spiritual Clarity,POTION.SLEEP,,ALCH
+256133,Potion of Specter Swiftness,POTION.MS,,ALCH
+256134,Potion of Soul Purity,POTION.DISPEL,,ALCH
+342887,Potion of Unhindered Passing,POTION.IMMUNE,,ALCH
+295084,Potion of Shaded Sight,POTION.DETECT,,ALCH
+261424,Potion of the Hidden Spirit,POTION.STEALTH,,ALCH
+307119,Embalmer's Oil,OIL.HEAL,,ALCH
+307118,Shadowcore Oil,OIL.DPS,,ALCH
+307100,Spiritual Anti-Venom,POTION.VENOM,,ALCH
+261423,Spiritual Rejuvenation Potion,POTION.REJUV,,ALCH
+301578,Spiritual Healing Potion,POTION.HP,,ALCH
+301683,Spiritual Mana Potion,POTION.MANA,,ALCH
+180457,Shadestone,SHDSTN,,ALCH
+171287,Ground Death Blossom,GROUND.DTBLSM,,HRBS
+171290,Ground Marrowroot,GROUND.MRRWRT,,HRBS
+171292,Ground Nightshade,GROUND.NGTSHD,,HRBS
+171291,Ground Rising Glory,GROUND.RSGLRY,,HRBS
+171288,Ground Vigil's Torch,GROUND.VLTRCH,,HRBS
+171289,Ground Widowbloom,GROUND.WDWBLM,,HRBS
+169701,Death Blossom,DTBLSM,,HRBS
+171315,Nightshade,NGTSHD,,HRBS
+168589,Marrowroot,MRRWRT,,HRBS
+170554,Vigil's Torch,VLTRCH,,HRBS
+168583,Widowbloom,WDWBLM,,HRBS
+168586,Rising Glory,RSGLRY,,HRBS
+169698,Widowbloom Petal,PETAL.WDWBLM,,HRBS
+169550,Rising Glory Petal,PETAL.RSGLRY,,HRBS
+169697,Nightshade Petal,PETAL.NGTSHD,,HRBS
+169700,Death Blossom Petal,PETAL.DTBLSM,,HRBS
+169699,Vigil's Torch Petal,PETAL.VLTRCH,,HRBS
+168591,Marrowroot Petal,PETAL.MRRWRT,,HRBS
+172069,Banana Beef Pudding,FOOD.STM,,COOK
+172043,Feast of Gluttonous Hedonism,FEAST,,COOK
+172048,Meaty Apple Dumplings,J.FOOD.MASTERY,,COOK
+172045,Tenebrous Crown Roast Aspic,FOOD.HASTE,,COOK
+172061,Seraph Tenders,FOOD.HEAL,,COOK
+172041,Phantasmal Souffle and Fries,FOOD.CRIT,,COOK
+172068,Pickled Meat Smoothie,FOOD.STM,,COOK
+172044,Cinnamon Bonefish Stew,J.FOOD.HASTE,,COOK
+172062,Smothered Shank,FOOD.NATURE,,COOK
+172049,Crawler Ravioli with Apple Sauce,FOOD.MASTERY,,COOK
+172063,Fried Bonefish,FOOD.SPEED,,COOK
+172051,Steak a la Mode,FOOD.VERS,,COOK
+172042,Surprisingly Palatable Feast,JUNIOR.FEAST,,COOK
+172040,Butterscotch Marinated Ribs,J.FOOD.CRIT,,COOK
+172050,Sweet Silvergill Sausages,J.FOOD.FEAST,,COOK
+173058,Umbral Ink,INK.UMBR,,INSC
+175970,Tranquil Ink,INK.TRANQ,,INSC
+173059,Luminous Ink,INK.LMNS,,INSC
+173048,Codex of the Still Mind,CODEX,,INSC
+173049,Tome of the Still Mind,TOME,,INSC
+173062,Contract: Court of Harvesters,CONTRACT.COH,,INSC
+173051,Contract: The Ascended,CONTRACT.ASC,,INSC
+175924,Contract: The Undying Army,CONTRACT.UND,,INSC
+173053,Contract: The Wild Hunt,CONTRACT.HUNT,,INSC
+173066,Darkmoon Card of Death,CARD.DEATH,,INSC
+177875,Darkmoon Card of Putresence,CARD.SENCE,,INSC
+177876,Darkmoon Card of Repose,CARD.REPOSE,,INSC
+177873,Darkmoon Card of the Indomitable,CARD.INDMT,,INSC
+177874,Darkmoon Card of Voracity,CARD.VORACITY,,INSC
+173161,Missive of Critical Strike,MISSIVE.CRIT,,INSC
+173160,Missive of Haste,MISSIVE.HASTE,,INSC
+173162,Missive of Mastery,MISSITVE.MASTERY,,INSC
+173163,Missive of Versatility,MISSIVE.VERS,,INSC
+173067,Vantus Rune: Castle Nathria,VANTUS.CASTLE,,INSC
+172413,Enchant Boots - Agile Soulwalker,J.BOOTS.AGI,,ENC
+172419,Enchant Boots - Eternal Agility,BOOTS.AGI,,ENC
+177661,Enchant Boots - Speed of Soul,BOOTS.FALL,,ENC
+172415,Enchant Bracers - Eternal Intellect,WRIST.INT,,ENC
+172414,Enchant Bracers - Illuminated Soul,J.WRIST.INT,,ENC
+172416,Enchant Bracers - Shaded Hearthing,ENC.HS,,ENC
+177715,Enchant Chest - Eternal Bounds,CHEST.HEAL,,ENC
+172418,Enchant Chest - Eternal Bulwark,CHEST.TANK,,ENC
+183738,Enchant Chest - Eternal Insight,CHEST.SDPS,,ENC
+177659,Enchant Chest - Eternal Skirmish,CHEST.DPS,,ENC
+177962,Enchant Chest - Eternal Stats,CHEST.STATS,,ENC
+177716,Enchant Chest - Sacred Stats,J.CHEST.STATS,,ENC
+172411,Enchant Cloak - Fortified Avoidance,CLOAK.AVOIDANCE,,ENC
+172412,Enchant Cloak - Fortified Leech,CLOAK.LEECH,,ENC
+172410,Enchant Cloak - Fortified Speed,CLOAK.SPEED,,ENC
+177660,Enchant Cloak - Soul Vitality,CLOAK.STM,,ENC
+172408,Enchant Gloves - Eternal Strength,HANDS.STR,,ENC
+172406,Enchant Gloves - Shadowlands Gathering,HANDS.GATHER,,ENC
+172407,Enchant Gloves - Strength of Soul,J.HANDS.STR,,ENC
+172357,Enchant Ring - Bargain of Critical Strike,RING.CRIT,,ENC
+172358,Enchant Ring - Bargain of Haste,RING.HASTE,,ENC
+172359,Enchant Ring - Bargain of Mastery,RING.MASTERY,,ENC
+172360,Enchant Ring - Bargain of Versatility,RING.VERS,,ENC
+172361,Enchant Ring - Tenet of Critical Strike,J.RING.CRIT,,ENC
+172362,Enchant Ring - Tenet of Haste,J.RING.HASTE,,ENC
+172363,Enchant Ring - Tenet of Mastery,J.RING.MASTERY,,ENC
+172364,Enchant Ring - Tenet of Versatility,J.RING.VERS,,ENC
+172365,Ascended Vigor,WEAPON.TANK,,ENC
+172367,Eternal Grace,WEAPON.HEAL,,ENC
+172370,Enchant Weapon - Lightless Force,WEAPON.AOE,,ENC
+172366,Celestial Guidance,WEAPON.STATS,,ENC
+172368,Sinful Revelation,WEAPON.ST,,ENC
+173123,Versatile Jewel Doublet,J.GEM.VERS,,JWC
+173129,Versatile Jewel Cluster,GEM.VERS,,JWC
+173126,Straddling Jewel Doublet,J.GEM.SPEED,,JWC
+173125,Revitalizing Jewel Doublet,J.GEM.HEAL,,JWC
+173122,Quick Jewel Doublet,J.GEM.HASTE,,JWC
+173128,Quick Jewel Cluster,GEM.HASTE,,JWC
+173124,Masterful Jewel Doublet,J.GEM.MASTERY,,JWC
+173130,Masterful Jewel Cluster,GEM.MASTERY,,JWC
+173121,Deadly Jewel Doublet,J.GEM.CRIT,,JWC
+173127,Deadly Jewel Cluster,GEM.CRIT,,JWC
+172330,Unseelie Leather,LTHR.UNSL,,LTHR
+172090,Sorrowscale Fragment,SCLAE.SRRW,,LTHR
+172331,Sinful Leather,LTHR.SNFL,,LTHR
+172333,Purified Leather,LTHR.PRFD,,LTHR
+172092,Pallid Bone,PLDBNE,,LTHR
+172332,Necrotic Leather,LTHR.NCRT,,LTHR
+172096,Heavy Desolate Leather,S.LTHR.DSLT,,LTHR
+172097,Heavy Desolate Hide,S.HIDE.DSLT,,LTHR
+177279,Gaunt Sinew,GNTSNW,,LTHR
+172093,Desolate Leather Scraps,SCRAPS.LTHR.DSLT,,LTHR
+172089,Desolate Leather,LTHR.DSLT,,LTHR
+172095,Desolate Hide Scraps,SCRAPS.HIDE.DSLT,,LTHR
+172094,Desolate Hide,HIDE.DSLT,,LTHR

@@ -62,7 +62,6 @@ apps:
   - script: ./voluspa/countRealmsPopulation.js
     name: 'VOLUSPA-COUNT-P'
     instances: 1
-    cron_restart: '0 5 */7 * *'
     out_file: "/dev/null"
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'

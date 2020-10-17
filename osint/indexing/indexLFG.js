@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const realms_db = require('../../db/realms_db');
 const characters_db = require('../../db/characters_db');
 const persona_db = require('../../db/personalities_db');
@@ -12,6 +11,7 @@ const keys_db = require('../../db/keys_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const puppeteer = require('puppeteer');
 const getCharacter = require('../getCharacter');
 const scraper = require('table-scraper');
@@ -21,9 +21,9 @@ let x = Xray();
 
 const { toSlug } = require('../../db/setters');
 
-(async function indexLFG() {
+schedule.scheduleJob('*/5 * * * *', async () => {
   try {
-    console.time(`OSINT-${indexLFG.name}`)
+    console.time(`OSINT-indexLFG`)
     let exist_flag;
     const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters`, });
     let OSINT_LFG = await characters_db.find({isWatched: true}).lean();
@@ -188,10 +188,9 @@ const { toSlug } = require('../../db/setters');
   } catch (error) {
     console.error(error)
   } finally {
-    await connection.close();
-    console.timeEnd(`OSINT-${indexLFG.name}`)
+    console.timeEnd(`OSINT-indexLFG`)
   }
-})();
+});
 
 
 

@@ -6,9 +6,10 @@ const characters_db = require('../../db/characters_db');
 const keys_db = require('../../db/keys_db');
 
 /**
- * getCharacter indexing
+ * Modules
  */
 
+const schedule = require('node-schedule');
 const getCharacter = require('../getCharacter');
 
 /***
@@ -19,8 +20,7 @@ const getCharacter = require('../getCharacter');
  * @returns {Promise<void>}
  */
 
-(async (
-  queryFind = {},
+schedule.scheduleJob('40 20 17/7 * *', async (
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 8,
 ) => {
@@ -28,7 +28,7 @@ const getCharacter = require('../getCharacter');
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
-      .find(queryFind)
+      .find()
       .sort({'updatedAt': 1})
       .lean()
       .cursor({ batchSize: bulkSize })

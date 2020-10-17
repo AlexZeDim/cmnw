@@ -19,6 +19,7 @@ let x = Xray();
  */
 
 schedule.scheduleJob('0 2 * * *', async (
+  t,
   queryFind = { region: 'Europe' },
   delay = 10,
   startPage = 0,

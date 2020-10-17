@@ -25,6 +25,7 @@ const getCharacter = require('../getCharacter');
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 
 schedule.scheduleJob('0 3 * * *', async (
+  t,
   queryInput = { isIndexed: false },
   bulkSize = 1,
   queryKeys = { tags: `OSINT-indexCharacters` },

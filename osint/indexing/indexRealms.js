@@ -1,8 +1,7 @@
 /**
  * Mongo Models
  */
-require('../../db/connection')
-const { connection } = require('mongoose');
+require('../../db/connection');
 const realms_db = require('../../db/realms_db');
 const keys_db = require('../../db/keys_db');
 
@@ -116,7 +115,6 @@ const BlizzAPI = require('blizzapi');
   } catch (error) {
     console.log(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-indexRealms`);
   }
 })();

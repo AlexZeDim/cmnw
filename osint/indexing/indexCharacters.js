@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const characters_db = require('../../db/characters_db');
 const keys_db = require('../../db/keys_db');
 
@@ -43,7 +42,6 @@ const getCharacter = require('../getCharacter');
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-indexCharacters`);
   }
 })();

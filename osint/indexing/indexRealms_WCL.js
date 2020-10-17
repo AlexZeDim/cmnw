@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const realms_db = require('../../db/realms_db');
 
 /**
@@ -48,7 +47,6 @@ let x = Xray();
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-indexRealms_WCL`);
   }
 })();

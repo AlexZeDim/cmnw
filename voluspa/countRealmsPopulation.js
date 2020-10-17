@@ -1,39 +1,20 @@
 /**
- * Connection with DB
+ * Mongo Models
  */
-
-const { connect, connection } = require('mongoose');
-require('dotenv').config();
-connect(
-  `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-    bufferMaxEntries: 0,
-    retryWrites: true,
-    useCreateIndex: true,
-    w: 'majority',
-    family: 4,
-  },
-);
-
-connection.on('error', console.error.bind(console, 'connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
-
-/**
- * Model importing
- */
-
+require('../db/connection')
 const realms_db = require('../db/realms_db');
 const characters_db = require('../db/characters_db');
 const guilds_db = require('../db/guilds_db');
 
-async function countRealmsPopulation() {
+/**
+ * Modules
+ */
+
+const schedule = require('node-schedule');
+
+schedule.scheduleJob('0 5 1,15 * *', async () => {
   try {
-    console.time(`VOLUSPA-${countRealmsPopulation.name}`);
+    console.time(`VOLUSPA-countRealmsPopulation`);
     await realms_db.find().cursor().eachAsync(async realm => {
       let players_total = await characters_db.find({'realm.slug': realm.slug}).distinct('_id')
       let players_alliance = await characters_db.find({'realm.slug': realm.slug, faction: 'Alliance'}).distinct('_id')
@@ -60,11 +41,8 @@ async function countRealmsPopulation() {
       realm.save()
       console.info(`U,${realm.name_locale}`)
     })
-    connection.close();
-    console.timeEnd(`VOLUSPA-${countRealmsPopulation.name}`);
-  } catch (err) {
-    console.error(`${countRealmsPopulation.name},${err}`);
+    console.timeEnd(`VOLUSPA-countRealmsPopulation`);
+  } catch (error) {
+    console.error(`${error}`);
   }
-}
-
-countRealmsPopulation();
+});

@@ -20,7 +20,7 @@ const getCharacter = require('../getCharacter');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('00 45 20 17/7 * *', async (
+schedule.scheduleJob('50 20 17 * *', async (
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 8,
 ) => {
@@ -30,7 +30,6 @@ schedule.scheduleJob('00 45 20 17/7 * *', async (
     await characters_db
       .find()
       .sort({'updatedAt': 1})
-      .lean()
       .cursor({ batchSize: bulkSize })
       .eachAsync(
         async ({ _id }) => {

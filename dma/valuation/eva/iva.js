@@ -38,10 +38,7 @@ async function iva(
      * Getting timestamps
      */
     if (!last_modified) {
-      let t = await realms_db
-        .findOne({ connected_realm_id: connected_realm_id })
-        .select('auctions')
-        .lean();
+      let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions').lean();
       if (t) {
         last_modified = t.auctions;
       }
@@ -52,10 +49,7 @@ async function iva(
      */
     if (item._id === 1) {
       /** Request timestamp for gold */
-      let t = await realms_db
-        .findOne({ connected_realm_id: connected_realm_id })
-        .select('auctions golds')
-        .lean();
+      let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions golds').lean();
       /** Check existing pricing */
       let currency = await valuations.findOne({
         item_id: item._id,
@@ -112,16 +106,12 @@ async function iva(
       }
 
       /** Request WoWToken price */
-      let wt_price = await wowtoken_db
-        .findOne({ region: 'eu' })
-        .sort({ _id: -1 })
-        .lean();
+      let wt_price = await wowtoken_db.findOne({ region: 'eu' }).sort({ _id: -1 }).lean();
       if (wt_price) {
         /**
          * Currency Valuation Adjustment
          * Check existing price for gold
          */
-
         let wt_ext = await valuations.findOne({
           item_id: item._id,
           last_modified: last_modified,
@@ -189,7 +179,6 @@ async function iva(
           currency: 'RUB',
         },
       ];
-
       /** PAY CURRENCY RECEIVE GOLD */
       if (item._id === 122270) {
         /** Check actual pricing for PAY FIX / RECEIVE FLOAT */
@@ -308,9 +297,7 @@ async function iva(
           value: item.purchase_price,
         });
         await vendor.save();
-        console.info(
-          `DMA-${iva.name}: ${item._id}@${vendor.connected_realm_id},${vendor.name}`,
-        );
+        console.info(`DMA-${iva.name}: ${item._id}@${vendor.connected_realm_id},${vendor.name}`,);
       }
     }
     if (item.asset_class.includes('VSP')) {
@@ -331,9 +318,7 @@ async function iva(
           value: item.sell_price,
         });
         await vsp.save();
-        console.info(
-          `DMA-${iva.name}: ${item._id}@${vsp.connected_realm_id},${vsp.name}`,
-        );
+        console.info(`DMA-${iva.name}: ${item._id}@${vsp.connected_realm_id},${vsp.name}`,);
       }
     }
     /** End of VVA  */
@@ -386,9 +371,7 @@ async function iva(
               },
             });
             await ava.save();
-            console.info(
-              `DMA-${iva.name}: ${item._id}@${ava.connected_realm_id},${ava.name}`,
-            );
+            console.info(`DMA-${iva.name}: ${item._id}@${ava.connected_realm_id},${ava.name}`,);
           }
         }
       }
@@ -421,10 +404,7 @@ async function iva(
             let reagent_items = [];
             let unsorted_items = [];
             /** Check if reagent_items exists */
-            if (
-              price_method.reagent_items &&
-              price_method.reagent_items.length
-            ) {
+            if (price_method.reagent_items && price_method.reagent_items.length) {
               /** Loop for every reagent_item */
               for (let reagent_item of price_method.reagent_items) {
                 /** Premium items to later analysis */

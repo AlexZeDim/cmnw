@@ -44,4 +44,4 @@ schedule.scheduleJob('40 20 17/7 * *', async (
   } finally {
     console.timeEnd(`OSINT-indexCharacters`);
   }
-})();
+});

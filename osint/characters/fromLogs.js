@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const logs_db = require('../../db/logs_db');
 const realms_db = require('../../db/realms_db');
 
@@ -10,6 +9,7 @@ const realms_db = require('../../db/realms_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const Xray = require('x-ray');
 let x = Xray();
 
@@ -18,7 +18,7 @@ let x = Xray();
  * @returns {Promise<void>}
  */
 
-(async (
+schedule.scheduleJob('0 2 * * *', async (
   queryFind = { region: 'Europe' },
   delay = 10,
   startPage = 0,
@@ -106,7 +106,6 @@ let x = Xray();
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-fromLogs`);
   }
-})();
+});

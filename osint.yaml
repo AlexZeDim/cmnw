@@ -28,7 +28,6 @@ apps:
     instances: 1
     autorestart: true
     max_memory_restart: '1G'
-    cron_restart: '0 2 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 600000
   - script: ./osint/indexing/indexLogs.js

@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../../db/connection')
-const items = require('../../db/items_db');
-const pricing_methods = require('../../db/pricing_methods_db');
+const items = require('../../db/models/items_db');
+const pricing_methods = require('../../db/models/pricing_methods_db');
 
 /***
  * Fixes vendor sell quantity problem for some items (Boralus vendor)

@@ -5,8 +5,8 @@ const router = express.Router();
  * Model importing
  */
 
-const realms_db = require('../../../db/realms_db');
-const osint_logs = require('../../../db/osint_logs_db');
+const realms_db = require('../../../db/models/realms_db');
+const osint_logs = require('../../../db/models/osint_logs_db');
 
 /**
  * Modules

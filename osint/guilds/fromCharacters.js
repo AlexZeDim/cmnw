@@ -2,10 +2,10 @@
  * Mongo Models
  */
 require('../../db/connection')
-const characters_db = require('../../db/characters_db');
-const realms_db = require('../../db/realms_db');
-const keys_db = require('../../db/keys_db');
-const guilds_db = require('../../db/guilds_db');
+const characters_db = require('../../db/models/characters_db');
+const realms_db = require('../../db/models/realms_db');
+const keys_db = require('../../db/models/keys_db');
+const guilds_db = require('../../db/models/guilds_db');
 
 /**
  * getGuild indexing

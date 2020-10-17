@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const realms_db = require('../../db/realms_db');
-const characters_db = require('../../db/characters_db');
+const realms_db = require('../../db/models/realms_db');
+const characters_db = require('../../db/models/characters_db');
 
 router.get('/:type/:query', async function (req, res) {
   try {
@@ -33,7 +33,7 @@ router.get('/:type/:query', async function (req, res) {
           if (!character) {
             /** If character is not in OSINT-DB, then add it */
             const getCharacter = require('../../osint/getCharacter');
-            const keys_db = require('../../db/keys_db');
+            const keys_db = require('../../db/models/keys_db');
             const { token } = await keys_db.findOne({
               tags: `OSINT-indexCharacters`,
             });

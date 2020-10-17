@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../db/connection')
-const golds_db = require('./../db/golds_db');
-const realms_db = require('./../db/realms_db');
+const golds_db = require('../db/models/golds_db');
+const realms_db = require('../db/models/realms_db');
 
 /**
  * Modules

@@ -3,7 +3,7 @@
  */
 require('../../db/connection')
 const { connection } = require('mongoose');
-const items_db = require('../../db/items_db');
+const items_db = require('../../db/models/items_db');
 
 /**
  * Build Tags for Items

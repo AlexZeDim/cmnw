@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../db/connection')
-const wowtoken_db = require('../db/wowtoken_db');
-const keys_db = require('../db/keys_db');
+const wowtoken_db = require('../db/models/wowtoken_db');
+const keys_db = require('../db/models/keys_db');
 
 /**
  * Modules

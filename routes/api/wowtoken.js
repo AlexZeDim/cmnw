@@ -5,7 +5,7 @@ const router = express.Router();
  * Model importing
  */
 
-const wowtoken_db = require('../../db/wowtoken_db');
+const wowtoken_db = require('../../db/models/wowtoken_db');
 
 /**
  * Modules

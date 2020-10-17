@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../../db/connection')
-const items_db = require('../../db/items_db');
-const pricing_methods = require('../../db/pricing_methods_db');
+const items_db = require('../../db/models/items_db');
+const pricing_methods = require('../../db/models/pricing_methods_db');
 
 /**
  * Modules

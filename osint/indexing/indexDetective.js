@@ -11,7 +11,7 @@
  * @returns {Promise<void>}
  */
 
-const osint_logs_db = require('../../db/osint_logs_db');
+const osint_logs_db = require('../../db/models/osint_logs_db');
 
 /**
  *

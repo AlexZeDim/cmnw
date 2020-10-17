@@ -3,7 +3,7 @@
  */
 require('../../db/connection')
 const { connection } = require('mongoose');
-const auctions_db = require('../../db/auctions_db');
+const auctions_db = require('../../db/models/auctions_db');
 
 /**
  * This function parse items across B.net API with wrapper

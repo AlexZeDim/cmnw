@@ -1,4 +1,4 @@
-const pricing_methods = require('../../db/pricing_methods_db');
+const pricing_methods = require('../../db/models/pricing_methods_db');
 
 async function getPricingMethods(id = 15389, derivative = false) {
   try {

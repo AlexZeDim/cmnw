@@ -5,8 +5,8 @@ const router = express.Router();
  * Model importing
  */
 
-const items_db = require('../../../db/items_db');
-const valuations_db = require('../../../db/valuations_db');
+const items_db = require('../../../db/models/items_db');
+const valuations_db = require('../../../db/models/valuations_db');
 
 /**
  * Modules

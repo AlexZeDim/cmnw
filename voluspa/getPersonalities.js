@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../db/connection')
-const characters_db = require('../db/characters_db');
-const personalities_db = require('../db/personalities_db');
+const characters_db = require('../db/models/characters_db');
+const personalities_db = require('../db/models/personalities_db');
 
 async function getPersonalities() {
   try {

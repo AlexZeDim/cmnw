@@ -4,8 +4,8 @@ const router = express.Router();
 /**
  * Modules
  */
-const items_db = require('../../../db/items_db');
-const realms_db = require('../../../db/realms_db');
+const items_db = require('../../../db/models/items_db');
+const realms_db = require('../../../db/models/realms_db');
 
 router.get('/:itemQuery@:realmQuery', async function (req, res) {
   try {

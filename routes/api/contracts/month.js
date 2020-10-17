@@ -5,7 +5,7 @@ const router = express.Router();
  * Model importing
  */
 
-const contracts_db = require('../../../db/contracts_db');
+const contracts_db = require('../../../db/models/contracts_db');
 
 /**
  * Modules

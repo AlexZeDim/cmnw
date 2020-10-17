@@ -2,11 +2,11 @@
  * Model importing
  */
 
-const valuations = require('../../../db/valuations_db');
-const pricing_methods = require('../../../db/pricing_methods_db');
-const golds_db = require('../../../db/golds_db');
-const wowtoken_db = require('../../../db/wowtoken_db');
-const realms_db = require('../../../db/realms_db');
+const valuations = require('../../../db/models/valuations_db');
+const pricing_methods = require('../../../db/models/pricing_methods_db');
+const golds_db = require('../../../db/models/golds_db');
+const wowtoken_db = require('../../../db/models/wowtoken_db');
+const realms_db = require('../../../db/models/realms_db');
 
 /**
  * Modules

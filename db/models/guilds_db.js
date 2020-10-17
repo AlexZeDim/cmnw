@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toSlug } = require('./setters');
+const { toSlug } = require('../setters');
 mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema(

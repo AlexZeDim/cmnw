@@ -2,10 +2,10 @@
  * Mongo Models
  */
 require('../../db/connection')
-const realms_db = require('../../db/realms_db');
-const characters_db = require('../../db/characters_db');
-const persona_db = require('../../db/personalities_db');
-const keys_db = require('../../db/keys_db');
+const realms_db = require('../../db/models/realms_db');
+const characters_db = require('../../db/models/characters_db');
+const persona_db = require('../../db/models/personalities_db');
+const keys_db = require('../../db/models/keys_db');
 
 /**
  * Modules

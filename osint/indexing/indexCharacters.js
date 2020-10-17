@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../../db/connection')
-const characters_db = require('../../db/characters_db');
-const keys_db = require('../../db/keys_db');
+const characters_db = require('../../db/models/characters_db');
+const keys_db = require('../../db/models/keys_db');
 
 /**
  * Modules

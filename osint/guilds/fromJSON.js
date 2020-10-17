@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const realms_db = require('../../db/realms_db');
 const guild_db = require('../../db/guilds_db');
 const keys_db = require('../../db/keys_db');
@@ -32,6 +31,7 @@ const getGuild = require('../getGuild');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const { toSlug } = require('../../db/setters');
 
 /***
@@ -46,7 +46,7 @@ const { toSlug } = require('../../db/setters');
  * @returns {Promise<void>}
  */
 
-(async (
+schedule.scheduleJob('0 5 1,15 * *', async (
   queryFind = { region: 'Europe' },
   path = './temp',
   raidTier = 26,
@@ -147,7 +147,6 @@ const { toSlug } = require('../../db/setters');
   } catch (error) {
     console.error(`E,${error}`);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-fromJSON`);
   }
-})();
+});

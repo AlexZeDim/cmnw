@@ -58,12 +58,13 @@ const pricing_methods = require('../../db/pricing_methods_db');
         pricing_method._id,
         pricing_method,
       );
-      console.log(method);
+      console.info(method);
       cursor.resume();
     });
+    cursor.on('close', async () => {
+      await process.exit(0)
+    })
   } catch (error) {
     console.error(error);
-  } finally {
-    await process.exit(0)
   }
 })();

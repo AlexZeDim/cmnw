@@ -4,9 +4,8 @@ apps:
     autorestart: true
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    out_file: "/dev/null"
     min_uptime: 5000
-    restart_delay: 3600000
+    restart_delay: 5000
   - script: ./osint/indexing/indexGuilds.js
     name: 'OSINT-GUILDS-ALL'
     instances: 1

@@ -88,7 +88,6 @@ schedule.scheduleJob('0 3 * * *', async (
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-indexLogs`);
   }
-})();
+});

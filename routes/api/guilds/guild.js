@@ -5,8 +5,8 @@ const router = express.Router();
  * Model importing
  */
 
-const realms_db = require('../../../db/realms_db');
-const guilds_db = require('../../../db/guilds_db');
+const realms_db = require('../../../db/models/realms_db');
+const guilds_db = require('../../../db/models/guilds_db');
 const { toSlug } = require('../../../db/setters');
 
 /**
@@ -32,7 +32,7 @@ router.get('/:guildSlug@:realmSlug', async function (req, res) {
           .lean();
         if (!guildData) {
           const getGuild = require('../../../osint/getGuild');
-          const keys_db = require('../../../db/keys_db');
+          const keys_db = require('../../../db/models/keys_db');
           const { token } = await keys_db.findOne({
             tags: `OSINT-indexGuilds`,
           });

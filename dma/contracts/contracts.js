@@ -2,10 +2,10 @@
  * Mongo Models
  */
 require('../../db/connection')
-const items_db = require('../../db/items_db');
-const auctions_db = require('../../db/auctions_db');
-const golds_db = require('../../db/golds_db');
-const contracts_db = require('../../db/contracts_db');
+const items_db = require('../../db/models/items_db');
+const auctions_db = require('../../db/models/auctions_db');
+const golds_db = require('../../db/models/golds_db');
+const contracts_db = require('../../db/models/contracts_db');
 
 /**
  * Modules

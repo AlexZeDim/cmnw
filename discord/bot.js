@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../db/connection')
-const discord_db = require('../db/discord_db')
-const characters_db = require('../db/characters_db')
+const discord_db = require('../db/models/discord_db')
+const characters_db = require('../db/models/characters_db')
 
 /**
  * Modules

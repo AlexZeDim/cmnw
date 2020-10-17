@@ -2,9 +2,9 @@
  * Mongo Models
  */
 require('../../db/connection')
-const realms_db = require('../../db/realms_db');
-const guild_db = require('../../db/guilds_db');
-const keys_db = require('../../db/keys_db');
+const realms_db = require('../../db/models/realms_db');
+const guild_db = require('../../db/models/guilds_db');
+const keys_db = require('../../db/models/keys_db');
 
 /**
  * Modules

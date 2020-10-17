@@ -3,8 +3,8 @@
  */
 require('../../db/connection')
 const { connection } = require('mongoose');
-const keys_db = require('../../db/keys_db');
-const items_db = require('../../db/items_db');
+const keys_db = require('../../db/models/keys_db');
+const items_db = require('../../db/models/items_db');
 
 /**
  * Modules

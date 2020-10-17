@@ -2,8 +2,8 @@
  * Model importing
  */
 
-const auctions_db = require('../db/auctions_db');
-const golds_db = require('../db/golds_db');
+const auctions_db = require('../db/models/auctions_db');
+const golds_db = require('../db/models/golds_db');
 
 /**
  * @param item_id

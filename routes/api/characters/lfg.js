@@ -5,7 +5,7 @@ const router = express.Router();
  * Model importing
  */
 
-const characters_db = require('../../../db/characters_db');
+const characters_db = require('../../../db/models/characters_db');
 
 /**
  * Modules

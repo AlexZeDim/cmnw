@@ -3,8 +3,8 @@ const parse_arguments = require('../parse_arguments')
 const { capitalize } = require('../../db/setters')
 const { capitalCase }  = require("capital-case");
 
-const discord_db = require('../../db/discord_db')
-const realms_db = require('../../db/realms_db')
+const discord_db = require('../../db/models/discord_db')
+const realms_db = require('../../db/models/realms_db')
 
 module.exports = {
   name: 'recruiting',

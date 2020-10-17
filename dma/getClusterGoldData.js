@@ -2,7 +2,7 @@
  * Model importing
  */
 
-const gold_db = require('../db/golds_db');
+const gold_db = require('../db/models/golds_db');
 
 /**
  * @param connected_realm_id

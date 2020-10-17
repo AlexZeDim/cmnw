@@ -2,8 +2,8 @@
  * Mongo Models
  */
 require('../../db/connection')
-const guild_db = require('../../db/guilds_db');
-const keys_db = require('../../db/keys_db');
+const guild_db = require('../../db/models/guilds_db');
+const keys_db = require('../../db/models/keys_db');
 
 /**
  * Modules

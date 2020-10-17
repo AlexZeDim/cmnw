@@ -2,7 +2,7 @@
  * Mongo Models
  */
 require('../../db/connection')
-const items_db = require('../../db/items_db');
+const items_db = require('../../db/models/items_db');
 
 /**
  * Modules

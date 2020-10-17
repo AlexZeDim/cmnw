@@ -2,7 +2,7 @@
  * Model importing
  */
 
-const items_db = require('../../db/items_db');
+const items_db = require('../../db/models/items_db');
 const { Round2 } = require('../../db/setters');
 
 /**

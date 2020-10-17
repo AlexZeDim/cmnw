@@ -1,5 +1,5 @@
-const auctions_db = require('../../db/auctions_db');
-const realms_db = require('../../db/realms_db');
+const auctions_db = require('../../db/models/auctions_db');
+const realms_db = require('../../db/models/realms_db');
 
 /**
  * @param item_id

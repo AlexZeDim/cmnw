@@ -1,9 +1,9 @@
 /**
  * Model importing
  */
-const characters_db = require('../db/characters_db');
-const realms_db = require('../db/realms_db');
-const osint_logs_db = require('../db/osint_logs_db');
+const characters_db = require('../db/models/characters_db');
+const realms_db = require('../db/models/realms_db');
+const osint_logs_db = require('../db/models/osint_logs_db');
 
 /**
  * Modules

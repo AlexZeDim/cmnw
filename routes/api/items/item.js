@@ -59,7 +59,7 @@ router.get('/:itemQuery@:realmQuery', async function (req, res) {
         );
       } else if (item._id === 122270 || item._id === 122284) {
         arrayPromises.length = 0;
-        const wowtoken_db = require('../../../db/wowtoken_db');
+        const wowtoken_db = require('../../../db/models/wowtoken_db');
         arrayPromises.push(
           wowtoken_db
             .findOne({ region: 'eu' })

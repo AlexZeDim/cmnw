@@ -2,7 +2,7 @@
  * Mongo Models
  */
 require('../../db/connection')
-const pricing_methods = require('../../db/pricing_methods_db');
+const pricing_methods = require('../../db/models/pricing_methods_db');
 
 /**
  * This function add reagent_items field

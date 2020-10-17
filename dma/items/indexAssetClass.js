@@ -2,9 +2,9 @@
  * Mongo Models
  */
 require('../../db/connection')
-const items_db = require('../../db/items_db');
-const auctions_db = require('../../db/auctions_db');
-const pricing_methods_db = require('../../db/pricing_methods_db');
+const items_db = require('../../db/models/items_db');
+const auctions_db = require('../../db/models/auctions_db');
+const pricing_methods_db = require('../../db/models/pricing_methods_db');
 
 /**
  * indexItems add is_auction, is_commdty and is_derivative properties to items

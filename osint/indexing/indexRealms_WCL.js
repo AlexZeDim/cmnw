@@ -2,7 +2,7 @@
  * Mongo Models
  */
 require('../../db/connection')
-const realms_db = require('../../db/realms_db');
+const realms_db = require('../../db/models/realms_db');
 
 /**
  * Modules

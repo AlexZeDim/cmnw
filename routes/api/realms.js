@@ -5,7 +5,7 @@ const router = express.Router();
  * Model importing
  */
 
-const realms_db = require('../../db/realms_db');
+const realms_db = require('../../db/models/realms_db');
 
 /**
  * Modules

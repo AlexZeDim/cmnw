@@ -2,8 +2,8 @@
  * Model importing
  */
 
-const items_db = require('../../db/items_db');
-const realms_db = require('../../db/realms_db');
+const items_db = require('../../db/models/items_db');
+const realms_db = require('../../db/models/realms_db');
 
 /**
  *

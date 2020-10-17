@@ -11,7 +11,6 @@ apps:
     name: 'OSINT-GUILDS-ALL'
     instances: 1
     autorestart: true
-    cron_restart: '15 */12 * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: "/dev/null"
     min_uptime: 5000

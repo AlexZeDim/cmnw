@@ -2,14 +2,14 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const guild_db = require('../../db/guilds_db');
 const keys_db = require('../../db/keys_db');
 
 /**
- * getGuild indexing
+ * Modules
  */
 
+const schedule = require('node-schedule');
 const getGuild = require('../getGuild');
 
 /**
@@ -20,7 +20,7 @@ const getGuild = require('../getGuild');
  * @returns {Promise<void>}
  */
 
-(async (
+schedule.scheduleJob('15 */12 * * *', async (
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
   bulkSize = 2,
@@ -39,10 +39,10 @@ const getGuild = require('../getGuild');
         },
         { parallel: bulkSize },
       );
+
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-indexCharacters`);
   }
-})();
+});

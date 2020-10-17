@@ -19,7 +19,6 @@ apps:
     name: 'OSINT-LFG'
     instances: 1
     autorestart: true
-    cron_restart: '*/5 * * * *'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: "/dev/null"
     min_uptime: 5000

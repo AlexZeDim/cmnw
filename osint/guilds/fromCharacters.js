@@ -29,6 +29,7 @@ const { toSlug } = require('../../db/setters');
  */
 
 schedule.scheduleJob('30 3 * * *', async (
+  t,
   queryFind = { region: 'Europe' },
   queryKeys = { tags: `OSINT-indexGuilds` },
 ) => {

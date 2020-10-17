@@ -21,6 +21,7 @@ const getGuild = require('../getGuild');
  */
 
 schedule.scheduleJob('15 */12 * * *', async (
+  t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
   bulkSize = 2,

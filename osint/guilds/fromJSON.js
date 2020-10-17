@@ -47,6 +47,7 @@ const { toSlug } = require('../../db/setters');
  */
 
 schedule.scheduleJob('0 5 1,15 * *', async (
+  t,
   queryFind = { region: 'Europe' },
   path = './temp',
   raidTier = 26,

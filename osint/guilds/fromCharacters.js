@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const characters_db = require('../../db/characters_db');
 const realms_db = require('../../db/realms_db');
 const keys_db = require('../../db/keys_db');
@@ -18,6 +17,7 @@ const getGuild = require('../getGuild');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const { toSlug } = require('../../db/setters');
 
 /**
@@ -28,7 +28,7 @@ const { toSlug } = require('../../db/setters');
  * @returns {Promise<void>}
  */
 
-(async (
+schedule.scheduleJob('30 3 * * *', async (
   queryFind = { region: 'Europe' },
   queryKeys = { tags: `OSINT-indexGuilds` },
 ) => {
@@ -68,7 +68,6 @@ const { toSlug } = require('../../db/setters');
   } catch (error) {
     console.error(error);
   } finally {
-    await connection.close();
     console.timeEnd(`OSINT-fromCharacters`);
   }
-})();
+});

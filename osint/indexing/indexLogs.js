@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const { connection } = require('mongoose');
 const logs_db = require('../../db/logs_db');
 const realms_db = require('../../db/realms_db');
 const keys_db = require('../../db/keys_db');
@@ -11,12 +10,8 @@ const keys_db = require('../../db/keys_db');
  * Modules
  */
 
+const schedule = require('node-schedule');
 const axios = require('axios');
-
-/**
- * getGuild indexing
- */
-
 const getCharacter = require('../getCharacter');
 
 /**
@@ -29,7 +24,7 @@ const getCharacter = require('../getCharacter');
 
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 
-(async (
+schedule.scheduleJob('0 3 * * *', async (
   queryInput = { isIndexed: false },
   bulkSize = 1,
   queryKeys = { tags: `OSINT-indexCharacters` },

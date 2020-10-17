@@ -170,7 +170,6 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
     console.error(error);
   } finally {
     console.timeEnd(`DMA-${indexAssetClass.name}`);
-    process.exit(0)
   }
 }
 

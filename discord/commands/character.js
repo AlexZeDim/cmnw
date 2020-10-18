@@ -10,7 +10,7 @@ module.exports = {
   name: 'char',
   description:
     'Return information about specific character. Example usage: `char блюрателла@гордунни`',
-  aliases: ['character', 'CHAR', 'CHARACTER', 'Character'],
+  aliases: ['char', 'CHAR', 'CHARACTER', 'Char', 'Character'],
   args: true,
   async execute(message, args) {
     const [name, realm] = args.split('@');

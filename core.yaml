@@ -1,12 +1,12 @@
 apps:
-  - script: ./bin/getTokens.js
+  - script: ./bin/tokens.js
     name: 'CORE-TOKEN'
     instances: 1
     out_file: "/dev/null"
     autorestart: true
     max_memory_restart: '100M'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./bin/www.js
+  - script: ./bin/server.js
     name: 'CORE-API'
     instances: 1
     autorestart: true

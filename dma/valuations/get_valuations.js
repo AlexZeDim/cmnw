@@ -1,16 +1,16 @@
 /**
  * Mongo Models
  */
-require('../db/connection')
-const realms_db = require('../db/models/realms_db');
-const items_db = require('../db/models/items_db');
+require('../../db/connection')
+const realms_db = require('../../db/models/realms_db');
+const items_db = require('../../db/models/items_db');
 
 /**
  * Modules
  */
 
 const schedule = require('node-schedule');
-const iva = require('./valuation/eva/iva');
+const iva = require('./eva/iva');
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
@@ -43,7 +43,7 @@ schedule.scheduleJob('15 */1 * * *', async (
         async ({ _id }) => {
           try {
             const t = await realms_db.findOne({ connected_realm_id: _id }).select('auctions valuations').lean();
-            /** If there are valuation records for certain realm, create it */
+            /** If there are valuations records for certain realm, create it */
             if (!t.valuations) {
               await realms_db.updateMany(
                 { connected_realm_id: _id },

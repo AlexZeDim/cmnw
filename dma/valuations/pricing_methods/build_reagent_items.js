@@ -1,10 +1,10 @@
 /**
  * Mongo Models
  */
-require('../../db/connection')
-const pricing_methods = require('../../db/models/pricing_methods_db');
+require('../../../db/connection')
+const pricing_methods = require('../../../db/models/pricing_methods_db');
 
-/**
+/** TODO remove
  * This function add reagent_items field
  * @returns {Promise<void>}
  */

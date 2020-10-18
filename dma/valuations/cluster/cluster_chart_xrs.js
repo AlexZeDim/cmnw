@@ -2,15 +2,15 @@
  * Model importing
  */
 
-const auctions_db = require('../db/models/auctions_db');
-const realms_db = require('../db/models/realms_db');
+const auctions_db = require('../../../db/models/auctions_db');
+const realms_db = require('../../../db/models/realms_db');
 
 /**
  * @param item_id
  * @returns {Promise<*>}
  */
 
-async function auctionsCrossRealmData(item_id = 168487) {
+async function clusterChartXRS (item_id = 168487) {
   try {
     let chartArray = [];
     /** Request realms and prices */
@@ -199,4 +199,4 @@ async function auctionsCrossRealmData(item_id = 168487) {
   }
 }
 
-module.exports = auctionsCrossRealmData;
+module.exports = clusterChartXRS;

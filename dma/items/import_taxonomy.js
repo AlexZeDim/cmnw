@@ -18,9 +18,9 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') => {
+const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') => {
   try {
-    console.time(`DMA-${importTaxonomy_CSV.name}`);
+    console.time(`DMA-${importTaxonomy.name}`);
     let path_, file_;
 
     if (path.endsWith('.csv')) {
@@ -88,8 +88,8 @@ const importTaxonomy_CSV = async (path = 'C:\\Projects\\conglomerat\\uploads\\ta
   } catch (error) {
     console.error(error);
   } finally {
-    console.timeEnd(`DMA-${importTaxonomy_CSV.name}`);
+    console.timeEnd(`DMA-${importTaxonomy.name}`);
   }
 }
 
-importTaxonomy_CSV(process.argv.slice(2)[0]);
+importTaxonomy(process.argv.slice(2)[0]);

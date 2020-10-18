@@ -2,7 +2,7 @@
 # static data or update it
 # on first launch or patch day
 apps:
-  - script: ./dma/items/indexItems.js
+  - script: ./dma/items/index_items.js
     name: 'DMA-ITEMS'
     instances: 1
     args: 'DMA create'
@@ -11,20 +11,20 @@ apps:
     name: 'OSINT-REALMS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/items/importTaxonomy_CSV.js
+  - script: ./dma/items/import_taxonomy.js
     name: 'DMA-TAXONOMY'
     instances: 1
     args: 'itemsparse'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/items/buildItemTags.js
+  - script: ./dma/items/build_tags.js
     name: 'DMA-ITEM-TAGS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/pets/indexPets.js
+  - script: ./dma/pets/index_pets.js
     name: 'DMA-PETS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/valuation/importMethodsBlizzardAPI.js
+  - script: ./dma/valuations/index_pricing_methods.js
     name: 'DMA-METHODS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'

@@ -2,8 +2,8 @@
  * Model importing
  */
 
-const auctions_db = require('../db/models/auctions_db');
-const golds_db = require('../db/models/golds_db');
+const auctions_db = require('../../../db/models/auctions_db');
+const golds_db = require('../../../db/models/golds_db');
 
 /**
  * @param item_id
@@ -11,7 +11,7 @@ const golds_db = require('../db/models/golds_db');
  * @returns {Promise<{timestamps: *, price_range: *, dataset: []}>}
  */
 
-async function getClusterChartData(
+async function clusterChart (
   item_id = 152510,
   connected_realm_id = 1602,
 ) {
@@ -134,4 +134,4 @@ async function getClusterChartData(
   }
 }
 
-module.exports = getClusterChartData;
+module.exports = clusterChart;

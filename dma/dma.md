@@ -30,8 +30,8 @@ It is provided by `getAuctionHouseData` Battle.net API endpoint. Contracts and e
 
 There are two basic functions for working with collection data itself:
 
-- auctionsData (**item_id:** _Number_, **connected_realm_id:** _Number_) — returns array of orders data for selected item and realm on the latest timestamp.
-- auctionsQuotes (**item_id:** _Number_, **connected_realm_id:** _Number_) — returns aggregated object of quotes for selected item and realm on latest timestamp.
+- auctions_data (**item_id:** _Number_, **connected_realm_id:** _Number_) — returns array of orders data for selected item and realm on the latest timestamp.
+- auctions_quotes (**item_id:** _Number_, **connected_realm_id:** _Number_) — returns aggregated object of quotes for selected item and realm on latest timestamp.
 
 ## Gold
 

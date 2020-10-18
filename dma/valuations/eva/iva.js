@@ -12,8 +12,8 @@ const realms_db = require('../../../db/models/realms_db');
  * Modules
  */
 
-const getPricingMethods = require('../getPricingMethods');
-const auctionsQuotes = require('../../auctions/auctionsQuotes');
+const getPricingMethods = require('../pricing_methods/get_pricing_method');
+const auctionsQuotes = require('../../auctions/auctions_quotes');
 const { Round2 } = require('../../../db/setters');
 
 /**

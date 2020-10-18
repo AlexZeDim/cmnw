@@ -1,9 +1,9 @@
 /**
  * Mongo Models
  */
-require('../db/connection')
-const wowtoken_db = require('../db/models/wowtoken_db');
-const keys_db = require('../db/models/keys_db');
+require('../../db/connection')
+const wowtoken_db = require('../../db/models/wowtoken_db');
+const keys_db = require('../../db/models/keys_db');
 
 /**
  * Modules
@@ -11,7 +11,7 @@ const keys_db = require('../db/models/keys_db');
 
 const schedule = require('node-schedule');
 const BlizzAPI = require('blizzapi');
-const { Round2 } = require('../db/setters');
+const { Round2 } = require('../../db/setters');
 
 /**
  * @param queryKeys

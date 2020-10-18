@@ -17,9 +17,9 @@ const { normalize } = require('path');
 const { promisify } = require('util');
 const readFile = promisify(fs.readFile);
 
-const indexPets = async (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\uploads\\creaturexdisplayinfo.csv') => {
+const index_pets = async (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\uploads\\creaturexdisplayinfo.csv') => {
   try {
-    console.time(`DMA-${indexPets.name}`)
+    console.time(`DMA-${index_pets.name}`)
 
     const { _id, secret, token } = await keys_db.findOne({ tags: queryKeys });
 
@@ -136,9 +136,9 @@ const indexPets = async (queryKeys = 'DMA', path = 'C:\\Projects\\conglomerat\\u
     console.error(error)
   } finally {
     await connection.close()
-    console.timeEnd(`DMA-${indexPets.name}`)
+    console.timeEnd(`DMA-${index_pets.name}`)
   }
 }
 
 
-indexPets();
+index_pets();

@@ -1,9 +1,9 @@
 /**
  * Mongo Models
  */
-require('../../db/connection')
-const items_db = require('../../db/models/items_db');
-const pricing_methods = require('../../db/models/pricing_methods_db');
+require('../../../db/connection')
+const items_db = require('../../../db/models/items_db');
+const pricing_methods = require('../../../db/models/pricing_methods_db');
 
 /**
  * Modules
@@ -21,7 +21,7 @@ const fs = require('fs');
  * @returns {Promise<void>}
  */
 
-async function importMethodsQuantityTSM(path, expr) {
+async function indexMethodsTSM (path, expr) {
   try {
     let item_id, name, itemID, item_quantity, stringArray, lua;
     switch (expr) {
@@ -61,8 +61,8 @@ async function importMethodsQuantityTSM(path, expr) {
                       ],
                       profession: 'INSC',
                       type: `primary`,
-                      createdBy: `DMA-${importMethodsQuantityTSM.name}`,
-                      updatedBy: `DMA-${importMethodsQuantityTSM.name}`,
+                      createdBy: `DMA-${indexMethodsTSM.name}`,
+                      updatedBy: `DMA-${indexMethodsTSM.name}`,
                     },
                     {
                       upsert: true,
@@ -115,8 +115,8 @@ async function importMethodsQuantityTSM(path, expr) {
                       ],
                       profession: 'JWLC',
                       type: `primary`,
-                      createdBy: `DMA-${importMethodsQuantityTSM.name}`,
-                      updatedBy: `DMA-${importMethodsQuantityTSM.name}`,
+                      createdBy: `DMA-${indexMethodsTSM.name}`,
+                      updatedBy: `DMA-${indexMethodsTSM.name}`,
                     },
                     {
                       upsert: true,
@@ -169,8 +169,8 @@ async function importMethodsQuantityTSM(path, expr) {
                       ],
                       profession: 'TRANSFORM',
                       type: `primary`,
-                      createdBy: `DMA-${importMethodsQuantityTSM.name}`,
-                      updatedBy: `DMA-${importMethodsQuantityTSM.name}`,
+                      createdBy: `DMA-${indexMethodsTSM.name}`,
+                      updatedBy: `DMA-${indexMethodsTSM.name}`,
                     },
                     {
                       upsert: true,
@@ -221,8 +221,8 @@ async function importMethodsQuantityTSM(path, expr) {
                   ],
                   profession: 'TRANS',
                   type: `primary`,
-                  createdBy: `DMA-${importMethodsQuantityTSM.name}`,
-                  updatedBy: `DMA-${importMethodsQuantityTSM.name}`,
+                  createdBy: `DMA-${indexMethodsTSM.name}`,
+                  updatedBy: `DMA-${indexMethodsTSM.name}`,
                 });
               }
             }
@@ -237,4 +237,4 @@ async function importMethodsQuantityTSM(path, expr) {
   }
 }
 
-importMethodsQuantityTSM('C:\\', 'transform');
+indexMethodsTSM('C:\\', 'transform');

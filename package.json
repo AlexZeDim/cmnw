@@ -14,9 +14,9 @@
     "url": "https://twitter.com/alexzedim2812"
   },
   "scripts": {
-    "tokens": "node bin/getTokens.js",
+    "tokens": "node bin/tokens.js",
     "discord": "node discord/bot.js",
-    "core": "node ./bin/www.js",
+    "core": "node bin/server.js",
     "osint": "node osint/characters/fromLua.js"
   },
   "languageName": "node",

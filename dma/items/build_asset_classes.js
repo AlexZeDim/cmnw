@@ -13,9 +13,9 @@ const pricing_methods_db = require('../../db/models/pricing_methods_db');
  * @returns {Promise<void>}
  */
 
-const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
+const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
   try {
-    console.time(`DMA-${indexAssetClass.name}`);
+    console.time(`DMA-${buildAssetClass.name}`);
     if (typeof bulkSize !== 'number') {
       bulkSize = 10
     }
@@ -169,8 +169,8 @@ const indexAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
   } catch (error) {
     console.error(error);
   } finally {
-    console.timeEnd(`DMA-${indexAssetClass.name}`);
+    console.timeEnd(`DMA-${buildAssetClass.name}`);
   }
 }
 
-indexAssetClass(process.argv.slice(2)[0], process.argv.slice(2)[1]);
+buildAssetClass(process.argv.slice(2)[0], process.argv.slice(2)[1]);

@@ -16,7 +16,7 @@ const BlizzAPI = require('blizzapi');
  * @param token
  * @returns {Promise<void>}
  */
-async function getItem(id, token) {
+async function get_item(id, token) {
   try {
     const locale = 'en_GB';
 
@@ -98,8 +98,8 @@ async function getItem(id, token) {
       console.info(`U,${item._id}`);
     }
   } catch (err) {
-    console.error(`${getItem.name},${id},${err}`);
+    console.error(`${get_item.name},${id},${err}`);
   }
 }
 
-module.exports = getItem;
+module.exports = get_item;

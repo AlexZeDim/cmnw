@@ -7,7 +7,7 @@ const realms_db = require('../../db/models/realms_db');
  * @returns {Promise<{quantity: number, min: number, open_interest: number, min_size: number, orders: [], _id: number}>}
  */
 
-async function auctionsQuotes(item_id = 168487, connected_realm_id = 1602) {
+async function auctionsQuotes (item_id = 168487, connected_realm_id = 1602) {
   const empty = {
     _id: item_id,
     quantity: 0,

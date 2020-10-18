@@ -11,8 +11,8 @@ const realms_db = require('../../db/models/realms_db');
  * Modules
  */
 
-const clusterGoldData = require('../../dma/getClusterGoldData.js');
-const goldsData = require('../../dma/golds/goldsData.js');
+const clusterGoldData = require('../../dma/valuations/cluster/cluster_chart_gold.js');
+const goldsData = require('../../dma/golds/gold_quotes.js');
 
 router.get('/:realmSlug', async function (req, res) {
   try {

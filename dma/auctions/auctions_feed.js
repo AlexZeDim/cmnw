@@ -12,7 +12,7 @@ const realms_db = require('../../db/models/realms_db');
  * @returns {Promise<void>}
  */
 
-async function auctionsFeed(item_id = 168487, connected_realm_id) {
+async function auctionsFeed (item_id = 168487, connected_realm_id) {
   try {
     let query = {
       'item.id': item_id,

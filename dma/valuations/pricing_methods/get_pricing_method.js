@@ -1,6 +1,6 @@
-const pricing_methods = require('../../db/models/pricing_methods_db');
+const pricing_methods = require('../../../db/models/pricing_methods_db');
 
-async function getPricingMethods(id = 15389, derivative = false) {
+async function getPricingMethod (id = 15389, derivative = false) {
   try {
     let query = [{ type: 'primary', item_quantity: { $ne: 0 } }];
     if (derivative) {
@@ -123,4 +123,4 @@ async function getPricingMethods(id = 15389, derivative = false) {
   }
 }
 
-module.exports = getPricingMethods;
+module.exports = getPricingMethod ;

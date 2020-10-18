@@ -1,11 +1,11 @@
 /**
  * Mongo Models
  */
-require('../db/connection')
-const keys_db = require('../db/models/keys_db');
-const realms_db = require('../db/models/realms_db');
-const auctions_db = require('../db/models/auctions_db');
-const pets_db = require('../db/models/pets_db');
+require('../../db/connection')
+const keys_db = require('../../db/models/keys_db');
+const realms_db = require('../../db/models/realms_db');
+const auctions_db = require('../../db/models/auctions_db');
+const pets_db = require('../../db/models/pets_db');
 
 /**
  * Modules
@@ -14,7 +14,7 @@ const pets_db = require('../db/models/pets_db');
 const schedule = require('node-schedule');
 const BlizzAPI = require('blizzapi');
 const moment = require('moment');
-const { Round2 } = require('../db/setters');
+const { Round2 } = require('../../db/setters');
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)

@@ -1,34 +1,32 @@
-const auctions_db = require('../../db/models/auctions_db');
+const golds_db = require('../../db/models/golds_db');
 const realms_db = require('../../db/models/realms_db');
 
 /**
- * @param item_id
  * @param connected_realm_id
  * @returns {Promise<*>}
  */
 
-async function auctionsData(item_id = 168487, connected_realm_id = 1602) {
+async function goldsQuotes (connected_realm_id = 1602) {
   try {
     const t = await realms_db
       .findOne({ connected_realm_id: connected_realm_id })
-      .select('auctions')
+      .select('golds')
       .lean();
     if (t) {
-      return await auctions_db.aggregate([
+      return await golds_db.aggregate([
         {
           $match: {
-            last_modified: t.auctions,
-            'item.id': item_id,
+            status: 'Online',
             connected_realm_id: connected_realm_id,
+            last_modified: t.golds,
           },
         },
         {
           $project: {
             id: '$id',
             quantity: '$quantity',
-            price: {
-              $ifNull: ['$buyout', { $ifNull: ['$bid', '$unit_price'] }],
-            },
+            price: '$price',
+            owner: '$owner',
           },
         },
         {
@@ -36,9 +34,11 @@ async function auctionsData(item_id = 168487, connected_realm_id = 1602) {
             _id: '$price',
             quantity: { $sum: '$quantity' },
             open_interest: {
-              $sum: { $multiply: ['$price', '$quantity'] },
+              $sum: {
+                $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+              },
             },
-            orders: { $addToSet: '$id' },
+            sellers: { $addToSet: '$owner' },
           },
         },
         {
@@ -52,8 +52,8 @@ async function auctionsData(item_id = 168487, connected_realm_id = 1602) {
             open_interest: '$open_interest',
             size: {
               $cond: {
-                if: { $isArray: '$orders' },
-                then: { $size: '$orders' },
+                if: { $isArray: '$sellers' },
+                then: { $size: '$sellers' },
                 else: 0,
               },
             },
@@ -68,4 +68,4 @@ async function auctionsData(item_id = 168487, connected_realm_id = 1602) {
   }
 }
 
-module.exports = auctionsData;
+module.exports = goldsQuotes;

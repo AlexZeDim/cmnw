@@ -1,8 +1,8 @@
 /**
  * Mongo Models
  */
-require('../../db/connection')
-const pricing_methods = require('../../db/models/pricing_methods_db');
+require('../../../db/connection')
+const pricing_methods = require('../../../db/models/pricing_methods_db');
 
 /**
  * Modules
@@ -23,7 +23,7 @@ const fs = require('fs');
  * @returns {Promise<void>}
  */
 
-async function importMethodsClientCSV(path, expr) {
+async function indexMethodsCSV(path, expr) {
   try {
     let eva = fs.readFileSync(path, 'utf8');
     csv.parse(eva, async function (err, data) {
@@ -69,7 +69,7 @@ async function importMethodsClientCSV(path, expr) {
               craft_quene.item_quantity = parseInt(
                 profession_Q.EffectBasePointsF,
               );
-              craft_quene.updatedBy = `DMA-${importMethodsClientCSV.name}`;
+              craft_quene.updatedBy = `DMA-${indexMethodsCSV.name}`;
             }
             craft_quene.save();
             SE_cursor.resume();
@@ -159,7 +159,7 @@ async function importMethodsClientCSV(path, expr) {
                 `${profession_Q.ID}=${craft_quene._id}:${craft_quene.profession}:${craft_quene.expansion}=>${profession_Q.Spell}`,
               );
               craft_quene.spell_id = profession_Q.Spell;
-              craft_quene.updatedBy = `DMA-${importMethodsClientCSV.name}`;
+              craft_quene.updatedBy = `DMA-${indexMethodsCSV.name}`;
               //craft_quene.type = `primary`;
             }
             craft_quene.save();
@@ -180,4 +180,4 @@ async function importMethodsClientCSV(path, expr) {
   }
 }
 
-importMethodsClientCSV('C:\\spelleffect.csv', 'spelleffect');
+indexMethodsCSV('C:\\spelleffect.csv', 'spelleffect');

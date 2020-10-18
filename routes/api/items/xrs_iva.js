@@ -12,7 +12,7 @@ const realms_db = require('../../../db/models/realms_db');
  * Modules
  */
 
-const iva = require('../../../dma/valuation/eva/iva.js');
+const iva = require('../../../dma/valuations/eva/iva.js');
 
 router.get('/:itemQuery', async function (req, res) {
   try {
@@ -48,7 +48,7 @@ router.get('/:itemQuery', async function (req, res) {
                 .findOne({ connected_realm_id: _id })
                 .select('auctions valuations')
                 .lean();
-              /** If there are valuation records for certain realm, create it */
+              /** If there are valuations records for certain realm, create it */
               if (!t.valuations) {
                 await realms_db.updateMany(
                   { connected_realm_id: _id },

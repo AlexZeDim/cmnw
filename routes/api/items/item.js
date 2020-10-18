@@ -5,10 +5,10 @@ const router = express.Router();
  * Modules
  */
 const queryItemAndRealm = require('../../api/middleware');
-const clusterChartData = require('../../../dma/getClusterChartData.js');
-const auctionsFeed = require('../../../dma/auctions/auctionsFeed.js');
-const auctionsData = require('../../../dma/auctions/auctionsData.js');
-const goldsData = require('../../../dma/golds/goldsData.js');
+const clusterChartData = require('../../../dma/valuations/cluster/cluster_chart.js');
+const auctionsFeed = require('../../../dma/auctions/auctions_feed.js');
+const auctionsData = require('../../../dma/auctions/auctions_data.js');
+const goldsData = require('../../../dma/golds/gold_quotes.js');
 
 router.get('/:itemQuery@:realmQuery', async function (req, res) {
   try {

@@ -9,7 +9,7 @@ const items_db = require('../../db/models/items_db');
 /**
  * Modules
  */
-const getItem = require('./getItem');
+const getItem = require('./get_item');
 
 /**
  * This function parse items across B.net API with wrapper
@@ -18,9 +18,9 @@ const getItem = require('./getItem');
  * @returns {Promise<void>}
  */
 
-const indexItems = async (queryKeys = 'DMA', operation = 'create') => {
+const index_items = async (queryKeys = 'DMA', operation = 'create') => {
   try {
-    console.time(`DMA-${indexItems.name}`);
+    console.time(`DMA-${index_items.name}`);
 
     const { token } = await keys_db.findOne({ tags: queryKeys });
 
@@ -44,8 +44,8 @@ const indexItems = async (queryKeys = 'DMA', operation = 'create') => {
     console.error(error);
   } finally {
     await connection.close();
-    console.timeEnd(`DMA-${indexItems.name}`);
+    console.timeEnd(`DMA-${index_items.name}`);
   }
 }
 
-indexItems(process.argv.slice(2)[0], process.argv.slice(2)[1]);
+index_items(process.argv.slice(2)[0], process.argv.slice(2)[1]);

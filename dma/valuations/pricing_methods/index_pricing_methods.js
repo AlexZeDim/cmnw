@@ -1,9 +1,9 @@
 /**
  * Mongo Models
  */
-require('../../db/connection')
-const pricing_methods_db = require('../../db/models/pricing_methods_db');
-const keys_db = require('../../db/models/keys_db');
+require('../../../db/connection')
+const pricing_methods_db = require('../../../db/models/pricing_methods_db');
+const keys_db = require('../../../db/models/keys_db');
 
 /**
  * B.net Wrapper

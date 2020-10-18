@@ -2,14 +2,14 @@
  * Model importing
  */
 
-const gold_db = require('../db/models/golds_db');
+const gold_db = require('../../../db/models/golds_db');
 
 /**
  * @param connected_realm_id
  * @returns {Promise<{timestamps: *, price_range: *, dataset: []}>}
  */
 
-async function getClusterGoldData(connected_realm_id = 1602) {
+async function clusterChartGold (connected_realm_id = 1602) {
   try {
     let chartArray = [];
     let round;
@@ -108,4 +108,4 @@ async function getClusterGoldData(connected_realm_id = 1602) {
   }
 }
 
-module.exports = getClusterGoldData;
+module.exports = clusterChartGold;

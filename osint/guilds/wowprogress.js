@@ -25,7 +25,7 @@ const removeDir = promisify(fs.rmdir);
  * getGuild indexing
  */
 
-const getGuild = require('../getGuild');
+const getGuild = require('./get_guild');
 
 /**
  * Modules

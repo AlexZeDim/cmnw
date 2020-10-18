@@ -31,7 +31,7 @@ router.get('/:guildSlug@:realmSlug', async function (req, res) {
           .findById(`${guildSlug}@${realm.slug}`)
           .lean();
         if (!guildData) {
-          const getGuild = require('../../../osint/getGuild');
+          const getGuild = require('../../../osint/guilds/get_guild');
           const keys_db = require('../../../db/models/keys_db');
           const { token } = await keys_db.findOne({
             tags: `OSINT-indexGuilds`,

@@ -11,7 +11,7 @@ const guilds_db = require('../../db/models/guilds_db');
  * getGuild indexing
  */
 
-const getGuild = require('../getGuild');
+const getGuild = require('./get_guild');
 
 /**
  * Modules

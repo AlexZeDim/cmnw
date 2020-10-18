@@ -13,7 +13,7 @@ const keys_db = require('../../db/models/keys_db');
 
 const schedule = require('node-schedule');
 const puppeteer = require('puppeteer');
-const getCharacter = require('../getCharacter');
+const getCharacter = require('./get_character');
 const scraper = require('table-scraper');
 const axios = require('axios');
 const Xray = require('x-ray');

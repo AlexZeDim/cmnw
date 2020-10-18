@@ -17,7 +17,7 @@
     "tokens": "node bin/tokens.js",
     "discord": "node discord/bot.js",
     "core": "node bin/server.js",
-    "osint": "node osint/characters/fromLua.js"
+    "osint": "node osint/characters/get_osint.js"
   },
   "languageName": "node",
   "repository": {

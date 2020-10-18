@@ -7,7 +7,7 @@ apps:
     instances: 1
     args: 'DMA create'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./osint/indexing/indexRealms.js
+  - script: ./osint/indexing/get_realms.js
     name: 'OSINT-REALMS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'

@@ -10,7 +10,7 @@ const keys_db = require('../../db/models/keys_db');
  */
 
 const schedule = require('node-schedule');
-const getCharacter = require('../getCharacter');
+const getCharacter = require('./get_character');
 
 /***
  * Indexing every character in bulks from OSINT-DB for updated information

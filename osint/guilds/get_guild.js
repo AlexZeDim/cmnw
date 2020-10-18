@@ -2,19 +2,19 @@
  * Model importing
  */
 
-const guild_db = require('../db/models/guilds_db');
-const realms_db = require('../db/models/realms_db');
-const characters_db = require('../db/models/characters_db');
-const osint_logs_db = require('../db/models/osint_logs_db');
+const guild_db = require('../../db/models/guilds_db');
+const realms_db = require('../../db/models/realms_db');
+const characters_db = require('../../db/models/characters_db');
+const osint_logs_db = require('../../db/models/osint_logs_db');
 
 /**
  * Modules
  */
 
 const BlizzAPI = require('blizzapi');
-const getCharacter = require('./getCharacter');
-const indexDetective = require('./indexing/indexDetective');
-const { toSlug } = require('../db/setters');
+const getCharacter = require('../characters/get_character');
+const indexDetective = require('../indexing/indexDetective');
+const { toSlug } = require('../../db/setters');
 const { differenceBy } = require('lodash');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
@@ -30,11 +30,11 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @returns {Promise<*>}
  */
 
-async function getGuild(
+async function get_guild(
   realmSlug,
   nameSlug,
   token = '',
-  updatedBy = `OSINT-${getGuild.name}`,
+  updatedBy = `OSINT-${get_guild.name}`,
 ) {
   try {
     /**
@@ -564,8 +564,8 @@ async function getGuild(
       console.info(`U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${guild.statusCode}`);
     }
   } catch (error) {
-    console.error(`E,${getGuild.name},${nameSlug}@${realmSlug},${error}`);
+    console.error(`E,${get_guild.name},${nameSlug}@${realmSlug},${error}`);
   }
 }
 
-module.exports = getGuild;
+module.exports = get_guild;

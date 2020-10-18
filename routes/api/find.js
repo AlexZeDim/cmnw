@@ -32,7 +32,7 @@ router.get('/:type/:query', async function (req, res) {
             .lean();
           if (!character) {
             /** If character is not in OSINT-DB, then add it */
-            const getCharacter = require('../../osint/getCharacter');
+            const getCharacter = require('../../osint/characters/get_character');
             const keys_db = require('../../db/models/keys_db');
             const { token } = await keys_db.findOne({
               tags: `OSINT-indexCharacters`,

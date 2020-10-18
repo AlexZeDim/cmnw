@@ -41,7 +41,7 @@ router.get('/:nameSlug@:realmSlug', async function (req, res) {
             outdated = true;
           }
           if (!characterData || outdated) {
-            const getCharacter = require('../../../osint/getCharacter');
+            const getCharacter = require('../../../osint/characters/get_character');
             const keys_db = require('../../../db/models/keys_db');
             const { token } = await keys_db.findOne({
               tags: `OSINT-indexCharacters`,

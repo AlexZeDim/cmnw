@@ -12,7 +12,7 @@ const keys_db = require('../../db/models/keys_db');
 
 const schedule = require('node-schedule');
 const axios = require('axios');
-const getCharacter = require('../getCharacter');
+const getCharacter = require('./get_character');
 
 /**
  * Parse all open logs from Kihra's WCL API (https://www.warcraftlogs.com/) for new characters for OSINT-DB (characters)

@@ -10,7 +10,7 @@ const keys_db = require('../../db/models/keys_db');
  */
 
 const schedule = require('node-schedule');
-const getGuild = require('../getGuild');
+const getGuild = require('./get_guild');
 
 /**
  * Indexing every guild in bulks from OSINT-DB for updated information

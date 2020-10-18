@@ -1,9 +1,9 @@
 /**
  * Model importing
  */
-const characters_db = require('../db/models/characters_db');
-const realms_db = require('../db/models/realms_db');
-const osint_logs_db = require('../db/models/osint_logs_db');
+const characters_db = require('../../db/models/characters_db');
+const realms_db = require('../../db/models/realms_db');
+const osint_logs_db = require('../../db/models/osint_logs_db');
 
 /**
  * Modules
@@ -11,8 +11,8 @@ const osint_logs_db = require('../db/models/osint_logs_db');
 
 const crc32 = require('fast-crc32c');
 const BlizzAPI = require('blizzapi');
-const { toSlug, fromSlug } = require('../db/setters');
-const indexDetective = require('./indexing/indexDetective');
+const { toSlug, fromSlug } = require('../../db/setters');
+const indexDetective = require('../indexing/indexDetective');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
@@ -28,12 +28,12 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param createOnlyUnique {Boolean} - if value is true, we create characters only that doesn't exist. Ignore update dont update them.
  */
 
-async function getCharacter(
+async function get_character(
   realmSlug,
   characterName,
   characterObject = {},
   token = '',
-  updatedBy = 'OSINT-getCharacter',
+  updatedBy = 'OSINT-get_character',
   guildRank = false,
   createOnlyUnique = false,
 ) {
@@ -704,4 +704,4 @@ async function getCharacter(
   }
 }
 
-module.exports = getCharacter;
+module.exports = get_character;

@@ -11,7 +11,7 @@ const realms_db = require('../../db/models/realms_db');
  */
 
 const fs = require('fs');
-const getCharacter = require('../getCharacter');
+const getCharacter = require('./get_character');
 
 (async (queryKeys = { tags: `conglomerat` }) => {
   try {

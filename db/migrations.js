@@ -1,39 +1,33 @@
 /**
  * Mongo Models
  */
-require('../../db/connection')
-const items = require('../../db/models/items_db');
-const pricing_methods = require('../../db/models/pricing_methods_db');
-
-/***
- * Fixes vendor sell quantity problem for some items (Boralus vendor)
- * Add methods for EXPL
- * @returns {Promise<void>}
- */
+require('./connection')
+const items = require('./models/items_db');
 
 (async () => {
   try {
+
     /**
      * Remove field via $unset
      */
     /*
-        let unset = await items.updateMany({}, {$unset:{"asset_class":1}});
-        console.log(unset)
-        */
+    let unset = await items.updateMany({}, {$unset:{"asset_class":1}});
+    console.log(unset)
+    */
 
     /**
      * Rename field in a collection
      */
     /*
-        let refactoring = await items.updateMany({},{ $rename: { "v_class": "asset_class" } });
-        console.log(refactoring)
-        */
+    let refactoring = await items.updateMany({},{ $rename: { "v_class": "asset_class" } });
+    console.log(refactoring)
+    */
 
     /**
      * FIX BFA vendor price, cause it's for a full quantity, not x1
      * @type {({quantity: number, _id: number})[]}
      */
-    let array_of_vendor = [
+    /*let array_of_vendor = [
       { _id: 160398, quantity: 10 },
       { _id: 160399, quantity: 10 },
       { _id: 160400, quantity: 3 },
@@ -47,20 +41,20 @@ const pricing_methods = require('../../db/models/pricing_methods_db');
       let item = await items.findById(i._id);
       item.purchase_price = item.purchase_price / i.quantity;
       await item.save();
-    }
+    }*/
     /**
      * Enchanting recipes has quantity 0, but actually they gave us one scroll
      */
-    let enchant = await pricing_methods.updateMany(
+    /*let enchant = await pricing_methods.updateMany(
       { profession: 'ENCH', item_quantity: 0 },
       { item_quantity: 1 },
     );
-    console.info(enchant);
+    console.info(enchant);*/
     /**
      * Destroying expulsom as a pricing_method
      * @type {({profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number})[]}
      */
-    let expulsom_methods = [
+    /*let expulsom_methods = [
       {
         _id: 'P38737:1',
         description: {
@@ -287,10 +281,8 @@ const pricing_methods = require('../../db/models/pricing_methods_db');
           },
         )
         .then(doc => console.info(doc._id));
-    }
+    }*/
   } catch (err) {
     console.error(err);
-  } finally {
-    await connection.close();
   }
 })();

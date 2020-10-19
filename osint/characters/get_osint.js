@@ -4,7 +4,6 @@
 require('../../db/connection')
 const { connection } = require('mongoose');
 const keys_db = require('../../db/models/keys_db');
-const realms_db = require('../../db/models/realms_db');
 
 /**
  * Modules
@@ -33,37 +32,26 @@ const getCharacter = require('./get_character');
           .replace(/"/g, '')
           .replace('\t\t', '')
           .split(',');
-        const realm = await realms_db.findOne({
-          $text: { $search: slug_locale },
-        })
-        if (realm && realm.slug) {
-          if (array.length <= 10) {
-            array.push(
-              getCharacter(
-                realm.slug,
-                name,
-                {},
-                token,
-                `OSINT-fromLua`,
-                false,
-                false
-              )
+        if (array.length <= 10) {
+          array.push(
+            getCharacter(
+              { name: name, realm: {slug: slug_locale}, updatedBy: `OSINT-fromLua` },
+              token,
+              false,
+              false
             )
-          } else {
-            await Promise.allSettled(array)
-            array.length = 0;
-            array.push(
-              getCharacter(
-                realm.slug,
-                name,
-                {},
-                token,
-                `OSINT-fromLua`,
-                false,
-                true,
-              )
+          )
+        } else {
+          await Promise.allSettled(array)
+          array.length = 0;
+          array.push(
+            getCharacter(
+              { name: name, realm: {slug: slug_locale}, updatedBy: `OSINT-fromLua` },
+              token,
+              false,
+              true,
             )
-          }
+          )
         }
       }
     }

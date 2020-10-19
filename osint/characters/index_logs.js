@@ -54,22 +54,10 @@ schedule.scheduleJob('0 3 * * *', async (
               wcl_log.exportedCharacters.length
             ) {
               for (let character of wcl_log.exportedCharacters) {
-                let realm = await realms_db
-                  .findOne({
-                    $or: [
-                      { slug_locale: character.server },
-                      { name_locale: character.server },
-                      { name: character.server },
-                    ],
-                  })
-                  .lean();
-                if (realm && realm.slug) {
+                if (character.name && character.server) {
                   await getCharacter(
-                    realm.slug,
-                    character.name,
-                    {},
+                    { name: character.name, realm: { slug: character.server }, createdBy: `OSINT-indexLogs`, updatedBy: `OSINT-indexLogs` },
                     token,
-                    `OSINT-indexLogs`,
                     false,
                     true
                   );

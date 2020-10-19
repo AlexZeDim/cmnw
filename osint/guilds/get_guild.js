@@ -13,7 +13,7 @@ const osint_logs_db = require('../../db/models/osint_logs_db');
 
 const BlizzAPI = require('blizzapi');
 const getCharacter = require('../characters/get_character');
-const indexDetective = require('../indexing/indexDetective');
+const detectiveGuild = require('../indexing/detective_guild');
 const { toSlug } = require('../../db/setters');
 const { differenceBy } = require('lodash');
 
@@ -30,11 +30,11 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @returns {Promise<*>}
  */
 
-async function get_guild(
+async function getGuild(
   realmSlug,
   nameSlug,
   token = '',
-  updatedBy = `OSINT-${get_guild.name}`,
+  updatedBy = `OSINT-${getGuild.name}`,
 ) {
   try {
     /**
@@ -102,7 +102,7 @@ async function get_guild(
 
     if (guild) {
       if (guildData && guildData.value) {
-        indexDetective(
+        detectiveGuild(
           guild._id,
           'guild',
           guild.faction,
@@ -211,16 +211,15 @@ async function get_guild(
                   faction: guildData.value.faction.name,
                   level: member.character.level,
                   lastModified: new Date(guildData.value.lastModified),
+                  createdAt: updatedBy,
+                  updatedBy: updatedBy
                 };
                 if (member.character.hasOwnProperty('playable_class')) {
                   Object.assign(character_Object, { character_class: playable_class.get(member.character.playable_class.id) });
                 }
                 await getCharacter(
-                  realmSlug,
-                  member.character.name,
                   character_Object,
                   token,
-                  updatedBy,
                   false,
                   false
                 );
@@ -244,20 +243,14 @@ async function get_guild(
                     /** Request force update for hash comparison */
                     await Promise.all([
                       await getCharacter(
-                        realmO,
-                        nameO,
-                        {},
+                        { name: nameO, realm: { slug: realmO }, createdBy: updatedBy, updatedBy: updatedBy },
                         token,
-                        updatedBy,
                         false,
                         false
                       ),
                       await getCharacter(
-                        realmN,
-                        nameN,
-                        {},
+                        { name: nameN, realm: { slug: realmN }, createdBy: updatedBy, updatedBy: updatedBy },
                         token,
-                        updatedBy,
                         false,
                         false
                       ),
@@ -285,7 +278,7 @@ async function get_guild(
                           character_gm_old.hash.c === character_gm_new.hash.c
                         ) {
                           /** Transfer title */
-                          indexDetective(
+                          detectiveGuild(
                             character_gm_new._id,
                             'character',
                             `${character_gm_old._id}#${guild._id}`,
@@ -294,7 +287,7 @@ async function get_guild(
                             new Date(guildData.value.lastModified),
                             new Date(guild.lastModified),
                           );
-                          indexDetective(
+                          detectiveGuild(
                             character_gm_old._id,
                             'character',
                             `${character_gm_old._id}#${guild._id}`,
@@ -303,7 +296,7 @@ async function get_guild(
                             new Date(guildData.value.lastModified),
                             new Date(guild.lastModified),
                           );
-                          indexDetective(
+                          detectiveGuild(
                             `${guild._id}`,
                             'guild',
                             `${character_gm_old._id}`,
@@ -320,7 +313,7 @@ async function get_guild(
                       }
                       /** Transfer ownership */
                       if (ownership_flag) {
-                        indexDetective(
+                        detectiveGuild(
                           character_gm_new._id,
                           'character',
                           `${character_gm_old._id}#${guild._id}`,
@@ -329,7 +322,7 @@ async function get_guild(
                           new Date(guildData.value.lastModified),
                           new Date(guild.lastModified),
                         );
-                        indexDetective(
+                        detectiveGuild(
                           character_gm_old._id,
                           'character',
                           `${character_gm_old._id}#${guild._id}`,
@@ -338,7 +331,7 @@ async function get_guild(
                           new Date(guildData.value.lastModified),
                           new Date(guild.lastModified),
                         );
-                        indexDetective(
+                        detectiveGuild(
                           `${guild._id}`,
                           'guild',
                           `${character_gm_old._id}`,
@@ -364,7 +357,7 @@ async function get_guild(
                    * Demote
                    */
                   if (guild_member.rank > guild_member_old.rank) {
-                    indexDetective(
+                    detectiveGuild(
                       guild_member._id,
                       'character',
                       `${guild._id}#${guild.id} // R:${guild_member_old.rank}`,
@@ -373,7 +366,7 @@ async function get_guild(
                       new Date(guildData.value.lastModified),
                       new Date(guild.lastModified),
                     );
-                    indexDetective(
+                    detectiveGuild(
                       `${guild._id}`,
                       'guild',
                       `${guild_member._id} // R:${guild_member_old.rank}`,
@@ -387,7 +380,7 @@ async function get_guild(
                    * Promote
                    */
                   if (guild_member.rank < guild_member_old.rank) {
-                    indexDetective(
+                    detectiveGuild(
                       guild_member._id,
                       'character',
                       `${guild._id}#${guild.id} // R:${guild_member_old.rank}`,
@@ -396,7 +389,7 @@ async function get_guild(
                       new Date(guildData.value.lastModified),
                       new Date(guild.lastModified),
                     );
-                    indexDetective(
+                    detectiveGuild(
                       `${guild._id}`,
                       'guild',
                       `${guild_member._id} // R:${guild_member_old.rank}`,
@@ -411,7 +404,7 @@ async function get_guild(
                    * If member not in a old members
                    * then JOINS
                    */
-                  indexDetective(
+                  detectiveGuild(
                     guild_member._id,
                     'character',
                     ``,
@@ -420,7 +413,7 @@ async function get_guild(
                     new Date(guildData.value.lastModified),
                     new Date(guild.lastModified),
                   );
-                  indexDetective(
+                  detectiveGuild(
                     `${guild._id}`,
                     'guild',
                     ``,
@@ -445,7 +438,7 @@ async function get_guild(
 
           if (leaves && leaves.length) {
             for (let character_left of leaves) {
-              indexDetective(
+              detectiveGuild(
                 character_left._id,
                 'character',
                 `${guild._id}#${guild.id} // R:${character_left.rank}`,
@@ -454,7 +447,7 @@ async function get_guild(
                 new Date(guildData.value.lastModified),
                 new Date(guild.lastModified),
               );
-              indexDetective(
+              detectiveGuild(
                 `${guild._id}`,
                 'guild',
                 `${character_left._id} // R:${character_left.rank}`,
@@ -490,7 +483,7 @@ async function get_guild(
 
         if (renamed_guild) {
           /** If yes, log rename */
-          indexDetective(
+          detectiveGuild(
             renamed_guild._id,
             'guild',
             renamed_guild.name,
@@ -500,7 +493,7 @@ async function get_guild(
             new Date(renamed_guild.lastModified),
           );
           /** And check faction change */
-          indexDetective(
+          detectiveGuild(
             renamed_guild._id,
             'guild',
             renamed_guild.faction,
@@ -564,8 +557,8 @@ async function get_guild(
       console.info(`U:${guild.name}@${guild.realm.name}#${guild.id || 0}:${guild.statusCode}`);
     }
   } catch (error) {
-    console.error(`E,${get_guild.name},${nameSlug}@${realmSlug},${error}`);
+    console.error(`E,${getGuild.name},${nameSlug}@${realmSlug},${error}`);
   }
 }
 
-module.exports = get_guild;
+module.exports = getGuild;

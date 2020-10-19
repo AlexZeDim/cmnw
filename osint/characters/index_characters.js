@@ -33,9 +33,8 @@ schedule.scheduleJob('0 0 */7 * *', async (
       .sort({'updatedAt': 1})
       .cursor({ batchSize: bulkSize })
       .eachAsync(
-        async ({ _id }) => {
-          const [characterName, realmSlug] = _id.split('@');
-          await getCharacter(realmSlug, characterName, {}, token, `OSINT-indexCharacters`, false, false);
+        async ({ name, realm }) => {
+          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false);
         },
         { parallel: bulkSize },
       );

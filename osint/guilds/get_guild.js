@@ -198,12 +198,12 @@ async function getGuild(
                   id: member.character.id,
                   name: member.character.name,
                   realm: {
-                    id: guild.realm.id,
+                    _id: guild.realm.id,
                     name: guild.realm.name,
                     slug: guild.realm.slug,
                   },
                   guild: {
-                    id: guild.id,
+                    _id: guild.id,
                     name: guild.name,
                     slug: nameSlug,
                     rank: member.rank,

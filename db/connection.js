@@ -28,7 +28,6 @@ connection.once('open', () =>
         connection.once('close', () =>
           console.log('Connected to database on ' + process.env.hostname + ' closed'),
         );
-        process.exit(0);
     });
 })
 

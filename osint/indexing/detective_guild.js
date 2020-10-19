@@ -25,7 +25,7 @@ const osint_logs_db = require('../../db/models/osint_logs_db');
  * @returns {{fieldName: *, status: boolean}}
  */
 
-function indexDetective(
+const detectiveGuild =async (
   root_id,
   type,
   original_value,
@@ -33,7 +33,7 @@ function indexDetective(
   action,
   before,
   after
-) {
+) => {
   /**
    * Find change
    */
@@ -127,4 +127,4 @@ function indexDetective(
   }
 }
 
-module.exports = indexDetective;
+module.exports = detectiveGuild;

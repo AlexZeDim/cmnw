@@ -3,6 +3,7 @@
  */
 require('./connection')
 const items = require('./models/items_db');
+const characters = require('./models/characters_db');
 
 (async () => {
   try {
@@ -14,6 +15,16 @@ const items = require('./models/items_db');
     let unset = await items.updateMany({}, {$unset:{"asset_class":1}});
     console.log(unset)
     */
+
+    /**
+     * Remove documents
+     */
+
+    /*
+    let remove = await characters.deleteMany({ 'realm.name': null })
+    console.log(remove)
+    */
+
 
     /**
      * Rename field in a collection

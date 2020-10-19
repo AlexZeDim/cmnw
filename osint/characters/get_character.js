@@ -1,7 +1,6 @@
 /**
  * Model importing
  */
-require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const realms_db = require('../../db/models/realms_db');
 
@@ -523,14 +522,11 @@ async function getCharacter (
       await detectiveCharacters(character_Old, character_)
     }
 
-    console.log(character_)
-    //await character_.save();
+    await character_.save();
     console.info(`U:${character_.name}@${character_.realm.name}#${character_.id}:${character_.statusCode}`);
   } catch (error) {
     console.error(`E,${error}`);
   }
 }
-
-getCharacter({name: 'инициатива', realm: {slug: 'gordunni'}, updatedBy: 'test'}, 'EU75m4fVDzgpfZQQvbnL2FqzyJq5M3AliT', false, false)
 
 module.exports = getCharacter;

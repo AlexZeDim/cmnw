@@ -21,7 +21,7 @@ let schema = new mongoose.Schema(
       get: fromSlug,
     },
     realm: {
-      id: Number,
+      _id: Number,
       name: String,
       slug: {
         type: String,
@@ -29,7 +29,7 @@ let schema = new mongoose.Schema(
       },
     },
     guild: {
-      id: Number,
+      _id: Number,
       name: String,
       slug: {
         type: String,

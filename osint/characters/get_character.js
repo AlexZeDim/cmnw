@@ -80,7 +80,7 @@ async function getCharacter (
       return
     }
 
-    let realm = await realms_db.findOne({ $text: { $search: character.realm.slug } }, { _id: 0, slug: 1, name: 1 }).lean();
+    let realm = await realms_db.findOne({ $text: { $search: character.realm.slug } }, { _id: 1, slug: 1, name: 1 }).lean();
     if (realm) {
       character_.realm = realm
     } else {
@@ -101,7 +101,7 @@ async function getCharacter (
       timeout: 10000,
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
-    }).catch()
+    }).catch(e => e)
 
     /** Define character id for sure */
     if (character_status && character_status.id) {
@@ -109,7 +109,8 @@ async function getCharacter (
       character_.lastModified = character_status.lastModified
     }
 
-    if (character_status) {
+    if (character_status && 'is_valid' in character_status) {
+      console.log('X')
       const [characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
         api.query(`/profile/wow/character/${character_.realm.slug}/${character.name}`, {
           timeout: 10000,

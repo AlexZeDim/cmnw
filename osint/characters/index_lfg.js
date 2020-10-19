@@ -2,7 +2,6 @@
  * Mongo Models
  */
 require('../../db/connection')
-const realms_db = require('../../db/models/realms_db');
 const characters_db = require('../../db/models/characters_db');
 const persona_db = require('../../db/models/personalities_db');
 const keys_db = require('../../db/models/keys_db');
@@ -58,22 +57,14 @@ schedule.scheduleJob('*/5 * * * *', async () => {
             character_name = value
           }
           if (key === 'Realm') {
-            let realm = await realms_db.findOne({
-              $text: { $search: value.split('-')[1] },
-            })
-            if (realm) {
-              character_realm = realm.slug;
-            }
+            character_realm = value.split('-')[1];
           }
         }
         /** Find character in OSINT DB */
         if (character_name && character_realm) {
           await getCharacter(
-            character_realm,
-            character_name,
-            {},
+            { name: character_name, realm: { slug: character_realm }, createdBy: `OSINT-LFG`, updatedBy: `OSINT-LFG` },
             token,
-            `OSINT-LFG`,
             true,
             false
           )

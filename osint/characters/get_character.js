@@ -110,7 +110,6 @@ async function getCharacter (
     }
 
     if (character_status && 'is_valid' in character_status) {
-      console.log('X')
       const [characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
         api.query(`/profile/wow/character/${character_.realm.slug}/${character.name}`, {
           timeout: 10000,

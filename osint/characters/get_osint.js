@@ -35,7 +35,7 @@ const getCharacter = require('./get_character');
         if (array.length <= 10) {
           array.push(
             getCharacter(
-              { name: name, realm: {slug: slug_locale}, updatedBy: `OSINT-fromLua` },
+              { name: name, realm: { slug: slug_locale}, updatedBy: `OSINT-fromLua` },
               token,
               false,
               false
@@ -46,7 +46,7 @@ const getCharacter = require('./get_character');
           array.length = 0;
           array.push(
             getCharacter(
-              { name: name, realm: {slug: slug_locale}, updatedBy: `OSINT-fromLua` },
+              { name: name, realm: { slug: slug_locale}, updatedBy: `OSINT-fromLua` },
               token,
               false,
               true,

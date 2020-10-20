@@ -20,18 +20,18 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('15 */12 * * *', async (
+schedule.scheduleJob('25 07/12 * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
-  bulkSize = 2,
+  bulkSize = 5,
 ) => {
   try {
     console.time(`OSINT-indexGuilds`);
     const { token } = await keys_db.findOne(queryKeys);
     await guild_db
       .find(queryFind)
-      .lean()
+      .sort({'updatedAt': 1})
       .cursor({ batchSize: bulkSize })
       .eachAsync(
         async ({ _id }) => {

@@ -33,7 +33,8 @@ schedule.scheduleJob('47 04 20 * *', async (
       .sort({'updatedAt': 1})
       .cursor({ batchSize: bulkSize })
       .eachAsync(
-        async ({ name, realm }) => {
+        async ({ name, realm }, i) => {
+          console.log(i)
           await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false);
         },
         { parallel: bulkSize },

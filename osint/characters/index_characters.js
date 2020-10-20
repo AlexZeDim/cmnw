@@ -20,10 +20,10 @@ const getCharacter = require('./get_character');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('25 07 20/7 * *', async (
+schedule.scheduleJob('32 08 20/7 * *', async (
   t,
   queryKeys = { tags: `OSINT-indexCharacters` },
-  bulkSize = 8,
+  bulkSize = 4,
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);
@@ -32,10 +32,8 @@ schedule.scheduleJob('25 07 20/7 * *', async (
       .find()
       .sort({'updatedAt': 1})
       .cursor({ batchSize: bulkSize })
-      .eachAsync(
-        async ({ name, realm }, i) => {
-          console.log(i)
-          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false);
+      .eachAsync(({ name, realm }, i) => {
+          getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
         },
         { parallel: bulkSize },
       );

@@ -47,11 +47,8 @@ router.get('/:nameSlug@:realmSlug', async function (req, res) {
               tags: `OSINT-indexCharacters`,
             });
             await getCharacter(
-              realm.slug,
-              nameSlug,
-              {},
+              { name: nameSlug, realm: {slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`},
               token,
-              `OSINT-userInput`,
               true,
               true
             );

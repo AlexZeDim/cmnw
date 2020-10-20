@@ -28,10 +28,10 @@ schedule.scheduleJob('*/30 * * * *', async (
   t,
   queryKeys = { tags: `DMA` },
   realmQuery = { region: 'Europe' },
-  bulkSize = 2,
+  bulkSize = 4,
 ) => {
+  console.time(`DMA-getAuctionData`);
   try {
-    console.time(`DMA-getAuctionData`);
     const { _id, secret, token } = await keys_db.findOne(queryKeys);
     const api = new BlizzAPI({
       region: 'eu',
@@ -113,8 +113,8 @@ schedule.scheduleJob('*/30 * * * *', async (
                 },
               );
             }
-          } catch (e) {
-            console.error(e);
+          } catch (error) {
+            console.error(error);
           }
         },
         { parallel: bulkSize },

@@ -22,7 +22,8 @@ connection.once('open', () =>
   console.log('Connected to database on ' + process.env.hostname),
 );
 
-[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach((eventType) => {
+    console.info(eventType)
     process.on(eventType, function () {
         connection.close();
         connection.once('close', () =>

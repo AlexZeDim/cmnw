@@ -23,6 +23,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param token {String} - provide a battle.net token
  * @param guildRank {Boolean} - if this value true, we will request guild roster to check guild rank of this character
  * @param createOnlyUnique {Boolean} - if value is true, we create characters only that doesn't exist. Ignore update dont update them.
+ * @param i {Number}
  */
 
 
@@ -31,6 +32,7 @@ async function getCharacter (
   token = '',
   guildRank = false,
   createOnlyUnique = false,
+  i = 0
 ) {
   try {
     let character_Old;
@@ -523,7 +525,7 @@ async function getCharacter (
     }
 
     await character_.save();
-    console.info(`U:${character_.name}@${character_.realm.name}#${character_.id}:${character_.statusCode}`);
+    console.info(`U:${i}:${character_.name}@${character_.realm.name}#${character_.id}:${character_.statusCode}`);
   } catch (error) {
     console.error(`E,${error}`);
   }

@@ -17,6 +17,15 @@ const characters = require('./models/characters_db');
     */
 
     /**
+     * UpdateMany
+     */
+    /*
+    let updMany = await items.updateMany({contracts: true}, {contracts: false});
+    console.log(updMany)
+    */
+
+
+    /**
      * Remove documents
      */
 

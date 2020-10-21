@@ -22,6 +22,7 @@ const getCharacter = require('./get_character');
 
 schedule.scheduleJob('28 07 21/7 * *', async (
   t,
+  queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 5,
 ) => {
@@ -29,8 +30,9 @@ schedule.scheduleJob('28 07 21/7 * *', async (
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
-      .find()
+      .find(queryFind)
       .sort({'updatedAt': 1})
+      .lean()
       .cursor()
       .eachAsync(async ({ name, realm }, i) => {
           await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);

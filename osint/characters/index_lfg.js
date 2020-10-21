@@ -24,9 +24,9 @@ schedule.scheduleJob('*/5 * * * *', async () => {
   try {
     console.time(`OSINT-indexLFG`)
     let exist_flag;
-    const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters`, });
-    let OSINT_LFG = await characters_db.find({isWatched: true}).lean();
-    exist_flag = OSINT_LFG && OSINT_LFG.length;
+    const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
+    let osint_lfg = await characters_db.find({isWatched: true}).lean();
+    exist_flag = osint_lfg && osint_lfg.length;
     /**
      * If players already exists in OSINT with LFG
      * then => revoke their status for a new once, but keep result in variable
@@ -34,12 +34,12 @@ schedule.scheduleJob('*/5 * * * *', async () => {
      * */
     if (exist_flag) {
       await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { lfg : 1 } } )
-      console.info(`LFG status revoked for ${OSINT_LFG.length} characters`)
+      console.info(`LFG status revoked for ${osint_lfg.length} characters`)
     }
     /**
      * Receive HTML table from Kernel's WoWProgress
      */
-    let LFG = await scraper
+    let lfg = await scraper
       .get('https://www.wowprogress.com/gearscore/?lfg=1&raids_week=&lang=ru&sortby=ts')
       .then(function(tableData) {
         return tableData[0] || [];
@@ -47,8 +47,8 @@ schedule.scheduleJob('*/5 * * * *', async () => {
     /**
      * Make sure that table is exist
      */
-    if (LFG && LFG.length) {
-      for (let lfgElement of LFG) {
+    if (lfg && lfg.length) {
+      for (let lfgElement of lfg) {
         /** For each player */
         let character_name, character_realm;
         /** Extract name and realm */
@@ -72,7 +72,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
           if (character) {
             /** If we have something to compare with */
             if (exist_flag) {
-              let player_flag = OSINT_LFG.some(({name, realm}) => (name === character.name && realm.slug === character.realm.slug));
+              let player_flag = osint_lfg.some(({name, realm}) => (name === character.name && realm.slug === character.realm.slug));
               if (player_flag) {
                 character.updatedBy = 'OSINT-LFG'
               } else {
@@ -171,7 +171,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
             character.isWatched = true;
             await character.save()
           } else {
-            console.info(`E,${character_name},${character_name}`)
+            console.info(`E,${character_name},${character_realm}`)
           }
         }
       }

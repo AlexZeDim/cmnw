@@ -126,7 +126,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
                       for (let info of wow_progress) {
                         let [key, value] = info.split(':')
                         if (key === 'Battletag') {
-                          character.lfg.battle_tag = value;
+                          character.lfg.battle_tag = value.replace(' ', '');
                         }
                         if (key === 'Looking for guild') {
                           if (value.includes('ready to transfer')) {

@@ -28,7 +28,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
     characterOld.lastModified = characterOld.updatedAt
   }
   try {
-    let detectiveCheck = ['realm', 'name', 'race', 'gender', 'faction'];
+    const detectiveCheck = ['realm', 'name', 'race', 'gender', 'faction'];
     for (let check of detectiveCheck) {
       let message;
 
@@ -57,13 +57,14 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
               before: characterNew.lastModified,
               after: characterOld.lastModified,
             });
-            await event.save()
+            event.save()
           }
         } else {
 
           if (characterOld[check] !== characterNew[check]) {
 
             if (check === 'name') {
+              message = `${characterNew._id} changed name from ${characterOld[check]} to ${characterNew[check]}`;
               /** if name, then update all logs */
               await osint_logs_db.updateMany(
                 {
@@ -79,7 +80,6 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
             if (check === 'race') message = `${characterNew._id} changed race from ${characterOld[check]} to ${characterNew[check]}`;
             if (check === 'gender') message = `${characterNew._id} swap gender from ${characterOld[check]} to ${characterNew[check]}`;
             if (check === 'faction') message = `${characterNew._id} changed faction from ${characterOld[check]} to ${characterNew[check]}`;
-            if (check === 'name') message = `${characterNew._id} changed name from ${characterOld[check]} to ${characterNew[check]}`;
 
             let event = new osint_logs_db({
               root_id: characterNew._id,
@@ -92,7 +92,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
               before: characterNew.lastModified,
               after: characterOld.lastModified,
             });
-            await event.save()
+            event.save()
           }
         }
       }

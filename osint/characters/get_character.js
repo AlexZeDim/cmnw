@@ -35,7 +35,14 @@ async function getCharacter (
   i = 0
 ) {
   try {
-    let character_Old;
+    let characterOld;
+
+    let realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 }).lean();
+    if (realm) {
+      character_.realm = realm;
+    } else {
+      return
+    }
 
     const _id = toSlug(`${character_.name}@${character_.realm.slug}`)
     const name_slug = toSlug(character_.name)
@@ -44,12 +51,18 @@ async function getCharacter (
     let character = await characters_db.findById(_id);
 
     if (character) {
-      character_Old = { ...character.toObject() }
+      /** If character exists and createOnlyUnique initiated, then return */
+      if (createOnlyUnique) {
+        console.info(`E:${character.name}@${character.realm.name}#${character.id}:${createOnlyUnique}`);
+        return
+      }
+      characterOld = { ...character.toObject() }
       character.statusCode = 100
     } else {
       character = new characters_db({
         _id: _id,
         name: fromSlug(character_.name),
+        realm: realm,
         id: Date.now(),
         statusCode: 100,
         createdBy: 'OSINT-getCharacter',
@@ -76,19 +89,6 @@ async function getCharacter (
           }
         }
       }
-    }
-
-    /** If character exists and createOnlyUnique initiated, then return */
-    if (character && createOnlyUnique) {
-      console.info(`E:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
-      return
-    }
-
-    let realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 }).lean();
-    if (realm) {
-      character.realm = realm
-    } else {
-      return
     }
 
     /**
@@ -366,10 +366,6 @@ async function getCharacter (
 
           if (transferCopy && transferCopy.length) {
 
-            /**
-             * Filtered characters
-             * @type {*[]}
-             */
             let transferArray = [];
 
             /**
@@ -455,10 +451,6 @@ async function getCharacter (
                */
               if (shadowCopy && shadowCopy.length) {
 
-                /**
-                 * Filtered characters
-                 * @type {*[]}
-                 */
                 let shadowArray = [];
 
                 /**
@@ -523,7 +515,7 @@ async function getCharacter (
         }
       }
     } else {
-      await detectiveCharacters(character_Old, character)
+      await detectiveCharacters(characterOld, character)
     }
 
     character.save();

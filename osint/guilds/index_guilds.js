@@ -20,7 +20,7 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('25 07/12 * * *', async (
+schedule.scheduleJob('0 */6 * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
@@ -31,19 +31,21 @@ schedule.scheduleJob('25 07/12 * * *', async (
     const { token } = await keys_db.findOne(queryKeys);
     await guild_db
       .find(queryFind)
-      .sort({'updatedAt': 1})
-      .cursor({ batchSize: bulkSize })
+      .sort({ 'updatedAt': 1 })
+      .cursor()
       .eachAsync(
-        async ({ _id }) => {
-          const [guildName, realmSlug] = _id.split('@');
-          await getGuild(realmSlug, guildName, token, `OSINT-indexGuilds`);
+        async ({ name, realm }) => {
+          await getGuild({
+            name: name,
+            realm: realm,
+            updatedBy: `OSINT-indexGuilds`
+          }, token, false);
         },
         { parallel: bulkSize },
       );
-
   } catch (error) {
     console.error(error);
   } finally {
-    console.timeEnd(`OSINT-indexCharacters`);
+    console.timeEnd(`OSINT-indexGuilds`);
   }
 });

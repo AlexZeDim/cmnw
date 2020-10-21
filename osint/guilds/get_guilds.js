@@ -5,7 +5,6 @@ require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const realms_db = require('../../db/models/realms_db');
 const keys_db = require('../../db/models/keys_db');
-const guilds_db = require('../../db/models/guilds_db');
 
 /**
  * getGuild indexing
@@ -18,7 +17,6 @@ const getGuild = require('./get_guild');
  */
 
 const schedule = require('node-schedule');
-const { toSlug } = require('../../db/setters');
 
 /**
  * This function takes every unique guild name from OSINT-DB (characters) and
@@ -49,18 +47,15 @@ schedule.scheduleJob('30 3 * * *', async (
               })
               .lean();
             for (let guild_slug of guild_slugs) {
-              /**
-               * Check guild before insert
-               */
-              let guild = await guilds_db.findById(`${toSlug(guild_slug)}@${realm.slug}`).lean();
-              if (!guild) {
-                await getGuild(
-                  realm.slug,
-                  guild_slug,
-                  token,
-                  `OSINT-fromCharacters`
-                );
-              }
+              await getGuild(
+                {
+                  name: guild_slug,
+                  realm: realm,
+                  updatedBy: `OSINT-fromCharacters`
+                },
+                token,
+                true
+              );
             }
           }
         },

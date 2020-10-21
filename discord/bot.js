@@ -152,21 +152,22 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                 ]);
                 /** If characters exists */
                 if (charactersNewLfg && charactersNewLfg.length) {
-                  for (let character_ of charactersNewLfg) {
+                  for (let character of charactersNewLfg) {
+                    console.log(character)
                     /** Additional filters check */
                     if (channel.filters) {
                       if (channel.filters.days_from) {
-                        if (channel.filters.days_from < character_.lfg.days_from) {
+                        if (channel.filters.days_from < character.lfg.days_from) {
                           continue
                         }
                       }
                       if (channel.filters.wcl) {
-                        if (channel.filters.wcl > character_.lfg.wcl_percentile) {
+                        if (channel.filters.wcl > character.lfg.wcl_percentile) {
                           continue
                         }
                       }
                       if (channel.filters.rio) {
-                        if (channel.filters.rio > character_.lfg.rio) {
+                        if (channel.filters.rio > character.lfg.rio) {
                           continue
                         }
                       }
@@ -174,70 +175,70 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     /** For each character create new embed message */
                     let embed = new Discord.MessageEmbed();
 
-                    if (character_.guild) {
-                      let guild_string = character_.guild.name.toString().toUpperCase()
-                      if (typeof character_.guild.rank !== 'undefined') {
-                        guild_string = guild_string.concat(` // ${parseInt(character_.guild.rank) === 0 ? 'GM' : 'R' + character_.guild.rank}`);
+                    if (character.guild) {
+                      let guild_string = character.guild.name.toString().toUpperCase()
+                      if (typeof character.guild.rank !== 'undefined') {
+                        guild_string = guild_string.concat(` // ${parseInt(character.guild.rank) === 0 ? 'GM' : 'R' + character.guild.rank}`);
                       }
                       embed.setTitle(guild_string);
-                      embed.setURL(encodeURI(`https://${process.env.domain}/guild/${character_.realm.slug}/${character_.guild.name}`));
+                      embed.setURL(encodeURI(`https://${process.env.domain}/guild/${character.realm.slug}/${character.guild.name}`));
                     }
 
-                    if (character_._id) {
-                      embed.setAuthor(character_._id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character_.realm.slug}/${character_.name}`));
+                    if (character._id) {
+                      embed.setAuthor(character._id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character.realm.slug}/${character.name}`));
                     }
 
-                    if (character_.media) {
-                      embed.setThumbnail(character_.media.avatar_url);
+                    if (character.media) {
+                      embed.setThumbnail(character.media.avatar_url);
                     }
 
-                    if (character_.faction) {
-                      if (character_.faction === 'Alliance') {
+                    if (character.faction) {
+                      if (character.faction === 'Alliance') {
                         embed.setColor('#006aff');
-                      } else if (character_.faction === 'Horde') {
+                      } else if (character.faction === 'Horde') {
                         embed.setColor('#ff0000');
                       }
                     }
-                    if (character_.lastModified) {
-                      embed.setTimestamp(character_.lastModified);
+                    if (character.lastModified) {
+                      embed.setTimestamp(character.lastModified);
                     }
-                    if (character_.ilvl) {
-                      embed.addField('Item Level', character_.ilvl.avg, true)
+                    if (character.ilvl) {
+                      embed.addField('Item Level', character.ilvl.avg, true)
                     }
-                    if (character_.character_class) {
-                      embed.addField('Class', character_.character_class, true)
+                    if (character.character_class) {
+                      embed.addField('Class', character.character_class, true)
                     }
-                    if (character_.spec) {
-                      embed.addField('Spec', character_.spec, true)
+                    if (character.spec) {
+                      embed.addField('Spec', character.spec, true)
                     }
-                    if (character_.hash && character_.hash.a) {
-                      embed.addField('Hash A', `[${character_.hash.a}](https://${process.env.domain}/find/a/${character_.hash.a})`, true)
+                    if (character.hash && character.hash.a) {
+                      embed.addField('Hash A', `[${character.hash.a}](https://${process.env.domain}/find/a/${character.hash.a})`, true)
                     }
-                    if (character_.lfg) {
-                      if (character_.lfg.rio) {
-                        embed.addField('RIO', character_.lfg.rio, true)
+                    if (character.lfg) {
+                      if (character.lfg.rio) {
+                        embed.addField('RIO', character.lfg.rio, true)
                       }
-                      if (character_.lfg.wcl_percentile) {
-                        embed.addField('Best.Perf.Avg', `${character_.lfg.wcl_percentile} Mythic`, true)
+                      if (character.lfg.wcl_percentile) {
+                        embed.addField('Best.Perf.Avg', `${character.lfg.wcl_percentile} Mythic`, true)
                       }
-                      if (character_.lfg.role) {
-                        embed.addField('Role', character_.lfg.role.toString().toUpperCase(), true)
+                      if (character.lfg.role) {
+                        embed.addField('Role', character.lfg.role.toString().toUpperCase(), true)
                       }
-                      if (character_.lfg.days_from && character_.lfg.days_to) {
-                        embed.addField('RT days', `${character_.lfg.days_from} - ${character_.lfg.days_to}`, true)
+                      if (character.lfg.days_from && character.lfg.days_to) {
+                        embed.addField('RT days', `${character.lfg.days_from} - ${character.lfg.days_to}`, true)
                       }
-                      if (character_.lfg.battle_tag) {
-                        embed.addField('Battle.tag', character_.lfg.battle_tag, true)
+                      if (character.lfg.battle_tag) {
+                        embed.addField('Battle.tag', character.lfg.battle_tag, true)
                       }
-                      if (typeof character_.lfg.transfer !== 'undefined') {
-                        if (character_.lfg.transfer) {
+                      if (typeof character.lfg.transfer !== 'undefined') {
+                        if (character.lfg.transfer) {
                           embed.addField('Transfer', `:white_check_mark:`, true)
                         } else {
                           embed.addField('Transfer', `:x:`, true)
                         }
                       }
-                      if (character_.lfg.progress) {
-                        let pve_progress = character_.lfg.progress
+                      if (character.lfg.progress) {
+                        let pve_progress = character.lfg.progress
                         for (let [key, value] of Object.entries(pve_progress)) {
                           if (key.includes('Nyalotha')) {
                             key = 'Nyalotha'
@@ -246,7 +247,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                         }
                       }
                     }
-                    embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character_.realm.slug}/${character_.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character_.realm.slug}/${character_.name}) :key: [RIO](https://raider.io/characters/eu/${character_.realm.slug}/${character_.name})\n`)
+                    embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm.slug}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm.slug}/${character.name})\n`)
                     embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус | Форжспирит`);
                     await guild_channel.send(embed)
                   }

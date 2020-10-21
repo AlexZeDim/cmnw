@@ -128,7 +128,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     }
                   }
                 }
-                /** Request characters by OSINT-LFG-NEW with query */
+                /** Request characters by OSINT-LFG-NEW with query only for russian realms */
                 const charactersNewLfg = await characters_db.aggregate([
                   {
                     $match: query
@@ -139,7 +139,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                   {
                     $lookup: {
                       from: "realms",
-                      localField: "realm.id",
+                      localField: "realm._id",
                       foreignField: "_id",
                       as: "realm"
                     }
@@ -153,7 +153,6 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                 /** If characters exists */
                 if (charactersNewLfg && charactersNewLfg.length) {
                   for (let character of charactersNewLfg) {
-                    console.log(character)
                     /** Additional filters check */
                     if (channel.filters) {
                       if (channel.filters.days_from) {
@@ -185,7 +184,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
                     }
 
                     if (character._id) {
-                      embed.setAuthor(character._id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character.realm.slug}/${character.name}`));
+                      embed.setAuthor(`${character.name}@${character.realm.name_locale}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character.realm.slug}/${character.name}`));
                     }
 
                     if (character.media) {

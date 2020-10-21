@@ -20,7 +20,7 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('30 21 * * *', async (
+schedule.scheduleJob('* */6 * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },

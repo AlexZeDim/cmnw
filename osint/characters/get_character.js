@@ -315,6 +315,8 @@ async function getCharacter (
           };
         }
       }
+    } else {
+      character.statusCode = 400;
     }
 
     /**

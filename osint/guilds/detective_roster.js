@@ -25,7 +25,7 @@ const osint_logs_db = require('../../db/models/osint_logs_db');
  * @returns {{fieldName: *, status: boolean}}
  */
 
-const detectiveGuild =async (
+const detectiveRoster = async (
   root_id,
   type,
   original_value,
@@ -45,21 +45,6 @@ const detectiveGuild =async (
      */
     let message;
     switch (action) {
-      case 'race':
-        message = `${root_id} changed race from ${original_value} to ${new_value}`;
-        break;
-      case 'gender':
-        message = `${root_id} swap gender from ${original_value} to ${new_value}`;
-        break;
-      case 'faction':
-        message = `${root_id} changed faction from ${original_value} to ${new_value}`;
-        break;
-      case 'name':
-        message = `${root_id} changed name from ${original_value} to ${new_value}`;
-        break;
-      case 'realm':
-        message = `${root_id} made realm transfer from ${original_value} to ${new_value}`;
-        break;
       case 'join':
         if (type === 'guild') {
           message = `${new_value} joins to ${root_id}`;
@@ -127,4 +112,4 @@ const detectiveGuild =async (
   }
 }
 
-module.exports = detectiveGuild;
+module.exports = detectiveRoster;

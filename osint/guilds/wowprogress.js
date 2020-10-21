@@ -3,7 +3,6 @@
  */
 require('../../db/connection')
 const realms_db = require('../../db/models/realms_db');
-const guild_db = require('../../db/models/guilds_db');
 const keys_db = require('../../db/models/keys_db');
 
 /**
@@ -32,7 +31,6 @@ const getGuild = require('./get_guild');
  */
 
 const schedule = require('node-schedule');
-const { toSlug } = require('../../db/setters');
 
 /***
  * We takes every gzip archive from Kernel's WoWProgress (https://www.wowprogress.com/export/ranks/
@@ -119,23 +117,24 @@ schedule.scheduleJob('0 5 1,15 * *', async (
         );
         if (indexOfRealms !== -1) {
           console.info(`Parsing: ${file}`);
-          let stringJSON = await readFile(`${path}/${file}`, {
-            encoding: 'utf8',
-          });
+          let stringJSON = await readFile(`${path}/${file}`);
           if (stringJSON) {
             const guildsJSON = JSON.parse(stringJSON);
             if (guildsJSON.length) {
               for (let guild of guildsJSON) {
                 if (!guild.name.includes('[raid]')) {
-                  let guild_ = await guild_db.findById(toSlug(`${guild.name}@${realms[indexOfRealms].slug}`));
-                  if (!guild_) {
-                    await getGuild(
-                      realms[indexOfRealms].slug,
-                      guild.name,
-                      token,
-                      `OSINT-fromJSON`,
-                    );
-                  }
+                  await getGuild(
+                    {
+                      name: guild.name,
+                      realm: {
+                        slug: realms[indexOfRealms].slug,
+                      },
+                      createdBy: `OSINT-fromJSON`,
+                      updatedBy: `OSINT-fromJSON`,
+                    },
+                    token,
+                    true
+                  );
                 }
               }
             }

@@ -37,6 +37,7 @@ async function getGuild(
   i = 0
 ) {
   try {
+
     let guildOld;
 
     /**
@@ -121,6 +122,8 @@ async function getGuild(
         guild.realm._id = guildData.value.realm.id
         guild.realm.name = guildData.value.realm.name
         guild.realm.slug = guildData.value.realm.slug
+      } else {
+        guild.realm = realm
       }
 
       /** if Blizzard API returns faction as null */

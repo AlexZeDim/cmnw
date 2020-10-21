@@ -95,7 +95,7 @@ schedule.scheduleJob('01/5 * * * *', async function() {
   try {
     /** Every discord subscriber */
     await discord_db
-      .find({})
+      .find()
       .lean()
       .cursor({ batchSize: 10 })
       .eachAsync(

@@ -20,7 +20,7 @@ const getCharacter = require('./get_character');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('28 07 21/7 * *', async (
+schedule.scheduleJob('* */4 * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },

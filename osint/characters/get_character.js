@@ -192,7 +192,7 @@ async function getCharacter (
          */
         if (characterData.value.realm.name !== null) {
           character.realm = {
-            id: characterData.value.realm.id,
+            _id: characterData.value.realm.id,
             name: characterData.value.realm.name,
             slug: characterData.value.realm.slug,
           };
@@ -521,7 +521,7 @@ async function getCharacter (
       await detectiveCharacters(characterOld, character)
     }
 
-    character.save();
+    await character.save();
     console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
   } catch (error) {
     console.error(`E,${error}`);

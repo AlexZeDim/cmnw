@@ -37,10 +37,8 @@ async function getCharacter (
   try {
     let characterOld;
 
-    let realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 }).lean();
-    if (realm) {
-      character_.realm = realm;
-    } else {
+    let realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 });
+    if (!realm) {
       return
     }
 
@@ -62,7 +60,6 @@ async function getCharacter (
       character = new characters_db({
         _id: _id,
         name: fromSlug(character_.name),
-        realm: realm,
         id: Date.now(),
         statusCode: 100,
         createdBy: 'OSINT-getCharacter',
@@ -89,6 +86,10 @@ async function getCharacter (
           }
         }
       }
+    }
+
+    if (realm) {
+      character.realm = realm;
     }
 
     /**

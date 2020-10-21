@@ -3,6 +3,7 @@
  */
 require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
+const realms_db = require('../../db/models/realms_db');
 const persona_db = require('../../db/models/personalities_db');
 const keys_db = require('../../db/models/keys_db');
 
@@ -57,7 +58,10 @@ schedule.scheduleJob('*/5 * * * *', async () => {
             character_name = value
           }
           if (key === 'Realm') {
-            character_realm = value.split('-')[1];
+            let realm = await realms_db.findOne({ $text: { $search: value.split('-')[1] } }, { _id: 1, slug: 1, name: 1 }).lean();
+            if (realm && realm.slug) {
+              character_realm = realm.slug;
+            }
           }
         }
         /** Find character in OSINT DB */

@@ -26,13 +26,15 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param guild_
  * @param token
  * @param createOnlyUnique
+ * @param i
  * @returns {Promise<*>}
  */
 
 async function getGuild(
   guild_ = {},
   token = '',
-  createOnlyUnique = true
+  createOnlyUnique = true,
+  i = 0
 ) {
   try {
     let guildOld;
@@ -498,7 +500,7 @@ async function getGuild(
       }
 
       guild.save();
-      console.info(`U:${guild.name}@${guild.realm.name}#${guild.id}:${guild.statusCode}`);
+      console.info(`U:${i}:${guild.name}@${guild.realm.name}#${guild.id}:${guild.statusCode}`);
     }
   } catch (error) {
     console.error(`E,${getGuild.name},${guild_.name}@${guild_.realm.slug},${error}`);

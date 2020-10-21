@@ -17,15 +17,15 @@ connect(
   },
 ).then(r => r);
 
-connection.on('error', console.error.bind(console, 'connection error:'));
+connection.on('error', console.error.bind(console, 'Connection error:'));
 connection.once('open', () =>
   console.log('Connected to database on ' + process.env.hostname),
 );
 
-[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach((eventType) => {
+[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`, `uncaughtException`].forEach((eventType) => {
     console.info(eventType)
     process.on(eventType, function () {
-        //connection.close();
+        connection.close();
         connection.once('close', () =>
           console.log('Connected to database on ' + process.env.hostname + ' closed'),
         );

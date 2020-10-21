@@ -34,12 +34,12 @@ schedule.scheduleJob('0 */6 * * *', async (
       .sort({ 'updatedAt': 1 })
       .cursor()
       .eachAsync(
-        async ({ name, realm }) => {
+        async ({ name, realm }, i) => {
           await getGuild({
             name: name,
             realm: realm,
             updatedBy: `OSINT-indexGuilds`
-          }, token, false);
+          }, token, false, i);
         },
         { parallel: bulkSize },
       );

@@ -24,7 +24,7 @@ schedule.scheduleJob('* */4 * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
-  bulkSize = 8,
+  bulkSize = 5,
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);

@@ -20,11 +20,11 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('* */6 * * *', async (
+schedule.scheduleJob('0 0/6 * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
-  bulkSize = 5,
+  bulkSize = 4,
 ) => {
   try {
     console.time(`OSINT-indexGuilds`);

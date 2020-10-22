@@ -9,7 +9,6 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const schedule = require('node-schedule');
 const getGuild = require('./get_guild');
 
 /**
@@ -20,8 +19,7 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('0 */6 * * *', async (
-  t,
+(async (
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
   bulkSize = 4,
@@ -48,4 +46,4 @@ schedule.scheduleJob('0 */6 * * *', async (
   } finally {
     console.timeEnd(`OSINT-indexGuilds`);
   }
-});
+})();

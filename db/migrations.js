@@ -4,6 +4,7 @@
 require('./connection')
 const items = require('./models/items_db');
 const characters = require('./models/characters_db');
+const guilds = require('./models/guilds_db');
 
 (async () => {
   try {
@@ -30,9 +31,10 @@ const characters = require('./models/characters_db');
      */
 
     /*
-    let remove = await characters.deleteMany({ 'realm.name': null })
+    let remove = await guilds.deleteMany({ 'members': [] })
     console.log(remove)
     */
+
 
 
     /**

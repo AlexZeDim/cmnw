@@ -20,7 +20,6 @@ const getCharacter = require('./get_character');
  */
 
 (async (
-  t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 5,

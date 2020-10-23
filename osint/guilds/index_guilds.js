@@ -29,7 +29,7 @@ const getGuild = require('./get_guild');
     const { token } = await keys_db.findOne(queryKeys);
     await guild_db
       .find(queryFind)
-      .sort({ 'updatedAt': 1 })
+      .lean()
       .cursor()
       .eachAsync(
         async ({ name, realm }, i) => {

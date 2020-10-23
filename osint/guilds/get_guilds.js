@@ -34,9 +34,10 @@ schedule.scheduleJob('30 3 * * *', async (
   try {
     console.time(`OSINT-fromCharacters`);
     await realms_db
-      .find(queryFind)
+      .find(queryFind, { timeout: false })
       .lean()
       .cursor()
+      .addCursorFlag('noCursorTimeout', true)
       .eachAsync(
         async realm => {
           if (realm.slug) {

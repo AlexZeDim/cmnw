@@ -3,7 +3,6 @@
  */
 require('../../db/connection')
 const logs_db = require('../../db/models/logs_db');
-const realms_db = require('../../db/models/realms_db');
 const keys_db = require('../../db/models/keys_db');
 
 /**
@@ -34,8 +33,9 @@ schedule.scheduleJob('0 3 * * *', async (
     console.time(`OSINT-indexLogs`);
     let { token } = await keys_db.findOne(queryKeys);
     await logs_db
-      .find(queryInput)
+      .find(queryInput, { timeout: false })
       .cursor({ batchSize: bulkSize })
+      .addCursorFlag('noCursorTimeout',true)
       .eachAsync(
         async log => {
           try {

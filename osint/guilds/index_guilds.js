@@ -39,6 +39,8 @@ const getGuild = require('./get_guild');
         }, token, false, i);
       },
       { parallel: bulkSize },
-    ).then(r => r).catch(error => console.error(error));
-  console.timeEnd(`OSINT-indexGuilds`);
+    )
+    .then(r => r)
+    .catch(error => console.error(error))
+    .finally(() => console.timeEnd(`OSINT-indexGuilds`));
 })();

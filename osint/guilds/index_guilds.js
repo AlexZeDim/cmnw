@@ -19,28 +19,32 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-((
+(async (
   queryFind = {},
   queryKeys = { tags: `OSINT-indexGuilds` },
-  bulkSize = 4,
+  bulkSize = 3,
 ) => {
-  console.time(`OSINT-indexGuilds`);
-  const { token } = keys_db.findOne(queryKeys).exec();
-  guild_db
-    .find(queryFind)
-    .lean()
-    .cursor()
-    .eachAsync(
-      async ({ name, realm }, i) => {
-        await getGuild({
-          name: name,
-          realm: realm,
-          updatedBy: `OSINT-indexGuilds`
-        }, token, false, i);
-      },
-      { parallel: bulkSize },
-    )
-    .then(r => r)
-    .catch(error => console.error(error))
-    .finally(() => console.timeEnd(`OSINT-indexGuilds`));
+  try {
+    console.time(`OSINT-indexGuilds`);
+    const { token } = await keys_db.findOne(queryKeys);
+    await guild_db
+      .find(queryFind)
+      .lean()
+      .cursor()
+      .addCursorFlag('noCursorTimeout',true)
+      .eachAsync(
+        async ({ name, realm }, i) => {
+          await getGuild({
+            name: name,
+            realm: realm,
+            updatedBy: `OSINT-indexGuilds`
+          }, token, false, i);
+        },
+        { parallel: bulkSize },
+      );
+  } catch (error) {
+    console.error(error);
+  } finally {
+    console.timeEnd(`OSINT-indexGuilds`);
+  }
 })();

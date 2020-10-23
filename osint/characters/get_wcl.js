@@ -33,6 +33,7 @@ schedule.scheduleJob('0 2 * * *', async (
       .find(queryFind)
       .lean()
       .cursor({ batchSize: 1 })
+      .addCursorFlag('noCursorTimeout',true)
       .eachAsync(
         async realm => {
           if (realm.slug && realm.wcl_id) {

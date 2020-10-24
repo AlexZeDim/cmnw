@@ -22,16 +22,16 @@ const getCharacter = require('./get_character');
 (async (
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
-  bulkSize = 5,
+  bulkSize = 4,
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind, { timeout: false })
-      .sort({'updatedAt': 1})
       .lean()
       .cursor()
+      .batchSize(bulkSize)
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {
           await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);

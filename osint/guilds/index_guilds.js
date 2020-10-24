@@ -31,6 +31,7 @@ const getGuild = require('./get_guild');
       .find(queryFind, { timeout: false })
       .lean()
       .cursor()
+      .batchSize(bulkSize)
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(
         async ({ name, realm }, i) => {

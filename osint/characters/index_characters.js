@@ -32,8 +32,7 @@ const getCharacter = require('./get_character');
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {
-          console.log(name, realm, i)
-          //await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
+          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
         }, { parallel: bulkSize }
       );
   } catch (error) {

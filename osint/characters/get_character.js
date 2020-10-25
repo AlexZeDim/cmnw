@@ -42,11 +42,10 @@ async function getCharacter (
       return
     }
 
-    const _id = toSlug(`${character_.name}@${character_.realm.slug}`)
     const name_slug = toSlug(character_.name)
 
     /** Check if character exists */
-    let character = await characters_db.findById(_id);
+    let character = await characters_db.findById(`${name_slug}@${character_.realm.slug}`);
 
     if (character) {
       /** If character exists and createOnlyUnique initiated, then return */
@@ -58,7 +57,7 @@ async function getCharacter (
       character.statusCode = 100
     } else {
       character = new characters_db({
-        _id: _id,
+        _id: `${name_slug}@${character_.realm.slug}`,
         name: fromSlug(character_.name),
         id: Date.now(),
         statusCode: 100,

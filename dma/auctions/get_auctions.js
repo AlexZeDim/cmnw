@@ -28,7 +28,7 @@ schedule.scheduleJob('*/30 * * * *', async (
   t,
   queryKeys = { tags: `DMA` },
   realmQuery = { region: 'Europe' },
-  bulkSize = 4,
+  bulkSize = 3,
 ) => {
   try {
     console.time(`DMA-getAuctionData`);

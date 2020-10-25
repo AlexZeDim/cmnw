@@ -28,10 +28,9 @@ const getGuild = require('./get_guild');
     console.time(`OSINT-indexGuilds`);
     const { token } = await keys_db.findOne(queryKeys);
     await guild_db
-      .find(queryFind, { timeout: false })
+      .find(queryFind, null, { timeout: false })
       .lean()
       .cursor()
-      .batchSize(bulkSize)
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(
         async ({ name, realm }, i) => {

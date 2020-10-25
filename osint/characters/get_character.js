@@ -339,7 +339,7 @@ async function getCharacter (
       });
       if (renamedCopy) {
         await detectiveCharacters(renamedCopy, character)
-        renamedCopy.deleteOne();
+        await characters_db.deleteOne({ _id: renamedCopy._id });
       } else {
         /** Setting confidence and flag */
         let transfer_flag = false;
@@ -424,7 +424,7 @@ async function getCharacter (
              * */
             if (transfer_flag) {
               await detectiveCharacters(transfer_character, character)
-              transfer_character.deleteOne();
+              await characters_db.deleteOne({ _id: transfer_character._id });
             }
           } else {
             /**
@@ -510,7 +510,7 @@ async function getCharacter (
                  * */
                 if (transfer_flag) {
                   await detectiveCharacters(transfer_character, character)
-                  transfer_character.deleteOne();
+                  await characters_db.deleteOne({ _id: transfer_character._id });
                 }
               }
             }

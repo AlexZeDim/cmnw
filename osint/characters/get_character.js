@@ -35,7 +35,7 @@ async function getCharacter (
   i = 0
 ) {
   try {
-    let characterOld;
+    const characterOld = {};
 
     let realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 });
     if (!realm) {
@@ -53,7 +53,7 @@ async function getCharacter (
         console.info(`E:${character.name}@${character.realm.name}#${character.id}:${createOnlyUnique}`);
         return
       }
-      characterOld = { ...character.toObject() }
+      Object.assign(characterOld, character.toObject())
       character.statusCode = 100
     } else {
       character = new characters_db({

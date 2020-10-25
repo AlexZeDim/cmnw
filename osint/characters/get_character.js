@@ -151,7 +151,11 @@ async function getCharacter (
           ];
           for (let field of character_fields_name) {
             if (field in characterData.value) {
-              character[field] = characterData.value[field].name;
+              if (field === 'active_spec') {
+                character.spec = characterData.value[field].name;
+              } else {
+                character[field] = characterData.value[field].name;
+              }
             }
           }
           let character_fields = [
@@ -165,7 +169,11 @@ async function getCharacter (
           for (let field of character_fields) {
             if (field in characterData.value) {
               if (field === 'last_login_timestamp') {
-                character[field] = new Date(characterData.value[field]);
+                character.lastModified = new Date(characterData.value[field]);
+              } else if (field === 'average_item_level') {
+                character.ilvl.avg = characterData.value[field]
+              } else if (field === 'equipped_item_level') {
+                character.ilvl.eq = characterData.value[field]
               } else {
                 character[field] = characterData.value[field];
               }
@@ -189,7 +197,7 @@ async function getCharacter (
          * Realm
          * Sometimes Blizzard return null values
          */
-        if (characterData.value.realm.name !== null) {
+        if (characterData.value.realm && characterData.value.realm.name !== null) {
           character.realm = {
             _id: characterData.value.realm.id,
             name: characterData.value.realm.name,

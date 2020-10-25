@@ -77,7 +77,6 @@ async function indexMethodsTSM (path, expr) {
             }
           }
         }
-        process.exit(0)
         break;
       case 'jwlc':
         lua = fs.readFileSync(path + 'Prospect.lua', 'utf8');
@@ -131,7 +130,6 @@ async function indexMethodsTSM (path, expr) {
             }
           }
         }
-        process.exit(0)
         break;
       case 'transform':
         lua = fs.readFileSync(path + 'Transform.lua', 'utf8');
@@ -237,4 +235,4 @@ async function indexMethodsTSM (path, expr) {
   }
 }
 
-indexMethodsTSM('C:\\', 'transform');
+indexMethodsTSM('C:\\', 'insc');

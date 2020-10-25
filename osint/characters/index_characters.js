@@ -29,11 +29,11 @@ const getCharacter = require('./get_character');
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind, null, { timeout: false })
-      .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {
-          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
+          console.log(name, realm, i)
+          //await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
         }, { parallel: bulkSize }
       );
   } catch (error) {

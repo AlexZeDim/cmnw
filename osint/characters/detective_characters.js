@@ -57,7 +57,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
               before: characterNew.lastModified,
               after: characterOld.lastModified,
             });
-            event.save()
+            await event.save()
           }
         } else {
 
@@ -92,7 +92,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
               before: characterNew.lastModified,
               after: characterOld.lastModified,
             });
-            event.save()
+            await event.save()
           }
         }
       }

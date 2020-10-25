@@ -5,6 +5,7 @@ require('./connection')
 const items = require('./models/items_db');
 const characters = require('./models/characters_db');
 const guilds = require('./models/guilds_db');
+const pricing_methods = require('./models/pricing_methods_db');
 
 (async () => {
   try {

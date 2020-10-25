@@ -30,8 +30,8 @@ schedule.scheduleJob('*/30 * * * *', async (
   realmQuery = { region: 'Europe' },
   bulkSize = 4,
 ) => {
-  console.time(`DMA-getAuctionData`);
   try {
+    console.time(`DMA-getAuctionData`);
     const { _id, secret, token } = await keys_db.findOne(queryKeys);
     const api = new BlizzAPI({
       region: 'eu',

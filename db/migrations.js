@@ -32,7 +32,7 @@ const pricing_methods = require('./models/pricing_methods_db');
      */
 
     /*
-    let remove = await guilds.deleteMany({ 'members': [] })
+    let remove = await pricing_methods.deleteMany({ 'createdBy': 'DMA-indexProfessions', 'name.ru_RU': /Массовое измельчение/ })
     console.log(remove)
     */
 

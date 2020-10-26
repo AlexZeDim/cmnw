@@ -37,7 +37,7 @@ async function getCharacter (
   try {
     const characterOld = {};
 
-    let realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 });
+    const realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 });
     if (!realm) {
       return
     }
@@ -531,8 +531,8 @@ async function getCharacter (
     } else {
       await detectiveCharacters(characterOld, character)
     }
-
-    await character.save();
+    character.markModified('realm');
+    character = await character.save()
     console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
   } catch (error) {
     console.error(`E,${error}`);

@@ -1,4 +1,58 @@
+type Realm {
+    _id: ID!,
+    name: String!,
+    slug: String!,
+}
+
+type Guild {
+    _id: ID!,
+    name: String!,
+    slug: String!
+}
+
+type Ilvl {
+    eq: Int!,
+    avg: Int!
+}
+
+type Hash {
+    a: String,
+    b: String,
+    c: String,
+    ex: String,
+    t: String,
+}
+
+type Media {
+    avatar_url: String,
+    bust_url: String,
+    render_url: String
+}
+
+type Character {
+    _id: ID!,
+    id: Int!,
+    name: String!,
+    realm: Realm!,
+    guild: Guild,
+    ilvl: Ilvl,
+    hash: Hash,
+    race: String,
+    character_class: String,
+    spec: String,
+    gender: String,
+    faction: String,
+    level: Int,
+    lastModified: String,
+    statisCode: Int,
+    media: Media,
+    createdBy: String,
+    updatedBy: String,
+    isWatched: Boolean,
+    personality: String
+}
+
 type Query {
-    hello: String
+    character(id: ID!): Character
 }
 

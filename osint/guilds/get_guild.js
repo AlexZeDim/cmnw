@@ -119,7 +119,7 @@ async function getGuild(
 
       /** if Blizzard API returns realm as null */
       if (guildData.value.realm.name !== null) {
-        guild.realm.id = guildData.value.realm.id
+        guild.realm._id = guildData.value.realm.id
         guild.realm.name = guildData.value.realm.name
         guild.realm.slug = guildData.value.realm.slug
       } else {

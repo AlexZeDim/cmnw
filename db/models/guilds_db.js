@@ -14,7 +14,7 @@ let schema = new mongoose.Schema(
       type: String,
     },
     realm: {
-      id: Number,
+      _id: Number,
       name: String,
       slug: {
         type: String,

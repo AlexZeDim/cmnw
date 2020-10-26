@@ -5,7 +5,7 @@ apps:
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 10000
   - script: ./dma/valuations/get_valuations.js
     name: 'DMA-XVA'
     instances: 1

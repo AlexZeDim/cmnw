@@ -19,7 +19,7 @@ const iva = require('./eva/iva');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('15 */1 * * *', async (
+schedule.scheduleJob('15 * * * *', async (
   t,
   realmQuery = { region: 'Europe' },
   bulkSize = 1,
@@ -179,5 +179,6 @@ schedule.scheduleJob('15 */1 * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`DMA-getValuationsData`);
+    process.exit(1)
   }
 });

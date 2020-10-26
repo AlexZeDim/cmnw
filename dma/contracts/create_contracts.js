@@ -13,7 +13,7 @@ const contracts_db = require('../../db/models/contracts_db');
 const schedule = require('node-schedule');
 const moment = require('moment');
 
-schedule.scheduleJob('45 */1 * * *', async () => {
+schedule.scheduleJob('45 * * * *', async () => {
   try {
     console.time(`DMA-contracts`);
     let d = moment().get('date');
@@ -217,5 +217,6 @@ schedule.scheduleJob('45 */1 * * *', async () => {
     console.error(error);
   } finally {
     console.timeEnd(`DMA-contracts`);
+    process.exit(1)
   }
 });

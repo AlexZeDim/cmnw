@@ -16,8 +16,9 @@ const schedule = require('node-schedule');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('*/1 * * * *', async function() {
+schedule.scheduleJob('0-59 * * * *', async () => {
   try {
+    console.time('CORE-TOKEN')
     await keys_db.find().cursor().eachAsync(async ({ _id, secret })=> {
       const { access_token, expires_in } = await axios({
         url: `https://eu.battle.net/oauth/token`,
@@ -41,6 +42,9 @@ schedule.scheduleJob('*/1 * * * *', async function() {
     });
   } catch (e) {
     console.error(e);
+  } finally {
+    console.timeEnd('CORE-TOKEN')
+    process.exit(0)
   }
 });
 

@@ -27,11 +27,12 @@ const getCharacter = require('./get_character');
   try {
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
-    await characters_db.syncIndexes()
-    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
+    //await characters_db.syncIndexes()
+    //await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
     await characters_db
       .find(queryFind)
       .sort({ updatedAt: 1 })
+      .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()
       .cursor()

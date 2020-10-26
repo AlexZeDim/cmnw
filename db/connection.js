@@ -1,9 +1,8 @@
 /**
  * Connection with DB
  */
-
-const { connect, connection } = require('mongoose');
 require('dotenv').config();
+const { connect, connection } = require('mongoose');
 connect(
   `mongodb://${process.env.login}:${process.env.password}@${process.env.hostname}/${process.env.auth_db}`,
   {
@@ -18,17 +17,12 @@ connect(
 ).then(r => r);
 
 connection.on('error', console.error.bind(console, 'Connection error:'));
-connection.once('open', () =>
-  console.log('Connected to database on ' + process.env.hostname),
-);
+connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
 
-[`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`, `uncaughtException`].forEach((eventType) => {
+[`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`, `uncaughtException`].forEach((eventType) => {
     process.on(eventType, function () {
-        console.info(eventType)
         connection.close();
-        connection.once('close', () =>
-          console.log('Connected to database on ' + process.env.hostname + ' closed'),
-        );
+        connection.once('close', () => console.info('Connected to database on ' + process.env.hostname + ' closed by ' + eventType));
     });
 })
 

@@ -18,7 +18,7 @@ const { Round2 } = require('../../db/setters');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('*/10 * * * *', async (t, queryKeys = { tags: `DMA` }) => {
+schedule.scheduleJob('0/10 * * * *', async (t, queryKeys = { tags: `DMA` }) => {
   try {
     console.time(`DMA-getWoWTokenData`);
     const { _id, secret, token } = await keys_db.findOne(queryKeys);
@@ -59,5 +59,6 @@ schedule.scheduleJob('*/10 * * * *', async (t, queryKeys = { tags: `DMA` }) => {
     console.error(error);
   } finally {
     console.timeEnd(`DMA-getWoWTokenData`);
+    process.exit(0)
   }
 })

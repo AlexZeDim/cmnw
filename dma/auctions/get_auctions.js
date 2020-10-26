@@ -24,7 +24,7 @@ const { Round2 } = require('../../db/setters');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('*/30 * * * *', async (
+schedule.scheduleJob('30,59 * * * *', async (
   t,
   queryKeys = { tags: `DMA` },
   realmQuery = { region: 'Europe' },
@@ -123,5 +123,6 @@ schedule.scheduleJob('*/30 * * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`DMA-getAuctionData`);
+    process.exit(1)
   }
 });

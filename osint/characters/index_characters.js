@@ -31,9 +31,9 @@ const getCharacter = require('./get_character');
     await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
     await characters_db
       .find(queryFind)
+      .sort({ updatedAt: 1 })
       .lean()
       .cursor()
-      .sort({ updatedAt: 1 })
       .batchSize(bulkSize)
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {

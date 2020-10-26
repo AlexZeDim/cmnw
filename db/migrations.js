@@ -30,11 +30,11 @@ const pricing_methods = require('./models/pricing_methods_db');
     /**
      * Remove documents
      */
-
     /*
-    let remove = await pricing_methods.deleteMany({ 'name.ru_RU': /Массовое/ })
+    let remove = await characters.deleteMany({ 'updatedBy': /OSINT-fromLua/, statusCode: 400 })
     console.log(remove)
-     */
+    */
+
 
 
 

@@ -38,11 +38,13 @@ schedule.scheduleJob('0 5 1,15 * *', async () => {
       }
       realm.players = players
       realm.guilds = guilds
-      realm.save()
+      await realm.save()
       console.info(`U,${realm.name_locale}`)
     })
-    console.timeEnd(`VOLUSPA-countRealmsPopulation`);
   } catch (error) {
     console.error(`${error}`);
+  } finally {
+    console.timeEnd(`VOLUSPA-countRealmsPopulation`);
+    process.exit(1)
   }
 });

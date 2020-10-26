@@ -148,5 +148,6 @@ schedule.scheduleJob('0 5 1,15 * *', async (
     console.error(`E,${error}`);
   } finally {
     console.timeEnd(`OSINT-fromJSON`);
+    process.exit(1)
   }
 });

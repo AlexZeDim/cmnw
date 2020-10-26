@@ -10,6 +10,7 @@ const keys_db = require('../../db/models/keys_db');
  */
 
 const getCharacter = require('./get_character');
+//const T = require('./T');
 
 /***
  * Indexing every character in bulks from OSINT-DB for updated information
@@ -20,23 +21,24 @@ const getCharacter = require('./get_character');
  */
 
 (async (
-  queryFind = {},
+  queryFind = { name: "Бэквордация" },
   queryKeys = { tags: `OSINT-indexCharacters` },
-  bulkSize = 4,
+  bulkSize = 10,
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
-    await characters_db
+    const t_index = await characters_db
+/*    await characters_db
       .find(queryFind, null, { timeout: false })
-      .sort({'updatedAt': 1})
       .limit(50)
+      .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {
           await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
         }, { parallel: bulkSize }
-      );
+      );*/
   } catch (error) {
     console.error(error);
   } finally {

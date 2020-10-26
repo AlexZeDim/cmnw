@@ -88,7 +88,11 @@ async function getCharacter (
     }
 
     if (realm) {
-      character.realm = realm;
+      character.realm = {
+        id: realm._id,
+        name: realm.name,
+        slug: realm.slug,
+      };
     }
 
     /**
@@ -199,7 +203,7 @@ async function getCharacter (
          */
         if (characterData.value.realm && characterData.value.realm.name !== null) {
           character.realm = {
-            _id: characterData.value.realm.id,
+            id: characterData.value.realm.id,
             name: characterData.value.realm.name,
             slug: characterData.value.realm.slug,
           };
@@ -209,7 +213,7 @@ async function getCharacter (
          * Guild
          */
         if (characterData.value.guild) {
-          character.guild._id = characterData.value.guild.id;
+          character.guild.id = characterData.value.guild.id;
           character.guild.name = characterData.value.guild.name;
           character.guild.slug = characterData.value.guild.name;
           if (guildRank === true) {

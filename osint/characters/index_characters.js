@@ -29,6 +29,8 @@ const getCharacter = require('./get_character');
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db
       .find(queryFind, null, { timeout: false })
+      .sort({'updatedAt': 1})
+      .limit(50)
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {

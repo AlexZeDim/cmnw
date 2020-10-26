@@ -1,10 +1,10 @@
-type Realm {
+type Character_Realm {
     _id: ID!,
     name: String!,
     slug: String!,
 }
 
-type Guild {
+type Character_Guild {
     _id: ID!,
     name: String!,
     slug: String!
@@ -23,7 +23,7 @@ type Hash {
     t: String,
 }
 
-type Media {
+type Character_Media {
     avatar_url: String,
     bust_url: String,
     render_url: String
@@ -33,8 +33,8 @@ type Character {
     _id: ID!,
     id: Int!,
     name: String!,
-    realm: Realm!,
-    guild: Guild,
+    realm: Character_Realm!,
+    guild: Character_Guild,
     ilvl: Ilvl,
     hash: Hash,
     race: String,
@@ -45,7 +45,7 @@ type Character {
     level: Int,
     lastModified: String,
     statisCode: Int,
-    media: Media,
+    media: Character_Media,
     createdBy: String,
     updatedBy: String,
     isWatched: Boolean,

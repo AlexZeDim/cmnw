@@ -7,6 +7,7 @@ const cors = require('cors');
 
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
+const root = require('./resolvers');
 
 const character = require('./routes/api/characters/character');
 const character_logs = require('./routes/api/characters/character_logs');
@@ -40,14 +41,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /** GraphQL */
 const schema = fs.readFileSync(path.resolve(__dirname, './schemas/schema.graphql'), 'utf-8');
-
-const character_db = require('./db/models/characters_db')
-
-const root = {
-  // 1 - название запроса; 2 - ф-я (реализация схемы)
-  character: ({id}) => character_db.findById(id)
-}
-
 
 app.use('/graphql', graphqlHTTP({
   schema: buildSchema(schema),

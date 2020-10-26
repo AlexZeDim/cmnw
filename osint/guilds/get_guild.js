@@ -502,7 +502,8 @@ async function getGuild(
         await detectiveGuilds(guildOld, guild)
       }
 
-      await guild.save();
+      guild.markModified('members');
+      guild = await guild.save();
       console.info(`U:${i}:${guild.name}@${guild.realm.name}#${guild.id}:${guild.statusCode}`);
     }
   } catch (error) {

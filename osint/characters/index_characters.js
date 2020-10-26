@@ -21,24 +21,25 @@ const getCharacter = require('./get_character');
  */
 
 (async (
-  queryFind = { name: "Бэквордация" },
+  queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 10,
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
-    const t_index = await characters_db
-/*    await characters_db
+    await characters_db.syncIndexes()
+    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
+    await characters_db
       .find(queryFind, null, { timeout: false })
-      .limit(50)
+      .sort({ updatedAt: 1 })
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ name, realm }, i) => {
           await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
         }, { parallel: bulkSize }
-      );*/
+      );
   } catch (error) {
     console.error(error);
   } finally {

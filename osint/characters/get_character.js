@@ -532,8 +532,7 @@ async function getCharacter (
     } else {
       await detectiveCharacters(characterOld, character.toObject())
     }
-    console.log(`===`)
-    console.log(character)
+
     character.markModified('realm');
     character = await character.save({ w: 1, j: true, wtimeout: 100000 })
     console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);

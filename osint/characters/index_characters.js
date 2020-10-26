@@ -31,7 +31,7 @@ const getCharacter = require('./get_character');
     await characters_db.syncIndexes()
     await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
     await characters_db
-      .find(queryFind, null, { timeout: false })
+      .find(queryFind, { timeout: false })
       .sort({ updatedAt: 1 })
       .lean()
       .cursor()

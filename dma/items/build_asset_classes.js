@@ -121,7 +121,7 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
             $or: [
               { _id: 1 },
               {
-                expansion: 'BFA',
+                expansion: 'SHDW',
                 asset_class: { $all: ['MARKET', 'COMMDTY'] },
                 ticker: { $exists: true }
               },

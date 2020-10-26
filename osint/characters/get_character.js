@@ -38,6 +38,7 @@ async function getCharacter (
     const characterOld = {};
 
     const realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 });
+
     if (!realm) {
       return
     }
@@ -45,7 +46,7 @@ async function getCharacter (
     const name_slug = toSlug(character_.name)
 
     /** Check if character exists */
-    let character = await characters_db.findById(`${name_slug}@${character_.realm.slug}`);
+    let character = await characters_db.findById(`${name_slug}@${realm.slug}`);
 
     if (character) {
       /** If character exists and createOnlyUnique initiated, then return */
@@ -57,7 +58,7 @@ async function getCharacter (
       character.statusCode = 100
     } else {
       character = new characters_db({
-        _id: `${name_slug}@${character_.realm.slug}`,
+        _id: `${name_slug}@${realm.slug}`,
         name: fromSlug(character_.name),
         id: Date.now(),
         statusCode: 100,
@@ -68,28 +69,32 @@ async function getCharacter (
       /**
        * Upload other fields from imported values
        */
-      if (character && Object.keys(character_).length) {
-        let character_fields = [
-          'id',
-          'guild',
-          'faction',
-          'character_class',
-          'level',
-          'lastModified',
-          'createdBy',
-          'updatedBy'
-        ];
-        for (let field of character_fields) {
-          if (field in character) {
-            character[field] = character_[field];
-          }
-        }
+      if (character_.id) {
+        character.id = character_.id
+      }
+      if (character_.faction) {
+        character.faction = character_.faction
+      }
+      if (character_.character_class) {
+        character.character_class = character_.character_class
+      }
+      if (character_.level) {
+        character.level = character_.level
+      }
+      if (character_.lastModified) {
+        character.lastModified = character_.lastModified
+      }
+      if (character_.createdBy) {
+        character.createdBy = character_.createdBy
+      }
+      if (character_.updatedBy) {
+        character.updatedBy = character_.updatedBy
       }
     }
 
     if (realm) {
       character.realm = {
-        id: realm._id,
+        _id: realm._id,
         name: realm.name,
         slug: realm.slug,
       };
@@ -146,44 +151,40 @@ async function getCharacter (
        */
       if (characterData && characterData.value) {
         if (Object.keys(characterData.value).length) {
-          let character_fields_name = [
-            'faction',
-            'gender',
-            'race',
-            'character_class',
-            'active_spec',
-          ];
-          for (let field of character_fields_name) {
-            if (field in characterData.value) {
-              if (field === 'active_spec') {
-                character.spec = characterData.value[field].name;
-              } else {
-                character[field] = characterData.value[field].name;
-              }
-            }
+          if (characterData.value.faction && characterData.value.faction.name) {
+            character.faction = characterData.value.faction.name
           }
-          let character_fields = [
-            'id',
-            'name',
-            'level',
-            'last_login_timestamp',
-            'average_item_level',
-            'equipped_item_level',
-          ];
-          for (let field of character_fields) {
-            if (field in characterData.value) {
-              if (field === 'last_login_timestamp') {
-                character.lastModified = new Date(characterData.value[field]);
-              } else if (field === 'average_item_level') {
-                character.ilvl.avg = characterData.value[field]
-              } else if (field === 'equipped_item_level') {
-                character.ilvl.eq = characterData.value[field]
-              } else {
-                character[field] = characterData.value[field];
-              }
-            }
+          if (characterData.value.gender && characterData.value.gender.name) {
+            character.gender = characterData.value.gender.name
+          }
+          if (characterData.value.race && characterData.value.race.name) {
+            character.race = characterData.value.race.name
+          }
+          if (characterData.value.character_class && characterData.value.character_class.name) {
+            character.character_class = characterData.value.character_class.name
+          }
+          if ('active_spec' in characterData.value && characterData.value.active_spec.name) {
+            character.spec = characterData.value.active_spec.name
+          }
+          if (characterData.value.id) {
+            character.id = characterData.value.id
+          }
+          if (characterData.value.name) {
+            character.name = characterData.value.name
+          }
+          if (characterData.value.level) {
+            character.level = characterData.value.level
+          }
+          if ('last_login_timestamp' in characterData.value) {
+            character.lastModified = new Date(characterData.value['last_login_timestamp'])
+          }
+          if ('average_item_level' in characterData.value && 'equipped_item_level' in characterData.value) {
+            character.ilvl = {};
+            character.ilvl.avg = characterData.value['average_item_level']
+            character.ilvl.eq = characterData.value['equipped_item_level']
           }
         }
+
         character.statusCode = 200;
 
         /**
@@ -203,7 +204,7 @@ async function getCharacter (
          */
         if (characterData.value.realm && characterData.value.realm.name !== null) {
           character.realm = {
-            id: characterData.value.realm.id,
+            _id: characterData.value.realm.id,
             name: characterData.value.realm.name,
             slug: characterData.value.realm.slug,
           };
@@ -213,7 +214,7 @@ async function getCharacter (
          * Guild
          */
         if (characterData.value.guild) {
-          character.guild.id = characterData.value.guild.id;
+          character.guild._id = characterData.value.guild.id;
           character.guild.name = characterData.value.guild.name;
           character.guild.slug = characterData.value.guild.name;
           if (guildRank === true) {
@@ -349,7 +350,7 @@ async function getCharacter (
         character_class: character.character_class,
       });
       if (renamedCopy) {
-        await detectiveCharacters(renamedCopy, character)
+        await detectiveCharacters(renamedCopy.toObject(), character.toObject())
         await characters_db.deleteOne({ _id: renamedCopy._id });
       } else {
         /** Setting confidence and flag */
@@ -434,7 +435,7 @@ async function getCharacter (
              * if transfer flag === true
              * */
             if (transfer_flag) {
-              await detectiveCharacters(transfer_character, character)
+              await detectiveCharacters(transfer_character.toObject(), character.toObject())
               await characters_db.deleteOne({ _id: transfer_character._id });
             }
           } else {
@@ -520,7 +521,7 @@ async function getCharacter (
                  * if transfer flag === true
                  * */
                 if (transfer_flag) {
-                  await detectiveCharacters(transfer_character, character)
+                  await detectiveCharacters(transfer_character.toObject(), character.toObject())
                   await characters_db.deleteOne({ _id: transfer_character._id });
                 }
               }
@@ -529,8 +530,10 @@ async function getCharacter (
         }
       }
     } else {
-      await detectiveCharacters(characterOld, character)
+      await detectiveCharacters(characterOld, character.toObject())
     }
+    console.log(`===`)
+    console.log(character)
     character.markModified('realm');
     character = await character.save({ w: 1, j: true, wtimeout: 100000 })
     console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);

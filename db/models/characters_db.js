@@ -126,9 +126,8 @@ schema.index({ 'hash.ex': 1 }, { name: 'Hash EX' });
 schema.index({ 'hash.t': 1 }, { name: 'Hash T' });
 
 schema.index({ 'personality': 1 }, { name: 'VOLUSPA' });
-schema.index({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' });
 schema.index({ 'realm.slug': 1, 'id': 1 }, { name: 'ByGUID' });
 
-let characters_db = mongoose.model('characters', schema, 'characters');
+const characters_db = mongoose.model('characters', schema, 'characters');
 
 module.exports = characters_db;

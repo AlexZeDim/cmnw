@@ -22,13 +22,13 @@ const getCharacter = require('./get_character');
 (async (
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
-  bulkSize = 8,
+  bulkSize = 5,
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
-    //await characters_db.syncIndexes()
-    //await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
+    await characters_db.syncIndexes()
+    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
     await characters_db
       .find(queryFind)
       .sort({ updatedAt: 1 })

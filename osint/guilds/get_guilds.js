@@ -26,7 +26,7 @@ const schedule = require('node-schedule');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('30 3 * * *', async (
+schedule.scheduleJob('30 4 * * *', async (
   t,
   queryFind = { region: 'Europe' },
   queryKeys = { tags: `OSINT-indexGuilds` },
@@ -34,7 +34,8 @@ schedule.scheduleJob('30 3 * * *', async (
   try {
     console.time(`OSINT-fromCharacters`);
     await realms_db
-      .find(queryFind, { timeout: false })
+      .find(queryFind)
+      .maxTimeMS(0)
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout', true)
@@ -66,5 +67,6 @@ schedule.scheduleJob('30 3 * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-fromCharacters`);
+    process.exit(1)
   }
 });

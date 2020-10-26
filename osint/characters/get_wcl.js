@@ -109,5 +109,6 @@ schedule.scheduleJob('0 2 * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-fromLogs`);
+    process.exit(1)
   }
 });

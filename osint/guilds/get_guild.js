@@ -30,7 +30,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @returns {Promise<*>}
  */
 
-async function getGuild(
+async function getGuild (
   guild_ = {},
   token = '',
   createOnlyUnique = true,

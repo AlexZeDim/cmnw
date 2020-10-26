@@ -71,5 +71,6 @@ async function getPersonalities() {
     console.error(`${getPersonalities.name},${err}`);
   } finally {
     console.timeEnd(`VOLUSPA-${getPersonalities.name}`);
+    process.exit(1)
   }
 }

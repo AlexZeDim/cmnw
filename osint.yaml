@@ -4,30 +4,29 @@ apps:
     autorestart: true
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    min_uptime: 5000
-    restart_delay: 5000
+    min_uptime: 60000
+    restart_delay: 60000
   - script: ./osint/guilds/index_guilds.js
     name: 'OSINT-GUILDS-ALL'
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    min_uptime: 5000
-    restart_delay: 1800000
+    min_uptime: 60000
+    restart_delay: 60000
   - script: ./osint/characters/index_lfg.js
     name: 'OSINT-LFG'
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: "/dev/null"
-    min_uptime: 5000
-    restart_delay: 1800000
+    restart_delay: 5000
   - script: ./osint/characters/get_wcl.js
     name: 'OSINT-WCL'
     instances: 1
     autorestart: true
     max_memory_restart: '1G'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 600000
+    restart_delay: 60000
   - script: ./osint/characters/index_logs.js
     name: 'OSINT-LOGS'
     instances: 1
@@ -35,32 +34,32 @@ apps:
     out_file: "/dev/null"
     max_memory_restart: '1G'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 600000
+    restart_delay: 60000
   - script: ./osint/guilds/get_guilds.js
     name: 'OSINT-GUILD-CH'
     instances: 1
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 60000
   - script: ./osint/guilds/wowprogress.js
     name: 'OSINT-WP'
     instances: 1
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 60000
   - script: ./voluspa/getPersonalities.js
     name: 'VOLUSPA-PERSONA'
     instances: 1
     out_file: "/dev/null"
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 60000
   - script: ./voluspa/countRealmsPopulation.js
     name: 'VOLUSPA-COUNT-P'
     instances: 1
     out_file: "/dev/null"
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 60000

@@ -78,5 +78,6 @@ schedule.scheduleJob('0 3 * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-indexLogs`);
+    process.exit(1)
   }
 });

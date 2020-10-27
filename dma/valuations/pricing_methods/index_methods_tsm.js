@@ -83,6 +83,7 @@ async function indexMethodsTSM (path, expr) {
         stringArray = lua.match(/\[(.*)/gm);
         for (let string of stringArray) {
           if (string.includes(' = {')) {
+            //FIXME jwc schema fix
             item_id = parseInt(string.replace(/\D/g, ''));
           } else {
             if (string.includes('["i:') && item_id) {
@@ -235,4 +236,4 @@ async function indexMethodsTSM (path, expr) {
   }
 }
 
-indexMethodsTSM('C:\\', 'insc');
+indexMethodsTSM('C:\\', 'jwlc');

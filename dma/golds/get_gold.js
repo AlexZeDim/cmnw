@@ -25,7 +25,7 @@ x.driver(driver);
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('00 */1 * * *', async () => {
+schedule.scheduleJob('00 * * * *', async () => {
   try {
     console.time(`DMA-getGoldData`);
     const ts = moment().format('X');
@@ -74,5 +74,6 @@ schedule.scheduleJob('00 */1 * * *', async () => {
     console.log(error);
   } finally {
     console.timeEnd(`DMA-getGoldData`);
+    process.exit(1)
   }
 });

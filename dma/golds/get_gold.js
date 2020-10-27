@@ -74,6 +74,6 @@ schedule.scheduleJob('00 * * * *', async () => {
     console.log(error);
   } finally {
     console.timeEnd(`DMA-getGoldData`);
-    process.exit(1)
+    process.exit(0)
   }
 });

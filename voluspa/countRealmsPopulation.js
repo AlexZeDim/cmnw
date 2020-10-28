@@ -45,6 +45,6 @@ schedule.scheduleJob('0 5 1,15 * *', async () => {
     console.error(`${error}`);
   } finally {
     console.timeEnd(`VOLUSPA-countRealmsPopulation`);
-    process.exit(1)
+    process.exit(0)
   }
 });

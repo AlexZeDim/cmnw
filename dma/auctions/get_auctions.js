@@ -123,6 +123,6 @@ schedule.scheduleJob('30,59 * * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`DMA-getAuctionData`);
-    process.exit(1)
+    process.exit(0)
   }
 });

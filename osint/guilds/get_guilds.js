@@ -67,6 +67,6 @@ schedule.scheduleJob('30 4 * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-fromCharacters`);
-    process.exit(1)
+    process.exit(0)
   }
 });

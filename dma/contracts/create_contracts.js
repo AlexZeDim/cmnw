@@ -217,6 +217,6 @@ schedule.scheduleJob('45 * * * *', async () => {
     console.error(error);
   } finally {
     console.timeEnd(`DMA-contracts`);
-    process.exit(1)
+    process.exit(0)
   }
 });

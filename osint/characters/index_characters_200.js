@@ -40,9 +40,9 @@ const getCharacter = require('./get_character');
       const name = _id.split('@')[0]
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       if (array.length >= 10) {
-        characters.pause()
+        await characters.pause()
         await Promise.allSettled(array)
-        characters.resume()
+        await characters.resume()
         array.length = 0
       }
       c++

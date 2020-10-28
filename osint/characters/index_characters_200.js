@@ -37,7 +37,8 @@ const getCharacter = require('./get_character');
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
-    characters.on('data', async ({ name, realm }) => {
+    characters.on('data', async ({ _id, realm }) => {
+      const name = _id.split('@')[0]
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       if (array.length >= 10) {
         characters.pause()

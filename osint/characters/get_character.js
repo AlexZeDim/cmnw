@@ -107,16 +107,14 @@ async function getCharacter (
       region: 'eu',
       clientId: clientId,
       clientSecret: clientSecret,
-      accessToken: token,
-      onAccessTokenExpired: () => { console.error('TOKEN EXPIRED') },
-      onAccessTokenRefresh: () => {  console.error('TOKEN onAccessTokenRefresh') },
+      accessToken: token
     });
 
     const character_status = await api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/status`, {
       timeout: 10000,
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
-    })
+    }).catch(e => e)
 
     /** Define character id for sure */
     if (character_status && character_status.id) {

@@ -42,7 +42,7 @@ const getCharacter = require('./get_character');
       character_string += `${c} ${name}@${realm.slug}\n`
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       console.info(character_string);
-      if (array.length >= 10) {
+      if (array.length >= bulkSize) {
         character_string += '===========\n'
         await Promise.allSettled(array)
         array.length = 0

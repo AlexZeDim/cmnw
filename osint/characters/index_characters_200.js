@@ -43,6 +43,7 @@ const getCharacter = require('./get_character');
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       if (array.length >= 10) {
         character_string += '==========='
+        console.info(character_string);
         await Promise.allSettled(array)
         array.length = 0
         character_string = ''

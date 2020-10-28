@@ -39,7 +39,8 @@ schedule.scheduleJob('0 5,17 * * *', async (
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
-      .eachAsync(async ({ name, realm }, i) => {
+      .eachAsync(async ({ _id, realm }, i) => {
+          const name = _id.split('@')[0]
           await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
         }, { parallel: bulkSize }
       );

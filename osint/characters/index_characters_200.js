@@ -41,9 +41,9 @@ const getCharacter = require('./get_character');
       const name = _id.split("@")[0]
       character_string += `${c} ${name}@${realm.slug}`
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
+      console.info(character_string);
       if (array.length >= 10) {
         character_string += '==========='
-        console.info(character_string);
         await Promise.allSettled(array)
         array.length = 0
         character_string = ''

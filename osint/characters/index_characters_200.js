@@ -20,7 +20,7 @@ const getCharacter = require('./get_character');
  */
 
 (async (
-  queryFind = { statusCode: 200 },
+  queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 5,
 ) => {
@@ -31,7 +31,6 @@ const getCharacter = require('./get_character');
     const array = [];
     const characters = await characters_db
       .find(queryFind, { timeout: false })
-      .sort({ statusCode: 1, updatedAt: 1 })
       .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()

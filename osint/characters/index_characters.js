@@ -20,7 +20,7 @@ const getCharacter = require('./get_character');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('0 5,17 * * *', async (
+schedule.scheduleJob('0 * * * *', async (
   t,
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
@@ -30,10 +30,10 @@ schedule.scheduleJob('0 5,17 * * *', async (
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
     await characters_db.syncIndexes()
-    await characters_db.collection.createIndex({ 'statusCode': 1, 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
+    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
     await characters_db
       .find(queryFind)
-      .sort({ statusCode: 1, updatedAt: 1 })
+      .sort({ updatedAt: 1 })
       .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()

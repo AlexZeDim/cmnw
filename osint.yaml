@@ -12,6 +12,7 @@ apps:
     autorestart: true
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+    out_file: "/dev/null"
     exec_mode: "fork"
     min_uptime: 60000
     restart_delay: 60000

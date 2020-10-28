@@ -31,9 +31,10 @@ const pricing_methods = require('./models/pricing_methods_db');
      * Remove documents
      */
     /*
-    let remove = await pricing_methods.deleteMany({"name.ru_RU":/Массово/})
+    let remove = await characters.deleteMany({"name":/SS/})
     console.log(remove)
-    */
+     */
+
 
 
     /**

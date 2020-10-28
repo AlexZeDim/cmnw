@@ -47,5 +47,6 @@ schedule.scheduleJob('0 5,17 * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-indexCharacters`);
+    process.exit(0)
   }
 });

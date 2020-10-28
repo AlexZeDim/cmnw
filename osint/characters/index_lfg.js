@@ -184,7 +184,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
     console.error(error)
   } finally {
     console.timeEnd(`OSINT-indexLFG`)
-    process.exit(1)
+    process.exit(0)
   }
 });
 

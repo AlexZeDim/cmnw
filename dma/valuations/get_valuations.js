@@ -179,6 +179,6 @@ schedule.scheduleJob('15 * * * *', async (
     console.error(error);
   } finally {
     console.timeEnd(`DMA-getValuationsData`);
-    process.exit(1)
+    process.exit(0)
   }
 });

@@ -7,6 +7,14 @@ apps:
     exec_mode : "fork"
     min_uptime: 60000
     restart_delay: 60000
+  - script: ./osint/characters/index_characters_200.js
+    name: 'OSINT-CH-STATUS'
+    autorestart: true
+    instances: 1
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+    exec_mode: "fork"
+    min_uptime: 60000
+    restart_delay: 60000
   - script: ./osint/guilds/index_guilds.js
     name: 'OSINT-GUILDS-ALL'
     instances: 1

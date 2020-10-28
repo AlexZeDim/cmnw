@@ -9,7 +9,6 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const schedule = require('node-schedule');
 const getCharacter = require('./get_character');
 
 /***
@@ -33,13 +32,12 @@ const getCharacter = require('./get_character');
     const characters = await characters_db
       .find(queryFind, { timeout: false })
       .sort({ statusCode: 1, updatedAt: 1 })
-      .limit(100)
       .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
-    characters.on('data', async ({ name, realm, statusCode }) => {
+    characters.on('data', async ({ name, realm }) => {
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       if (array.length >= 10) {
         characters.pause()

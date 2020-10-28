@@ -111,7 +111,6 @@ async function getCharacter (
     });
 
     const character_status = await api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/status`, {
-      timeout: 10000,
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
     }).catch(e => e)

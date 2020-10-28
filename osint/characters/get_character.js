@@ -107,14 +107,16 @@ async function getCharacter (
       region: 'eu',
       clientId: clientId,
       clientSecret: clientSecret,
-      accessToken: token
+      accessToken: token,
+      onAccessTokenExpired: () => { console.error('TOKEN EXPIRED') },
+      onAccessTokenRefresh: () => {  console.error('TOKEN onAccessTokenRefresh') },
     });
 
     const character_status = await api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/status`, {
       timeout: 10000,
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
-    }).catch(e => e)
+    })
 
     /** Define character id for sure */
     if (character_status && character_status.id) {
@@ -125,22 +127,18 @@ async function getCharacter (
     if (character_status && 'is_valid' in character_status) {
       const [characterData, characterPets, characterMount, characterMedia] = await Promise.allSettled([
         api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}`, {
-          timeout: 10000,
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' }
         }),
         api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/collections/pets`, {
-          timeout: 10000,
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' }
         }),
         api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/collections/mounts`, {
-          timeout: 10000,
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' }
         }),
         api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/character-media`, {
-          timeout: 10000,
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' }
         })

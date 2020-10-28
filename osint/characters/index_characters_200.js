@@ -29,6 +29,7 @@ const getCharacter = require('./get_character');
     let { token } = await keys_db.findOne(queryKeys);
     let c = 0;
     const array = [];
+    let character_string = '';
     const characters = await characters_db
       .find(queryFind, { timeout: false })
       .maxTimeMS(0)
@@ -38,10 +39,14 @@ const getCharacter = require('./get_character');
       .addCursorFlag('noCursorTimeout',true)
     for await (const { _id, realm } of characters) {
       const name = _id.split("@")[0]
+      character_string += `${c} ${name}@${realm.slug}`
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       if (array.length >= 10) {
+        character_string += '==========='
         await Promise.allSettled(array)
         array.length = 0
+        character_string = ''
+        character_string += '==========='
       }
       c++
     }

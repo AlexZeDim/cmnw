@@ -39,15 +39,15 @@ const getCharacter = require('./get_character');
       .addCursorFlag('noCursorTimeout',true)
     for await (const { _id, realm } of characters) {
       const name = _id.split("@")[0]
-      character_string += `${c} ${name}@${realm.slug}`
+      character_string += `${c} ${name}@${realm.slug}\n`
       array.push(getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, c))
       console.info(character_string);
       if (array.length >= 10) {
-        character_string += '==========='
+        character_string += '===========\n'
         await Promise.allSettled(array)
         array.length = 0
         character_string = ''
-        character_string += '==========='
+        character_string += '===========\n'
       }
       c++
     }

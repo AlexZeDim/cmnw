@@ -40,10 +40,10 @@ let schema = new mongoose.Schema(
       default: false,
     },
     asset_class: [String],
-    /** add thought importTaxonomy_CSV('itemsparse') */
+    /** add via importTaxonomy_CSV('itemsparse') */
     expansion: String,
     stackable: Number,
-    /** add thought importTaxonomy_CSV('taxonomy') */
+    /** add via importTaxonomy_CSV('taxonomy') */
     profession_class: String,
     ticker: String,
     /**

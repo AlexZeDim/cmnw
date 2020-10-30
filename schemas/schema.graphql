@@ -1,13 +1,7 @@
-type Character_Realm {
+type Realm {
     _id: ID!,
     name: String!,
     slug: String!,
-}
-
-type Character_Guild {
-    _id: ID!,
-    name: String!,
-    slug: String!
 }
 
 type Ilvl {
@@ -29,12 +23,30 @@ type Character_Media {
     render_url: String
 }
 
+type Logs {
+    root_id: ID!,
+    root_history: [String],
+    type: String,
+    original_value: String,
+    new_value: String,
+    message: String,
+    action: String,
+    before: Float,
+    after: Float
+}
+
+type Guild_Member {
+    _id: ID!,
+    id: Int,
+    rank: Int
+}
+
 type Character {
     _id: ID!,
     id: Int!,
     name: String!,
-    realm: Character_Realm!,
-    guild: Character_Guild,
+    realm: Realm!,
+    guild: Guild,
     ilvl: Ilvl,
     hash: Hash,
     race: String,
@@ -43,16 +55,40 @@ type Character {
     gender: String,
     faction: String,
     level: Int,
-    lastModified: String,
+    lastModified: Float,
     statisCode: Int,
     media: Character_Media,
     createdBy: String,
     updatedBy: String,
     isWatched: Boolean,
-    personality: String
+    personality: String,
+    logs: [Logs]
+    createdAt: Float,
+    updatedAt: Float
+}
+
+type Guild {
+    _id: ID!,
+    id: Int!,
+    name: String!,
+    realm: Realm!,
+    faction: String,
+    members: [Guild_Member],
+    member_count: Int,
+    achievement_points: Int,
+    created_timestamp: Float,
+    lastModified: Float,
+    statisCode: Int,
+    createdBy: String,
+    updatedBy: String,
+    isWatched: Boolean,
+    logs: [Logs]
+    createdAt: Float,
+    updatedAt: Float
 }
 
 type Query {
     character(id: ID!): Character
+    guild(id: ID!): Guild
 }
 

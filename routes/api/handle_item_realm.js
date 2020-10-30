@@ -47,7 +47,6 @@ const queryItemAndRealm = async (itemQuery, realmQuery) => {
     return await Promise.all([await item, await realm]);
   } catch (error) {
     console.error(error);
-    return void 0;
   }
 };
 

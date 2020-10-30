@@ -6,6 +6,11 @@ const keys_db = require('./db/models/keys_db');
 
 const getCharacter = require('./osint/characters/get_character');
 const getGuild = require('./osint/guilds/get_guild')
+const queryItemAndRealm = require('./routes/api/handle_item_realm');
+const clusterChartData = require('./dma/valuations/cluster/cluster_chart.js');
+const auctionsFeed = require('./dma/auctions/auctions_feed.js');
+const auctionsData = require('./dma/auctions/auctions_data.js');
+const goldsData = require('./dma/golds/gold_quotes.js');
 
 const root = {
   character: async ({ id }) => {

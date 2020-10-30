@@ -9,7 +9,7 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const schedule = require('node-schedule');
+//const schedule = require('node-schedule');
 const getCharacter = require('./get_character');
 
 /***
@@ -20,12 +20,11 @@ const getCharacter = require('./get_character');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('0 * * * *', async (
-  t,
+async function Index (
   queryFind = {},
   queryKeys = { tags: `OSINT-indexCharacters` },
   bulkSize = 5,
-) => {
+) {
   try {
     console.time(`OSINT-indexCharacters`);
     let { token } = await keys_db.findOne(queryKeys);
@@ -50,4 +49,6 @@ schedule.scheduleJob('0 * * * *', async (
     console.timeEnd(`OSINT-indexCharacters`);
     process.exit(0)
   }
-});
+}
+
+Index();

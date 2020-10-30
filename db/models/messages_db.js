@@ -24,7 +24,8 @@ let schema = new mongoose.Schema(
         },
       },
     ],
-    context: String,
+    content: String,
+    params: Object,
   },
   {
     timestamps: true,

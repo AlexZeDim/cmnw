@@ -33,6 +33,4 @@ schema.index({ type: 1, root_id: 1 }, { name: 'Search' });
 
 let osint_logs_db = mongoose.model('osint_logs', schema, 'osint_logs');
 
-//mongoose.connection.close()
-
 module.exports = osint_logs_db;

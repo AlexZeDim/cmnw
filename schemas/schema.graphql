@@ -87,6 +87,45 @@ type Guild {
     updatedAt: Float
 }
 
+type Name {
+    en_US: String,
+    es_MX: String,
+    pt_BR: String,
+    de_DE: String,
+    en_GB: String,
+    es_ES: String,
+    fr_FR: String,
+    it_IT: String,
+    ru_RU: String
+}
+
+type Item {
+    _id: ID!,
+    name: Name,
+    quality: String,
+    ilvl: Int,
+    level: Int,
+    icon: String,
+    item_class: String,
+    item_subclass: String,
+    purchase_price: Float,
+    sell_price: Float,
+    is_equippable: Boolean,
+    is_stackable: Boolean,
+    inventory_type: String,
+    purchase_quantity: Int,
+    loot_type: String,
+    contracts: Boolean,
+    asset_class: [String],
+    expansion: String,
+    stackable: Int,
+    profession_class: String,
+    ticker: String,
+    tags: [String],
+    createdAt: Float,
+    updatedAt: Float
+}
+
 type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild

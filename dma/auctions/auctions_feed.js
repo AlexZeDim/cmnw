@@ -61,7 +61,9 @@ async function auctionsFeed (item_id = 168487, connected_realm_id) {
         },
       },
     ]);
-  } catch (e) {}
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 module.exports = auctionsFeed;

@@ -158,6 +158,7 @@ type Item {
     stackable: Int,
     profession_class: String,
     valuations: [Valuations],
+    chart: ClusterData,
     quotes: AuctionsQuotes,
     ticker: String,
     tags: [String],
@@ -212,6 +213,6 @@ type Dataset {
 type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild
-    item(id: ID!): Item
+    item(id: ID!, valuations: Boolean, chart: Boolean, feed: Boolean): Item
 }
 

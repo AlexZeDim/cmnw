@@ -6,7 +6,7 @@ type Realm {
 
 type Ilvl {
     eq: Int!,
-    avg: Int!
+    avg: Int!,
 }
 
 type Hash {
@@ -20,7 +20,7 @@ type Hash {
 type Character_Media {
     avatar_url: String,
     bust_url: String,
-    render_url: String
+    render_url: String,
 }
 
 type Logs {
@@ -32,13 +32,13 @@ type Logs {
     message: String,
     action: String,
     before: Float,
-    after: Float
+    after: Float,
 }
 
 type Guild_Member {
     _id: ID!,
     id: Int,
-    rank: Int
+    rank: Int,
 }
 
 type Character {
@@ -64,7 +64,7 @@ type Character {
     personality: String,
     logs: [Logs]
     createdAt: Float,
-    updatedAt: Float
+    updatedAt: Float,
 }
 
 type Guild {
@@ -84,7 +84,7 @@ type Guild {
     isWatched: Boolean,
     logs: [Logs]
     createdAt: Float,
-    updatedAt: Float
+    updatedAt: Float,
 }
 
 type Name {
@@ -96,7 +96,7 @@ type Name {
     es_ES: String,
     fr_FR: String,
     it_IT: String,
-    ru_RU: String
+    ru_RU: String,
 }
 
 type Item {
@@ -120,14 +120,61 @@ type Item {
     expansion: String,
     stackable: Int,
     profession_class: String,
+    valuations: [Valuations],
+    quotes: AuctionsQuotes,
     ticker: String,
     tags: [String],
     createdAt: Float,
-    updatedAt: Float
+    updatedAt: Float,
+}
+
+type Valuations {
+    name: String,
+    item_id: Int,
+    connected_realm_id: Int,
+    type: String,
+    last_modified: Float,
+    value: Float,
+    flag: String,
+    details: ValuationsDetails,
+}
+
+type ValuationsDetails {
+    quotation: String,
+    swap_type: String,
+    description: String,
+    price_size: Float,
+    quantity: Float,
+    open_interest: Float,
+    orders: [Float],
+}
+
+type AuctionsQuotes {
+    _id: ID!,
+    quantity: Int,
+    open_interest: Float,
+    min: Float,
+    min_size: Float,
+    orders: [Float]
+}
+
+type ClusterData {
+    price_range: [Float],
+    timestamps: [Float],
+    dataset: [Dataset]
+}
+
+type Dataset {
+    x: Int,
+    y: Int,
+    value: Float,
+    oi: Float,
+    orders: Int,
 }
 
 type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild
+    item(id: ID!): Item
 }
 

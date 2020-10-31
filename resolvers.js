@@ -62,6 +62,31 @@ const root = {
       return await guild_db.findById(id.toLowerCase())
     }
     return guild
+  },
+  item: async ({ id }) => {
+    if (!id.includes('@')) {
+      return
+    }
+    const [ itemQuery, realmQuery ] = id.split('@');
+    const [ item, realm ] = await queryItemAndRealm(itemQuery, realmQuery);
+    if (!item || !realm) {
+      return
+    }
+    /** Commodity Block */
+    let is_commdty = false;
+    if (item.asset_class && item.asset_class.includes('COMMDTY')) {
+      is_commdty = true;
+    } else {
+      if (item.stackable && item.stackable > 1) {
+        is_commdty = true;
+      }
+      if (item._id === 122270 || item._id === 122284) {
+        is_commdty = false
+      }
+    }
+    if (item._id === 1) {
+      is_commdty = true;
+    }
   }
 }
 

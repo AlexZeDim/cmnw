@@ -2,6 +2,40 @@ type Realm {
     _id: ID!,
     name: String!,
     slug: String!,
+    name_locale: String,
+    slug_locale: String,
+    region: String,
+    category: String,
+    locale: String,
+    timezone: String,
+    type: String,
+    is_tournament: Boolean,
+    has_queue: Boolean,
+    status: String,
+    population: String,
+    connected_realm_id: Int,
+    connected_realm: [String],
+    ticker: String,
+    wcl_id: Int,
+    auctions: Float,
+    valuations: Float,
+    golds: Float,
+    players: Players,
+    guilds: Guilds,
+}
+
+type Players {
+    total: Int,
+    alliance: Int,
+    horde: Int,
+    max_level: Int,
+    unique: Int,
+}
+
+type Guilds {
+    total: Int,
+    alliance: Int,
+    horde: Int,
 }
 
 type Ilvl {
@@ -38,6 +72,8 @@ type Logs {
 type Guild_Member {
     _id: ID!,
     id: Int,
+    name: String,
+    slug: String,
     rank: Int,
 }
 
@@ -102,6 +138,7 @@ type Name {
 type Item {
     _id: ID!,
     name: Name,
+    realm: Realm,
     quality: String,
     ilvl: Int,
     level: Int,

@@ -108,6 +108,7 @@ type Guild {
     id: Int,
     name: String,
     slug: String,
+    rank: Int,
     realm: Realm,
     faction: String,
     members: [Guild_Member],
@@ -257,7 +258,7 @@ type Query {
     item(id: ID!, valuations: Boolean, webpage: Boolean): Item
     realms(name: String): [Realm]
     wowtoken(region: String): Wowtoken
-    hash(type: String!, hash: String!): [Character]
+    hash(query: String!): [Character]
 }
 
 type Mutation {

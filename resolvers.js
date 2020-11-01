@@ -65,9 +65,12 @@ const root = {
     }
     return guild
   },
-  hash: async ({ type, hash }) => {
-    const query = { [`hash.${type}`]: hash }
-    return await character_db.find(query).limit(60).lean()
+  hash: async ({ query }) => {
+    if (!query.includes('@')) {
+      return
+    }
+    const [ type, hash ] = query.split("@")
+    return await character_db.find({ [`hash.${type}`]: hash }).limit(60).lean()
   },
   wowtoken: async ({ region }) => {
     return await wowtoken_db

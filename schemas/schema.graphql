@@ -157,14 +157,18 @@ type Item {
     expansion: String,
     stackable: Int,
     profession_class: String,
-    valuations: [Valuations],
-    chart: ClusterData,
-    quotes: AuctionsQuotes,
     ticker: String,
     tags: [String],
     createdAt: Float,
     updatedAt: Float,
+    valuations: [Valuations],
+    chart: ClusterData,
+    quotes: Quotes,
 }
+
+"""
+Item Valuations
+"""
 
 type Valuations {
     name: String,
@@ -187,14 +191,17 @@ type ValuationsDetails {
     orders: [Float],
 }
 
-type AuctionsQuotes {
+type Quotes {
     _id: ID!,
+    price: Float,
     quantity: Int,
     open_interest: Float,
-    min: Float,
-    min_size: Float,
-    orders: [Float]
+    size: Float,
 }
+
+"""
+Item Cluster Chart
+"""
 
 type ClusterData {
     price_range: [Float],
@@ -209,6 +216,10 @@ type Dataset {
     oi: Float,
     orders: Int,
 }
+
+"""
+Queries
+"""
 
 type Query {
     character(id: ID!): Character

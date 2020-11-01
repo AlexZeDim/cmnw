@@ -254,7 +254,7 @@ const root = {
           ]).then(feed => Object.assign(item, { feed: feed }))
         );
       }
-
+      /** Handle all promises for webpage */
       await Promise.allSettled(arrayPromises);
     }
 

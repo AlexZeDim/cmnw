@@ -65,6 +65,10 @@ const root = {
     }
     return guild
   },
+  hash: async ({ type, hash }) => {
+    const query = { [`hash.${type}`]: hash }
+    return await character_db.find(query).limit(60).lean()
+  },
   wowtoken: async ({ region }) => {
     return await wowtoken_db
       .findOne({ region: region })

@@ -236,5 +236,6 @@ type Query {
     guild(id: ID!): Guild
     item(id: ID!, valuations: Boolean, webpage: Boolean): Item
     realm(query: String): [Realm]
+    wowtoken(region: String): Wowtoken
 }
 

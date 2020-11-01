@@ -65,6 +65,12 @@ const root = {
     }
     return guild
   },
+  wowtoken: async ({ region }) => {
+    return await wowtoken_db
+      .findOne({ region: region })
+      .sort({ _id: -1 })
+      .lean();
+  },
   realms: async ({ query }) => {
     return await realms_db
       .find(

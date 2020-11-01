@@ -213,6 +213,6 @@ type Dataset {
 type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild
-    item(id: ID!, valuations: Boolean, chart: Boolean, feed: Boolean): Item
+    item(id: ID!, valuations: Boolean, webpage: Boolean): Item
 }
 

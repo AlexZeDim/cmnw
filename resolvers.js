@@ -5,15 +5,14 @@ const osint_logs_db = require('./db/models/osint_logs_db');
 const keys_db = require('./db/models/keys_db');
 const valuations_db = require('./db/models/valuations_db');
 const auctions_db = require('./db/models/auctions_db');
+const golds_db = require('./db/models/golds_db');
+const wowtoken_db = require('./db/models/wowtoken_db');
 
 const getCharacter = require('./osint/characters/get_character');
 const getGuild = require('./osint/guilds/get_guild')
 const queryItemAndRealm = require('./routes/api/handle_item_realm');
 const iva = require('./dma/valuations/eva/iva.js');
 const clusterChartData = require('./dma/valuations/cluster/cluster_chart.js');
-const auctionsFeed = require('./dma/auctions/auctions_feed.js');
-const auctionsData = require('./dma/auctions/auctions_data.js');
-const goldsData = require('./dma/golds/gold_quotes.js');
 
 const root = {
   character: async ({ id }) => {
@@ -66,7 +65,7 @@ const root = {
     }
     return guild
   },
-  item: async ({ id, valuations, chart, feed }) => {
+  item: async ({ id, valuations, webpage }) => {
 
     if (!id.includes('@')) {
       return
@@ -76,73 +75,187 @@ const root = {
     if (!item || !realm) {
       return
     }
-    /** Commodity Block */
-    let is_commdty = false;
-    const arrayPromises = [];
-    if (item.asset_class && item.asset_class.includes('COMMDTY')) {
-      is_commdty = true;
-    } else {
+
+    if (webpage) {
+      /** Commodity Block */
+      let is_commdty = false;
+      const arrayPromises = [];
+      if (item.asset_class && item.asset_class.includes('COMMDTY')) {
+        is_commdty = true;
+      }
       if (item.stackable && item.stackable > 1) {
         is_commdty = true;
       }
-      if (item._id === 122270 || item._id === 122284) {
-        is_commdty = false
+      if (item._id === 1) {
+        /** GOLD */
+        is_commdty = true;
+        arrayPromises.push(
+          golds_db.aggregate([
+            {
+              $match: {
+                status: 'Online',
+                connected_realm_id: realm.connected_realm_id,
+                last_modified: realm.golds,
+              },
+            },
+            {
+              $project: {
+                id: '$id',
+                quantity: '$quantity',
+                price: '$price',
+                owner: '$owner',
+              },
+            },
+            {
+              $group: {
+                _id: '$price',
+                quantity: { $sum: '$quantity' },
+                open_interest: {
+                  $sum: {
+                    $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+                  },
+                },
+                sellers: { $addToSet: '$owner' },
+              },
+            },
+            {
+              $sort: { _id: 1 },
+            },
+            {
+              $project: {
+                _id: 0,
+                price: '$_id',
+                quantity: '$quantity',
+                open_interest: '$open_interest',
+                size: {
+                  $cond: {
+                    if: { $isArray: '$sellers' },
+                    then: { $size: '$sellers' },
+                    else: 0,
+                  },
+                },
+              },
+            },
+          ]).then(quotes => Object.assign(item, { quotes: quotes }))
+        )
+      } else if (item._id === 122270 || item._id === 122284) {
+        /** WT */
+        is_commdty = false;
+        arrayPromises.push(
+          wowtoken_db
+            .findOne({ region: 'eu' })
+            .sort({ _id: -1 })
+            .lean()
+            .then(wowtoken => Object.assign(item, { wowtoken: wowtoken })),
+          wowtoken_db
+            .find({ region: 'eu' })
+            .limit(200)
+            .sort({ _id: -1 })
+            .lean()
+            .then(wt => Object.assign(item, { wt: wt })),
+        );
+      } else {
+        /** Quotes for any item */
+        arrayPromises.push(
+          auctions_db.aggregate([
+            {
+              $match: {
+                'last_modified': realm.auctions,
+                'item.id': item._id,
+                'connected_realm_id': realm.connected_realm_id,
+              },
+            },
+            {
+              $project: {
+                id: '$id',
+                quantity: '$quantity',
+                price: {
+                  $ifNull: ['$buyout', { $ifNull: ['$bid', '$unit_price'] }],
+                },
+              },
+            },
+            {
+              $group: {
+                _id: '$price',
+                quantity: { $sum: '$quantity' },
+                open_interest: {
+                  $sum: { $multiply: ['$price', '$quantity'] },
+                },
+                orders: { $addToSet: '$id' },
+              },
+            },
+            {
+              $sort: { _id: 1 },
+            },
+            {
+              $project: {
+                _id: 0,
+                price: '$_id',
+                quantity: '$quantity',
+                open_interest: '$open_interest',
+                size: {
+                  $cond: {
+                    if: { $isArray: '$orders' },
+                    then: { $size: '$orders' },
+                    else: 0,
+                  },
+                },
+              },
+            },
+          ]).then(quotes => Object.assign(item, { quotes: quotes }))
+        )
       }
-    }
-    if (item._id === 1) {
-      is_commdty = true;
-    }
-    /** End of Commodity block */
+      /** End of Commodity block */
 
-    if (is_commdty) {
-      if (chart) {``
+      if (is_commdty) {
         arrayPromises.push(
           clusterChartData(item._id, realm.connected_realm_id).then(chart =>
             Object.assign(item, { chart: chart }),
           ),
         );
-      }
-
-    } else {
-      if (feed) {
-        item.feed = await auctions_db.aggregate([
-          {
-            $match: {
-              'item.id': item._id,
-              'connected_realm_id': realm.connected_realm_id,
-              'last_modified': realm.auctions,
-            },
-          },
-          {
-            $limit: 2000
-          },
-          {
-            $lookup: {
-              from: 'realms',
-              localField: 'connected_realm_id',
-              foreignField: 'connected_realm_id',
-              as: 'connected_realm_id',
-            },
-          },
-          {
-            $addFields: {
-              max_last_modified: {
-                $arrayElemAt: ['$connected_realm_id.auctions', 0],
+      } else {
+        arrayPromises.push(
+          auctions_db.aggregate([
+            {
+              $match: {
+                'item.id': item._id,
+                'connected_realm_id': realm.connected_realm_id,
+                'last_modified': realm.auctions,
               },
             },
-          },
-          {
-            $match: {
-              $expr: { $eq: ['$last_modified', '$max_last_modified'] },
+            {
+              $limit: 2000
             },
-          },
-          {
-            $addFields: {
-              connected_realm_id: '$connected_realm_id.name_locale',
+            {
+              $lookup: {
+                from: 'realms',
+                localField: 'connected_realm_id',
+                foreignField: 'connected_realm_id',
+                as: 'connected_realm_id',
+              },
             },
-          },
-        ])
+            {
+              $addFields: {
+                max_last_modified: {
+                  $arrayElemAt: ['$connected_realm_id.auctions', 0],
+                },
+              },
+            },
+            {
+              $match: {
+                $expr: { $eq: ['$last_modified', '$max_last_modified'] },
+              },
+            },
+            {
+              $addFields: {
+                connected_realm_id: '$connected_realm_id.name_locale',
+              },
+            },
+          ]).then(feed => Object.assign(item, { feed: feed }))
+        );
       }
+
+      await Promise.allSettled(arrayPromises);
     }
 
     if (valuations) {
@@ -165,8 +278,8 @@ const root = {
       }
       item.valuations = valuations_;
     }
+
     item.realm = realm;
-    await Promise.allSettled(arrayPromises);
     return item
   }
 }

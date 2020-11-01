@@ -9,23 +9,6 @@ const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
 const root = require('./resolvers');
 
-const character_lfg = require('./routes/api/characters/lfg');
-const items = require('./routes/api/items/item');
-const info = require('./routes/api/items/info');
-const find = require('./routes/api/find');
-const contracts_tod = require('./routes/api/contracts/tod');
-const contracts_ytd = require('./routes/api/contracts/ytd');
-const contracts_week = require('./routes/api/contracts/week');
-const contracts_lastWeek = require('./routes/api/contracts/last_week');
-const contracts_month = require('./routes/api/contracts/month');
-const contracts_lastMonth = require('./routes/api/contracts/last_month');
-const eva = require('./routes/api/items/eva');
-const realms = require('./routes/api/realms');
-const wowtoken = require('./routes/api/wowtoken');
-const golds = require('./routes/api/golds');
-const xrs_item = require('./routes/api/items/xrs_item');
-const xrs_eva = require('./routes/api/items/xrs_eva');
-const xrs_iva = require('./routes/api/items/xrs_iva');
 const app = express();
 
 app.use(logger('dev'));
@@ -38,42 +21,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 /** GraphQL */
 const schema = fs.readFileSync(path.resolve(__dirname, './schemas/schema.graphql'), 'utf-8');
 
+/**
+ * TODO cors()
+ */
+
 app.use('/graphql', graphqlHTTP({
   schema: buildSchema(schema),
   rootValue: root,
   graphiql: true,
 }));
-
-/** Contracts */
-
-app.use('/api/contracts/tod', contracts_tod);
-app.use('/api/contracts/ytd', contracts_ytd);
-app.use('/api/contracts/week', contracts_week);
-app.use('/api/contracts/last_week', contracts_lastWeek);
-app.use('/api/contracts/month', contracts_month);
-app.use('/api/contracts/last_month', contracts_lastMonth);
-
-/** Characters */
-
-app.use('/api/characters/lfg', character_lfg);
-
-/** Items */
-
-app.use('/api/items/item', items);
-app.use('/api/items/info', cors(), info);
-app.use('/api/items/eva', cors(), eva);
-app.use('/api/items/xrs_item', cors(), xrs_item);
-app.use('/api/items/xrs_eva', cors(), xrs_eva);
-app.use('/api/items/xrs_iva', cors(), xrs_iva);
-
-/** Find */
-
-app.use('/api/find', find);
-
-/** Others */
-
-app.use('/api/realms', realms);
-app.use('/api/wowtoken', wowtoken);
-app.use('/api/golds', golds);
 
 module.exports = app;

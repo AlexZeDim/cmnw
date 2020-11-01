@@ -75,10 +75,10 @@ const root = {
       .sort({ _id: -1 })
       .lean();
   },
-  realms: async ({ query }) => {
+  realms: async ({ name }) => {
     return await realms_db
       .find(
-        { $text: { $search: query } },
+        { $text: { $search: name } },
         { score: { $meta: 'textScore' } },
       )
       .sort({ score: { $meta: 'textScore' } })

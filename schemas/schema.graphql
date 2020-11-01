@@ -105,9 +105,10 @@ type Character {
 
 type Guild {
     _id: ID!,
-    id: Int!,
-    name: String!,
-    realm: Realm!,
+    id: Int,
+    name: String,
+    slug: String,
+    realm: Realm,
     faction: String,
     members: [Guild_Member],
     member_count: Int,
@@ -140,7 +141,6 @@ type Item {
     name: Name,
     realm: Realm,
     quality: String,
-    ilvl: Int,
     level: Int,
     icon: String,
     item_class: String,
@@ -151,6 +151,7 @@ type Item {
     is_stackable: Boolean,
     inventory_type: String,
     purchase_quantity: Int,
+    ilvl: Ilvl,
     loot_type: String,
     contracts: Boolean,
     asset_class: [String],
@@ -227,6 +228,25 @@ type Dataset {
     orders: Int,
 }
 
+type Clearance {
+    access: Int,
+    codeword: String,
+}
+
+type Message {
+    _id: ID!,
+    author: String,
+    mentions: [String],
+    type: String,
+    clearance: [Clearance],
+    content: String,
+}
+
+input MessageInput {
+    content: String
+    author: String
+}
+
 """
 Queries
 """
@@ -235,8 +255,11 @@ type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild
     item(id: ID!, valuations: Boolean, webpage: Boolean): Item
-    realm(query: String): [Realm]
+    realms(name: String): [Realm]
     wowtoken(region: String): Wowtoken
     hash(type: String!, hash: String!): [Character]
 }
 
+type Mutation {
+    createMessage(input: MessageInput): Message
+}

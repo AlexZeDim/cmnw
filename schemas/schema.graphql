@@ -164,6 +164,24 @@ type Item {
     valuations: [Valuations],
     chart: ClusterData,
     quotes: Quotes,
+    wowtoken: [Wowtoken]
+}
+
+type Wowtoken {
+    _id: ID!,
+    region: String,
+    price: Float,
+    lastModified:Float,
+    createdAt: Float,
+    updatedAt: Float,
+}
+
+type Quotes {
+    _id: ID!,
+    price: Float,
+    quantity: Int,
+    open_interest: Float,
+    size: Float,
 }
 
 """
@@ -189,14 +207,6 @@ type ValuationsDetails {
     quantity: Float,
     open_interest: Float,
     orders: [Float],
-}
-
-type Quotes {
-    _id: ID!,
-    price: Float,
-    quantity: Int,
-    open_interest: Float,
-    size: Float,
 }
 
 """

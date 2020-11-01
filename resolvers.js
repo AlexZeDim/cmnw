@@ -143,19 +143,14 @@ const root = {
         is_commdty = false;
         arrayPromises.push(
           wowtoken_db
-            .findOne({ region: 'eu' })
-            .sort({ _id: -1 })
-            .lean()
-            .then(wowtoken => Object.assign(item, { wowtoken: wowtoken })),
-          wowtoken_db
             .find({ region: 'eu' })
             .limit(200)
             .sort({ _id: -1 })
             .lean()
-            .then(wt => Object.assign(item, { wt: wt })),
+            .then(wowtoken => Object.assign(item, { wowtoken: wowtoken })),
         );
       } else {
-        /** Quotes for any item */
+        /** ANY ITEM */
         arrayPromises.push(
           auctions_db.aggregate([
             {

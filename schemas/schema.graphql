@@ -235,5 +235,6 @@ type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild
     item(id: ID!, valuations: Boolean, webpage: Boolean): Item
+    realm(query: String): [Realm]
 }
 

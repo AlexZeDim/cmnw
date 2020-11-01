@@ -16,7 +16,7 @@ const clusterChartData = require('./dma/valuations/cluster/cluster_chart.js');
 
 const root = {
   character: async ({ id }) => {
-    const character = await character_db.findById(id.toLowerCase());
+    const character = await character_db.findById(id.toLowerCase()).lean();
     if (!character) {
       if (!id.includes('@')) {
         return
@@ -36,13 +36,13 @@ const root = {
         true,
         true
       );
-      return await character_db.findById(id.toLowerCase());
+      return await character_db.findById(id.toLowerCase()).lean();
     }
     character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
     return character
   },
   guild: async ({ id }) => {
-    const guild = await guild_db.findById(id.toLowerCase())
+    const guild = await guild_db.findById(id.toLowerCase()).lean()
     if (!guild) {
       if (!id.includes('@')) {
         return
@@ -61,9 +61,18 @@ const root = {
         token,
         true
       )
-      return await guild_db.findById(id.toLowerCase())
+      return await guild_db.findById(id.toLowerCase()).lean()
     }
     return guild
+  },
+  realms: async ({ query }) => {
+    return await realms_db
+      .find(
+        { $text: { $search: query } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean()
   },
   item: async ({ id, valuations, webpage }) => {
 

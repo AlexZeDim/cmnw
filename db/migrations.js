@@ -2,10 +2,11 @@
  * Mongo Models
  */
 require('./connection')
-const items = require('./models/items_db');
-const characters = require('./models/characters_db');
-const guilds = require('./models/guilds_db');
-const pricing_methods = require('./models/pricing_methods_db');
+const items_db = require('./models/items_db');
+const characters_db = require('./models/characters_db');
+const realms_db = require('./models/realms_db');
+const guilds_db = require('./models/guilds_db');
+const pricing_methods_db = require('./models/pricing_methods_db');
 
 (async () => {
   try {
@@ -22,10 +23,9 @@ const pricing_methods = require('./models/pricing_methods_db');
      * UpdateMany
      */
     /*
-    let updMany = await items.updateMany({contracts: true}, {contracts: false});
+    let updMany = await items.updateMany({ contracts: true }, { contracts: false });
     console.log(updMany)
     */
-
 
     /**
      * Remove documents

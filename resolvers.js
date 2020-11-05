@@ -1,5 +1,5 @@
-const character_db = require('./db/models/characters_db');
-const guild_db = require('./db/models/guilds_db');
+const characters_db = require('./db/models/characters_db');
+const guilds_db = require('./db/models/guilds_db');
 const realms_db = require('./db/models/realms_db');
 const osint_logs_db = require('./db/models/osint_logs_db');
 const keys_db = require('./db/models/keys_db');
@@ -16,7 +16,7 @@ const clusterChartData = require('./dma/valuations/cluster/cluster_chart.js');
 
 const root = {
   character: async ({ id }) => {
-    const character = await character_db.findById(id.toLowerCase()).lean();
+    const character = await characters_db.findById(id.toLowerCase()).lean();
     if (!character) {
       if (!id.includes('@')) {
         return
@@ -36,13 +36,35 @@ const root = {
         true,
         true
       );
-      return await character_db.findById(id.toLowerCase()).lean();
+      return await characters_db.findById(id.toLowerCase()).lean();
     }
     character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
     return character
   },
   guild: async ({ id }) => {
-    const guild = await guild_db.findById(id.toLowerCase()).lean()
+    const [guild] = await guilds_db.aggregate([
+      {
+        $match: {
+          _id: id.toLowerCase(),
+        },
+      },
+      {
+        $lookup: {
+          from: 'characters',
+          localField: 'members._id',
+          foreignField: '_id',
+          as: 'members',
+        },
+      },
+      {
+        $lookup: {
+          from: 'osint_logs',
+          localField: '_id',
+          foreignField: 'root_id',
+          as: 'logs',
+        },
+      },
+    ]).allowDiskUse(true).exec();
     if (!guild) {
       if (!id.includes('@')) {
         return
@@ -61,7 +83,29 @@ const root = {
         token,
         true
       )
-      return await guild_db.findById(id.toLowerCase()).lean()
+      return await guilds_db.aggregate([
+        {
+          $match: {
+            _id: id.toLowerCase(),
+          },
+        },
+        {
+          $lookup: {
+            from: 'characters',
+            localField: 'members._id',
+            foreignField: '_id',
+            as: 'members_',
+          },
+        },
+        {
+          $lookup: {
+            from: 'osint_logs',
+            localField: '_id',
+            foreignField: 'root_id',
+            as: 'logs',
+          },
+        },
+      ]).allowDiskUse(true).exec()[0];
     }
     return guild
   },
@@ -70,7 +114,7 @@ const root = {
       return
     }
     const [ type, hash ] = query.split("@")
-    return await character_db.find({ [`hash.${type}`]: hash }).limit(60).lean()
+    return await characters_db.find({ [`hash.${type}`]: hash }).limit(60).lean()
   },
   wowtoken: async ({ region }) => {
     return await wowtoken_db

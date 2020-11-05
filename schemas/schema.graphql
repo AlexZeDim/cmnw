@@ -72,8 +72,6 @@ type Logs {
 type Guild_Member {
     _id: ID!,
     id: Int,
-    name: String,
-    slug: String,
     rank: Int,
 }
 
@@ -92,7 +90,7 @@ type Character {
     faction: String,
     level: Int,
     lastModified: Float,
-    statisCode: Int,
+    statusCode: Int,
     media: Character_Media,
     createdBy: String,
     updatedBy: String,
@@ -111,12 +109,12 @@ type Guild {
     rank: Int,
     realm: Realm,
     faction: String,
-    members: [Guild_Member],
+    members: [Character],
     member_count: Int,
     achievement_points: Int,
     created_timestamp: Float,
     lastModified: Float,
-    statisCode: Int,
+    statusCode: Int,
     createdBy: String,
     updatedBy: String,
     isWatched: Boolean,
@@ -152,7 +150,6 @@ type Item {
     is_stackable: Boolean,
     inventory_type: String,
     purchase_quantity: Int,
-    ilvl: Ilvl,
     loot_type: String,
     contracts: Boolean,
     asset_class: [String],
@@ -165,7 +162,7 @@ type Item {
     updatedAt: Float,
     valuations: [Valuations],
     chart: ClusterData,
-    quotes: Quotes,
+    quotes: [Quotes],
     wowtoken: [Wowtoken]
 }
 
@@ -179,7 +176,7 @@ type Wowtoken {
 }
 
 type Quotes {
-    _id: ID!,
+    _id: Float,
     price: Float,
     quantity: Int,
     open_interest: Float,

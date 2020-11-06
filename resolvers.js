@@ -94,7 +94,7 @@ const root = {
             from: 'characters',
             localField: 'members._id',
             foreignField: '_id',
-            as: 'members_',
+            as: 'members',
           },
         },
         {

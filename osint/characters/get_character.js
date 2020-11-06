@@ -209,7 +209,7 @@ async function getCharacter (
          * Guild
          */
         if (characterData.value.guild) {
-          character.guild._id = characterData.value.guild.id;
+          character.guild._id = `${toSlug(character.guild.name)}@${character.realm.slug}`;
           character.guild.name = characterData.value.guild.name;
           character.guild.slug = characterData.value.guild.name;
           if (guildRank === true) {

@@ -29,7 +29,7 @@ let schema = new mongoose.Schema(
       },
     },
     guild: {
-      _id: Number,
+      _id: String,
       name: String,
       slug: {
         type: String,

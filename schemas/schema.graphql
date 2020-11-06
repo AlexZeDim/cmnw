@@ -102,7 +102,7 @@ type Character {
 }
 
 type Guild {
-    _id: ID!,
+    _id: ID,
     id: Int,
     name: String,
     slug: String,

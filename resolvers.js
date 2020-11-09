@@ -7,6 +7,7 @@ const valuations_db = require('./db/models/valuations_db');
 const auctions_db = require('./db/models/auctions_db');
 const golds_db = require('./db/models/golds_db');
 const wowtoken_db = require('./db/models/wowtoken_db');
+const messages_db = require('./db/models/messages_db');
 
 const getCharacter = require('./osint/characters/get_character');
 const getGuild = require('./osint/guilds/get_guild')
@@ -342,7 +343,10 @@ const root = {
 
     item.realm = realm;
     return item
-  }
+  },
+  createMessage: async ({ input }) => {
+    return messages_db.create(input);
+  },
 }
 
 module.exports = root;

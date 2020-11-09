@@ -1,19 +1,19 @@
-const characters_db = require('./db/models/characters_db');
-const guilds_db = require('./db/models/guilds_db');
-const realms_db = require('./db/models/realms_db');
-const osint_logs_db = require('./db/models/osint_logs_db');
-const keys_db = require('./db/models/keys_db');
-const valuations_db = require('./db/models/valuations_db');
-const auctions_db = require('./db/models/auctions_db');
-const golds_db = require('./db/models/golds_db');
-const wowtoken_db = require('./db/models/wowtoken_db');
-const messages_db = require('./db/models/messages_db');
+const characters_db = require('../db/models/characters_db');
+const guilds_db = require('../db/models/guilds_db');
+const realms_db = require('../db/models/realms_db');
+const osint_logs_db = require('../db/models/osint_logs_db');
+const keys_db = require('../db/models/keys_db');
+const valuations_db = require('../db/models/valuations_db');
+const auctions_db = require('../db/models/auctions_db');
+const golds_db = require('../db/models/golds_db');
+const wowtoken_db = require('../db/models/wowtoken_db');
+const messages_db = require('../db/models/messages_db');
 
-const getCharacter = require('./osint/characters/get_character');
-const getGuild = require('./osint/guilds/get_guild')
-const queryItemAndRealm = require('./routes/api/handle_item_realm');
-const iva = require('./dma/valuations/eva/iva.js');
-const clusterChartData = require('./dma/valuations/cluster/cluster_chart.js');
+const getCharacter = require('../osint/characters/get_character');
+const getGuild = require('../osint/guilds/get_guild')
+const queryItemAndRealm = require('./handle_item_realm');
+const iva = require('../dma/valuations/eva/iva.js');
+const clusterChartData = require('../dma/valuations/cluster/cluster_chart.js');
 
 const root = {
   character: async ({ id }) => {

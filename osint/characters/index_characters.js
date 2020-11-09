@@ -28,7 +28,7 @@ schedule.scheduleJob('0 * * * *', async (
 ) => {
   try {
     console.time(`OSINT-indexCharacters`);
-    let { token } = await keys_db.findOne(queryKeys);
+    const { token } = await keys_db.findOne(queryKeys);
     await characters_db.syncIndexes()
     await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
     await characters_db

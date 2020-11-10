@@ -17,17 +17,22 @@ const clusterChartData = require('../dma/valuations/cluster/cluster_chart.js');
 
 const root = {
   character: async ({ id }) => {
-    const character = await characters_db.findById(id.toLowerCase()).lean();
+    if (!id.includes('@')) {
+      return
+    }
+    const [ nameSlug, realmSlug ] = id.split('@');
+    const realm = await realms_db
+      .findOne(
+        { $text: { $search: realmSlug } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean()
+    if (!realm) {
+      return
+    }
+    const character = await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     if (!character) {
-      if (!id.includes('@')) {
-        return
-      }
-      const [ nameSlug, realmSlug ] = id.split('@')
-
-      const realm = await realms_db.findOne({ $text: { $search: realmSlug } }, { _id: 1, slug: 1, name: 1 });
-      if (!realm) {
-        return
-      }
       const { token } = await keys_db.findOne({
         tags: `OSINT-indexCharacters`,
       });
@@ -37,16 +42,31 @@ const root = {
         true,
         true
       );
-      return await characters_db.findById(id.toLowerCase()).lean();
+      return await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     }
     character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
     return character
   },
   guild: async ({ id }) => {
+    console.log(id)
+    if (!id.includes('@')) {
+      return
+    }
+    const [ nameSlug, realmSlug ] = id.split('@');
+    const realm = await realms_db
+      .findOne(
+        { $text: { $search: realmSlug } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean()
+    if (!realm) {
+      return
+    }
     const [guild] = await guilds_db.aggregate([
       {
         $match: {
-          _id: id.toLowerCase(),
+          _id: `${nameSlug.toLowerCase()}@${realm.slug}`,
         },
       },
       {
@@ -67,15 +87,6 @@ const root = {
       },
     ]).allowDiskUse(true).exec();
     if (!guild) {
-      if (!id.includes('@')) {
-        return
-      }
-      const [ nameSlug, realmSlug ] = id.split('@')
-
-      const realm = await realms_db.findOne({ $text: { $search: realmSlug } }, { _id: 1, slug: 1, name: 1 });
-      if (!realm) {
-        return
-      }
       const { token } = await keys_db.findOne({
         tags: `OSINT-indexCharacters`,
       });
@@ -87,7 +98,7 @@ const root = {
       return await guilds_db.aggregate([
         {
           $match: {
-            _id: id.toLowerCase(),
+            _id: `${nameSlug.toLowerCase()}@${realm.slug}`,
           },
         },
         {

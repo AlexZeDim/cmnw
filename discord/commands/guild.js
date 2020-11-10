@@ -13,79 +13,96 @@ module.exports = {
   aliases: ['GUILD', 'Guild'],
   args: true,
   async execute(message, args) {
-    const [name, realm] = args.split('@');
-    let embed = new MessageEmbed();
-    let guild = await axios
-      .get(
-        encodeURI(
-          `http://${process.env.localhost}:3030/api/guilds/guild/${name}@${realm}`,
-        ),
-      )
-      .then(({ data }) => {
-        let { _id, name, realm, members } = data;
-        embed.setAuthor(`${(name + '@' + realm.name).toUpperCase()}`, '', encodeURI(`https://${process.env.domain}/guild/${realm.slug}/${name}`,),);
-
-        const fieldsToCheck = [
-          'id',
-          'achievement_points',
-          'faction',
-          'member_count',
-          'lastModified',
-          'createdBy',
-        ];
-
-        fieldsToCheck.map(field => {
-          if (field in data) {
-            if (typeof data[field] === 'object') {
-              Object.entries(data[field]).map(([k, v]) => {
-                embed.addField(
-                  `${humanizeString(field)} ${humanizeString(k)}`,
-                  v,
-                  true,
-                );
-              });
-            } else {
-              if (field === 'faction') {
-                if (data[field] === 'Alliance') {
-                  embed.setColor('#006aff');
-                } else if (data[field] === 'Horde') {
-                  embed.setColor('#ff0000');
-                }
-              } else if (field === 'lastModified') {
-                embed.setTimestamp(data[field]);
-              } else if (field === 'createdBy') {
-                embed.setFooter(`${data[field]}`);
-              } else {
-                embed.addField(humanizeString(field), data[field], true);
-              }
+    const id = args;
+    const embed = new MessageEmbed();
+    await axios.post('http://localhost:4000/graphql', {
+      query: `query Guild($id: ID!) {
+        guild(id: $id) {
+          _id
+          id
+          name
+          realm {
+            _id
+            slug
+            name
+            name_locale
+          }
+          faction
+          members {
+            _id
+            name
+            realm {
+              _id
+              name
+              slug
+            }
+            guild {
+              name
+              slug
+              rank
             }
           }
-        });
-        if (members && members.length) {
-          members = members.filter(member => member.guild.rank < 2);
-          for (let i = 0; i < members.length; i++) {
-            if (i === 9) {
-              embed.addField(
-        `─────────────`,
-        `
-                Want Full Roster?
-                Check [Conglomerat](https://${process.env.domain}/guild/${realm.slug}/${_id.split('@')[0]})
-                ────────────`,
-          true,
-              );
-              break;
-            }
+          member_count
+          achievement_points
+          lastModified
+          updatedBy
+        }   
+      }`,
+      variables: { id },
+    }).then(({ data: { data: { guild } } }) => {
+      const { name, realm, members } = guild;
+      embed.setAuthor(`${(name + '@' + realm.name).toUpperCase()}`, '', encodeURI(`https://${process.env.domain}/guild/${guild._id}`));
+
+      if (guild.id) {
+        embed.addField(`ID`, guild.id, true);
+      }
+
+      if (guild.achievement_points) {
+        embed.addField(`Achievement Points`, guild.achievement_points, true);
+      }
+
+      if (guild.faction === 'Alliance') {
+        embed.setColor('#006aff');
+      } else if (guild.faction === 'Horde') {
+        embed.setColor('#ff0000');
+      }
+
+      if (guild.member_count) {
+        embed.addField(`Members`, guild.member_count, true);
+      }
+
+      if (guild.lastModified) {
+        embed.setTimestamp(guild.lastModified);
+      }
+
+      if (guild.updatedAt) {
+        embed.setFooter(guild.updatedAt);
+      }
+
+      if (members && members.length) {
+        members.sort((a, b) => a.guild.rank - b.guild.rank);
+        for (let i = 0; i < members.length; i++) {
+          if (i === 8) {
             embed.addField(
       `─────────────`,
-      `ID: [${members[i]._id}](https://${process.env.domain}/character/${realm.slug}/${members[i].name})
-              R: ${members[i].guild.rank === 0 ? 'GM' : members[i].guild.rank}
-              ─────────────`,
-            true,
+      `
+              Want Full Roster?
+              Check [Conglomerat](https://${process.env.domain}/guild/${guild._id})
+              ────────────`,
+        true,
             );
+            break;
           }
+          embed.addField(
+    `────── R: ${members[i].guild.rank === 0 ? ('GM ') : (`${members[i].guild.rank} ──`)}────`,
+    `[${members[i].name}@${members[i].realm.name}](https://${process.env.domain}/character/${members[i]._id}) 
+            ──────────────`,
+          true,
+          );
         }
-        return embed;
-      });
-    await message.channel.send(guild);
+      }
+      return embed;
+    });
+    await message.channel.send(embed);
   },
 };

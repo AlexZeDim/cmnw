@@ -19,7 +19,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 /** GraphQL */
-const schema = fs.readFileSync(path.resolve(__dirname, './schemas/schema.graphql'), 'utf-8');
+const schema = fs.readFileSync(path.resolve(__dirname, './graphql/schemas/schema.graphql'), 'utf-8');
 
 /**
  * TODO cors()

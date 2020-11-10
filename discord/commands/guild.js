@@ -75,8 +75,8 @@ module.exports = {
         embed.setTimestamp(guild.lastModified);
       }
 
-      if (guild.updatedAt) {
-        embed.setFooter(guild.updatedAt);
+      if (guild.updatedBy) {
+        embed.setFooter(guild.updatedBy);
       }
 
       if (members && members.length) {

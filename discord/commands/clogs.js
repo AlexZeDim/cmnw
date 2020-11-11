@@ -27,6 +27,7 @@ module.exports = {
               name
               slug
             }
+            updatedBy
             logs {
               type
               original_value
@@ -43,7 +44,10 @@ module.exports = {
       const { _id, name, realm, logs } = character;
         if (logs.length) {
           embed.setTitle(`${name}@${realm.name}`.toString().toUpperCase());
-          embed.setURL(`https://${process.env.domain}/character/${_id}`,);
+          embed.setURL(`https://${process.env.domain}/character/${_id}`);
+          if (character.updatedBy) {
+            embed.setFooter(character.updatedBy);
+          }
           for (let i = 0; i < logs.length; i++) {
             if (i === 19) {
               embed.addField(

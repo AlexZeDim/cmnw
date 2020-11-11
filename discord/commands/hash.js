@@ -16,7 +16,7 @@ module.exports = {
     const embed = new MessageEmbed();
     await axios.post('http://localhost:4000/graphql', {
       query: `query Hash($query_hash: String!) {
-      hash(query: $query_hash) {
+        hash(query: $query_hash) {
           _id
           name
           realm {
@@ -27,8 +27,8 @@ module.exports = {
             slug
           }
           faction
-      } 
-    }`,
+        } 
+      }`,
       variables: { query_hash },
     }).then(({ data: { data: { hash } } }) => {
         embed.setTitle(query_hash.toUpperCase());

@@ -48,7 +48,6 @@ const root = {
     return character
   },
   guild: async ({ id }) => {
-    console.log(id)
     if (!id.includes('@')) {
       return
     }

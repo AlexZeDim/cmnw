@@ -297,7 +297,7 @@ async function getCharacter (
         if (assets && assets.length) {
           let avatar_url, bust_url, render_url;
           for (let { key , value } of assets) {
-            if (key === 'avatar') {
+            if (key === 'avatar' && value) {
               if (!character.id) {
                 character.id = parseInt(
                   value

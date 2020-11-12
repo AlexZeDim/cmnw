@@ -14,8 +14,6 @@ const getCharacter = require('../../osint/characters/get_character');
 
     const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
 
-    await characters_db.syncIndexes()
-
     await characters_db
       .aggregate([
         {
@@ -79,7 +77,7 @@ const getCharacter = require('../../osint/characters/get_character');
         { parallel: bulkSize },
       );
   } catch (err) {
-    console.error(`${build_personalities.name},${err}`);
+    console.error(`OSINT-${build_personalities.name},${err}`);
   } finally {
     console.timeEnd(`OSINT-${build_personalities.name}`);
   }

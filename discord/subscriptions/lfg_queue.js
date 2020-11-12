@@ -25,7 +25,7 @@ async function lfgQuene (bot) {
         if (!guild_channel) {
           return
         }
-        const query = { isWatched: true, updatedBy: 'OSINT-LFG' } //-NEW
+        const query = { isWatched: true }
         if (subscriber.filters) {
           if (subscriber.filters.realm && subscriber.filters.realm.length) Object.assign(query, {'realm.slug': { '$in': subscriber.filters.realm.slug } })
           if (subscriber.filters.faction) Object.assign(query, { 'faction': subscriber.filters.faction })

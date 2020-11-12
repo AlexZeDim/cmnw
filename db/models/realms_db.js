@@ -4,78 +4,38 @@ mongoose.Promise = global.Promise;
 
 let schema = new mongoose.Schema(
   {
-    _id: {
-      type: Number,
-    },
-    region: {
-      type: String,
-    },
-    name: {
-      type: String,
-    },
-    slug: {
-      type: String,
-    },
-    name_locale: {
-      type: String,
-    },
+    _id: Number,
+    region: String,
+    name: String,
+    slug: String,
+    name_locale: String,
     slug_locale: {
       type: String,
       set: toSlug,
     },
-    category: {
-      type: String,
-    },
-    locale: {
-      type: String,
-    },
-    timezone: {
-      type: String,
-    },
-    type: {
-      type: String,
-    },
-    is_tournament: {
-      type: Boolean,
-    },
-    has_queue: {
-      type: Boolean,
-    },
-    status: {
-      type: String,
-    },
-    population: {
-      type: String,
-    },
-    connected_realm_id: {
-      type: Number,
-    },
-    connected_realm: {
-      type: Array,
-    },
-    ticker: {
-      type: String,
-    },
+    category: String,
+    locale: String,
+    timezone: String,
+    type: String,
+    is_tournament: Boolean,
+    has_queue: Boolean,
+    status: String,
+    population: String,
+    connected_realm_id: Number,
+    connected_realm: [String],
+    ticker: String,
     /**
      * Kihra's WarcraftLogs realm ids
      * for parsing logs via fromLogs
      */
-    wcl_id: {
-      type: Number,
-    },
+    wcl_id: Number,
     /**
      * String lastModified timestamp for auctions, gold and valuations
      * Required for valuations, getAuctionData, getGold
      */
-    auctions: {
-      type: Number,
-    },
-    valuations: {
-      type: Number,
-    },
-    golds: {
-      type: Number,
-    },
+    auctions: Number,
+    valuations: Number,
+    golds: Number,
     /**
      * VOLUSPA population
      */

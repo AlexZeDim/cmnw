@@ -11,7 +11,7 @@ const valuations_db = require('../../../db/models/valuations_db');
  * Modules
  */
 
-const queryItemAndRealm = require('../../api/middleware');
+const queryItemAndRealm = require('../../handle_item_realm');
 const iva = require('../../../dma/valuations/eva/iva.js');
 
 router.get('/:itemQuery@:realmQuery', async function (req, res) {

@@ -7,27 +7,73 @@ require('dotenv').config();
  * @type {{args: boolean, name: string, description: string, execute(*, *): Promise<void>}}
  */
 module.exports = {
-  name: 'char',
+  name: 'character',
   description:
-    'Return information about specific character. Example usage: `char блюрателла@гордунни`',
+    'Return information about specific character. Example usage: `character блюрателла@гордунни`',
   aliases: ['char', 'CHAR', 'CHARACTER', 'Char', 'Character'],
   args: true,
   async execute(message, args) {
-    const [name, realm] = args.split('@');
-    let embed = new MessageEmbed();
-    let character = await axios.get(encodeURI(`http://${process.env.localhost}:3030/api/characters/character/${name}@${realm}`)).then(({ data }) => {
+    const id = args;
+    const embed = new MessageEmbed();
+    await axios.post('http://localhost:4000/graphql', {
+        query: `query Character($id: ID!) {
+          character(id: $id) {
+            _id
+            id
+            name
+            realm {
+              _id
+              name
+              slug
+            }
+            guild {
+              name
+              slug
+              rank
+            }
+            ilvl {
+              eq
+              avg
+            }
+            hash {
+              a
+              b
+              c
+              ex
+              t
+            }
+            race
+            character_class
+            spec
+            gender
+            faction
+            level
+            lastModified
+            media {
+              avatar_url
+              bust_url
+              render_url
+            }
+            createdBy
+            createdAt
+            updatedBy
+            updatedAt
+          }  
+        }`,
+        variables: { id },
+      }).then(({ data: { data: { character } } }) => {
       let _id, name, guild, realm;
-      ({ _id, name, guild, realm } = data);
+      ({ _id, name, guild, realm } = character);
       if (guild) {
         let guild_string = guild.name.toString().toUpperCase();
         if (guild.rank) {
           guild_string = guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`);
         }
         embed.setTitle(guild_string);
-        embed.setURL(encodeURI(`https://${process.env.domain}/guild/${realm.slug}/${guild.name}`));
+        embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild.slug}@${realm.slug}`));
       }
       if (_id) {
-        embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${realm.slug}/${name}`));
+        embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${name}@${realm.slug}`));
       }
 
       const fieldsToCheck = [
@@ -45,44 +91,39 @@ module.exports = {
         'createdBy',
       ];
 
-      fieldsToCheck.map(field => {
-        if (field in data) {
-          if (typeof data[field] === 'object') {
+      fieldsToCheck.forEach(field => {
+        if (field in character) {
+          if (typeof character[field] === 'object') {
             if (field === 'hash') {
-              delete data[field].t;
-              Object.entries(data[field]).map(([k, v]) => {
-                embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, `[${v}](https://${process.env.domain}/find/${k}/${v})`, true);
+              delete character[field].t;
+              Object.entries(character[field]).forEach(([k, v]) => {
+                embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, `[${v}](https://${process.env.domain}/hash/${k}@${v})`, true);
               });
             } else if (field === 'media') {
-              embed.setThumbnail(data[field].avatar_url);
+              embed.setThumbnail(character[field].avatar_url);
             } else {
-              Object.entries(data[field]).map(([k, v]) => {
+              Object.entries(character[field]).forEach(([k, v]) => {
                 embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
               });
             }
           } else {
             if (field === 'faction') {
-              if (data[field] === 'Alliance') {
+              if (character[field] === 'Alliance') {
                 embed.setColor('#006aff');
-              } else if (data[field] === 'Horde') {
+              } else if (character[field] === 'Horde') {
                 embed.setColor('#ff0000');
               }
             } else if (field === 'lastModified') {
-              embed.setTimestamp(data[field]);
+              embed.setTimestamp(character[field]);
             } else if (field === 'createdBy') {
-              embed.setFooter(`${data[field]} | Gonikon`);
+              embed.setFooter(`${character[field]} | Gonikon`);
             } else {
-              embed.addField(
-                humanizeString(field.replace('character_', '')),
-                data[field],
-                true,
-              );
+              embed.addField(humanizeString(field.replace('character_', '')), character[field], true);
             }
           }
         }
       });
-      return embed;
     });
-    await message.channel.send(character);
+    await message.channel.send(embed);
   },
 };

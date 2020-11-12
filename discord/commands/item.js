@@ -8,22 +8,49 @@ module.exports = {
   aliases: ['EVA', 'IVA', 'iva', 'ITEM', 'Item', 'eva'],
   args: true,
   async execute(message, args) {
-    const [item, realm] = args.split('@');
-    let embed = new MessageEmbed();
-    let valuation = await axios
-      .get(
-        encodeURI(
-          `http://${process.env.localhost}:3030/api/items/eva/${item}@${realm}`,
-        ),
-      )
-      .then(({ data }) => {
-        let { item, realm, valuations } = data;
+    const id = args;
+    const embed = new MessageEmbed();
+    await axios.post('http://localhost:4000/graphql', {
+      query: `query Item($id: ID!) {
+        item(id: $id, valuations: true, webpage: false) {
+          _id
+          name {
+            en_GB
+          }
+          realm {
+            name
+            slug
+            auctions
+            ticker
+          }
+          icon
+          valuations {
+            name
+            item_id
+            connected_realm_id
+            type
+            last_modified
+            value
+            flag
+            details {
+              quotation
+              swap_type
+              description
+              price_size
+              quantity
+              open_interest
+              orders
+            }
+          }
+        }      
+      }`,
+      variables: { id },
+    }).then(({ data: { data: { item } } }) => {
+        let { realm, valuations } = item;
         embed.setAuthor(
           `${item.name.en_GB}@${realm.name}`.toUpperCase(),
           '',
-          encodeURI(
-            `https://${process.env.domain}/item/${realm.slug}/${item._id}`,
-          ),
+          encodeURI(`https://${process.env.domain}/item/${item._id}@${realm.slug}`),
         );
 
         let descriptionString = '';
@@ -31,11 +58,8 @@ module.exports = {
         let derivative_counter = 0;
         let premium_counter = 0;
 
-        embed.setURL(
-          encodeURI(
-            `https://${process.env.domain}/item/${realm.slug}/${item._id}`,
-          ),
-        );
+        embed.setURL(encodeURI(`https://${process.env.domain}/item/${item._id}@${realm.slug}`));
+
         if ('icon' in item) {
           embed.setThumbnail(item.icon);
         }
@@ -111,8 +135,7 @@ module.exports = {
         embed.setDescription(descriptionString);
         embed.setTimestamp(realm.auctions * 1000);
         embed.setFooter(`DMA-EVA`);
-        return embed;
       });
-    await message.channel.send(valuation);
+    await message.channel.send(embed);
   },
 };

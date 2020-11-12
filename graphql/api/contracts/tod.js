@@ -12,7 +12,7 @@ const contracts_db = require('../../../db/models/contracts_db');
  */
 
 const moment = require('moment');
-const queryItemAndRealm = require('../middleware');
+const queryItemAndRealm = require('../../handle_item_realm');
 
 router.get('/:itemName@:realmSlug', async (req, res) => {
   try {
@@ -27,7 +27,7 @@ router.get('/:itemName@:realmSlug', async (req, res) => {
             $match: {
               item_id: item._id,
               connected_realm_id: realm.connected_realm_id,
-              'date.day': moment().subtract(1, 'day').get('date'),
+              'date.day': moment().get('date'),
             },
           },
           {

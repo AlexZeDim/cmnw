@@ -6,9 +6,7 @@ let schema = new mongoose.Schema(
     /**
      * Blizzard API
      */
-    _id: {
-      type: Number,
-    },
+    _id: Number,
     name: {
       en_US: String,
       es_MX: String,
@@ -20,45 +18,19 @@ let schema = new mongoose.Schema(
       it_IT: String,
       ru_RU: String,
     },
-    quality: {
-      type: String,
-    },
-    ilvl: {
-      type: Number,
-    },
-    level: {
-      type: Number,
-    },
-    icon: {
-      type: String,
-    },
-    item_class: {
-      type: String,
-    },
-    item_subclass: {
-      type: String,
-    },
-    purchase_price: {
-      type: Number,
-    },
-    sell_price: {
-      type: Number,
-    },
-    is_equippable: {
-      type: Boolean,
-    },
-    is_stackable: {
-      type: Boolean,
-    },
-    inventory_type: {
-      type: String,
-    },
-    purchase_quantity: {
-      type: Number,
-    },
-    loot_type: {
-      type: String,
-    },
+    quality: String,
+    ilvl: Number,
+    level: Number,
+    icon: String,
+    item_class: String,
+    item_subclass: String,
+    purchase_price: Number,
+    sell_price: Number,
+    is_equippable: Boolean,
+    is_stackable: Boolean,
+    inventory_type: String,
+    purchase_quantity: Number,
+    loot_type: String,
     /**
      * IndexAssetClass - csv import
      */
@@ -67,27 +39,17 @@ let schema = new mongoose.Schema(
       require: true,
       default: false,
     },
-    asset_class: {
-      type: Array,
-    },
-    /** add thought importTaxonomy_CSV('itemsparse') */
-    expansion: {
-      type: String,
-    },
-    stackable: {
-      type: Number,
-    },
-    /** add thought importTaxonomy_CSV('taxonomy') */
-    profession_class: {
-      type: String,
-    },
-    ticker: {
-      type: String,
-    },
+    asset_class: [String],
+    /** add via importTaxonomy_CSV('itemsparse') */
+    expansion: String,
+    stackable: Number,
+    /** add via importTaxonomy_CSV('taxonomy') */
+    profession_class: String,
+    ticker: String,
     /**
      * IndexItems
      */
-    tags: Array
+    tags: [String]
   },
   {
     timestamps: true,

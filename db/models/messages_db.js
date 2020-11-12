@@ -4,7 +4,7 @@ mongoose.Promise = global.Promise;
 let schema = new mongoose.Schema(
   {
     author: String,
-    mentions: Array,
+    mentions: [String],
     type: {
       type: String,
       enum: ['profile', 'message'],

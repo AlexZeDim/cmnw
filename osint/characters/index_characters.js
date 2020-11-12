@@ -26,8 +26,8 @@ async function indexCharacters (
   bulkSize = 5,
 ) {
   try {
-    console.time(`OSINT-${indexCharacters.name}`);
-    let { token } = await keys_db.findOne(queryKeys);
+    console.time(`OSINT-indexCharacters`);
+    const { token } = await keys_db.findOne(queryKeys);
     await characters_db.syncIndexes()
     await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: `OSINT-${indexCharacters.name}` })
     await characters_db

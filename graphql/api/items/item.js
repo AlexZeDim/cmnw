@@ -4,7 +4,7 @@ const router = express.Router();
 /**
  * Modules
  */
-const queryItemAndRealm = require('../../api/middleware');
+const queryItemAndRealm = require('../../handle_item_realm');
 const clusterChartData = require('../../../dma/valuations/cluster/cluster_chart.js');
 const auctionsFeed = require('../../../dma/auctions/auctions_feed.js');
 const auctionsData = require('../../../dma/auctions/auctions_data.js');

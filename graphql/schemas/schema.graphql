@@ -1,0 +1,263 @@
+type Realm {
+    _id: ID!,
+    name: String!,
+    slug: String!,
+    name_locale: String,
+    slug_locale: String,
+    region: String,
+    category: String,
+    locale: String,
+    timezone: String,
+    type: String,
+    is_tournament: Boolean,
+    has_queue: Boolean,
+    status: String,
+    population: String,
+    connected_realm_id: Int,
+    connected_realm: [String],
+    ticker: String,
+    wcl_id: Int,
+    auctions: Float,
+    valuations: Float,
+    golds: Float,
+    players: Players,
+    guilds: Guilds,
+}
+
+type Players {
+    total: Int,
+    alliance: Int,
+    horde: Int,
+    max_level: Int,
+    unique: Int,
+}
+
+type Guilds {
+    total: Int,
+    alliance: Int,
+    horde: Int,
+}
+
+type Ilvl {
+    eq: Int!,
+    avg: Int!,
+}
+
+type Hash {
+    a: String,
+    b: String,
+    c: String,
+    ex: String,
+    t: String,
+}
+
+type Character_Media {
+    avatar_url: String,
+    bust_url: String,
+    render_url: String,
+}
+
+type Logs {
+    root_id: ID!,
+    root_history: [String],
+    type: String,
+    original_value: String,
+    new_value: String,
+    message: String,
+    action: String,
+    before: Float,
+    after: Float,
+}
+
+type Guild_Member {
+    _id: ID!,
+    id: Int,
+    rank: Int,
+}
+
+type Character {
+    _id: ID!,
+    id: Int!,
+    name: String!,
+    realm: Realm!,
+    guild: Guild,
+    ilvl: Ilvl,
+    hash: Hash,
+    race: String,
+    character_class: String,
+    spec: String,
+    gender: String,
+    faction: String,
+    level: Int,
+    lastModified: Float,
+    statusCode: Int,
+    media: Character_Media,
+    createdBy: String,
+    updatedBy: String,
+    isWatched: Boolean,
+    personality: String,
+    logs: [Logs]
+    createdAt: Float,
+    updatedAt: Float,
+}
+
+type Guild {
+    _id: ID,
+    id: Int,
+    name: String,
+    slug: String,
+    rank: Int,
+    realm: Realm,
+    faction: String,
+    members: [Character],
+    member_count: Int,
+    achievement_points: Int,
+    created_timestamp: Float,
+    lastModified: Float,
+    statusCode: Int,
+    createdBy: String,
+    updatedBy: String,
+    isWatched: Boolean,
+    logs: [Logs]
+    createdAt: Float,
+    updatedAt: Float,
+}
+
+type Name {
+    en_US: String,
+    es_MX: String,
+    pt_BR: String,
+    de_DE: String,
+    en_GB: String,
+    es_ES: String,
+    fr_FR: String,
+    it_IT: String,
+    ru_RU: String,
+}
+
+type Item {
+    _id: ID!,
+    name: Name,
+    realm: Realm,
+    quality: String,
+    level: Int,
+    icon: String,
+    item_class: String,
+    item_subclass: String,
+    purchase_price: Float,
+    sell_price: Float,
+    is_equippable: Boolean,
+    is_stackable: Boolean,
+    inventory_type: String,
+    purchase_quantity: Int,
+    loot_type: String,
+    contracts: Boolean,
+    asset_class: [String],
+    expansion: String,
+    stackable: Int,
+    profession_class: String,
+    ticker: String,
+    tags: [String],
+    createdAt: Float,
+    updatedAt: Float,
+    valuations: [Valuations],
+    chart: ClusterData,
+    quotes: [Quotes],
+    wowtoken: [Wowtoken]
+}
+
+type Wowtoken {
+    _id: ID!,
+    region: String,
+    price: Float,
+    lastModified:Float,
+    createdAt: Float,
+    updatedAt: Float,
+}
+
+type Quotes {
+    _id: Float,
+    price: Float,
+    quantity: Int,
+    open_interest: Float,
+    size: Float,
+}
+
+"""
+Item Valuations
+"""
+
+type Valuations {
+    name: String,
+    item_id: Int,
+    connected_realm_id: Int,
+    type: String,
+    last_modified: Float,
+    value: Float,
+    flag: String,
+    details: ValuationsDetails,
+}
+
+type ValuationsDetails {
+    quotation: String,
+    swap_type: String,
+    description: String,
+    price_size: Float,
+    quantity: Float,
+    open_interest: Float,
+    orders: [Float],
+}
+
+"""
+Item Cluster Chart
+"""
+
+type ClusterData {
+    price_range: [Float],
+    timestamps: [Float],
+    dataset: [Dataset]
+}
+
+type Dataset {
+    x: Int,
+    y: Int,
+    value: Float,
+    oi: Float,
+    orders: Int,
+}
+
+type Clearance {
+    access: Int,
+    codeword: String,
+}
+
+type Message {
+    _id: ID!,
+    author: String,
+    mentions: [String],
+    type: String,
+    clearance: [Clearance],
+    content: String,
+}
+
+input MessageInput {
+    content: String
+    author: String
+}
+
+"""
+Queries
+"""
+
+type Query {
+    character(id: ID!): Character
+    guild(id: ID!): Guild
+    item(id: ID!, valuations: Boolean, webpage: Boolean): Item
+    realms(name: String): [Realm]
+    wowtoken(region: String): Wowtoken
+    hash(query: String!): [Character]
+}
+
+type Mutation {
+    createMessage(input: MessageInput): Message
+}

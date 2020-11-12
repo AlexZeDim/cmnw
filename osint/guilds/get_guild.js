@@ -204,7 +204,7 @@ async function getGuild (
               let c_lastModified = new Date(character.lastModified);
               if (guildExist && c_lastModified < g_lastModified) {
                 character.guild = {
-                  id: guild.id,
+                  _id: `${name_slug}@${guild.realm.slug}`,
                   name: guild.name,
                   slug: name_slug,
                   rank: member.rank,
@@ -229,7 +229,7 @@ async function getGuild (
                   slug: guild.realm.slug,
                 },
                 guild: {
-                  id: guild.id,
+                  _id: `${name_slug}@${guild.realm.slug}`,
                   name: guild.name,
                   slug: name_slug,
                   rank: member.rank,

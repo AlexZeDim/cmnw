@@ -26,7 +26,7 @@ async function lfgQuene (bot) {
           if (subscriber.filters.realm && subscriber.filters.realm.length) Object.assign(query, {'realm.slug': { '$in': subscriber.filters.realm.slug } })
           if (subscriber.filters.faction) Object.assign(query, { 'faction': subscriber.filters.faction })
           if (subscriber.filters.ilvl) Object.assign(query, { 'ilvl.avg': { '$gte': subscriber.filters.ilvl } })
-          if (subscriber.filters.character_class) Object.assign(query, { 'character_class': { '$in': subscriber.filters.character_class } })
+          if (subscriber.filters.character_class && subscriber.filters.character_class.length) Object.assign(query, { 'character_class': { '$in': subscriber.filters.character_class } })
         }
         /** Request characters by OSINT-LFG-NEW with query only for russian realms */
         const characters = await characters_db.aggregate([
@@ -79,11 +79,11 @@ async function lfgQuene (bot) {
                 guild_string = guild_string.concat(` // ${parseInt(character.guild.rank) === 0 ? 'GM' : 'R' + character.guild.rank}`);
               }
               embed.setTitle(guild_string);
-              embed.setURL(encodeURI(`https://${process.env.domain}/guild/${character.realm.slug}/${character.guild.name}`));
+              embed.setURL(encodeURI(`https://${process.env.domain}/guild/${character.guild.name}@${character.realm.slug}`));
             }
 
             if (character._id) {
-              embed.setAuthor(`${character.name}@${character.realm.name_locale}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character.realm.slug}/${character.name}`));
+              embed.setAuthor(`${character.name}@${character.realm.name_locale}`.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${character.name}@${character.realm.slug}`));
             }
 
             if (character.media) {

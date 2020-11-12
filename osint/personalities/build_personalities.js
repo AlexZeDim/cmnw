@@ -82,6 +82,5 @@ const getCharacter = require('../../osint/characters/get_character');
     console.error(`${build_personalities.name},${err}`);
   } finally {
     console.timeEnd(`OSINT-${build_personalities.name}`);
-    process.exit(0)
   }
 })()

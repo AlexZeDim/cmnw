@@ -209,9 +209,9 @@ async function getCharacter (
          * Guild
          */
         if (characterData.value.guild) {
-          character.guild._id = `${toSlug(character.guild.name)}@${character.realm.slug}`;
           character.guild.name = characterData.value.guild.name;
           character.guild.slug = characterData.value.guild.name;
+          character.guild._id = `${toSlug(character.guild.name)}@${character.realm.slug}`;
           if (guildRank === true) {
             await api.query(`data/wow/guild/${character.realm.slug}/${toSlug(character.guild.name)}/roster`, {
               timeout: 10000,
@@ -532,7 +532,7 @@ async function getCharacter (
     character = await character.save({ w: 1, j: true, wtimeout: 100000 })
     console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
   } catch (error) {
-    console.error(`E,${error}`);
+    console.error(`E,getCharacter,${error}`);
   }
 }
 

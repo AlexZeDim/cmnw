@@ -59,14 +59,14 @@ apps:
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
-  - script: ./osint/build_personalities.js
+  - script: ./osint/personalities/build_personalities.js
     name: 'OSINT-PERSONA'
     instances: 1
     out_file: "/dev/null"
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
-  - script: ./osint/count_population.js
+  - script: ./osint/realms/count_population.js
     name: 'OSINT-COUNT-P'
     instances: 1
     out_file: "/dev/null"

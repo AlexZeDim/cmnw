@@ -7,25 +7,21 @@ const characters_db = require('../../db/models/characters_db')
 
 async function lfgQuene (bot) {
   try {
-    console.log(bot)
     /** Every discord subscriber */
     await discord_db
       .find({ type: "recruiting" })
       .sort({ message_sent: 1 })
       .cursor({ batchSize: 10 })
       .eachAsync( async subscriber => {
-        console.log(subscriber)
         const guild = await bot.guilds.cache.get(subscriber.discord_id);
-        console.log(guild)
         if (!guild) {
           return
         }
         const guild_channel = await guild.channels.cache.get(subscriber.channel_id)
-        console.log(guild_channel)
         if (!guild_channel) {
           return
         }
-        const query = { isWatched: true }
+        const query = { isWatched: true, updatedBy: 'OSINT-LFG-NEW' }
         if (subscriber.filters) {
           if (subscriber.filters.realm && subscriber.filters.realm.length) Object.assign(query, {'realm.slug': { '$in': subscriber.filters.realm.slug } })
           if (subscriber.filters.faction) Object.assign(query, { 'faction': subscriber.filters.faction })
@@ -154,7 +150,7 @@ async function lfgQuene (bot) {
             await guild_channel.send(embed)
           }
         }
-        await subscriber.message_sent = Date.now();
+        subscriber.message_sent = Date.now();
         await subscriber.save()
       })
   } catch (error) {

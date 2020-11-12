@@ -19,7 +19,7 @@ schedule.scheduleJob('0 5 1,15 * *', async () => {
       let players_total = await characters_db.find({'realm.slug': realm.slug}).distinct('_id')
       let players_alliance = await characters_db.find({'realm.slug': realm.slug, faction: 'Alliance'}).distinct('_id')
       let players_horde = await characters_db.find({'realm.slug': realm.slug, faction: 'Horde'}).distinct('_id')
-      let players_max_level = await characters_db.find({'realm.slug': realm.slug, level: 120}).distinct('_id')
+      let players_max_level = await characters_db.find({'realm.slug': realm.slug, level: 60}).distinct('_id')
       let players_unique = await characters_db.find({'realm.slug': realm.slug}).distinct('personality')
       let players = {
         total: players_total.length,

@@ -1,48 +1,37 @@
-const express = require('express');
-const router = express.Router();
+
 
 /**
  * Model importing
  */
-
-const realms_db = require('../../db/models/realms_db');
+require('../../db/connection')
+const auctions_db = require('../../db/models/auctions_db');
 
 /**
  * Modules
  */
+const { differenceBy } = require('lodash');
 
-const clusterGoldData = require('../../dma/valuations/cluster/cluster_chart_gold.js');
-const goldsData = require('../../dma/golds/gold_quotes.js');
-
-router.get('/:realmSlug', async function (req, res) {
+(async function T () {
   try {
-    const { realmSlug } = req.params;
-    let response = {};
-    let contracts = [];
-    let realm = await realms_db
-      .findOne({ $text: { $search: realmSlug } })
-      .sort({ score: { $meta: 'textScore' } })
-      .lean();
-    if (realm) {
-      await Promise.allSettled([
-        clusterGoldData(realm.connected_realm_id).then(chart =>
-          Object.assign(response, { chart: chart }),
-        ),
-        goldsData(realm.connected_realm_id).then(quotes =>
-          Object.assign(response, { quotes: quotes }),
-        ),
-      ]);
-      Object.assign(response, {
-        realm: realm,
-        contracts: contracts,
-      });
-      await res.status(200).json(response);
-    } else {
-      await res.status(404).json({ error: 'Not found' });
+    const timestamps = await auctions_db.find({ 'connected_realm_id': 1602 }).distinct('last_modified')
+    if (timestamps.length < 2) {
+      return
     }
-  } catch (e) {
-    await res.status(500).json(e);
-  }
-});
+    timestamps.sort((a, b) => b - a)
 
-module.exports = router;
+    const [ t0, t1 ] = timestamps;
+    const [ orders_t0, orders_t1 ] = await Promise.all([
+      auctions_db.find({ 'connected_realm_id': 1602, 'last_modified': t0, 'item.id': 168487 }).lean(),
+      auctions_db.find({ 'connected_realm_id': 1602, 'last_modified': t1, 'item.id': 168487 }).lean()
+    ])
+    if (!orders_t0.length || !orders_t1.length) {
+      return
+    }
+    const test0 = differenceBy(orders_t0, orders_t1, 'id')
+    const test1 = differenceBy(orders_t1, orders_t0, 'id')
+    console.log(test0, test1)
+  } catch (e) {
+    console.error(e)
+  }
+})();
+

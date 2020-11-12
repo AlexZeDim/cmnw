@@ -4,7 +4,6 @@
 require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const realms_db = require('../../db/models/realms_db');
-const persona_db = require('../../db/models/personalities_db');
 const keys_db = require('../../db/models/keys_db');
 
 /**
@@ -150,22 +149,6 @@ schedule.scheduleJob('*/5 * * * *', async () => {
                     }
                   })
                 ])
-
-                /** Update alias and codename for persona_db */
-                if (character.personality) {
-                  let persona = await persona_db.findById(character.personality)
-                  if (persona && character.lfg.battle_tag) {
-                    persona.aliases.addToSet({
-                      type: 'battle.tag',
-                      value: character.lfg.battle_tag.toString().replace(' ', '')
-                    })
-                    if (persona.codename && persona.codename === 'Unknown') {
-                      persona.codename = character.lfg.battle_tag.toString().split('#')[0].replace(' ', '')
-                    }
-                    console.info(`U,${persona._id},${character.lfg.battle_tag}`)
-                    await persona.save();
-                  }
-                }
 
                 /** Update status */
                 character.updatedBy = 'OSINT-LFG-NEW'

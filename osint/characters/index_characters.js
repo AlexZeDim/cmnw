@@ -9,7 +9,7 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const schedule = require('node-schedule');
+//const schedule = require('node-schedule');
 const getCharacter = require('./get_character');
 
 /***
@@ -20,17 +20,16 @@ const getCharacter = require('./get_character');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('0 * * * *', async (
-  t,
+async function indexCharacters (
   queryFind = {},
-  queryKeys = { tags: `OSINT-indexCharacters` },
+  queryKeys = { tags: `OSINT-${indexCharacters.name}` },
   bulkSize = 5,
-) => {
+) {
   try {
     console.time(`OSINT-indexCharacters`);
     const { token } = await keys_db.findOne(queryKeys);
     await characters_db.syncIndexes()
-    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: 'OSINT-IndexCharacters' })
+    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: `OSINT-${indexCharacters.name}` })
     await characters_db
       .find(queryFind)
       .sort({ updatedAt: 1 })
@@ -41,13 +40,15 @@ schedule.scheduleJob('0 * * * *', async (
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ _id, realm }, i) => {
           const name = _id.split('@')[0]
-          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-indexCharacters` }, token, false, false, i);
+          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-${indexCharacters.name}` }, token, false, false, i);
         }, { parallel: bulkSize }
       );
   } catch (error) {
     console.error(error);
   } finally {
-    console.timeEnd(`OSINT-indexCharacters`);
+    console.timeEnd(`OSINT-${indexCharacters.name}`);
     process.exit(0)
   }
-});
+}
+
+indexCharacters();

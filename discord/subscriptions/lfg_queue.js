@@ -23,7 +23,10 @@ async function lfgQuene (bot) {
         }
         const query = { isWatched: true, updatedBy: 'OSINT-LFG-NEW' }
         if (subscriber.filters) {
-          if (subscriber.filters.realm && subscriber.filters.realm.length) Object.assign(query, {'realm.slug': { '$in': subscriber.filters.realm.slug } })
+          if (subscriber.filters.realm && subscriber.filters.realm.length) {
+            const realms = subscriber.filters.realm.map(({slug}) => slug)
+            Object.assign(query, {'realm.slug': { '$in': realms } })
+          }
           if (subscriber.filters.faction) Object.assign(query, { 'faction': subscriber.filters.faction })
           if (subscriber.filters.ilvl) Object.assign(query, { 'ilvl.avg': { '$gte': subscriber.filters.ilvl } })
           if (subscriber.filters.character_class && subscriber.filters.character_class.length) Object.assign(query, { 'character_class': { '$in': subscriber.filters.character_class } })

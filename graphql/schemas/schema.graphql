@@ -163,7 +163,9 @@ type Item {
     valuations: [Valuations],
     chart: ClusterData,
     quotes: [Quotes],
-    wowtoken: [Wowtoken]
+    wowtoken: [Wowtoken],
+    value: Float,
+    quantity: Float
 }
 
 type Wowtoken {
@@ -199,6 +201,12 @@ type Valuations {
 }
 
 type ValuationsDetails {
+    queue_cost: Float,
+    queue_quantity: Float,
+    rank: Int,
+    reagent_items: [Item],
+    premium_items: [Item],
+    unsorted_items: [Item],
     quotation: String,
     swap_type: String,
     description: String,
@@ -206,6 +214,7 @@ type ValuationsDetails {
     quantity: Float,
     open_interest: Float,
     orders: [Float],
+    wi: Float,
 }
 
 """

@@ -113,7 +113,7 @@ async function lfgQuene (bot) {
               embed.addField('Spec', character.spec, true)
             }
             if (character.hash && character.hash.a) {
-              embed.addField('Hash A', `[${character.hash.a}](https://${process.env.domain}/find/a/${character.hash.a})`, true)
+              embed.addField('Hash A', `[${character.hash.a}](https://${process.env.domain}/hash/a@${character.hash.a})`, true)
             }
             if (character.lfg) {
               if (character.lfg.rio) {

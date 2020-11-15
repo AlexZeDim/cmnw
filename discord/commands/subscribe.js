@@ -2,6 +2,7 @@ require('dotenv').config();
 const { capitalCase }  = require("capital-case");
 
 const discord_db = require('../../db/models/discord_db');
+const items_db = require('../../db/models/items_db');
 const realms_db = require('../../db/models/realms_db');
 
 module.exports = {
@@ -9,7 +10,7 @@ module.exports = {
   description:
     'Subscribes selected channel for announcements: \n' +
     ' `sub {"type":"recruiting"}` to receive notifications about characters from Kernel\'s WoWProgress, which have quene in Looking for Guild recently.\n' +
-    ' `sub {"type":"orders"}` to receive updates about newly added item on \n' +
+    ' `sub {"type":"orders"}` to receive updates about newly added item on Auction House via Conglomerat: DMA\n' +
     '\n' +
     '**FILTERS:** \n' +
     'sub {"key": "string", "number_key": 123, "array_key": ["string", 123]} \n' +
@@ -56,6 +57,10 @@ module.exports = {
           return message.channel.send("Your subscription has been removed")
         }
         if (obj.id && typeof obj.id === 'number') obj.id = [obj.id]
+        if (obj.id && typeof obj.id === 'string') {
+          const items = await items_db.find({ $text: { $search: obj.id } }, { _id: 1 }).limit(50);
+          obj.id = items.map(({ _id }) => _id);
+        }
         if (obj.realm && typeof obj.realm === 'string') obj.realm = await realms_db.find({ $text: { $search: obj.realm } }, { _id: 0, slug: 1, auctions: 1 });
         if (obj.character_class && typeof obj.character_class === 'string') obj.character_class = [capitalCase(obj.character_class)]
       }

@@ -98,7 +98,7 @@ schedule.scheduleJob('01/5 * * * *', function() {
   lfgQuene(bot).then(r => r)
 });
 
-schedule.scheduleJob('01/5 * * * *', function() {
+schedule.scheduleJob('*/1 * * * *', function() {
   orderLog(bot).then(r => r)
 });
 

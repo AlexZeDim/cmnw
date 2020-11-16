@@ -1,7 +1,9 @@
+const { differenceBy } = require('lodash');
+
 const discord_db = require('../../db/models/discord_db')
 const auctions_db = require('../../db/models/auctions_db')
 const realms_db = require('../../db/models/realms_db')
-const { differenceBy } = require('lodash');
+const items_db = require('../../db/models/items_db')
 
 async function timesAndSales (bot) {
   try {
@@ -41,7 +43,7 @@ async function timesAndSales (bot) {
           for (const connected_realm_id of connected_realms) {
             const timestamps = await auctions_db.find({ 'connected_realm_id': connected_realm_id._id }).distinct('last_modified')
             if (timestamps.length < 2) {
-              return //TODO return timestamps
+              return await guild_channel.send(`DMA has not found previous timestamp for Auction House: ${connected_realm_id._id}`)
             }
             timestamps.sort((a, b) => b - a)
             const [ t0, t1 ] = timestamps;
@@ -51,18 +53,16 @@ async function timesAndSales (bot) {
              * starting iterating items for
              * notification message
              */
-            if (t0 > connected_realm_id.auctions) {
+            const { auctions } = subscriber.filters.realm.find(realm => realm.slug === connected_realm_id.connected_realms[0])
+
+            if (t0 > auctions) {
 
               const groupOrders = await auctions_db.aggregate([
                 {
                   $match: {
-                    'connected_realm_id': connected_realm_id,
-                    'item.id': { '$in': subscriber.id },
-                    'last_modified': { '$in': [
-                        t0,
-                        t1
-                      ]
-                    }
+                    'connected_realm_id': connected_realm_id._id,
+                    'item.id': { '$in': subscriber.filters.id },
+                    'last_modified': { '$in': [t0, t1] }
                   }
                 },
                 {
@@ -107,23 +107,23 @@ async function timesAndSales (bot) {
               ]).allowDiskUse(true)
 
               for (const item_orders of groupOrders) {
+                const item = await items_db.findById(item_orders._id)
 
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
                 if (created && created.length) {
                   for (const order of created) {
-                    await guild_channel.send(`| C | ${item_orders._id} | ${order.quantity} | ${order.unit_price || (order.buyout || order.bid)}g | `)
+                    await guild_channel.send(`| C | ${(item.ticker || item.name.en_GB)|| item_orders._id} | ${order.quantity} | ${order.unit_price || (order.buyout || order.bid)}g | `)
                   }
                 }
 
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
                 if (removed && removed.length) {
                   for (const order of removed) {
-                    await guild_channel.send(`| R | ${item_orders._id} | ${order.quantity} | ${order.unit_price || (order.buyout || order.bid)}g | `)
+                    await guild_channel.send(`| R | ${(item.ticker || item.name.en_GB)|| item_orders._id} | ${order.quantity} | ${order.unit_price || (order.buyout || order.bid)}g | `)
                   }
                 }
               }
 
-              //TODO change?
               for (const slug of connected_realm_id.connected_realms) {
                 const index = subscriber.filters.realm.findIndex(realm => realm.slug === slug)
                 subscriber.filters.realm[index].auctions = t0

@@ -1,9 +1,11 @@
 const { MessageEmbed } = require('discord.js');
+const { differenceBy } = require('lodash');
 
 const discord_db = require('../../db/models/discord_db')
 const auctions_db = require('../../db/models/auctions_db')
 const realms_db = require('../../db/models/realms_db')
-const { differenceBy } = require('lodash');
+const items_db = require('../../db/models/items_db')
+
 
 async function orderLogs (bot) {
   try {
@@ -42,8 +44,9 @@ async function orderLogs (bot) {
 
           for (const connected_realm_id of connected_realms) {
             const timestamps = await auctions_db.find({ 'connected_realm_id': connected_realm_id._id }).distinct('last_modified')
+
             if (timestamps.length < 2) {
-              return //TODO return timestamps
+              return await guild_channel.send(`DMA has not found previous timestamp for Auction House: ${connected_realm_id._id}`)
             }
             timestamps.sort((a, b) => b - a)
             const [ t0, t1 ] = timestamps;
@@ -53,18 +56,16 @@ async function orderLogs (bot) {
              * starting iterating items for
              * notification message
              */
-            if (t0 > connected_realm_id.auctions) {
+            const { auctions } = subscriber.filters.realm.find(realm => realm.slug === connected_realm_id.connected_realms[0])
+
+            if (t0 > auctions) {
 
               const groupOrders = await auctions_db.aggregate([
                 {
                   $match: {
-                    'connected_realm_id': connected_realm_id,
-                    'item.id': { '$in': subscriber.id },
-                    'last_modified': { '$in': [
-                        t0,
-                        t1
-                      ]
-                    }
+                    'connected_realm_id': connected_realm_id._id,
+                    'item.id': { '$in': subscriber.filters.id },
+                    'last_modified': { '$in': [t0, t1] }
                   }
                 },
                 {
@@ -109,10 +110,12 @@ async function orderLogs (bot) {
               ]).allowDiskUse(true)
 
               for (const item_orders of groupOrders) {
+                const item = await items_db.findById(item_orders._id)
                 const embed = new MessageEmbed();
-                //TODO request item from collection? setThumbnail
-                embed.setTitle(`${item_orders._id}@${connected_realm_id}`);
+
+                embed.setTitle(`${(item.ticker || item.name.en_GB.toUpperCase()) || item_orders._id}@${connected_realm_id._id}`);
                 embed.setURL(encodeURI(`https://${process.env.domain}/item/${item_orders._id}@${connected_realm_id}`));
+                if (item.icon) embed.setThumbnail(item.icon)
 
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
                 if (created && created.length) {
@@ -127,9 +130,11 @@ async function orderLogs (bot) {
                       cap += order.bid
                     }
                   }
-                  embed.addField('Orders added', created.length, true)
-                  embed.addField('Quantity added', quantity, true)
-                  embed.addField('Cap added', cap, true)
+                  embed.addField(
+                    '────── CREATED ──────',
+                    `Orders: ${created.length}\nQuantity: ${quantity}\nOpen Interest: ${cap.toFixed(2)}g\n───────────────────`,
+                    false
+                  )
                 }
 
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
@@ -145,16 +150,17 @@ async function orderLogs (bot) {
                       cap += order.bid
                     }
                   }
-                  embed.addField('Orders added', removed.length, true)
-                  embed.addField('Quantity added', quantity, true)
-                  embed.addField('Cap added', cap, true)
+                  embed.addField(
+                    '── SOLD OR CANCELLED ──',
+                    `Orders: ${removed.length}\nQuantity: ${quantity}\nInterest Close: ${cap.toFixed(2)}g\n───────────────────`,
+                    false
+                  )
                 }
                 embed.setTimestamp(t0 * 1000);
                 embed.setFooter(`DMA`);
                 await guild_channel.send(embed)
               }
 
-              //TODO change?
               for (const slug of connected_realm_id.connected_realms) {
                 const index = subscriber.filters.realm.findIndex(realm => realm.slug === slug)
                 subscriber.filters.realm[index].auctions = t0

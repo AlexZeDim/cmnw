@@ -6,11 +6,11 @@ const items_db = require('./models/items_db');
 const characters_db = require('./models/characters_db');
 const realms_db = require('./models/realms_db');
 const guilds_db = require('./models/guilds_db');
+const auctions_db = require('./models/auctions_db');
 const pricing_methods_db = require('./models/pricing_methods_db');
 
 (async () => {
   try {
-
     /**
      * Remove field via $unset
      */

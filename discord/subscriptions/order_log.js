@@ -1,12 +1,9 @@
 const { MessageEmbed } = require('discord.js');
-const { capitalCase }  = require("capital-case");
 
 const discord_db = require('../../db/models/discord_db')
 const auctions_db = require('../../db/models/auctions_db')
 const realms_db = require('../../db/models/realms_db')
 const { differenceBy } = require('lodash');
-
-
 
 async function orderLogs (bot) {
   try {
@@ -16,8 +13,17 @@ async function orderLogs (bot) {
       .sort({ message_sent: 1 })
       .cursor({ batchSize: 10 })
       .eachAsync( async subscriber => {
-        if (!subscriber.id.length) return //TODO no items
-        if (!subscriber.filters.realm || !subscriber.filters.realm.length) return //TODO no realms
+        const guild = await bot.guilds.cache.get(subscriber.discord_id);
+        if (!guild) {
+          return
+        }
+        const guild_channel = await guild.channels.cache.get(subscriber.channel_id)
+        if (!guild_channel) {
+          return
+        }
+
+        if (!subscriber.id.length) return await guild_channel.send("No items found, please add items and try again")
+        if (!subscriber.filters.realm || !subscriber.filters.realm.length) return await guild_channel.send("No realms found, please check out for realms and try again")
 
         if (subscriber.filters.realm && subscriber.filters.realm.length) {
 
@@ -52,7 +58,7 @@ async function orderLogs (bot) {
               const groupOrders = await auctions_db.aggregate([
                 {
                   $match: {
-                    'connected_realm_id': 1602,
+                    'connected_realm_id': connected_realm_id,
                     'item.id': { '$in': subscriber.id },
                     'last_modified': { '$in': [
                         t0,
@@ -104,15 +110,48 @@ async function orderLogs (bot) {
 
               for (const item_orders of groupOrders) {
                 const embed = new MessageEmbed();
+                //TODO request item from collection? setThumbnail
+                embed.setTitle(`${item_orders._id}@${connected_realm_id}`);
+                embed.setURL(encodeURI(`https://${process.env.domain}/item/${item_orders._id}@${connected_realm_id}`));
 
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
-                for (const order of created) {
-
+                if (created && created.length) {
+                  let quantity = 0;
+                  let cap = 0;
+                  for (const order of created) {
+                    quantity += order.quantity
+                    if (order.unit_price) cap += order.quantity * order.unit_price
+                    if (order.buyout) {
+                      cap += order.buyout
+                    } else if (order.bid) {
+                      cap += order.bid
+                    }
+                  }
+                  embed.addField('Orders added', created.length, true)
+                  embed.addField('Quantity added', quantity, true)
+                  embed.addField('Cap added', cap, true)
                 }
+
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
-                for (const order of removed) {
-
+                if (removed && removed.length) {
+                  let quantity = 0;
+                  let cap = 0;
+                  for (const order of removed) {
+                    quantity += order.quantity
+                    if (order.unit_price) cap += order.quantity * order.unit_price
+                    if (order.buyout) {
+                      cap += order.buyout
+                    } else if (order.bid) {
+                      cap += order.bid
+                    }
+                  }
+                  embed.addField('Orders added', removed.length, true)
+                  embed.addField('Quantity added', quantity, true)
+                  embed.addField('Cap added', cap, true)
                 }
+                embed.setTimestamp(t0 * 1000);
+                embed.setFooter(`DMA`);
+                await guild_channel.send(embed)
               }
 
               //TODO change?

@@ -114,7 +114,7 @@ async function orderLogs (bot) {
                 const embed = new MessageEmbed();
 
                 embed.setTitle(`${(item.ticker || item.name.en_GB.toUpperCase()) || item_orders._id}@${connected_realm_id._id}`);
-                embed.setURL(encodeURI(`https://${process.env.domain}/item/${item_orders._id}@${connected_realm_id}`));
+                embed.setURL(encodeURI(`https://${process.env.domain}/item/${item_orders._id}@${connected_realm_id._id}`));
                 if (item.icon) embed.setThumbnail(item.icon)
 
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')

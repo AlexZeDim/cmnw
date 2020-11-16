@@ -15,6 +15,7 @@ const Discord = require('discord.js');
 const schedule = require('node-schedule');
 const lfgQuene = require('./subscriptions/lfg_queue')
 const orderLog = require('./subscriptions/order_log')
+const times_sales = require('./subscriptions/times_sales')
 
 
 /** Init Bot Client */
@@ -98,8 +99,12 @@ schedule.scheduleJob('01/5 * * * *', function() {
   lfgQuene(bot).then(r => r)
 });
 
-schedule.scheduleJob('*/1 * * * *', function() {
+schedule.scheduleJob('01/5 * * * *', function() {
   orderLog(bot).then(r => r)
+});
+
+schedule.scheduleJob('01/5 * * * *', function() {
+  times_sales(bot).then(r => r)
 });
 
 bot.login(process.env.bluratella);

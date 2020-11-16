@@ -109,19 +109,35 @@ async function timesAndSales (bot) {
               for (const item_orders of groupOrders) {
                 const item = await items_db.findById(item_orders._id)
 
+                let message = '';
+
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
                 if (created && created.length) {
                   for (const order of created) {
-                    await guild_channel.send(`| C | ${(item.ticker || item.name.en_GB)|| item_orders._id} | ${order.quantity} | ${order.unit_price || (order.buyout || order.bid)}g | `)
+                    let s = `| C | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).padStart(10)}g |\n`
+                    if (message.length + s.length > 1999) {
+                      await guild_channel.send(message)
+                      message = ''
+                    } else {
+                      message += s
+                    }
                   }
                 }
 
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
                 if (removed && removed.length) {
                   for (const order of removed) {
-                    await guild_channel.send(`| R | ${(item.ticker || item.name.en_GB)|| item_orders._id} | ${order.quantity} | ${order.unit_price || (order.buyout || order.bid)}g | `)
+                    let s = `| R | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).padStart(10)}g |\n`
+                    if (message.length + s.length > 1999) {
+                      await guild_channel.send(message)
+                      message = ''
+                    } else {
+                      message += s
+                    }
                   }
                 }
+
+                if (message.length) await guild_channel.send(message)
               }
 
               for (const slug of connected_realm_id.connected_realms) {

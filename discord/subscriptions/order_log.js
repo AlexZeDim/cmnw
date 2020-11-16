@@ -63,38 +63,57 @@ async function orderLogs (bot) {
                 },
                 {
                   $group: {
-                    _id: {
-                      item: "$item.id",
-                      timestamp: "$last_modified"
+                    _id: "$item.id",
+                    orders_t0: {
+                      $push: {
+                        $cond: {
+                          if: {
+                            $eq: [ "$last_modified", t0 ]
+                          },
+                          then: {
+                            id: "$id",
+                            quantity: "$quantity",
+                            unit_price: "$unit_price",
+                            bid: "$bid",
+                            buyout: "$buyout",
+                          },
+                          else: "$$REMOVE"
+                        }
+                      }
                     },
-                    orders: { $push: "$$ROOT" }
-                  }
-                },
-                {
-                  $sort: {
-                    '_id.item': -1,
-                    '_id.timestamp': -1,
+                    orders_t1: {
+                      $push: {
+                        $cond: {
+                          if: {
+                            $eq: [ "$last_modified", t1 ]
+                          },
+                          then: {
+                            id: "$id",
+                            quantity: "$quantity",
+                            unit_price: "$unit_price",
+                            bid: "$bid",
+                            buyout: "$buyout",
+                          },
+                          else: "$$REMOVE"
+                        }
+                      }
+                    }
                   }
                 }
               ]).allowDiskUse(true)
 
-              for (let i = 0; i < groupOrders.length; i += 2) {
+              for (const item_orders of groupOrders) {
                 const embed = new MessageEmbed();
 
-                if (groupOrders[i]._id.timestamp === t0 && groupOrders[i+1]._id.timestamp === t1) {
-                  const created = differenceBy(groupOrders[i].orders, groupOrders[i+1].orders, 'id')
-                  for (const order of created) {
+                const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
+                for (const order of created) {
 
-                  }
-                  const removed = differenceBy(groupOrders[i+1].orders, groupOrders[i].orders, 'id')
-                  for (const order of removed) {
+                }
+                const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
+                for (const order of removed) {
 
-                  }
                 }
               }
-
-
-
 
               //TODO change?
               for (const slug of connected_realm_id.connected_realms) {
@@ -105,9 +124,6 @@ async function orderLogs (bot) {
           }
         }
 
-          Object.assign(query, { 'item.id': id })
-          if (subscriber.filters.ilvl) Object.assign(query, { 'ilvl': { '$gte': subscriber.filters.ilvl } })
-        //TODO update all array hahahaha
         subscriber.message_sent = Date.now();
         await subscriber.save()
       })

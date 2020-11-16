@@ -14,6 +14,8 @@ const path = require('path');
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
 const lfgQuene = require('./subscriptions/lfg_queue')
+const orderLog = require('./subscriptions/order_log')
+
 
 /** Init Bot Client */
 
@@ -91,8 +93,13 @@ bot.on('message', async message => {
   }
 });
 
+
 schedule.scheduleJob('01/5 * * * *', function() {
   lfgQuene(bot).then(r => r)
+});
+
+schedule.scheduleJob('01/5 * * * *', function() {
+  orderLog(bot).then(r => r)
 });
 
 bot.login(process.env.bluratella);

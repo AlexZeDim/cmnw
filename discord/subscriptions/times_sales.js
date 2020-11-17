@@ -114,7 +114,7 @@ async function timesAndSales (bot) {
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
                 if (created && created.length) {
                   for (const order of created) {
-                    let s = `| C | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).toString().padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).toString().padStart(10)}g |\n`
+                    let s = `| C | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).toString().padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).toString().padStart(10)}g |\n`.toString()
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(message)
                       message = ''
@@ -127,7 +127,7 @@ async function timesAndSales (bot) {
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
                 if (removed && removed.length) {
                   for (const order of removed) {
-                    let s = `| R | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).toString().padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).toString().padStart(10)}g |\n`
+                    let s = `| R | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).toString().padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).toString().padStart(10)}g |\n`.toString()
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(message)
                       message = ''

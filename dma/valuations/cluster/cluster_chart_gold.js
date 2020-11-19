@@ -96,8 +96,8 @@ async function clusterChartGold (connected_realm_id = 1602) {
       }
       timestamp = timestamp.map(ts => ts.toLocaleString('en-GB'));
       return {
-        price_range: priceRange_array,
-        timestamps: timestamp,
+        y_axis: priceRange_array,
+        x_axis: timestamp,
         dataset: chartArray,
       };
     } else {

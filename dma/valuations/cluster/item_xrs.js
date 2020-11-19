@@ -1,9 +1,9 @@
 /**
  * Model importing
  */
-require('../../../db/connection');
 const auctions_db = require('../../../db/models/auctions_db');
 const realms_db = require('../../../db/models/realms_db');
+const valuations_db = require('../../../db/models/valuations_db');
 const priceRange = require('./price_range')
 
 /**
@@ -11,8 +11,10 @@ const priceRange = require('./price_range')
  * @returns {Promise<*>}
  */
 
-async function clusterChartXRS (item_id = 168487) {
+async function itemXRS (item_id = 168487) {
   try {
+    const valuations_xrs = [];
+
     /** Request oldest from latest timestamp */
     const { auctions } = await realms_db.findOne().lean().select('auctions').sort({ 'auctions': 1 })
 
@@ -23,7 +25,6 @@ async function clusterChartXRS (item_id = 168487) {
     const x_axis = [];
     const chart = [];
 
-    console.time('T')
     await realms_db
       .aggregate([
         {
@@ -31,7 +32,8 @@ async function clusterChartXRS (item_id = 168487) {
             _id: "$connected_realm_id",
             realms: { $addToSet: "$name_locale" },
             connected_realm_id: { $first: "$connected_realm_id" },
-            auctions: { $first: "$auctions" }
+            auctions: { $first: "$auctions" },
+            valuations: { $first: "$valuations" }
           }
         }
       ])
@@ -39,7 +41,23 @@ async function clusterChartXRS (item_id = 168487) {
       .cursor()
       .exec()
       .eachAsync(async (realm, x) => {
-        x_axis.push(realm.realms)
+        /** Valuations */
+        const valuations = await valuations_db.find({
+          item_id: item_id,
+          last_modified: realm.valuations,
+          $nor: [{ type: 'VENDOR' }, { type: 'VSP' }],
+        }).sort({ value: 1})
+        /**
+         * TODO force valuations
+         * with spread operator
+         * and Promise.all
+         */
+        for (const valuation of valuations) {
+          valuations_xrs.push(valuation)
+        }
+        /** Build X axis */
+        x_axis.push(realm.realms.join(', '))
+        /** Build Chart from Orders */
         const orders = await auctions_db
           .aggregate([
             {
@@ -87,8 +105,9 @@ async function clusterChartXRS (item_id = 168487) {
         }
       }, { parallel: 20 })
     return {
-      price_range: y_axis,
-      realms: x_axis,
+      valuations: valuations_xrs,
+      y_axis: y_axis,
+      x_axis: x_axis,
       dataset: chart
     }
   } catch (error) {
@@ -96,4 +115,4 @@ async function clusterChartXRS (item_id = 168487) {
   }
 }
 
-module.exports = clusterChartXRS;
+module.exports = itemXRS;

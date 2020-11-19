@@ -222,8 +222,8 @@ Item Cluster Chart
 """
 
 type ClusterData {
-    price_range: [Float],
-    timestamps: [Float],
+    y_axis: [Float],
+    x_axis: [String],
     dataset: [Dataset]
 }
 
@@ -265,6 +265,7 @@ type Query {
     realms(name: String): [Realm]
     wowtoken(region: String): Wowtoken
     hash(query: String!): [Character]
+    item_xrs(id: ID!): Item
 }
 
 type Mutation {

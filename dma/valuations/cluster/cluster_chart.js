@@ -19,9 +19,8 @@ async function clusterChart (
     let Model, price_field, price_query, oi_quantity;
     /** Define difference between gold and commdty item */
     if (item_id === 1) {
-      const ytd = new Date(new Date().setHours(new Date().getHours() - 12));
       price_query = {
-        createdAt: { $gt: ytd },
+        createdAt: { $gt: new Date(new Date().setHours(new Date().getHours() - 12)) },
         connected_realm_id: connected_realm_id,
       };
       price_field = 'price';
@@ -122,8 +121,8 @@ async function clusterChart (
       }
       timestamp = timestamp.map(ts => ts * 1000);
       return {
-        price_range: priceRange_array,
-        timestamps: timestamp,
+        y_axis: priceRange_array,
+        x_axis: timestamp,
         dataset: chartArray,
       };
     } else {

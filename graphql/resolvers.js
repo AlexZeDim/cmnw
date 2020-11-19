@@ -14,6 +14,7 @@ const getGuild = require('../osint/guilds/get_guild')
 const queryItemAndRealm = require('./handle_item_realm');
 const iva = require('../dma/valuations/eva/iva.js');
 const clusterChartData = require('../dma/valuations/cluster/cluster_chart.js');
+const itemXRS = require('../dma/valuations/cluster/item_xrs.js');
 
 const root = {
   character: async ({ id }) => {
@@ -352,6 +353,23 @@ const root = {
     }
 
     item.realm = realm;
+    return item
+  },
+  item_xrs: async ({ id }) => {
+    if (!id) {
+      return
+    }
+    const [ item ] = await queryItemAndRealm(id);
+    if (!item) {
+      return
+    }
+    const { valuations, y_axis, x_axis, dataset } = await itemXRS(item._id)
+    item.valuations = valuations;
+    item.chart = {
+      y_axis: y_axis,
+      x_axis: x_axis,
+      dataset: dataset
+    }
     return item
   },
   createMessage: async ({ input }) => {

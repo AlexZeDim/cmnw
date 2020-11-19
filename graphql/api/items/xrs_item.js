@@ -12,7 +12,7 @@ const items_db = require('../../../db/models/items_db');
  */
 
 const auctionsFeed = require('../../../dma/auctions/auctions_feed.js');
-const ClusterChartCrossRealmData = require('../../../dma/valuations/cluster/cluster_chart_xrs.js');
+const ClusterChartCrossRealmData = require('../../../dma/valuations/cluster/item_xrs.js');
 
 router.get('/:itemQuery', async function (req, res) {
   try {

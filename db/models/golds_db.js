@@ -24,7 +24,7 @@ let schema = new mongoose.Schema(
   },
 );
 
-schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 604800 });
+schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 86400 });
 schema.index(
   { status: 1, connected_realm_id: 1, last_modified: -1 },
   { name: 'GoldsQuotes' },

@@ -12,7 +12,7 @@ module.exports = {
     const embed = new MessageEmbed();
     await axios.post('http://localhost:4000/graphql', {
       query: `query Item($id: ID!) {
-        item(id: $id, valuations: true, webpage: false) {
+        item(id: $id, extended: false) {
           _id
           name {
             en_GB

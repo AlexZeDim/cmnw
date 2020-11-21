@@ -109,6 +109,7 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
       realm.populations = undefined;
 
       const realm_population = {};
+
       /**
        * Characters balance
        */

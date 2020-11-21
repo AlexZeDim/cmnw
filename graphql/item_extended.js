@@ -145,19 +145,20 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
           /** =Quotes Thread=> */
           if (!is_commdty && !is_gold) {
             /** Create Feed from Orders */
-            await auctions_db.find({
+            const feed = await auctions_db.find({
               'last_modified': realm.auctions,
               'item.id': item._id,
               'connected_realm_id': realm.connected_realm_id,
-            }).then(feed => {
-              extended_params.feed.push(...feed)
             })
+            if (feed && feed.length) {
+              extended_params.feed.push(...feed)
+            }
           }
 
           /** =Quotes Thread=> */
           if (!is_xrs) {
             if (is_gold) {
-              await golds_db.aggregate([
+              const quotes = await golds_db.aggregate([
                 {
                   $match: {
                     status: 'Online',
@@ -203,11 +204,14 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
                     },
                   },
                 },
-              ]).then(quotes => Object.assign(extended_params, { quotes: quotes }))
+              ])
+              if (quotes && quotes.length) {
+                Object.assign(extended_params, { quotes: quotes })
+              }
             }
 
             if (!is_gold) {
-              await auctions_db.aggregate([
+              const quotes = await auctions_db.aggregate([
                 {
                   $match: {
                     'last_modified': realm.auctions,
@@ -252,7 +256,10 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
                     },
                   },
                 },
-              ]).then(quotes => Object.assign(extended_params, { quotes: quotes }))
+              ])
+              if (quotes && quotes.length) {
+                Object.assign(extended_params, { quotes: quotes })
+              }
             }
           }
         }

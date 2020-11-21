@@ -1,3 +1,21 @@
+"""
+Realm Sub-Fields
+"""
+
+type Players {
+    total: Int,
+    alliance: Int,
+    horde: Int,
+    max_level: Int,
+    unique: Int,
+}
+
+type Guilds {
+    total: Int,
+    alliance: Int,
+    horde: Int,
+}
+
 type Realm {
     _id: ID!,
     name: String!,
@@ -24,19 +42,9 @@ type Realm {
     guilds: Guilds,
 }
 
-type Players {
-    total: Int,
-    alliance: Int,
-    horde: Int,
-    max_level: Int,
-    unique: Int,
-}
-
-type Guilds {
-    total: Int,
-    alliance: Int,
-    horde: Int,
-}
+"""
+Character Sub-Fields
+"""
 
 type Ilvl {
     eq: Int!,
@@ -49,6 +57,15 @@ type Hash {
     c: String,
     ex: String,
     t: String,
+}
+
+type Profession {
+    name: String,
+    tier: String,
+    id: Int,
+    skill_points: Int,
+    max_skill_points: Int,
+    specialization: String
 }
 
 type Character_Media {
@@ -69,12 +86,6 @@ type Logs {
     after: Float,
 }
 
-type Guild_Member {
-    _id: ID!,
-    id: Int,
-    rank: Int,
-}
-
 type Character {
     _id: ID!,
     id: Int!,
@@ -90,6 +101,7 @@ type Character {
     faction: String,
     level: Int,
     lastModified: Float,
+    professions: [Profession],
     statusCode: Int,
     media: Character_Media,
     createdBy: String,
@@ -123,6 +135,10 @@ type Guild {
     updatedAt: Float,
 }
 
+"""
+Item Sub-Fields
+"""
+
 type Name {
     en_US: String,
     es_MX: String,
@@ -133,40 +149,6 @@ type Name {
     fr_FR: String,
     it_IT: String,
     ru_RU: String,
-}
-
-type Item {
-    _id: ID!,
-    name: Name,
-    realms: [Realm],
-    quality: String,
-    level: Int,
-    icon: String,
-    item_class: String,
-    item_subclass: String,
-    purchase_price: Float,
-    sell_price: Float,
-    is_equippable: Boolean,
-    is_stackable: Boolean,
-    inventory_type: String,
-    purchase_quantity: Int,
-    loot_type: String,
-    contracts: Boolean,
-    asset_class: [String],
-    expansion: String,
-    stackable: Int,
-    profession_class: String,
-    ticker: String,
-    tags: [String],
-    createdAt: Float,
-    updatedAt: Float,
-    valuations: [Valuations],
-    chart: ClusterData,
-    quotes: [Quotes],
-    wowtoken: [Wowtoken],
-    value: Float,
-    quantity: Float
-    xrs: Boolean
 }
 
 type Wowtoken {
@@ -253,6 +235,40 @@ type Message {
 input MessageInput {
     content: String
     author: String
+}
+
+type Item {
+    _id: ID!,
+    name: Name,
+    realms: [Realm],
+    quality: String,
+    level: Int,
+    icon: String,
+    item_class: String,
+    item_subclass: String,
+    purchase_price: Float,
+    sell_price: Float,
+    is_equippable: Boolean,
+    is_stackable: Boolean,
+    inventory_type: String,
+    purchase_quantity: Int,
+    loot_type: String,
+    contracts: Boolean,
+    asset_class: [String],
+    expansion: String,
+    stackable: Int,
+    profession_class: String,
+    ticker: String,
+    tags: [String],
+    createdAt: Float,
+    updatedAt: Float,
+    valuations: [Valuations],
+    chart: ClusterData,
+    quotes: [Quotes],
+    wowtoken: [Wowtoken],
+    value: Float,
+    quantity: Float
+    xrs: Boolean
 }
 
 """

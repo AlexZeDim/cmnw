@@ -46,7 +46,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
                 $push: { root_history: characterNew._id },
               },
             );
-            let event = new osint_logs_db({
+            const event = new osint_logs_db({
               root_id: characterNew._id,
               root_history: [characterNew._id],
               type: 'character',
@@ -60,9 +60,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
             await event.save()
           }
         } else {
-
           if (characterOld[check] !== characterNew[check]) {
-
             if (check === 'name') {
               message = `${characterNew._id} changed name from ${characterOld[check]} to ${characterNew[check]}`;
               /** if name, then update all logs */
@@ -81,7 +79,7 @@ const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
             if (check === 'gender') message = `${characterNew._id} swap gender from ${characterOld[check]} to ${characterNew[check]}`;
             if (check === 'faction') message = `${characterNew._id} changed faction from ${characterOld[check]} to ${characterNew[check]}`;
 
-            let event = new osint_logs_db({
+            const event = new osint_logs_db({
               root_id: characterNew._id,
               root_history: [characterNew._id],
               type: 'character',

@@ -5,6 +5,7 @@ require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const realms_db = require('../../db/models/realms_db');
 const keys_db = require('../../db/models/keys_db');
+const personalities_db = require('../../db/models/personalities_db');
 
 /**
  * Modules
@@ -155,6 +156,10 @@ schedule.scheduleJob('*/5 * * * *', async () => {
 
             /** Update status */
             character.updatedBy = 'OSINT-LFG-NEW'
+          }
+
+          if (character.personality && character.lfg && character.lfg.battle_tag) {
+            await personalities_db.findOneAndUpdate({ _id: character.personality, 'aliases.value': { $ne: character.lfg.battle_tag }}, { '$push': {'aliases': { type: 'battle.tag', value: character.lfg.battle_tag } } })
           }
 
           character.isWatched = true;

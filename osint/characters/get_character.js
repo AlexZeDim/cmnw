@@ -1,7 +1,6 @@
 /**
  * Model importing
  */
-require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const realms_db = require('../../db/models/realms_db');
 
@@ -417,7 +416,5 @@ async function getCharacter (
     console.error(`E,getCharacter,${error}`);
   }
 }
-
-getCharacter({ name: 'инициатива', realm: { slug: 'gordunni' } }, 'EU75m4fVDzgpfZQQvbnL2FqzyJq5M3AliT', false, false, 0)
 
 module.exports = getCharacter;

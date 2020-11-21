@@ -138,7 +138,7 @@ type Name {
 type Item {
     _id: ID!,
     name: Name,
-    realm: [Realm],
+    realms: [Realm],
     quality: String,
     level: Int,
     icon: String,

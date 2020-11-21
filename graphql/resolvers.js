@@ -161,6 +161,7 @@ const root = {
     /** Add realms */
     item.realms = [ ...realms];
     const connected_realms_id = [...new Set(realms.map(({ connected_realm_id }) => connected_realm_id))]
+    const xrs = connected_realms_id.length > 1
 
     const { valuations, chart, quotes, feed } = await itemExtended(item, connected_realms_id, extended)
 
@@ -171,6 +172,7 @@ const root = {
       if (quotes && quotes.length) item.quotes = quotes
       if (feed && feed.length) item.feed = feed
     }
+    item.xrs = xrs
 
     return item
   },

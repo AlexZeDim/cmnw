@@ -95,6 +95,14 @@ let schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    professions: [{
+      name: String,
+      tier: String,
+      id: Number,
+      skill_points: Number,
+      max_skill_points: Number,
+      specialization: String
+    }],
     lfg: {
       battle_tag: String,
       rio: Number,

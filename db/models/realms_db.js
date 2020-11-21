@@ -36,21 +36,34 @@ let schema = new mongoose.Schema(
     auctions: Number,
     valuations: Number,
     golds: Number,
-    /**
-     * VOLUSPA population
-     */
-    players: {
-      total: Number,
-      alliance: Number,
-      horde: Number,
-      max_level: Number,
-      unique: Number,
-    },
-    guilds: {
-      total: Number,
-      alliance: Number,
-      horde: Number,
-    }
+    populations: [
+      {
+        _id: false,
+        characters_total: Number,
+        characters_active: Number,
+        characters_active_alliance: Number,
+        characters_active_horde: Number,
+        characters_active_max_level: Number,
+        characters_guild_members: Number,
+        characters_guildless: Number,
+        players_unique: Number,
+        players_active_unique: Number,
+        characters_classes: [{
+          _id: false,
+          name: String,
+          value: Number
+        }],
+        characters_professions: [{
+          _id: false,
+          name: String,
+          value: Number
+        }],
+        guilds_total: Number,
+        guilds_alliance: Number,
+        guilds_horde: Number,
+        timestamp: Number
+      }
+    ]
   },
   {
     timestamps: true,

@@ -2,18 +2,27 @@
 Realm Sub-Fields
 """
 
-type Players {
-    total: Int,
-    alliance: Int,
-    horde: Int,
-    max_level: Int,
-    unique: Int,
+type PopulationClassesProfessions {
+    name: String,
+    value: Float
 }
 
-type Guilds {
-    total: Int,
-    alliance: Int,
-    horde: Int,
+type Population {
+    characters_total: Float,
+    characters_active: Float,
+    characters_active_alliance: Float,
+    characters_active_horde: Float,
+    characters_active_max_level: Float,
+    characters_guild_members: Float,
+    characters_guildless: Float,
+    players_unique: Float,
+    players_active_unique: Float,
+    characters_classes: [PopulationClassesProfessions],
+    characters_professions: [PopulationClassesProfessions],
+    guilds_total: Float,
+    guilds_alliance: Float,
+    guilds_horde: Float,
+    timestamp: Float
 }
 
 type Realm {
@@ -38,8 +47,7 @@ type Realm {
     auctions: Float,
     valuations: Float,
     golds: Float,
-    players: Players,
-    guilds: Guilds,
+    populations: [Population]
 }
 
 """

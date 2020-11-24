@@ -16,9 +16,10 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove field via $unset
      */
     /*
-    let unset = await characters.updateMany({}, { $unset: { "guild._id": 1 } });
+    let unset = await items_db.updateMany({ expansion: "BFA", ticker: { $exists: true }, asset_class: "DERIVATIVE" }, { $unset: { "ticker": 1 } });
     console.log(unset)
     */
+
 
     /**
      * UpdateMany

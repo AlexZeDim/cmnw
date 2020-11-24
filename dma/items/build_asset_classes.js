@@ -13,7 +13,7 @@ const pricing_methods_db = require('../../db/models/pricing_methods_db');
  * @returns {Promise<void>}
  */
 
-const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
+const buildAssetClass = async (arg = 'auctions', bulkSize = 10) => {
   try {
     console.time(`DMA-${buildAssetClass.name}`);
     if (typeof bulkSize !== 'number') {
@@ -35,7 +35,7 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
               try {
                 /** Derivative Asset Class */
                 if (method.item_id) {
-                  let item = await items_db.findById(method.item_id);
+                  const item = await items_db.findById(method.item_id);
                   if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
@@ -43,7 +43,7 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                   }
                 }
                 if (method.alliance_item_id) {
-                  let item = await items_db.findById(method.alliance_item_id);
+                  const item = await items_db.findById(method.alliance_item_id);
                   if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
@@ -51,7 +51,7 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                   }
                 }
                 if (method.horde_item_id) {
-                  let item = await items_db.findById(method.horde_item_id);
+                  const item = await items_db.findById(method.horde_item_id);
                   if (item && item.asset_class) {
                     item.asset_class.addToSet('DERIVATIVE');
                     await item.save();
@@ -61,7 +61,7 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
                 /** Reagent Asset Class */
                 if (method.reagents && method.reagents.length) {
                   for (let { _id } of method.reagents) {
-                    let item = await items_db.findById(_id);
+                    const item = await items_db.findById(_id);
                     if (item && item.asset_class) {
                       item.asset_class.addToSet('REAGENT');
                       await item.save();
@@ -83,30 +83,32 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
          */
         console.info(`Stage: auctions`);
         console.time(`Stage: auctions`);
-        const commodities = await auctions_db.distinct('item.id', {'unit_price': {$exists: true}})
-        if (commodities && commodities.length) {
-          for (let commodity of commodities) {
-            let item = await items_db.findById(commodity);
-            if (item && item.asset_class) {
-              item.asset_class.addToSet('COMMDTY');
-              item.asset_class.addToSet('MARKET');
-              await item.save();
+
+        await auctions_db.aggregate([
+          {
+            $group: {
+              _id: '$item.id',
+              data: { $first: "$$ROOT"}
+            }
+          }
+        ])
+          .allowDiskUse(true)
+          .cursor()
+          .exec()
+          .eachAsync(async ({ _id, data }) => {
+            const item = await items_db.findById(_id)
+            if (item) {
+              if (data.unit_price) {
+                item.asset_class.addToSet('COMMDTY');
+                item.asset_class.addToSet('MARKET');
+              } else if (data.buyout || data.bid) {
+                item.asset_class.addToSet('ITEM');
+                item.asset_class.addToSet('MARKET');
+              }
               console.info(`${item._id},${item.asset_class.toString()}`);
+              await item.save()
             }
-          }
-        }
-        const items = await auctions_db.distinct('item.id', {'unit_price': {$exists: true}})
-        if (items && items.length) {
-          for (let item of items) {
-            let asset = await items_db.findById(item);
-            if (asset && asset.asset_class) {
-              asset.asset_class.addToSet('COMMDTY');
-              asset.asset_class.addToSet('MARKET');
-              await asset.save();
-              console.info(`${asset._id},${asset.asset_class.toString()}`);
-            }
-          }
-        }
+          }, { parallel: bulkSize })
         console.timeEnd(`Stage: auctions`);
       case 'contracts':
         /**
@@ -159,7 +161,7 @@ const buildAssetClass = async (arg = 'pricing_methods', bulkSize = 10) => {
         );
         await items_db.updateOne(
           { _id: 1 },
-          { $addToSet: { asset_class: 'CURRENCY' } },
+          { $addToSet: { asset_class: 'GOLD' } },
         );
         console.timeEnd(`Stage: currency`);
         break;

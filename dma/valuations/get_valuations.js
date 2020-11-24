@@ -62,7 +62,7 @@ schedule.scheduleJob('15 * * * *', async (
                   2,
                   {
                     $and: [
-                      { expansion: 'BFA' },
+                      { expansion: 'SHDW' },
                       {
                         asset_class: {
                           $nin: ['DERIVATIVE', 'PREMIUM'],
@@ -80,7 +80,7 @@ schedule.scheduleJob('15 * * * *', async (
                   3,
                   {
                     $and: [
-                      { expansion: 'BFA' },
+                      { expansion: 'SHDW' },
                       {
                         asset_class: {
                           $nin: ['DERIVATIVE'],
@@ -98,7 +98,7 @@ schedule.scheduleJob('15 * * * *', async (
                   4,
                   {
                     $and: [
-                      { expansion: 'BFA' },
+                      { expansion: 'SHDW' },
                       {
                         asset_class: {
                           $all: ['REAGENT', 'DERIVATIVE'],
@@ -111,7 +111,7 @@ schedule.scheduleJob('15 * * * *', async (
                   5,
                   {
                     $and: [
-                      { expansion: 'BFA' },
+                      { expansion: 'SHDW' },
                       {
                         asset_class: {
                           $nin: ['DERIVATIVE'],
@@ -129,7 +129,7 @@ schedule.scheduleJob('15 * * * *', async (
                   6,
                   {
                     $and: [
-                      { expansion: 'BFA' },
+                      { expansion: 'SHDW' },
                       {
                         asset_class: {
                           $nin: ['REAGENT'],

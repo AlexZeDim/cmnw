@@ -18,7 +18,7 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') => {
+const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\itemsparse.csv') => {
   try {
     console.time(`DMA-${importTaxonomy.name}`);
     let path_, file_;
@@ -36,7 +36,7 @@ const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxono
       path_ = file_;
     }
 
-    let fileSync = fs.readFileSync(path_, 'utf8');
+    const fileSync = fs.readFileSync(path_, 'utf8');
     await csv.parse(fileSync, async function (err, data) {
       switch (basename(path, '.csv')) {
         case 'taxonomy':

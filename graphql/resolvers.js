@@ -120,7 +120,7 @@ const root = {
     if (!query.includes('@')) {
       return
     }
-    const [ type, hash ] = query.split("@")
+    const [ type, hash ] = query.toLowerCase().split("@")
     return await characters_db.find({ [`hash.${type}`]: hash }).limit(60).lean()
   },
   wowtoken: async ({ region }) => {

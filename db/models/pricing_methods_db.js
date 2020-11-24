@@ -44,14 +44,12 @@ let schema = new mongoose.Schema(
      * API or LOCAL
      * {id: Number, Quantity: Number}
      */
-    reagents: {
-      type: [
-        {
-          _id: Number,
-          quantity: Number,
-        },
-      ],
-    },
+    reagents: [
+      {
+        _id: Number,
+        quantity: Number,
+      },
+    ],
     /** if Local then Convert from SkillLine */
     profession: {
       type: String,
@@ -73,9 +71,6 @@ let schema = new mongoose.Schema(
     },
     updatedBy: {
       type: String,
-    },
-    reagent_items: {
-      type: Array,
     },
     /**
      * IVA, store item_id for singleName

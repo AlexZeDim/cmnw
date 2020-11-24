@@ -1,14 +1,14 @@
-const realms_db = require('../db/models/realms_db');
-const valuations_db = require('../db/models/valuations_db');
-const auctions_db = require('../db/models/auctions_db');
-const golds_db = require('../db/models/golds_db');
+const realms_db = require('../../db/models/realms_db');
+const valuations_db = require('../../db/models/valuations_db');
+const auctions_db = require('../../db/models/auctions_db');
+const golds_db = require('../../db/models/golds_db');
 
-const iva = require('../dma/valuations/eva/iva');
-const buildY = require('../dma/valuations/cluster/build_y');
-const commdtyXRS = require('../dma/valuations/cluster/commdty_xrs')
-const commdtyTS = require('../dma/valuations/cluster/commdty_ts')
-const goldXRS = require('../dma/valuations/cluster/gold_xrs')
-const goldTS = require('../dma/valuations/cluster/gold_ts')
+const iva = require('../../dma/valuations/eva/iva');
+const buildY = require('../../dma/valuations/cluster/build_y');
+const commdtyXRS = require('../../dma/valuations/cluster/commdty_xrs')
+const commdtyTS = require('../../dma/valuations/cluster/commdty_ts')
+const goldXRS = require('../../dma/valuations/cluster/gold_xrs')
+const goldTS = require('../../dma/valuations/cluster/gold_ts')
 
 /**
  *

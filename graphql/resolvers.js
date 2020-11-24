@@ -9,7 +9,7 @@ const messages_db = require('../db/models/messages_db');
 const getCharacter = require('../osint/characters/get_character');
 const getGuild = require('../osint/guilds/get_guild')
 const queryItemAndRealm = require('./handlers/item_realms');
-const itemExtended = require('./item_extended')
+const itemExtended = require('./handlers/item_extended')
 
 const root = {
   character: async ({ id }) => {

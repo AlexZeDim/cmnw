@@ -17,7 +17,7 @@ module.exports = {
           name {
             en_GB
           }
-          realm {
+          realms {
             name
             slug
             auctions

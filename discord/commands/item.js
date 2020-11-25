@@ -46,11 +46,24 @@ module.exports = {
       }`,
       variables: { id },
     }).then(({ data: { data: { item } } }) => {
-        let { realm, valuations } = item;
+
+        let realm_ticker = '';
+
+        const { realms, valuations } = item;
+
+        if (realms.length === 1) {
+          if (realms[0].ticker) {
+            realm_ticker = realms[0].ticker;
+          } else {
+            realm_ticker = realms[0].name;
+          }
+        }
+        const realms_string = realms.map(realm => realm.slug).join(';')
+
         embed.setAuthor(
-          `${item.name.en_GB}@${realm.name}`.toUpperCase(),
+          `${item.name.en_GB}@${realm_ticker}`.toUpperCase(),
           '',
-          encodeURI(`https://${process.env.domain}/item/${item._id}@${realm.slug}`),
+          encodeURI(`https://${process.env.domain}/item/${item._id}@${realms_string}`),
         );
 
         let descriptionString = '';
@@ -58,7 +71,7 @@ module.exports = {
         let derivative_counter = 0;
         let premium_counter = 0;
 
-        embed.setURL(encodeURI(`https://${process.env.domain}/item/${item._id}@${realm.slug}`));
+        embed.setURL(encodeURI(`https://${process.env.domain}/item/${item._id}@${realms_string}`));
 
         if ('icon' in item) {
           embed.setThumbnail(item.icon);
@@ -73,7 +86,7 @@ module.exports = {
                 Pricing
                 Available
                 At
-                [Conglomerat](https://${process.env.domain}/item/${realm.slug}/${item._id})
+                [Conglomerat](https://${process.env.domain}/item/${item._id}@${realms_string})
                 ─────────────`,
           true,
             );
@@ -133,7 +146,7 @@ module.exports = {
         }
 
         embed.setDescription(descriptionString);
-        embed.setTimestamp(realm.auctions * 1000);
+        embed.setTimestamp(realms[0].auctions * 1000);
         embed.setFooter(`DMA-EVA`);
       });
     await message.channel.send(embed);

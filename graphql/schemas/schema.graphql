@@ -96,7 +96,7 @@ type Logs {
 
 type Character {
     _id: ID!,
-    id: Int!,
+    id: Float!,
     name: String!,
     realm: Realm!,
     guild: Guild,

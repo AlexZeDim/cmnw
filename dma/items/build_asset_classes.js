@@ -45,22 +45,6 @@ const buildAssetClass = async (...args) => {
                   console.info(`${item._id},${item.asset_class.toString()}`);
                 }
               }
-              if (method.alliance_item_id) {
-                const item = await items_db.findById(method.alliance_item_id);
-                if (item && item.asset_class) {
-                  item.asset_class.addToSet('DERIVATIVE');
-                  await item.save();
-                  console.info(`${item._id},${item.asset_class.toString()}`);
-                }
-              }
-              if (method.horde_item_id) {
-                const item = await items_db.findById(method.horde_item_id);
-                if (item && item.asset_class) {
-                  item.asset_class.addToSet('DERIVATIVE');
-                  await item.save();
-                  console.info(`${item._id},${item.asset_class.toString()}`);
-                }
-              }
               /** Reagent Asset Class */
               if (method.reagents && method.reagents.length) {
                 for (let { _id } of method.reagents) {
@@ -179,6 +163,7 @@ const buildAssetClass = async (...args) => {
     console.error(error);
   } finally {
     console.timeEnd(`DMA-${buildAssetClass.name}`);
+    process.exit(0)
   }
 }
 

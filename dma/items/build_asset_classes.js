@@ -87,12 +87,11 @@ const buildAssetClass = async (...args) => {
         .eachAsync(async ({ _id, data }) => {
           const item = await items_db.findById(_id)
           if (item) {
+            item.asset_class.addToSet('MARKET');
             if (data.unit_price) {
               item.asset_class.addToSet('COMMDTY');
-              item.asset_class.addToSet('MARKET');
             } else if (data.buyout || data.bid) {
               item.asset_class.addToSet('ITEM');
-              item.asset_class.addToSet('MARKET');
             }
             console.info(`${item._id},${item.asset_class.toString()}`);
             await item.save()
@@ -205,7 +204,7 @@ const buildAssetClass = async (...args) => {
 }
 
 
-schedule.scheduleJob('00 12 * * *',  function () {
+//schedule.scheduleJob('00 12 * * *',  function () {
   buildAssetClass('pricing_methods', 'auctions', 'contracts', 'premium', 'currency', 'tags').then(r => r);
-})
+//})
 

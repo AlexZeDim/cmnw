@@ -29,6 +29,7 @@ let schema = new mongoose.Schema(
     },
     item_quantity: {
       type: Number,
+      default: 0
     },
     /**
      * LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
@@ -49,6 +50,13 @@ let schema = new mongoose.Schema(
         _id: Number,
         quantity: Number,
       },
+    ],
+    modified_crafting_slots: [
+      {
+        _id: Number,
+        name: Object,
+        display_order: Number
+      }
     ],
     /** if Local then Convert from SkillLine */
     profession: {

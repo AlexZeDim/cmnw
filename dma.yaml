@@ -36,5 +36,4 @@ apps:
   - script: ./dma/items/build_asset_classes.js
     name: 'DMA-ASSET-CLASS'
     instances: 1
-    args: 'pricing_methods 10'
     log_date_format: 'DD/MM HH:mm:ss.SSS'

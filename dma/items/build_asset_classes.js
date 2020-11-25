@@ -8,11 +8,11 @@ const pricing_methods_db = require('../../db/models/pricing_methods_db');
 
 /**
  * indexItems add is_auction, is_commdty and is_derivative properties to items
- * @param arg {string}
+ * @param args {string}
  * @returns {Promise<void>}
  */
 
-const buildAssetClass = async (...arg) => {
+const buildAssetClass = async (...args) => {
   try {
     console.time(`DMA-${buildAssetClass.name}`);
     const bulkSize = 10;
@@ -176,5 +176,4 @@ const buildAssetClass = async (...arg) => {
   }
 }
 
-//process.argv.slice(2)[0], process.argv.slice(2)[1]
 buildAssetClass('pricing_methods', 'auctions', 'contracts', 'premium', 'currency');

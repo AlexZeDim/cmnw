@@ -206,6 +206,6 @@ const buildAssetClass = async (...args) => {
 
 
 schedule.scheduleJob('00 12 * * *',  function () {
-  buildAssetClass('pricing_methods', 'auctions', 'contracts', 'premium', 'currency').then(r => r);
+  buildAssetClass('pricing_methods', 'auctions', 'contracts', 'premium', 'currency', 'tags').then(r => r);
 })
 

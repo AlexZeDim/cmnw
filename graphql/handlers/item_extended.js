@@ -3,7 +3,7 @@ const valuations_db = require('../../db/models/valuations_db');
 const auctions_db = require('../../db/models/auctions_db');
 const golds_db = require('../../db/models/golds_db');
 
-const iva = require('../../dma/valuations/eva/iva');
+const evaluate = require('../../dma/valuations/eva/evaluate');
 const buildY = require('../../dma/valuations/cluster/build_y');
 const commdtyXRS = require('../../dma/valuations/cluster/commdty_xrs')
 const commdtyTS = require('../../dma/valuations/cluster/commdty_ts')
@@ -91,7 +91,11 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
           $nor: [{ type: 'VENDOR' }, { type: 'VSP' }],
         }).sort({ value: 1 }).lean()
         if (!valuation) {
-          await iva(item, realm.connected_realm_id, realm.auctions, 0)
+          const iva = {...item}
+          iva.connected_realm_id = realm.connected_realm_id;
+          iva.last_modified = realm.auctions;
+          iva.iteration = 0;
+          await evaluate(iva)
         }
         const valuations = await valuations_db.find({
           item_id: item._id,

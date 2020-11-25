@@ -127,7 +127,10 @@ async function timesAndSales (bot) {
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
                 if (removed && removed.length) {
                   for (const order of removed) {
-                    let s = `| R | ${((item.ticker || item.name.en_GB) || item_orders._id).padEnd(50)} | ${(order.quantity).toString().padEnd(7)} | ${(order.unit_price || (order.buyout || order.bid)).toString().padStart(10)}g |\n`.toString()
+                    const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
+                    const order_quantity = order.quantity.toString().padEnd(7);
+                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toString().padStart(10)
+                    let s = `| R | ${order_name} | ${order_quantity} | *${order_quote}g* |\n`.toString()
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(message)
                       message = ''

@@ -16,7 +16,7 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove field via $unset
      */
     /*
-    let unset = await items_db.updateMany({ expansion: "BFA", ticker: { $exists: true }, asset_class: "DERIVATIVE" }, { $unset: { "ticker": 1 } });
+    const unset = await items_db.updateMany({ expansion: "BFA", ticker: { $exists: true }, asset_class: "DERIVATIVE" }, { $unset: { "ticker": 1 } });
     console.log(unset)
     */
 
@@ -25,7 +25,7 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * UpdateMany
      */
     /*
-    let updMany = await items.updateMany({ contracts: true }, { contracts: false });
+    const updMany = await items.updateMany({ contracts: true }, { contracts: false });
     console.log(updMany)
     */
 
@@ -33,9 +33,10 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove documents
      */
     /*
-    let remove = await characters.deleteMany({"name":/SS/})
+    const remove = await pricing_methods_db.deleteMany({"createdBy":"DMA-importMethodsBlizzardAPI"})
     console.log(remove)
      */
+
 
 
 
@@ -43,7 +44,7 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Rename field in a collection
      */
     /*
-    let refactoring = await items.updateMany({},{ $rename: { "v_class": "asset_class" } });
+    const refactoring = await items.updateMany({},{ $rename: { "v_class": "asset_class" } });
     console.log(refactoring)
     */
 
@@ -51,7 +52,8 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * FIX BFA vendor price, cause it's for a full quantity, not x1
      * @type {({quantity: number, _id: number})[]}
      */
-    /*let array_of_vendor = [
+    /*
+    const array_of_vendor = [
       { _id: 160398, quantity: 10 },
       { _id: 160399, quantity: 10 },
       { _id: 160400, quantity: 3 },
@@ -65,20 +67,24 @@ const pricing_methods_db = require('./models/pricing_methods_db');
       let item = await items.findById(i._id);
       item.purchase_price = item.purchase_price / i.quantity;
       await item.save();
-    }*/
+    }
+    */
     /**
      * Enchanting recipes has quantity 0, but actually they gave us one scroll
      */
-    /*let enchant = await pricing_methods.updateMany(
+    /*
+    const enchant = await pricing_methods.updateMany(
       { profession: 'ENCH', item_quantity: 0 },
       { item_quantity: 1 },
     );
-    console.info(enchant);*/
+    console.info(enchant);
+    */
     /**
      * Destroying expulsom as a pricing_method
      * @type {({profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number}|{profession: string, updatedBy: string, item_id: number, description: {ru_RU: string, en_GB: string}, spell_id: number, type: string, expansion: string, recipe_id: number, createdBy: string, name: {ru_RU: string, en_GB: string}, _id: string, reagents: [{quantity: number, _id: number}], item_quantity: number})[]}
      */
-    /*let expulsom_methods = [
+    /*
+    const expulsom_methods = [
       {
         _id: 'P38737:1',
         description: {

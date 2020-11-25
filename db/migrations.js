@@ -16,10 +16,9 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove field via $unset
      */
     /*
-    const unset = await items_db.updateMany({ expansion: "BFA", ticker: { $exists: true }, asset_class: "DERIVATIVE" }, { $unset: { "ticker": 1 } });
+    const unset = await items_db.updateMany({ tags: "hrbs", asset_class: "DERIVATIVE" }, { $unset: { "asset_class": 1 } });
     console.log(unset)
     */
-
 
     /**
      * UpdateMany
@@ -32,12 +31,11 @@ const pricing_methods_db = require('./models/pricing_methods_db');
     /**
      * Remove documents
      */
+
     /*
-    const remove = await pricing_methods_db.deleteMany({"createdBy":"DMA-importMethodsBlizzardAPI"})
+    const remove = await pricing_methods_db.deleteMany({profession: "INSC", 'name.ru_RU': /Массовое измел/, createdBy: 'DMA-API'})
     console.log(remove)
      */
-
-
 
 
     /**

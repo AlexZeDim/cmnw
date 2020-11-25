@@ -10,7 +10,7 @@ const items_db = require('../../db/models/items_db');
  */
 
 const schedule = require('node-schedule');
-const iva = require('./eva/iva');
+const evaluate = require('./eva/evaluate');
 
 /**
  * This function updated auction house data on every connected realm by ID (trade hubs)
@@ -34,21 +34,18 @@ schedule.scheduleJob('15 * * * *', async (
         {
           $group: {
             _id: '$connected_realm_id',
+            auctions: { $first: "$auctions" },
+            valuations: { $first: "$valuations" }
           },
         },
       ])
       .cursor({ batchSize: bulkSize })
       .exec()
       .eachAsync(
-        async ({ _id }) => {
+        async ({ _id, auctions, valuations }) => {
           try {
-            const t = await realms_db.findOne({ connected_realm_id: _id }).select('auctions valuations').lean();
-            /** If there are valuations records for certain realm, create it */
-            if (!t.valuations) {
-              await realms_db.updateMany({ connected_realm_id: _id }, { valuations: 0 });
-            }
             /** Update valuations with new auctions data */
-            if (t.auctions > t.valuations) {
+            if (auctions > valuations) {
               /**
                * @type {Map<number, {Object}>}
                */
@@ -146,10 +143,8 @@ schedule.scheduleJob('15 * * * *', async (
                   .eachAsync(
                     async item => {
                       console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
-                      await iva(item, _id, t.auctions, 0);
-                      console.timeEnd(
-                        `DMA-${item._id}-${_id}:${item.name.en_GB}`,
-                      );
+                      await evaluate(item);
+                      console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
                     },
                     { parallel: 10 },
                   );
@@ -158,7 +153,7 @@ schedule.scheduleJob('15 * * * *', async (
               /** Update timestamp for valuations */
               await realms_db.updateMany(
                 { connected_realm_id: _id },
-                { valuations: t.auctions },
+                { valuations: auctions },
               );
             }
           } catch (e) {

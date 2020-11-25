@@ -45,10 +45,7 @@ schedule.scheduleJob('15 * * * *', async (
             const t = await realms_db.findOne({ connected_realm_id: _id }).select('auctions valuations').lean();
             /** If there are valuations records for certain realm, create it */
             if (!t.valuations) {
-              await realms_db.updateMany(
-                { connected_realm_id: _id },
-                { valuations: 0 },
-              );
+              await realms_db.updateMany({ connected_realm_id: _id }, { valuations: 0 });
             }
             /** Update valuations with new auctions data */
             if (t.auctions > t.valuations) {
@@ -58,8 +55,7 @@ schedule.scheduleJob('15 * * * *', async (
               const assetClassMap = new Map([
                 [0, { _id: 1 }],
                 [1, { asset_class: 'WOWTOKEN' }],
-                [
-                  2,
+                [2,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -76,8 +72,7 @@ schedule.scheduleJob('15 * * * *', async (
                     ],
                   },
                 ],
-                [
-                  3,
+                [3,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -94,8 +89,7 @@ schedule.scheduleJob('15 * * * *', async (
                     ],
                   },
                 ],
-                [
-                  4,
+                [4,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -107,8 +101,7 @@ schedule.scheduleJob('15 * * * *', async (
                     ],
                   },
                 ],
-                [
-                  5,
+                [5,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -125,8 +118,7 @@ schedule.scheduleJob('15 * * * *', async (
                     ],
                   },
                 ],
-                [
-                  6,
+                [6,
                   {
                     $and: [
                       { expansion: 'SHDW' },

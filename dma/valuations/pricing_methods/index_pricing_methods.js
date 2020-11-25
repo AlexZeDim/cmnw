@@ -90,6 +90,14 @@ const BlizzAPI = require('blizzapi');
                 if (RecipeData.value) {
                   const recipe_data = RecipeData.value;
 
+                  /**
+                   * Skip Mass mill and prospect
+                   * because they are bugged
+                   */
+                  if (recipe.name && recipe.name.en_GB) {
+                    if (recipe_data.name.en_GB.includes('Mass')) continue
+                  }
+
                   const writeConcerns = [];
 
                   if ('alliance_crafted_item' in recipe_data) {

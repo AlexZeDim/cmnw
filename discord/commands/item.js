@@ -47,21 +47,30 @@ module.exports = {
       variables: { id },
     }).then(({ data: { data: { item } } }) => {
 
-        let realm_ticker = '';
+        let title_name = '';
 
         const { realms, valuations } = item;
 
+        if (item.ticker) {
+          title_name += item.ticker
+        } else {
+          title_name += item.name.en_GB
+        }
+
         if (realms.length === 1) {
           if (realms[0].ticker) {
-            realm_ticker = realms[0].ticker;
+            title_name += `@${realms[0].ticker}`;
           } else {
-            realm_ticker = realms[0].name;
+            title_name += `@${realms[0].name}`;
           }
         }
+
+        title_name = title_name.toUpperCase()
+
         const realms_string = realms.map(realm => realm.slug).join(';')
 
         embed.setAuthor(
-          `${item.name.en_GB}@${realm_ticker}`.toUpperCase(),
+          `${title_name}`,
           '',
           encodeURI(`https://${process.env.domain}/item/${item._id}@${realms_string}`),
         );

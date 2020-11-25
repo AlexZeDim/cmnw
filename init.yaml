@@ -16,10 +16,6 @@ apps:
     instances: 1
     args: 'itemsparse'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/items/build_tags.js
-    name: 'DMA-ITEM-TAGS'
-    instances: 1
-    log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./dma/pets/index_pets.js
     name: 'DMA-PETS'
     instances: 1

@@ -176,6 +176,30 @@ type Quotes {
     size: Float,
 }
 
+type ItemModifier {
+    type: Int,
+    value: Int
+}
+
+type OrderItem {
+    id: Float,
+    context: Float,
+    bonus_list: [Int],
+    modifiers: [ItemModifier]
+}
+
+type Order {
+    id: Float,
+    item: OrderItem,
+    quantity: Int,
+    unit_price: Float,
+    bid: Float,
+    buyout: Float,
+    time_left: String,
+    connected_realm_id: Int,
+    last_modified: Float,
+}
+
 """
 Item Valuations
 """
@@ -271,6 +295,7 @@ type Item {
     createdAt: Float,
     updatedAt: Float,
     valuations: [Valuations],
+    feed: [Order],
     chart: ClusterData,
     quotes: [Quotes],
     wowtoken: [Wowtoken],

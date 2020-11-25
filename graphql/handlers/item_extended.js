@@ -146,7 +146,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
             }
           }
 
-          /** =Quotes Thread=> */
+          /** =Feed Thread=> */
           if (!is_commdty && !is_gold) {
             /** Create Feed from Orders */
             const feed = await auctions_db.find({

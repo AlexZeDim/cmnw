@@ -7,7 +7,13 @@ const auctions_db = require('../../db/models/auctions_db');
 const pricing_methods_db = require('../../db/models/pricing_methods_db');
 
 /**
- * indexItems add is_auction, is_commdty and is_derivative properties to items
+ * Modules
+ */
+
+const schedule = require('node-schedule');
+
+/**
+ * This function build evaluations asset classes for items
  * @param args {string}
  * @returns {Promise<void>}
  */
@@ -176,4 +182,8 @@ const buildAssetClass = async (...args) => {
   }
 }
 
-buildAssetClass('pricing_methods', 'auctions', 'contracts', 'premium', 'currency');
+
+schedule.scheduleJob('00 12 * * *',  function () {
+  buildAssetClass('pricing_methods', 'auctions', 'contracts', 'premium', 'currency').then(r => r);
+})
+

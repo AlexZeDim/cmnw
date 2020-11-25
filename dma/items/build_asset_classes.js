@@ -159,6 +159,43 @@ const buildAssetClass = async (...args) => {
       );
       console.timeEnd(`Stage: currency`);
     }
+
+    if (args.includes('tags')) {
+      console.info(`Stage: tags`);
+      console.time(`Stage: tags`);
+      const fields = ['expansion', 'ticker', 'profession_class', 'asset_class', 'item_class', 'item_subclass', 'quality']
+      await items_db
+        .find()
+        .cursor({ batchSize: bulkSize })
+        .eachAsync(
+          async (item) => {
+            for (let field of fields) {
+              if (item[field]) {
+                if (Array.isArray(item[field])) {
+                  item[field].map(as => item.tags.addToSet(as.toLowerCase()))
+                } else {
+                  if (field === 'ticker') {
+                    item[field].split('.').map(t => {
+                      t = t.toLowerCase();
+                      if (t === 'j' || t === 'petal' || t === 'nugget') {
+                        item.tags.addToSet('junior')
+                      }
+                      item.tags.addToSet(t)
+                    })
+                  } else {
+                    item.tags.addToSet(item[field].toLowerCase())
+                  }
+                }
+              }
+            }
+            await item.save()
+            console.info(`${item._id},tags build: ${item.tags.join()}`)
+          },
+          { parallel: bulkSize },
+        )
+      console.timeEnd(`Stage: tags`);
+    }
+
   } catch (error) {
     console.error(error);
   } finally {

@@ -13,7 +13,6 @@ const auctions_db = require('../../../db/models/auctions_db');
 
 async function commdtyXRS (y_axis = [], item_id = 168487, realm = {}) {
   try {
-    console.log(realm)
     const chart = [];
     if (!y_axis.length) return chart;
     if (!('x' in realm) || !realm.connected_realm_id || !realm.auctions) return chart;

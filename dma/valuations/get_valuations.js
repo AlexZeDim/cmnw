@@ -140,9 +140,13 @@ schedule.scheduleJob('*/15 * * * *', async (
                 await items_db
                   .find(ac)
                   .cursor({ batchSize: 10 })
+                  .lean()
                   .eachAsync(
                     async item => {
                       console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
+                      item.connected_realm_id = _id;
+                      item.last_modified = auctions;
+                      item.iterations = 0;
                       await evaluate(item);
                       console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
                     },

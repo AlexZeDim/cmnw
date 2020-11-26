@@ -3,6 +3,7 @@
  */
 require('../../db/connection')
 const items_db = require('../../db/models/items_db');
+const realms_db = require('../../db/models/realms_db');
 const auctions_db = require('../../db/models/auctions_db');
 const golds_db = require('../../db/models/golds_db');
 const contracts_db = require('../../db/models/contracts_db');
@@ -16,203 +17,213 @@ const moment = require('moment');
 schedule.scheduleJob('45 * * * *', async () => {
   try {
     console.time(`DMA-contracts`);
-    let d = moment().get('date');
-    let w = moment().get('week');
-    let m = moment().get('month') + 1;
-    let y = moment().get('year');
-    let items = await items_db.find({ contracts: true }).lean();
-    for (let item of items) {
-      let item_name = item.name.en_GB;
-      if (item.ticker) {
-        item_name = item.ticker;
-      }
-      let stack_size = 1;
-      if (item.stackable) {
-        stack_size = item.stackable;
-      }
-      let contract_query;
-      if (item.ticker === 'GOLD') {
-        contract_query = golds_db
-          .aggregate([
-            {
-              $match: {
-                createdAt: {
-                  $gt: moment.utc().subtract(1, 'day').toDate(),
-                },
-                status: 'Online',
-              },
-            },
-            {
-              $sort: { last_modified: 1 },
-            },
-            {
-              $group: {
-                _id: {
-                  connected_realm_id: '$connected_realm_id',
-                  last_modified: '$last_modified',
-                },
-                open_interest: {
-                  $sum: {
-                    $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+    const bulkSize = 10;
+    const d = moment().get('date');
+    const w = moment().get('week');
+    const m = moment().get('month') + 1;
+    const y = moment().get('year');
+    await items_db
+      .find({ ticker: 'WDWBLM' }) //{ contracts: true }
+      .lean()
+      .maxTimeMS(0)
+      .cursor()
+      .addCursorFlag('noCursorTimeout',true)
+      .eachAsync(async (item, i) => {
+        if (item._id === 1) {
+          await golds_db
+            .aggregate([
+              {
+                $match: {
+                  createdAt: {
+                    $gt: moment.utc().subtract(1, 'day').toDate(),
                   },
+                  status: 'Online',
                 },
-                quantity: { $sum: '$quantity' },
-                price: { $min: '$price' },
-                price_size: {
-                  $min: {
-                    $cond: [
-                      { $gte: ['$quantity', 1000000] },
-                      '$price',
-                      '$min:$price',
+              },
+              {
+                $group: {
+                  _id: {
+                    connected_realm_id: '$connected_realm_id',
+                    last_modified: '$last_modified',
+                  },
+                  open_interest: {
+                    $sum: {
+                      $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+                    },
+                  },
+                  quantity: { $sum: '$quantity' },
+                  price: { $min: '$price' },
+                  price_size_array: {
+                    $addToSet: {
+                      $cond: {
+                        if: { $gte: ['$quantity', 1000000] },
+                        then: '$price',
+                        else: "$$REMOVE"
+                      }
+                    }
+                  },
+                  sellers: { $addToSet: '$owner' },
+                },
+              },
+              {
+                $project: {
+                  connected_realm_id: '$_id.connected_realm_id',
+                  last_modified: '$_id.last_modified',
+                  price: '$price',
+                  price_size: {
+                    $cond: {
+                      if: { $gte: [{$size: "$price_size_array"}, 1] },
+                      then: { $min: '$price_size_array' },
+                      else: "$price"
+                    }
+                  },
+                  quantity: '$quantity',
+                  open_interest: '$open_interest',
+                  sellers: '$sellers',
+                },
+              },
+              {
+                $addFields: {
+                  _id: {
+                    $concat: [
+                      '1-',
+                      {
+                        $convert: {
+                          input: '$_id.last_modified',
+                          to: 'string',
+                        },
+                      },
+                      '@',
+                      {
+                        $convert: {
+                          input: '$_id.connected_realm_id',
+                          to: 'string',
+                        },
+                      },
                     ],
                   },
-                },
-                sellers: { $addToSet: '$owner' },
-              },
-            },
-            {
-              $project: {
-                connected_realm_id: '$_id.connected_realm_id',
-                last_modified: '$_id.last_modified',
-                price: '$price',
-                price_size: '$price_size',
-                quantity: '$quantity',
-                open_interest: '$open_interest',
-                sellers: '$sellers',
-              },
-            },
-            {
-              $addFields: {
-                _id: {
-                  $concat: [
-                    '1-',
-                    {
-                      $convert: {
-                        input: '$_id.last_modified',
-                        to: 'string',
-                      },
-                    },
-                    '@',
-                    {
-                      $convert: {
-                        input: '$_id.connected_realm_id',
-                        to: 'string',
-                      },
-                    },
-                  ],
-                },
-                item_id: 1,
-                date: {
-                  day: d,
-                  week: w,
-                  month: m,
-                  year: y,
-                },
-              },
-            },
-          ])
-          .catch(e => e);
-      } else {
-        contract_query = auctions_db
-          .aggregate([
-            {
-              $match: {
-                'item.id': item._id,
-              },
-            },
-            {
-              $sort: { last_modified: 1 },
-            },
-            {
-              $group: {
-                _id: {
-                  item_id: '$item.id',
-                  connected_realm_id: '$connected_realm_id',
-                  last_modified: '$last_modified',
-                },
-                open_interest: {
-                  $sum: {
-                    $multiply: ['$unit_price', '$quantity'],
+                  item_id: 1,
+                  date: {
+                    day: d,
+                    week: w,
+                    month: m,
+                    year: y,
                   },
                 },
-                quantity: { $sum: '$quantity' },
-                price: { $min: '$unit_price' },
-                price_size: {
-                  $min: {
-                    $cond: [
-                      { $gte: ['$quantity', stack_size] },
-                      '$unit_price',
-                      null,
+              },
+            ])
+            .allowDiskUse(true)
+            .cursor()
+            .exec()
+            .eachAsync(async (contract, y) => {
+              const flag = await contracts_db.findById(contract._id);
+              if (!flag) await contracts_db.create(contract)
+              console.info(`${(flag) ? ('E') : ('C')},${i}:${y}:${item.ticker || item.name.en_GB}-${moment().format('DD.MMM.WW.YY')}`);
+            }, { parallel: bulkSize })
+        } else {
+          const { auctions } = await realms_db.findOne({ region: 'Europe' }).lean().select('auctions').sort({ 'auctions': 1 })
+          await auctions_db
+            .aggregate([
+              {
+                $match: {
+                  'last_modified': { $gte: auctions - (60 * 60 * 3) },
+                  'item.id': item._id,
+                },
+              },
+              {
+                $group: {
+                  _id: {
+                    item_id: '$item.id',
+                    connected_realm_id: '$connected_realm_id',
+                    last_modified: '$last_modified',
+                  },
+                  open_interest: {
+                    $sum: {
+                      $multiply: ['$unit_price', '$quantity'],
+                    },
+                  },
+                  quantity: { $sum: '$quantity' },
+                  price: { $min: '$unit_price' },
+                  price_size_array: {
+                    $addToSet: {
+                      $cond: {
+                        if: { $gte: ['$quantity', item.stackable] },
+                        then: '$unit_price',
+                        else: "$$REMOVE"
+                      }
+                    }
+                  },
+                  orders: {
+                    $push: {
+                      id: '$id',
+                      time_left: '$time_left',
+                    },
+                  },
+                },
+              },
+              {
+                $project: {
+                  item_id: '$_id.item_id',
+                  connected_realm_id: '$_id.connected_realm_id',
+                  last_modified: '$_id.last_modified',
+                  price: '$price',
+                  price_size: {
+                    $cond: {
+                      if: { $gte: [{$size: "$price_size_array"}, 1] },
+                      then: { $min: '$price_size_array' },
+                      else: "$price"
+                    }
+                  },
+                  quantity: '$quantity',
+                  open_interest: '$open_interest',
+                  orders: '$orders',
+                },
+              },
+              {
+                $addFields: {
+                  _id: {
+                    $concat: [
+                      {
+                        $convert: {
+                          input: '$_id.item_id',
+                          to: 'string',
+                        },
+                      },
+                      '-',
+                      {
+                        $convert: {
+                          input: '$_id.last_modified',
+                          to: 'string',
+                        },
+                      },
+                      '@',
+                      {
+                        $convert: {
+                          input: '$_id.connected_realm_id',
+                          to: 'string',
+                        },
+                      },
                     ],
                   },
-                },
-                orders: {
-                  $push: {
-                    id: '$id',
-                    time_left: '$time_left',
+                  date: {
+                    day: d,
+                    week: w,
+                    month: m,
+                    year: y,
                   },
                 },
               },
-            },
-            {
-              $project: {
-                item_id: '$_id.item_id',
-                connected_realm_id: '$_id.connected_realm_id',
-                last_modified: '$_id.last_modified',
-                price: '$price',
-                price_size: '$price_size',
-                quantity: '$quantity',
-                open_interest: '$open_interest',
-                orders: '$orders',
-              },
-            },
-            {
-              $addFields: {
-                _id: {
-                  $concat: [
-                    {
-                      $convert: {
-                        input: '$_id.item_id',
-                        to: 'string',
-                      },
-                    },
-                    '-',
-                    {
-                      $convert: {
-                        input: '$_id.last_modified',
-                        to: 'string',
-                      },
-                    },
-                    '@',
-                    {
-                      $convert: {
-                        input: '$_id.connected_realm_id',
-                        to: 'string',
-                      },
-                    },
-                  ],
-                },
-                date: {
-                  day: d,
-                  week: w,
-                  month: m,
-                  year: y,
-                },
-              },
-            },
-          ])
-          .catch(e => e);
-      }
-      const timestamp_data = await contract_query;
-      if (timestamp_data && timestamp_data.length) {
-        await contracts_db
-          .insertMany(timestamp_data, { ordered: false })
-          .catch(error => error);
-        console.info(`C,${item_name}-${moment().format('DD.MMM.WW.YY')}`);
-      } else {
-        console.error(`E,${item_name}-${moment().format('DD.MMM.WW.YY')}`);
-      }
-    }
+            ])
+            .allowDiskUse(true)
+            .cursor()
+            .exec()
+            .eachAsync(async (contract, y) => {
+              const flag = await contracts_db.findById(contract._id);
+              if (!flag) await contracts_db.create(contract)
+              console.info(`${(flag) ? ('E') : ('C')},${i}:${y}:${item.ticker || item.name.en_GB}-${moment().format('DD.MMM.WW.YY')}`);
+            }, { parallel: bulkSize })
+        }
+      });
   } catch (error) {
     console.error(error);
   } finally {

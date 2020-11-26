@@ -12,11 +12,11 @@ const root = require('./graphql/resolvers');
 const app = express();
 
 morgan.token('graphql-query', (req) => {
-  const {query, variables, operationName} = req.body;
-  return `GRAPHQL: \nOperation Name: ${operationName} \nQuery: ${query} \nVariables: ${JSON.stringify(variables)}`;
+  const {variables} = req.body;
+  return `GRAPHQL: ${JSON.stringify(variables)}`;
 });
 
-app.use(morgan(':graphql-query'));
+app.use(morgan(':date[web] :status - :response-time ms :method :graphql-query'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());

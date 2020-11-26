@@ -410,6 +410,7 @@ async function getCharacter (
       await detectiveCharacters(characterOld, character.toObject())
     }
 
+    character.markModified('professions');
     await character.save({ w: 1, j: true, wtimeout: 10000 })
     console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
   } catch (error) {

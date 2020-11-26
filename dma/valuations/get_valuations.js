@@ -139,8 +139,8 @@ schedule.scheduleJob('*/15 * * * *', async (
                 console.time(`DMA-XVA-${_id}-${k}`);
                 await items_db
                   .find(ac)
-                  .cursor({ batchSize: 10 })
                   .lean()
+                  .cursor({ batchSize: 10 })
                   .eachAsync(
                     async item => {
                       console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`);

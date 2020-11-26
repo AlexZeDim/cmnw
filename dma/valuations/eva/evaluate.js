@@ -463,31 +463,33 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
              * replace original reagent_item
              * with underlying reagent_items
              */
-            if (ctd.type === 'DERIVATIVE' && ctd.details && ctd.details.reagent_items && ctd.details.reagent_items.length) {
-              const underlying_reagent_items = ctd.details.reagent_items;
+            if (ctd) {
+              if (ctd.type === 'DERIVATIVE' && ctd.details && ctd.details.reagent_items && ctd.details.reagent_items.length) {
+                const underlying_reagent_items = ctd.details.reagent_items;
 
-              for (const underlying_item of underlying_reagent_items) {
-                /** Queue_quantity x underlying_item.quantity */
-                if (underlying_item.value) underlying_item.value = Round2(underlying_item.value * reagent_item.quantity);
-                underlying_item.quantity = underlying_item.quantity * reagent_item.quantity;
-                /** if this item is already in reagent_items, then + quantity */
-                if (reagent_items.some(ri => ri._id === underlying_item._id)) {
-                  /** take in focus by arrayIndex and edit properties */
-                  const reagent_itemsIndex = reagent_items.findIndex(item => item._id === underlying_item._id);
-                  if (reagent_itemsIndex !== -1) {
-                    reagent_items[reagent_itemsIndex].value += underlying_item.value;
-                    reagent_items[reagent_itemsIndex].quantity += underlying_item.quantity;
+                for (const underlying_item of underlying_reagent_items) {
+                  /** Queue_quantity x underlying_item.quantity */
+                  if (underlying_item.value) underlying_item.value = Round2(underlying_item.value * reagent_item.quantity);
+                  underlying_item.quantity = underlying_item.quantity * reagent_item.quantity;
+                  /** if this item is already in reagent_items, then + quantity */
+                  if (reagent_items.some(ri => ri._id === underlying_item._id)) {
+                    /** take in focus by arrayIndex and edit properties */
+                    const reagent_itemsIndex = reagent_items.findIndex(item => item._id === underlying_item._id);
+                    if (reagent_itemsIndex !== -1) {
+                      reagent_items[reagent_itemsIndex].value += underlying_item.value;
+                      reagent_items[reagent_itemsIndex].quantity += underlying_item.quantity;
+                    }
+                  } else {
+                    reagent_items.push(underlying_item);
                   }
-                } else {
-                  reagent_items.push(underlying_item);
                 }
+              } else {
+                reagent_item.value = Round2(ctd.value * reagent_item.quantity);
+                reagent_items.push(reagent_item);
               }
-            } else {
-              reagent_item.value = Round2(ctd.value * reagent_item.quantity);
-              reagent_items.push(reagent_item);
+              /** We add value to queue_cost */
+              queue_cost += Round2(ctd.value * reagent_item.quantity);
             }
-            /** We add value to queue_cost */
-            queue_cost += Round2(ctd.value * reagent_item.quantity);
           }
 
         }

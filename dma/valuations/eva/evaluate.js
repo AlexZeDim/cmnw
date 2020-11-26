@@ -309,7 +309,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
       });
       if (!ava) {
         /** Request for Quotes */
-        const [market_data] = await auctions_db.aggregate([
+        const market_data = await auctions_db.aggregate([
           {
             $match: {
               last_modified: last_modified,
@@ -348,11 +348,12 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
             },
           },
         ])
-        if (market_data.min) {
+        if (market_data.length && market_data[0].min) {
+          const item_ava = market_data[0]
           /** Initiate constants */
           const flags = ['BUY', 'SELL'];
-          let price = market_data.min;
-          let price_size = market_data.min;
+          let price = item_ava.min;
+          let price_size = item_ava.min_size;
           /** BUY / SELL */
           for (let flag of flags) {
             if (flag === 'SELL') {
@@ -370,8 +371,8 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               details: {
                 price_size: Round2(price_size),
                 quantity: quantity,
-                open_interest: Math.round(market_data.open_interest),
-                orders: market_data.orders,
+                open_interest: Math.round(item_ava.open_interest),
+                orders: item_ava.orders,
               },
             });
             console.info(`DMA-IVA: ${_id}@${connected_realm_id}, AUCTION ${flag}`,);

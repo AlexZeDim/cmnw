@@ -53,7 +53,9 @@ const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxono
                 item.asset_class.addToSet(data[i][4]);
               }
               await item.save();
-              console.info(`${(item) ? ('U') : ('R')},#${item._id}:${item.ticker}:${item.profession_class} ${item.asset_class.toString()}`);
+              console.info(`U,#${item._id}:${item.ticker}:${item.profession_class} ${item.asset_class.toString()}`);
+            } else {
+              console.info(`R,#${parseInt(data[i][0])}:${parseInt(data[i][1])}`);
             }
           }
           process.exit(0)

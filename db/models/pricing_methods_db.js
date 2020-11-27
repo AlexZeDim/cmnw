@@ -17,24 +17,18 @@ let schema = new mongoose.Schema(
     media: {
       type: String,
     },
-    horde_item_id: {
-      type: Number,
-    },
-    alliance_item_id: {
-      type: Number,
-    },
     /** API or LOCAL */
     item_id: {
       type: Number,
-    },
-    item_quantity: {
-      type: Number,
-      default: 0
     },
     /**
      * LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
      * SkillLineAbility.lua
      */
+    item_quantity: {
+      type: Number,
+      default: 0
+    },
     recipe_id: {
       type: Number,
     },
@@ -72,7 +66,7 @@ let schema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ['primary', 'derivative'],
+      enum: ['primary', 'derivative', 'u/r'],
     },
     createdBy: {
       type: String,

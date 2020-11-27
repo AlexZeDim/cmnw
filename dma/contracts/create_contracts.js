@@ -23,7 +23,7 @@ schedule.scheduleJob('45 * * * *', async () => {
     const m = moment().get('month') + 1;
     const y = moment().get('year');
     await items_db
-      .find({ ticker: 'WDWBLM' }) //{ contracts: true }
+      .find({ contracts: true })
       .lean()
       .maxTimeMS(0)
       .cursor()
@@ -118,7 +118,7 @@ schedule.scheduleJob('45 * * * *', async () => {
             .eachAsync(async (contract, y) => {
               const flag = await contracts_db.findById(contract._id);
               if (!flag) await contracts_db.create(contract)
-              console.info(`${(flag) ? ('E') : ('C')},${i}:${y}:${item.ticker || item.name.en_GB}-${moment().format('DD.MMM.WW.YY')}`);
+              console.info(`${(flag) ? ('E') : ('C')},${i}:${y}:${item.ticker || item.name.en_GB}-${contract._id}:${moment().format('DD.MMM.WW.YY')}`);
             }, { parallel: bulkSize })
         } else {
           const { auctions } = await realms_db.findOne({ region: 'Europe' }).lean().select('auctions').sort({ 'auctions': 1 })
@@ -220,7 +220,7 @@ schedule.scheduleJob('45 * * * *', async () => {
             .eachAsync(async (contract, y) => {
               const flag = await contracts_db.findById(contract._id);
               if (!flag) await contracts_db.create(contract)
-              console.info(`${(flag) ? ('E') : ('C')},${i}:${y}:${item.ticker || item.name.en_GB}-${moment().format('DD.MMM.WW.YY')}`);
+              console.info(`${(flag) ? ('E') : ('C')},${i}:${y}:${item.ticker || item.name.en_GB}-${contract._id}:${moment().format('DD.MMM.WW.YY')}`);
             }, { parallel: bulkSize })
         }
       });

@@ -33,9 +33,10 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove documents
      */
     /*
-    const remove = await pricing_methods_db.deleteMany({"name.en_GB":/Mass/, createdBy: "DMA-API"})
+    const remove = await pricing_methods_db.deleteMany({createdBy: "DMA-API"})
     console.log(remove)
     */
+
 
 
 

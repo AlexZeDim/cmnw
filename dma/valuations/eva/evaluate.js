@@ -387,7 +387,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
      * Derivative Valuation Adjustment
      */
     if (asset_class.includes('DERIVATIVE')) {
-      const primary_methods = await pricing_methods.find({ item_id: _id }).lean();
+      const primary_methods = await pricing_methods.find({ item_id: _id, type: { $ne: 'u/r' } }).lean();
       if (!primary_methods.length) return
       for (const price_method of primary_methods) {
         const dva = await valuations.findOne({

@@ -18,7 +18,7 @@ const { basename, normalize } = require('path');
  * @returns {Promise<void>}
  */
 
-const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\itemsparse.csv') => {
+const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxonomy.csv') => {
   try {
     console.time(`DMA-${importTaxonomy.name}`);
     let path_, file_;
@@ -41,21 +41,19 @@ const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\itemsp
       switch (basename(path, '.csv')) {
         case 'taxonomy':
           for (let i = 1; i < data.length; i++) {
-            let item = await items_db.findById(parseInt(data[i][0]));
+            const item = await items_db.findById(parseInt(data[i][0]));
             if (item) {
               if (data[i][2]) {
                 item.ticker = data[i][2]
               }
               if (data[i][3]) {
-                item.asset_class.addToSet(data[i][3]);
+                item.profession_class = data[i][3];
               }
               if (data[i][4]) {
-                item.profession_class = data[i][4];
+                item.asset_class.addToSet(data[i][4]);
               }
               await item.save();
-              console.info(`U,${parseFloat(data[i][0])}`);
-            } else {
-              console.info(`R,${parseFloat(data[i][0])}`);
+              console.info(`${(item) ? ('U') : ('R')},#${item._id}:${item.ticker}:${item.profession_class} ${item.asset_class.toString()}`);
             }
           }
           process.exit(0)

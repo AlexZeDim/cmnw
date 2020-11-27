@@ -394,7 +394,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
           item_id: price_method.item_id,
           last_modified: last_modified,
           connected_realm_id: connected_realm_id,
-          name: `${price_method._id}`,
+          name: `${price_method.ticker}`,
           type: 'DERIVATIVE',
         });
         if (dva) continue
@@ -533,7 +533,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               });
               if (!prva) {
                 await valuations.create({
-                  name: `${price_method._id}`,
+                  name: `${price_method.ticker}`,
                   flag: 'SELL',
                   item_id: premium_item._id,
                   connected_realm_id: connected_realm_id,
@@ -544,7 +544,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
                     wi: Round2(premium_item.quantity / price_method.item_quantity * ava.details.quantity,)
                   },
                 })
-                console.info(`DMA-IVA: ${price_method._id}@${connected_realm_id}, ${price_method._id}`)
+                console.info(`DMA-IVA: ${price_method.item_id}@${connected_realm_id}, ${price_method.ticker}`)
               }
             }
 
@@ -611,7 +611,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
         }
 
         valuations.create({
-          name: `${price_method._id}`,
+          name: `${price_method.ticker}`,
           flag: 'BUY',
           item_id: price_method.item_id,
           connected_realm_id: connected_realm_id,
@@ -628,7 +628,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
           },
         })
 
-        console.info(`DMA-IVA: ${price_method._id}@${connected_realm_id}, ${price_method._id}`)
+        console.info(`DMA-IVA: ${price_method.item_id}@${connected_realm_id}, ${price_method.ticker}`)
 
       }
       /** END of MVA */

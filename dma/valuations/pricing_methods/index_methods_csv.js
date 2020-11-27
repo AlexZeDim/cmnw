@@ -134,4 +134,4 @@ async function indexMethodsCSV(path) {
   }
 }
 
-indexMethodsCSV('C:\\Projects\\conglomerat\\uploads\\spellreagents.csv');
+indexMethodsCSV('C:\\Projects\\conglomerat\\uploads\\spelleffect.csv');

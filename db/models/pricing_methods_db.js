@@ -4,7 +4,7 @@ mongoose.Promise = global.Promise;
 let schema = new mongoose.Schema(
   {
     /** API or LOCAL */
-    _id: {
+    ticker: {
       type: String,
     },
     /** API */
@@ -20,6 +20,7 @@ let schema = new mongoose.Schema(
     /** API or LOCAL */
     item_id: {
       type: Number,
+      required: true,
     },
     /**
      * LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
@@ -31,6 +32,7 @@ let schema = new mongoose.Schema(
     },
     recipe_id: {
       type: Number,
+      required: true,
     },
     spell_id: {
       type: Number,
@@ -87,9 +89,8 @@ let schema = new mongoose.Schema(
 );
 
 schema.index({ item_id: -1, type: 1 }, { name: 'getPricingMethod' });
+schema.index({ recipe_id: -1 }, { name: 'recipe_ID' });
 schema.index({ item_id: -1 }, { name: 'itemID' });
-schema.index({ horde_item_id: -1 }, { name: 'Horde_itemID' });
-schema.index({ alliance_item_id: -1 }, { name: 'Alliance_itemID' });
 schema.index({ spell_id: -1 }, { name: 'spellID' });
 
 let pricing_methods_db = mongoose.model(

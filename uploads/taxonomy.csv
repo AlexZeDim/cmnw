@@ -1,190 +1,463 @@
-_id,name,ticker,asset_class,profession_class
-173202,Shrouded Cloth,SHRDCH,,CLTH
-173204,Lightless Silk,LGHTSK,,CLTH
-172230,Soul Dust,SOULDT,,ENC
-172231,Sacred Shard,SCRDSD,,ENC
-172232,Eternal Crystal,ETNLCL,,ENC
-173110,Umbryl,COMMON.BLUE,,JWC
-173108,Oriblase,COMMON.YELLOW,,JWC
-173109,Angerseye,COMMON.RED,,JWC
-173116,9.x Raw Red,RARE.GREEN,,JWC
-173115,9.x Raw Yellow,RARE.YELLOW,,JWC
-173117,9.x Raw Blue,RARE.BLUE,,JWC
-173111,9.x Raw Rare,EPIC.GEM,,JWC
-179314,Creeping Crawler Meat,MEAT.CRCR,,COOK
-179315,Shadowy Shank,MEAT.SHSH,,COOK
-172054,Seraphic Wing,MEAT.SRWG,,COOK
-172055,Phantasmal Haunch,MEAT.PLHH,,COOK
-172053,Tenebrous Ribs,MEAT.TRBS,,COOK
-173035,Pocked Bonefish,FISH.BONE,,COOK
-173034,Silvergill Pike,FISH.PIKE,,COOK
-172052,Aethereal Meat,MEAT.AETH,,COOK
-173036,Spinefin Piranha,FISH.SPNF,,COOK
-173033,Iridescent Amberjack,FISH.AMBR,,COOK
-173037,Elysian Thade,FISH.ELTH,,COOK
-173032,Lost Sole,FISH.LTSL,,COOK
-175111,Marrow Larva,MEAT.LRVA,,COOK
-171428,Shadowghast Ingot,SGHAST,,ORE
-171828,Laestrite Ore,LSTRIT,,ORE
-171833,Elethium Ore,ELTHUM,,ORE
-171831,Phaedrum Ore,PHDRUM,,ORE
-171830,Oxxein Ore,OXXEIN,,ORE
-171840,Porous Stone,POROUS,,ORE
-171832,Sinvyr Ore,SINVYR,,ORE
-171841,Shaded Stone,SHDSTN,,ORE
-171829,Solenium Ore,SLNIUM,,ORE
-171838,Sinvyr Nugget,NUGGET.SINVYR,,ORE
-171834,Laestrite Nugget,NUGGET.LSTRIT,,ORE
-171837,Phaedrum Nugget,NUGGET.PHDRUM,,ORE
-171839,Elethium Nugget,NUGGET.ELTHUM,,ORE
-171836,Oxxein Nugget,NUGGET.OXXEIN,,ORE
-171835,Solenium Nugget,NUGGET.SLNIUM,,ORE
-180060,Relic of the Past V,ROTP5,,INDX
-180055,Relic of the Past I,ROTP1,,INDX
-180059,Relic of the Past IV,ROTP4,,INDX
-180057,Relic of the Past II,ROTP2,,INDX
-180058,Relic of the Past III,ROTP3,,INDX
-172934,Handful of Laestrite Bolts,HLLEBS,,ENG
-172935,Porous Polishing Abrasive,PSPGAE,,ENG
-172937,Wormfed Gear Assembly,WDGRAY,,ENG
-172936,Mortal Coiled Spring,MLCCSG,,ENG
-172437,Enchanted Elethium Bar,ENC.ELTHUM,,ENC
-172438,Enchanted Heavy Desolate Hide,ENC.,,ENC
-172439,Enchanted Lightless Silk,ENC.LGHTSK,,ENC
-172462,Enchanted Twilight Wand,ENC.,,ENC
-173172,Essence of Servitude,ESS.SERVITUDE,,JWC
-173173,Essence of Valor,ESS.VALOR,,JWC
-173170,Essence of Rebirth,ESS.REBIRTH,,JWC
-173171,Essence of Suffering,ESS.SUFFER,,JWC
-171276,Spectral Flask of Power,FLASK.POWER,,ALCH
-171278,Spectral Flask of Stamina,FLASK.STM,,ALCH
-171270,Potion of Spectral Agility,POTION.AGI,,ALCH
-171273,Potion of Spectral Intellect,POTION.INT,,ALCH
-171274,Potion of Spectral Stamina,POTION.STM,,ALCH
-171275,Potion of Spectral Strength,POTION.STR,,ALCH
-171351,Potion of Deathly Fixation,POTION.FIX,,ALCH
-171352,Potion of Empowered Exorcisms,POTION.EXO,,ALCH
-171350,Potion of Divine Awakening,POTION.AWAKE,,ALCH
-171349,Potion of Phantom Fire,POTION.FIRE,,ALCH
-176811,Potion of Sacrificial Anima,POTION.ANIMA,,ALCH
-171271,Potion of Hardened Shadows,POTION.ARMOR,,ALCH
-171272,Potion of Spiritual Clarity,POTION.SLEEP,,ALCH
-171370,Potion of Specter Swiftness,POTION.MS,,ALCH
-171263,Potion of Soul Purity,POTION.DISPEL,,ALCH
-183823,Potion of Unhindered Passing,POTION.IMMUNE,,ALCH
-171264,Potion of Shaded Sight,POTION.DETECT,,ALCH
-171266,Potion of the Hidden Spirit,POTION.STEALTH,,ALCH
-171286,Embalmer's Oil,OIL.HEAL,,ALCH
-171301,Shadowcore Oil,OIL.DPS,,ALCH
-171301,Spiritual Anti-Venom,POTION.VENOM,,ALCH
-171269,Spiritual Rejuvenation Potion,POTION.REJUV,,ALCH
-171267,Spiritual Healing Potion,POTION.HP,,ALCH
-171268,Spiritual Mana Potion,POTION.MANA,,ALCH
-180457,Shadestone,SHDSTN,,ALCH
-171287,Ground Death Blossom,GROUND.DTBLSM,,HRBS
-171290,Ground Marrowroot,GROUND.MRRWRT,,HRBS
-171292,Ground Nightshade,GROUND.NGTSHD,,HRBS
-171291,Ground Rising Glory,GROUND.RSGLRY,,HRBS
-171288,Ground Vigil's Torch,GROUND.VLTRCH,,HRBS
-171289,Ground Widowbloom,GROUND.WDWBLM,,HRBS
-169701,Death Blossom,DTBLSM,,HRBS
-171315,Nightshade,NGTSHD,,HRBS
-168589,Marrowroot,MRRWRT,,HRBS
-170554,Vigil's Torch,VLTRCH,,HRBS
-168583,Widowbloom,WDWBLM,,HRBS
-168586,Rising Glory,RSGLRY,,HRBS
-169698,Widowbloom Petal,PETAL.WDWBLM,,HRBS
-169550,Rising Glory Petal,PETAL.RSGLRY,,HRBS
-169697,Nightshade Petal,PETAL.NGTSHD,,HRBS
-169700,Death Blossom Petal,PETAL.DTBLSM,,HRBS
-169699,Vigil's Torch Petal,PETAL.VLTRCH,,HRBS
-168591,Marrowroot Petal,PETAL.MRRWRT,,HRBS
-172069,Banana Beef Pudding,FOOD.STM,,COOK
-172043,Feast of Gluttonous Hedonism,FEAST,,COOK
-172048,Meaty Apple Dumplings,J.FOOD.MASTERY,,COOK
-172045,Tenebrous Crown Roast Aspic,FOOD.HASTE,,COOK
-172061,Seraph Tenders,FOOD.HEAL,,COOK
-172041,Phantasmal Souffle and Fries,FOOD.CRIT,,COOK
-172068,Pickled Meat Smoothie,FOOD.STM,,COOK
-172044,Cinnamon Bonefish Stew,J.FOOD.HASTE,,COOK
-172062,Smothered Shank,FOOD.NATURE,,COOK
-172049,Crawler Ravioli with Apple Sauce,FOOD.MASTERY,,COOK
-172063,Fried Bonefish,FOOD.SPEED,,COOK
-172051,Steak a la Mode,FOOD.VERS,,COOK
-172042,Surprisingly Palatable Feast,JUNIOR.FEAST,,COOK
-172040,Butterscotch Marinated Ribs,J.FOOD.CRIT,,COOK
-172050,Sweet Silvergill Sausages,J.FOOD.FEAST,,COOK
-173058,Umbral Ink,INK.UMBR,,INSC
-175970,Tranquil Ink,INK.TRANQ,,INSC
-173059,Luminous Ink,INK.LMNS,,INSC
-173048,Codex of the Still Mind,CODEX,,INSC
-173049,Tome of the Still Mind,TOME,,INSC
-173062,Contract: Court of Harvesters,CONTRACT.COH,,INSC
-173051,Contract: The Ascended,CONTRACT.ASC,,INSC
-175924,Contract: The Undying Army,CONTRACT.UND,,INSC
-173053,Contract: The Wild Hunt,CONTRACT.HUNT,,INSC
-173066,Darkmoon Card of Death,CARD.DEATH,,INSC
-177875,Darkmoon Card of Putresence,CARD.SENCE,,INSC
-177876,Darkmoon Card of Repose,CARD.REPOSE,,INSC
-177873,Darkmoon Card of the Indomitable,CARD.INDMT,,INSC
-177874,Darkmoon Card of Voracity,CARD.VORACITY,,INSC
-173161,Missive of Critical Strike,MISSIVE.CRIT,,INSC
-173160,Missive of Haste,MISSIVE.HASTE,,INSC
-173162,Missive of Mastery,MISSITVE.MASTERY,,INSC
-173163,Missive of Versatility,MISSIVE.VERS,,INSC
-173067,Vantus Rune: Castle Nathria,VANTUS.CASTLE,,INSC
-172413,Enchant Boots - Agile Soulwalker,J.BOOTS.AGI,,ENC
-172419,Enchant Boots - Eternal Agility,BOOTS.AGI,,ENC
-177661,Enchant Boots - Speed of Soul,BOOTS.FALL,,ENC
-172415,Enchant Bracers - Eternal Intellect,WRIST.INT,,ENC
-172414,Enchant Bracers - Illuminated Soul,J.WRIST.INT,,ENC
-172416,Enchant Bracers - Shaded Hearthing,ENC.HS,,ENC
-177715,Enchant Chest - Eternal Bounds,CHEST.HEAL,,ENC
-172418,Enchant Chest - Eternal Bulwark,CHEST.TANK,,ENC
-183738,Enchant Chest - Eternal Insight,CHEST.SDPS,,ENC
-177659,Enchant Chest - Eternal Skirmish,CHEST.DPS,,ENC
-177962,Enchant Chest - Eternal Stats,CHEST.STATS,,ENC
-177716,Enchant Chest - Sacred Stats,J.CHEST.STATS,,ENC
-172411,Enchant Cloak - Fortified Avoidance,CLOAK.AVOIDANCE,,ENC
-172412,Enchant Cloak - Fortified Leech,CLOAK.LEECH,,ENC
-172410,Enchant Cloak - Fortified Speed,CLOAK.SPEED,,ENC
-177660,Enchant Cloak - Soul Vitality,CLOAK.STM,,ENC
-172408,Enchant Gloves - Eternal Strength,HANDS.STR,,ENC
-172406,Enchant Gloves - Shadowlands Gathering,HANDS.GATHER,,ENC
-172407,Enchant Gloves - Strength of Soul,J.HANDS.STR,,ENC
-172357,Enchant Ring - Bargain of Critical Strike,RING.CRIT,,ENC
-172358,Enchant Ring - Bargain of Haste,RING.HASTE,,ENC
-172359,Enchant Ring - Bargain of Mastery,RING.MASTERY,,ENC
-172360,Enchant Ring - Bargain of Versatility,RING.VERS,,ENC
-172361,Enchant Ring - Tenet of Critical Strike,J.RING.CRIT,,ENC
-172362,Enchant Ring - Tenet of Haste,J.RING.HASTE,,ENC
-172363,Enchant Ring - Tenet of Mastery,J.RING.MASTERY,,ENC
-172364,Enchant Ring - Tenet of Versatility,J.RING.VERS,,ENC
-172365,Ascended Vigor,WEAPON.TANK,,ENC
-172367,Eternal Grace,WEAPON.HEAL,,ENC
-172370,Enchant Weapon - Lightless Force,WEAPON.AOE,,ENC
-172366,Celestial Guidance,WEAPON.STATS,,ENC
-172368,Sinful Revelation,WEAPON.ST,,ENC
-173123,Versatile Jewel Doublet,J.GEM.VERS,,JWC
-173129,Versatile Jewel Cluster,GEM.VERS,,JWC
-173126,Straddling Jewel Doublet,J.GEM.SPEED,,JWC
-173125,Revitalizing Jewel Doublet,J.GEM.HEAL,,JWC
-173122,Quick Jewel Doublet,J.GEM.HASTE,,JWC
-173128,Quick Jewel Cluster,GEM.HASTE,,JWC
-173124,Masterful Jewel Doublet,J.GEM.MASTERY,,JWC
-173130,Masterful Jewel Cluster,GEM.MASTERY,,JWC
-173121,Deadly Jewel Doublet,J.GEM.CRIT,,JWC
-173127,Deadly Jewel Cluster,GEM.CRIT,,JWC
-172330,Unseelie Leather,LTHR.UNSL,,LTHR
-172090,Sorrowscale Fragment,SCLAE.SRRW,,LTHR
-172331,Sinful Leather,LTHR.SNFL,,LTHR
-172333,Purified Leather,LTHR.PRFD,,LTHR
-172092,Pallid Bone,PLDBNE,,LTHR
-172332,Necrotic Leather,LTHR.NCRT,,LTHR
-172096,Heavy Desolate Leather,S.LTHR.DSLT,,LTHR
-172097,Heavy Desolate Hide,S.HIDE.DSLT,,LTHR
-177279,Gaunt Sinew,GNTSNW,,LTHR
-172093,Desolate Leather Scraps,SCRAPS.LTHR.DSLT,,LTHR
-172089,Desolate Leather,LTHR.DSLT,,LTHR
-172095,Desolate Hide Scraps,SCRAPS.HIDE.DSLT,,LTHR
-172094,Desolate Hide,HIDE.DSLT,,LTHR
+_id,name,ticker,profession_class,asset_class
+173048,Codex of the Still Mind,CODEX,INSC,
+173062,Contract: Court of Harvesters,CONTRACT.COH,INSC,
+173051,Contract: The Ascended,CONTRACT.ASC,INSC,
+175924,Contract: The Undying Army,CONTRACT.UND,INSC,
+173053,Contract: The Wild Hunt,CONTRACT.HUNT,INSC,
+173381,Crafter's Mark I,CM1,INSC,
+173382,Crafter's Mark II,CM2,INSC,
+173066,Darkmoon Card of Death,CARD.DEATH,INSC,
+177875,Darkmoon Card of Putresence,CARD.SENCE,INSC,
+177876,Darkmoon Card of Repose,CARD.REPOSE,INSC,
+177873,Darkmoon Card of the Indomitable,CARD.INDMT,INSC,
+177874,Darkmoon Card of Voracity,CARD.VORACITY,INSC,
+180755,Fae Revel Masque,FAE.MASK,INSC,
+184100,Glyph of the Aerial ChameleonDruid,GLYPH.AERIAL,INSC,
+184097,Glyph of the Aquatic ChameleonDruid,GLYPH.AQUA,INSC,
+184096,Glyph of the Swift ChameleonDruid,GLYPH.SWIFT,INSC,
+173059,Luminous Ink,INK.LMNS,INSC,
+173161,Missive of Critical Strike,MISSIVE.CRIT,INSC,
+173160,Missive of Haste,MISSIVE.HASTE,INSC,
+173162,Missive of Mastery,MISSITVE.MASTERY,INSC,
+173163,Missive of Versatility,MISSIVE.VERS,INSC,
+173050,Newly Departed Codex,INSC.UNCOMMON.OFFHAND,INSC,
+183942,Novice Crafter's Mark,NCM,INSC,
+173428,Soul Keeper's Column,INSC.UNCOMMON.AGI.STAFF,INSC,
+173054,Soul Keeper's Spire,INSC.UNCOMMON.INT.STAFF,INSC,
+173049,Tome of the Still Mind,TOME,INSC,
+175970,Tranquil Ink,INK.TRANQ,INSC,
+173058,Umbral Ink,INK.UMBR,INSC,
+173067,Vantus Rune: Castle Nathria,VANTUS.CASTLE,INSC,
+170554,Vigil's Torch,VLTRCH,INSC,
+173065,Writ of Grave Robbing,SCROLL.OPEN,INSC,
+173066,Darkmoon Card of Death,CARD.DEATH,INSC,
+177875,Darkmoon Card of Putresence,CARD.SENCE,INSC,
+177876,Darkmoon Card of Repose,CARD.REPOSE,INSC,
+177873,Darkmoon Card of the Indomitable,CARD.INDMT,INSC,
+177874,Darkmoon Card of Voracity,CARD.VORACITY,INSC,
+173381,Crafter's Mark I,CM1,ALCH,
+173382,Crafter's Mark II,CM2,ALCH,
+171286,Embalmer's Oil,OIL.HP,ALCH,
+171284,Eternal Cauldron,CAULDRON,ALCH,
+171287,Ground Death Blossom,GROUND.DTBLSM,ALCH,
+171290,Ground Marrowroot,GROUND.MRRWRT,ALCH,
+171292,Ground Nightshade,GROUND.NGTSHD,ALCH,
+171291,Ground Rising Glory,GROUND.RSGLRY,ALCH,
+171288,Ground Vigil's Torch,GROUND.VLTRCH,ALCH,
+171289,Ground Widowbloom,GROUND.WDWBLM,ALCH,
+183942,Novice Crafter's Mark,NCM,ALCH,
+171351,Potion of Deathly Fixation,POTION.ST,ALCH,
+171350,Potion of Divine Awakening,POTION.HEAL,ALCH,
+171352,Potion of Empowered Exorcisms,POTION.AOE,ALCH,
+171271,Potion of Hardened Shadows,POTION.ARMOR,ALCH,
+171349,Potion of Phantom Fire,POTION.SPELL,ALCH,
+176811,Potion of Sacrificial Anima,POTION.ANIMA,ALCH,
+171264,Potion of Shaded Sight,POTION.DETECT,ALCH,
+171263,Potion of Soul Purity,POTION.DISPEL,ALCH,
+171370,Potion of Specter Swiftness,POTION.DEATH,ALCH,
+171270,Potion of Spectral Agility,POTION.AGI,ALCH,
+171273,Potion of Spectral Intellect,POTION.INT,ALCH,
+171274,Potion of Spectral Stamina,POTION.STM,ALCH,
+171275,Potion of Spectral Strength,POTION.STR,ALCH,
+171272,Potion of Spiritual Clarity,POTION.SLEEP,ALCH,
+171266,Potion of the Hidden Spirit,POTION.STEALTH,ALCH,
+184090,Potion of the Psychopomp's Speed,POTION.SPEED,ALCH,
+183823,Potion of Unhindered Passing,POTION.IMMUNE,ALCH,
+180751,Red Noggin Candle,ALCH.CANDLE,ALCH,
+180457,Shadestone,SHDSTN,ALCH,
+171285,Shadowcore Oil,OIL.DPS,ALCH,
+171428,Shadowghast Ingot,SGHAST,ALCH,
+171276,Spectral Flask of Power,FLASK.POWER,ALCH,
+171278,Spectral Flask of Stamina,FLASK.STM,ALCH,
+171323,Spiritual Alchemy Stone,ALCH.TRINKET.STONE,ALCH,
+171301,Spiritual Anti-Venom,POTION.VENOM,ALCH,
+171267,Spiritual Healing Potion,POTION.HP,ALCH,
+171268,Spiritual Mana Potion,POTION.MANA,ALCH,
+171269,Spiritual Rejuvenation Potion,POTION.REJUV,ALCH,
+172349,Bone Bound Knuckles,LTHR.UNCOMMON.AGI.FIST,LTHR,
+172329,Boneshatter Armguards,MAIL.LEGENDARY.BRACERS,LTHR,
+172324,Boneshatter Gauntlets,MAIL.LEGENDARY.HANDS,LTHR,
+172326,Boneshatter Greaves,MAIL.LEGENDARY.LEGS,LTHR,
+172325,Boneshatter Helm,MAIL.LEGENDARY.HEAD,LTHR,
+172327,Boneshatter Pauldrons,MAIL.LEGENDARY.SHOULDER,LTHR,
+172323,Boneshatter Treads,MAIL.LEGENDARY.BOOTS,LTHR,
+172322,Boneshatter Vest,MAIL.LEGENDARY.CHEST,LTHR,
+172328,Boneshatter Waistguard,MAIL.LEGENDARY.BELT,LTHR,
+172350,Composite Bow,LTHR.UNCOMMON.BOW,LTHR,
+172351,Composite Crossbow,LTHR.UNCOMMON.CROSSBOW,LTHR,
+173381,Crafter's Mark I,CM1,LTHR,
+173382,Crafter's Mark II,CM2,LTHR,
+172346,Desolate Armor Kit,J.ARMOR.KIT,LTHR,
+172241,Desolate Leather Armguards,LTHR.UNCOMMON.BRACERS,LTHR,
+172348,Desolate Leather Cestus,LTHR.UNCOMMON.INT.FIST,LTHR,
+172236,Desolate Leather Gauntlets,LTHR.UNCOMMON.HANDS,LTHR,
+172237,Desolate Leather Helm,LTHR.UNCOMMON.HEAD,LTHR,
+172238,Desolate Leather Leggings,LTHR.UNCOMMON.LEGS,LTHR,
+172239,Desolate Leather Pauldrons,LTHR.UNCOMMON.SHOULDER,LTHR,
+172235,Desolate Leather Treads,LTHR.UNCOMMON.BOOTS,LTHR,
+172234,Desolate Leather Vest,LTHR.UNCOMMON.CHEST,LTHR,
+172240,Desolate Leather Waistguard,LTHR.UNCOMMON.BELT,LTHR,
+172249,Desolate Scale Armguards,MAIL.UNCOMMON.BRACERS,LTHR,
+172244,Desolate Scale Gauntlets,MAIL.UNCOMMON.HANDS,LTHR,
+172246,Desolate Scale Greaves,MAIL.UNCOMMON.LEGS,LTHR,
+172245,Desolate Scale Helm,MAIL.UNCOMMON.HEAD,LTHR,
+172247,Desolate Scale Pauldrons,MAIL.UNCOMMON.SHOULDER,LTHR,
+172243,Desolate Scale Treads,MAIL.UNCOMMON.BOOTS,LTHR,
+172242,Desolate Scale Vest,MAIL.UNCOMMON.CHEST,LTHR,
+172248,Desolate Scale Waistguard,MAIL.UNCOMMON.BELT,LTHR,
+172233,Drums of Deathly Ferocity,DRUMS.HERO,LTHR,
+172097,Heavy Callous Hide,HEAVY.HIDE.CLLS,LTHR,
+172347,Heavy Desolate Armor Kit,ARMOR.KIT,LTHR,
+172096,Heavy Desolate Leather,HEAVY.LTHR.DSLT,LTHR,
+183942,Novice Crafter's Mark,NCM,LTHR,
+180055,Relic of the Past I,ROP1,LTHR,
+180057,Relic of the Past II,ROP2,LTHR,
+180058,Relic of the Past III,ROP3,LTHR,
+180059,Relic of the Past IV,ROP4,LTHR,
+180060,Relic of the Past V,ROP5,LTHR,
+172257,Shadebound Armguards,LTHR.RARE.BRACERS,LTHR,
+172252,Shadebound Gauntlets,LTHR.RARE.HANDS,LTHR,
+172254,Shadebound Greaves,LTHR.RARE.LEGS,LTHR,
+172253,Shadebound Helm,LTHR.RARE.HEAD,LTHR,
+172255,Shadebound Pauldrons,LTHR.RARE.SHOULDER,LTHR,
+172251,Shadebound Treads,LTHR.RARE.BOOTS,LTHR,
+172250,Shadebound Vest,LTHR.RARE.CHEST,LTHR,
+172256,Shadebound Waistguard,LTHR.RARE.BELT,LTHR,
+172265,Shadowscale Armguards,MAIL.RARE.BRACERS,LTHR,
+172260,Shadowscale Gauntlets,MAIL.RARE.HANDS,LTHR,
+172262,Shadowscale Greaves,MAIL.RARE.LEGS,LTHR,
+172261,Shadowscale Helm,MAIL.RARE.HEAD,LTHR,
+172263,Shadowscale Pauldrons,MAIL.RARE.SHOULDER,LTHR,
+172259,Shadowscale Treads,MAIL.RARE.BOOTS,LTHR,
+172258,Shadowscale Vest,MAIL.RARE.CHEST,LTHR,
+172264,Shadowscale Waistguard,MAIL.RARE.BELT,LTHR,
+172321,Umbrahide Armguards,LTHR.LEGENDARY.BRACERS,LTHR,
+172316,Umbrahide Gauntlets,LTHR.LEGENDARY.HANDS,LTHR,
+172317,Umbrahide Helm,LTHR.LEGENDARY.LEGS,LTHR,
+172318,Umbrahide Leggings,LTHR.LEGENDARY.HEAD,LTHR,
+172319,Umbrahide Pauldrons,LTHR.LEGENDARY.SHOULDER,LTHR,
+172315,Umbrahide Treads,LTHR.LEGENDARY.BOOTS,LTHR,
+172314,Umbrahide Vest,LTHR.LEGENDARY.CHEST,LTHR,
+172320,Umbrahide Waistguard,LTHR.LEGENDARY.BELT,LTHR,
+173381,Crafter's Mark I,CM1,CLTH,
+173382,Crafter's Mark II,CM2,CLTH,
+173248,Grim-Veiled Belt,CLTH.LEGENDARY.BELT,CLTH,
+173249,Grim-Veiled Bracers,CLTH.LEGENDARY.BRACERS,CLTH,
+173242,Grim-Veiled Cape,CLTH.LEGENDARY.CLOAK,CLTH,
+173245,Grim-Veiled Hood,CLTH.LEGENDARY.HEAD,CLTH,
+173244,Grim-Veiled Mittens,CLTH.LEGENDARY.HANDS,CLTH,
+173246,Grim-Veiled Pants,CLTH.LEGENDARY.LEGS,CLTH,
+173241,Grim-Veiled Robe,CLTH.LEGENDARY.CHEST,CLTH,
+173243,Grim-Veiled Sandals,CLTH.LEGENDARY.BOOTS,CLTH,
+173247,Grim-Veiled Spaulders,CLTH.LEGENDARY.SHOULDER,CLTH,
+173191,Heavy Shrouded Cloth Bandage,HEAVY.FIRST.AID,CLTH,
+184480,Lightless Silk Pouch,32.SLOT.BAG,CLTH,
+183942,Novice Crafter's Mark,NCM,CLTH,
+180752,Pink Party Hat,PINK.PARTY.HEAD,CLTH,
+180055,Relic of the Past I,ROP1,CLTH,
+180057,Relic of the Past II,ROP2,CLTH,
+180058,Relic of the Past III,ROP3,CLTH,
+180059,Relic of the Past IV,ROP4,CLTH,
+180060,Relic of the Past V,ROP5,CLTH,
+173215,Shadowlace Cloak,CLTH.RARE.CLOAK,CLTH,
+173221,Shadowlace Cord,CLTH.RARE.BELT,CLTH,
+173218,Shadowlace Cowl,CLTH.RARE.HEAD,CLTH,
+173222,Shadowlace Cuffs,CLTH.RARE.BRACERS,CLTH,
+173216,Shadowlace Footwraps,CLTH.RARE.BOOTS,CLTH,
+173217,Shadowlace Handwraps,CLTH.RARE.HANDS,CLTH,
+173220,Shadowlace Mantle,CLTH.RARE.SHOULDERS,CLTH,
+173219,Shadowlace Trousers,CLTH.RARE.LEGS,CLTH,
+173214,Shadowlace Tunic,CLTH.RARE.CHEST,CLTH,
+184479,Shrouded Cloth Bag,30.SLOT.BAG,CLTH,
+173192,Shrouded Cloth Bandage,FIRST.AID,CLTH,
+173200,Shrouded Cloth Belt,CLTH.UNCOMMON.BELT,CLTH,
+173201,Shrouded Cloth Bracers,CLTH.UNCOMMON.BRACERS,CLTH,
+173194,Shrouded Cloth Cape,CLTH.UNCOMMON.CLOAK,CLTH,
+173197,Shrouded Cloth Hood,CLTH.UNCOMMON.HEAD,CLTH,
+173196,Shrouded Cloth Mittens,CLTH.UNCOMMON.HANDS,CLTH,
+173198,Shrouded Cloth Pants,CLTH.UNCOMMON.LEGS,CLTH,
+173193,Shrouded Cloth Robe,CLTH.UNCOMMON.CHEST,CLTH,
+173195,Shrouded Cloth Sandals,CLTH.UNCOMMON.BOOTS,CLTH,
+173199,Shrouded Cloth Spaulders,CLTH.UNCOMMON.SHOULDER,CLTH,
+173381,Crafter's Mark I,CM1,ENCH,
+173382,Crafter's Mark II,CM2,ENCH,
+172413,Enchant Boots - Agile Soulwalker,J.ENC.BOOTS.AGI,ENCH,
+172419,Enchant Boots - Eternal Agility,ENC.BOOTS.AGI,ENCH,
+177661,Enchant Boots - Speed of Soul,ENC.BOOTS.FALLDMG,ENCH,
+172415,Enchant Bracers - Eternal Intellect,ENC.BRACERS.INT,ENCH,
+172414,Enchant Bracers - Illuminated Soul,J.ENC.BRACERS.INT,ENCH,
+172416,Enchant Bracers - Shaded Hearthing,ENC.BRACERS.HS,ENCH,
+177715,Enchant Chest - Eternal Bounds,ENC.CHEST.MANA,ENCH,
+172418,Enchant Chest - Eternal Bulwark,ENC.CHEST.AGI.STR.ARMOR,ENCH,
+183738,Enchant Chest - Eternal Insight,ENC.CHEST.INT.DPS,ENCH,
+177659,Enchant Chest - Eternal Skirmish,ENC.CHEST.AGI.STR.DPS,ENCH,
+177962,Enchant Chest - Eternal Stats,ENC.CHEST.STATS,ENCH,
+177716,Enchant Chest - Sacred Stats,J.ENC.CHEST.STATS,ENCH,
+172411,Enchant Cloak - Fortified Avoidance,ENC.CLOAK.AVOIDANCE,ENCH,
+172412,Enchant Cloak - Fortified Leech,ENC.CLOAK.LEECH,ENCH,
+172410,Enchant Cloak - Fortified Speed,ENC.CLOAK.SPEED,ENCH,
+177660,Enchant Cloak - Soul Vitality,ENC.CLOAK.STM,ENCH,
+172408,Enchant Gloves - Eternal Strength,ENC.HANDS.STR,ENCH,
+172406,Enchant Gloves - Shadowlands Gathering,ENC.HANDS.GATHER,ENCH,
+172407,Enchant Gloves - Strength of Soul,J.ENC.HANDS.STR,ENCH,
+172357,Enchant Ring - Bargain of Critical Strike,J.ENC.RING.CRIT,ENCH,
+172358,Enchant Ring - Bargain of Haste,J.ENC.RING.HASTE,ENCH,
+172359,Enchant Ring - Bargain of Mastery,J.ENC.RING.MASTERY,ENCH,
+172360,Enchant Ring - Bargain of Versatility,J.ENC.RING.VERS,ENCH,
+172361,Enchant Ring - Tenet of Critical Strike,ENC.RING.CRIT,ENCH,
+172362,Enchant Ring - Tenet of Haste,ENC.RING.HASTE,ENCH,
+172363,Enchant Ring - Tenet of Mastery,ENC.RING.MASTERY,ENCH,
+172364,Enchant Ring - Tenet of Versatility,ENC.RING.VERS,ENCH,
+172365,Enchant Weapon - Ascended Vigor,ENC.WEAPON.TANK,ENCH,
+172366,Enchant Weapon - Celestial Guidance,ENC.WEAPON.DPS,ENCH,
+172367,Enchant Weapon - Eternal Grace,ENC.WEAPON.HEAL,ENCH,
+172370,Enchant Weapon - Lightless Force,ENC.WEAPON.AOE,ENCH,
+172368,Enchant Weapon - Sinful Revelation,ENC.WEAPON.STDMG,ENCH,
+172437,Enchanted Elethium Bar,ENC.ELTHUM,ENCH,
+172438,Enchanted Heavy Callous Hide,ENC.HEAVY.HIDE.CLLS,ENCH,
+172439,Enchanted Lightless Silk,ENC.LGHTSK,ENCH,
+172462,Enchanted Twilight Wand,ENC.UNCOMMON.WAND,ENCH,
+183942,Novice Crafter's Mark,NCM,ENCH,
+172231,Sacred Shard,RARE.SHARD,ENCH,
+172230,Soul Dust,SLDUST,ENCH,
+171381,Ceremonious Armguards,BSMT.UNCOMMON.BRACERS,BSMT,
+171388,Ceremonious Axe,BSMT.UNCOMMON.1H.AXE,BSMT,
+171390,Ceremonious Blade,BSMT.UNCOMMON.INT.DAGGER,BSMT,
+171374,Ceremonious Breastplate,BSMT.UNCOMMON.CHEST,BSMT,
+171383,Ceremonious Claymore,BSMT.UNCOMMON.2H.SWORD,BSMT,
+171376,Ceremonious Gauntlets,BSMT.UNCOMMON.HANDS,BSMT,
+171378,Ceremonious Greaves,BSMT.UNCOMMON.LEGS,BSMT,
+171377,Ceremonious Helm,BSMT.UNCOMMON.HEAD,BSMT,
+171387,Ceremonious Mace,BSMT.UNCOMMON.1H.STR.MACE,BSMT,
+171379,Ceremonious Pauldrons,BSMT.UNCOMMON.SHOULDER,BSMT,
+171382,Ceremonious Rapier,BSMT.UNCOMMON.1H.SWORD,BSMT,
+171389,Ceremonious Reaper,BSMT.UNCOMMON.2H.INT.AXE,BSMT,
+171375,Ceremonious Sabatons,BSMT.UNCOMMON.BOOTS,BSMT,
+171385,Ceremonious Shanker,BSMT.UNCOMMON.AGI.DAGGER,BSMT,
+171391,Ceremonious Shield,BSMT.UNCOMMON.INT.SHIELD,BSMT,
+171384,Ceremonious Smasher,BSMT.UNCOMMON.2H.INT.MACE,BSMT,
+171386,Ceremonious Spear,BSMT.UNCOMMON.SPEAR,BSMT,
+171380,Ceremonious Waistguard,BSMT.UNCOMMON.BELT,BSMT,
+171392,Ceremonious Warglaive,BSMT.UNCOMMON.WARGLAVE,BSMT,
+173381,Crafter's Mark I,CM1,BSMT,
+173382,Crafter's Mark II,CM2,BSMT,
+171441,Laestrite Skeleton Key,BSMT.KEY,BSMT,
+183942,Novice Crafter's Mark,NCM,BSMT,
+171436,Porous Sharpening Stone,J.STONE.MDPS,BSMT,
+171438,Porous Weightstone,J.STONE.RDPS,BSMT,
+180055,Relic of the Past I,ROP1,BSMT,
+180057,Relic of the Past II,ROP2,BSMT,
+180058,Relic of the Past III,ROP3,BSMT,
+180059,Relic of the Past IV,ROP4,BSMT,
+180060,Relic of the Past V,ROP5,BSMT,
+171437,Shaded Sharpening Stone,STONE.MDPS,BSMT,
+171439,Shaded Weightstone,STONE.RDPS,BSMT,
+171419,Shadowghast Armguards,PLATE.LEGENDARY.BRACERS,BSMT,
+171412,Shadowghast Breastplate,PLATE.LEGENDARY.CHEST,BSMT,
+171414,Shadowghast Gauntlets,PLATE.LEGENDARY.HANDS,BSMT,
+171416,Shadowghast Greaves,PLATE.LEGENDARY.LEGS,BSMT,
+171415,Shadowghast Helm,PLATE.LEGENDARY.HEAD,BSMT,
+171428,Shadowghast Ingot,SHDWGST,BSMT,
+171417,Shadowghast Pauldrons,PLATE.LEGENDARY.SHOULDER,BSMT,
+171413,Shadowghast Sabatons,PLATE.LEGENDARY.BOOTS,BSMT,
+171418,Shadowghast Waistguard,PLATE.LEGENDARY.BELT,BSMT,
+171449,Shadowsteel Armguards,PLATE.RARE.BRACERS,BSMT,
+171442,Shadowsteel Breastplate,PLATE.RARE.CHEST,BSMT,
+171444,Shadowsteel Gauntlets,PLATE.RARE.HANDS,BSMT,
+171446,Shadowsteel Greaves,PLATE.RARE.LEGS,BSMT,
+171445,Shadowsteel Helm,PLATE.RARE.HEAD,BSMT,
+171447,Shadowsteel Pauldrons,PLATE.RARE.SHOULDER,BSMT,
+171443,Shadowsteel Sabatons,PLATE.RARE.BOOTS,BSMT,
+171448,Shadowsteel Waistguard,PLATE.RARE.BELT,BSMT,
+172915,50UL-TR4P,,ENGR,
+172907,Articulated Ectoplasmic Specs,ENG.MAIL.RARE.HEAD,ENGR,
+172902,Bomb Bola Launcher,,ENGR,
+173381,Crafter's Mark I,CM1,ENGR,
+173382,Crafter's Mark II,CM2,ENGR,
+184308,Disposable Spectrophasic Reanimator,ENG.BR,ENGR,
+172905,Flexible Ectoplasmic Specs,ENG.CLTH.RARE.HEAD,ENGR,
+172914,Gravimetric Scrambler Cannon,,ENGR,
+172906,Grounded Ectoplasmic Specs,ENG.LTHR.RARE.HEAD,ENGR,
+172934,Handful of Laestrite Bolts,ENG.BOLTS,ENGR,
+172921,Infra-green Reflex Sight,SCOPE.HASTE,ENGR,
+172912,Momentum Redistributor Boots,,ENGR,
+172936,Mortal Coiled Spring,MLCDSG,ENGR,
+183942,Novice Crafter's Mark,NCM,ENGR,
+172903,Nutcracker Grenade,,ENGR,
+172920,Optical Target Embiggener,SCOPE.CRIT,ENGR,
+180208,PHA7-YNX,PHAVYNX,ENGR,
+172935,Porous Polishing Abrasive,PSPGAE,ENGR,
+172923,Precision Lifeforce Inverter,,ENGR,
+172908,Reinforced Ectoplasmic Specs,ENG.PLATE.LTHR.HEAD,ENGR,
+172904,Shadow Land Mine,ENG.MINE,ENGR,
+172937,Wormfed Gear Assembly,WDGRAY,ENGR,
+172924,Wormhole Generator: Shadowlands,SHDW.WRMHLE,ENGR,
+173381,Crafter's Mark I,CM1,JWLC,
+173382,Crafter's Mark II,CM2,JWLC,
+180760,Crown of the Righteous,JWC.CROWN,JWLC,
+173127,Deadly Jewel Cluster,GEM.CRIT.ORANGE,JWLC,
+173121,Deadly Jewel Doublet,J.GEM.CRIT.ORANGE,JWLC,
+173138,Deadly Laestrite Band,JWC.UNCOMMON.CRIT.RING,JWLC,
+173143,Deadly Laestrite Choker,JWC.UNCOMMON.CRIT.NECK,JWLC,
+173147,Deadly Sinvyr Necklace,JWC.RARE.CRIT.NECK,JWLC,
+173134,Deadly Sinvyr Ring,JWC.RARE.CRIT.RING,JWLC,
+173130,Masterful Jewel Cluster,GEM.MASTERY.PURPLE,JWLC,
+173124,Masterful Jewel Doublet,J.GEM.MASTERY.PURPLE,JWLC,
+173136,Masterful Laestrite Band,JWC.RARE.MASTERY.RING,JWLC,
+173141,Masterful Laestrite Choker,JWC.RARE.MASTERY.NECK,JWLC,
+173145,Masterful Phaedrum Necklace,JWC.UNCOMMON.MASTERY.RING,JWLC,
+173132,Masterful Phaedrum Ring,JWC.UNCOMMON.MASTERY.NECK,JWLC,
+183942,Novice Crafter's Mark,NCM,JWLC,
+173128,Quick Jewel Cluster,GEM.HASTE.YELLOW,JWLC,
+173122,Quick Jewel Doublet,J.GEM.HASTE.YELLOW,JWLC,
+173137,Quick Laestrite Band,JWC.UNCOMMON.HASTE.RING,JWLC,
+173142,Quick Laestrite Choker,JWC.UNCOMMON.HASTE.NECK,JWLC,
+173146,Quick Oxxein Necklace,JWC.RARE.HASTE.RING,JWLC,
+173133,Quick Oxxein Ring,JWC.RARE.HASTE.NECK,JWLC,
+173125,Revitalizing Jewel Doublet,,JWLC,
+178927,Shadowghast Necklace,JWC.LEGENDARY.NECK,JWLC,
+178926,Shadowghast Ring,JWC.LEGENDARY.RING,JWLC,
+173126,Straddling Jewel Doublet,,JWLC,
+173129,Versatile Jewel Cluster,GEM.VERS.BLUE,JWLC,
+173123,Versatile Jewel Doublet,J.GEM.VERS.BLUE,JWLC,
+173135,Versatile Laestrite Band,JWC.UNCOMMON.VERS.RING,JWLC,
+173140,Versatile Laestrite Choker,JWC.UNCOMMON.VERS.NECK,JWLC,
+173144,Versatile Solenium Necklace,JWC.RARE.VERS.RING,JWLC,
+173131,Versatile Solenium Ring,JWC.RARE.VERS.NECK,JWLC,
+172069,Banana Beef Pudding,FOOD.STM,COOK,
+172046,Biscuits and Caviar,,COOK,
+172040,Butterscotch Marinated Ribs,J.FOOD.CRIT,COOK,
+172047,Candied Amberjack Cakes,,COOK,
+172044,Cinnamon Bonefish Stew,J.FOOD.HASTE,COOK,
+184690,Extra Fancy Darkmoon Feast,DARKMOON.FEAST.VERS,COOK,
+184682,Extra Lemony Herb Filet,,COOK,
+184624,Extra Sugary Fish Feast,,COOK,
+172043,Feast of Gluttonous Hedonism,FEAST,COOK,
+172063,Fried Bonefish,FOOD.SPEED,COOK,
+172049,Iridescent Ravioli with Apple Sauce,FOOD.MASTERY,COOK,
+172048,Meaty Apple Dumplings,J.FOOD.MASTERY,COOK,
+172041,Phantasmal Souffle and Fries,FOOD.CRIT,COOK,
+172068,Pickled Meat Smoothie,FOOD.STM,COOK,
+172061,Seraph Tenders,FOOD.HEAL,COOK,
+172062,Smothered Shank,FOOD.AOE,COOK,
+172041,Spinefin Souffle and Fries,,COOK,
+172051,Steak a la Mode,FOOD.VERS,COOK,
+172042,Surprisingly Palatable Feast,J.FEAST,COOK,
+172050,Sweet Silvergill Sausages,J.FOOD.FEAST,COOK,
+172045,Tenebrous Crown Roast Aspic,FOOD.HASTE,COOK,
+173060,Aerated Water,,,VENDOR
+183955,Curing Salt,,,VENDOR
+175886,Dark Parchment,,,VENDOR
+183950,Distilled Death Extract,,,VENDOR
+184036,"Abominable Stitching
+Dundae's Hat",,,VENDOR
+184203,"Abominable Stitching
+Fungal Hair Tonic",,,VENDOR
+183786,"Abominable Stitching
+Happiness Bird",,,VENDOR
+183951,Immortal Shard,,,VENDOR
+172057,Inconceivably Aged Vinegar,,,VENDOR
+173168,Laestrite Setting,,,VENDOR
+180733,Luminous Flux,,,VENDOR
+178786,Lusterwheat Flour,,,VENDOR
+183952,Machinist's Oil,,,VENDOR
+183954,Malleable Wire,,,VENDOR
+172056,Medley of Transplanar Spices,,,VENDOR
+178787,Orboreal Shard,,,VENDOR
+177062,Penumbra Thread,,,VENDOR
+172059,Rich Grazer Milk,,,VENDOR
+180732,Rune Etched Vial,,,VENDOR
+183953,Sealing Wax,,,VENDOR
+172058,Smuggled Azerothian Produce,,,VENDOR
+177061,Twilight Bark,,,VENDOR
+173202,Shrouded Cloth,SHRDCH,CLTH,
+173204,Lightless Silk,LGHTSK,CLTH,
+172230,Soul Dust,RARE.SHARD,ENC,
+172231,Sacred Shard,SLDUST,ENC,
+172232,Eternal Crystal,EPIC.SHARD,ENC,
+173110,Umbryl,GEM.COMMON.BLUE,JWC,
+173108,Oriblase,GEM.COMMON.YELLOW,JWC,
+173109,Angerseye,GEM.COMMON.RED,JWC,
+179314,Creeping Crawler Meat,MEAT.CRCR,COOK,
+179315,Shadowy Shank,MEAT.SHSH,COOK,
+172054,Seraphic Wing,MEAT.SRWG,COOK,
+172055,Phantasmal Haunch,MEAT.PLHH,COOK,
+172053,Tenebrous Ribs,MEAT.TRBS,COOK,
+173035,Pocked Bonefish,FISH.BONE,COOK,
+173034,Silvergill Pike,FISH.PIKE,COOK,
+172052,Aethereal Meat,MEAT.AETH,COOK,
+173036,Spinefin Piranha,FISH.SPNF,COOK,
+173033,Iridescent Amberjack,FISH.AMBR,COOK,
+173037,Elysian Thade,FISH.ELTH,COOK,
+173032,Lost Sole,FISH.LTSL,COOK,
+175111,Marrow Larva,MEAT.LRVA,COOK,
+171428,Shadowghast Ingot,SHDWGST,ORE,
+171828,Laestrite Ore,LSTRIT,ORE,
+171833,Elethium Ore,ELTHUM,ORE,
+171831,Phaedrum Ore,PHDRUM,ORE,
+171830,Oxxein Ore,OXXEIN,ORE,
+171840,Porous Stone,POROUS,ORE,
+171832,Sinvyr Ore,SINVYR,ORE,
+171841,Shaded Stone,SHDSTN,ORE,
+171829,Solenium Ore,SLNIUM,ORE,
+171838,Sinvyr Nugget,NUGGET.SINVYR,ORE,
+171834,Laestrite Nugget,NUGGET.LSTRIT,ORE,
+171837,Phaedrum Nugget,NUGGET.PHDRUM,ORE,
+171839,Elethium Nugget,NUGGET.ELTHUM,ORE,
+171836,Oxxein Nugget,NUGGET.OXXEIN,ORE,
+171835,Solenium Nugget,NUGGET.SLNIUM,ORE,
+180060,Relic of the Past V,ROTP5,INDX,
+180055,Relic of the Past I,ROTP1,INDX,
+180059,Relic of the Past IV,ROTP4,INDX,
+180057,Relic of the Past II,ROTP2,INDX,
+180058,Relic of the Past III,ROTP3,INDX,
+173172,Essence of Servitude,ESS.SERVITUDE,JWC,
+173173,Essence of Valor,ESS.VALOR,JWC,
+173170,Essence of Rebirth,ESS.REBIRTH,JWC,
+171287,Ground Death Blossom,GROUND.DTBLSM,HRBS,
+171290,Ground Marrowroot,GROUND.MRRWRT,HRBS,
+171292,Ground Nightshade,GROUND.NGTSHD,HRBS,
+171291,Ground Rising Glory,GROUND.RSGLRY,HRBS,
+171288,Ground Vigil's Torch,GROUND.VLTRCH,HRBS,
+171289,Ground Widowbloom,GROUND.WDWBLM,HRBS,
+169701,Death Blossom,DTBLSM,HRBS,
+171315,Nightshade,NGTSHD,HRBS,
+168589,Marrowroot,MRRWRT,HRBS,
+170554,Vigil's Torch,VLTRCH,HRBS,
+168583,Widowbloom,WDWBLM,HRBS,
+168586,Rising Glory,RSGLRY,HRBS,
+169698,Widowbloom Petal,PETAL.WDWBLM,HRBS,
+169550,Rising Glory Petal,PETAL.RSGLRY,HRBS,
+169697,Nightshade Petal,PETAL.NGTSHD,HRBS,
+169700,Death Blossom Petal,PETAL.DTBLSM,HRBS,
+169699,Vigil's Torch Petal,PETAL.VLTRCH,HRBS,
+168591,Marrowroot Petal,PETAL.MRRWRT,HRBS,
+173058,Umbral Ink,INK.UMBR,INSC,
+175970,Tranquil Ink,INK.TRANQ,INSC,
+173059,Luminous Ink,INK.LMNS,INSC,
+173049,Tome of the Still Mind,TOME,INSC,
+173062,Contract: Court of Harvesters,CONTRACT.COH,INSC,
+173051,Contract: The Ascended,CONTRACT.ASC,INSC,
+175924,Contract: The Undying Army,CONTRACT.UND,INSC,
+173053,Contract: The Wild Hunt,CONTRACT.HUNT,INSC,
+173066,Darkmoon Card of Death,CARD.DEATH,INSC,
+177875,Darkmoon Card of Putresence,CARD.SENCE,INSC,
+177876,Darkmoon Card of Repose,CARD.REPOSE,INSC,
+177873,Darkmoon Card of the Indomitable,CARD.INDMT,INSC,
+177874,Darkmoon Card of Voracity,CARD.VORACITY,INSC,
+173161,Missive of Critical Strike,MISSIVE.CRIT,INSC,
+173160,Missive of Haste,MISSIVE.HASTE,INSC,
+173162,Missive of Mastery,MISSITVE.MASTERY,INSC,
+173163,Missive of Versatility,MISSIVE.VERS,INSC,
+173067,Vantus Rune: Castle Nathria,VANTUS.CASTLE,INSC,
+172330,Unseelie Leather,LTHR.UNSL,LTHR,
+172090,Sorrowscale Fragment,SCLAE.SRRW,LTHR,
+172331,Sinful Leather,LTHR.SNFL,LTHR,
+172333,Purified Leather,LTHR.PRFD,LTHR,
+172092,Pallid Bone,PLDBNE,LTHR,
+172332,Necrotic Leather,LTHR.NCRT,LTHR,
+177279,Gaunt Sinew,GNTSNW,LTHR,
+172093,Desolate Leather Scraps,SCRAPS.LTHR.DSLT,LTHR,
+172089,Desolate Leather,LTHR.DSLT,LTHR,
+172095,Desolate Hide Scraps,SCRAPS.HIDE.DSLT,LTHR,
+172094,Desolate Hide,HIDE.DSLT,LTHR,

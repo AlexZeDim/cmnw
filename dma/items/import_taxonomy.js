@@ -43,19 +43,32 @@ const importTaxonomy = async (path = 'C:\\Projects\\conglomerat\\uploads\\taxono
           for (let i = 1; i < data.length; i++) {
             const item = await items_db.findById(parseInt(data[i][0]));
             if (item) {
-              if (data[i][2]) {
-                item.ticker = data[i][2]
-              }
-              if (data[i][3]) {
-                item.profession_class = data[i][3];
-              }
+              if (data[i][2]) item.ticker = data[i][2]
+              if (data[i][3]) item.profession_class = data[i][3];
               if (data[i][4]) {
-                item.asset_class.addToSet(data[i][4]);
+                if (data[i][4].includes('.')) {
+                  const asset_classes = data[i][4].split('.')
+                  for (const asset_class of asset_classes) {
+                    item.asset_class.addToSet(asset_class);
+                  }
+                } else {
+                  item.asset_class.addToSet(data[i][4]);
+                }
+              }
+              if (data[i][5]) {
+                if (data[i][5].includes('.')) {
+                  const tags = data[i][5].split('.')
+                  for (const tag of tags) {
+                    item.asset_class.addToSet(tag);
+                  }
+                } else {
+                  item.asset_class.addToSet(data[i][5]);
+                }
               }
               await item.save();
-              console.info(`U,#${item._id}:${item.ticker}:${item.profession_class} ${item.asset_class.toString()}`);
+              console.info(`U,#${item._id}:${item.ticker || item.name.en_GB}:${item.profession_class} ${item.asset_class.toString()}`);
             } else {
-              console.info(`R,#${parseInt(data[i][0])}:${parseInt(data[i][1])}`);
+              console.info(`R,#${parseInt(data[i][0])}:${data[i][1]}`);
             }
           }
           process.exit(0)

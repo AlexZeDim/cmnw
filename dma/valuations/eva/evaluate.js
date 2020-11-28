@@ -427,7 +427,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
            * Add to PREMIUM for later analysis
            *
            * If premium item is also derivative, like EXPL
-           * place them as start of reagent_items[]
+           * place them as start of premium_items[]
            */
           if (reagent_item.asset_class.includes('PREMIUM')) {
             if (reagent_item.asset_class.includes('DERIVATIVE')) {

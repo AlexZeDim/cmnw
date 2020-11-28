@@ -343,7 +343,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
                   ],
                 },
               },
-              min: '$price',
+              min: { $min: '$price' },
               orders: { $addToSet: '$id' },
             },
           },

@@ -620,7 +620,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
           value: Round2(nominal_value),
           details: {
             queue_cost: Round2(queue_cost),
-            queue_quantity: parseInt(price_method.item_quantity),
+            queue_quantity: parseFloat(price_method.item_quantity),
             rank: price_method.rank || 0,
             reagent_items: reagent_items,
             premium_items: premium_items,

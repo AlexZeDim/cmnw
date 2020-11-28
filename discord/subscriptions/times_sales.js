@@ -109,18 +109,18 @@ async function timesAndSales (bot) {
               for (const item_orders of groupOrders) {
                 const item = await items_db.findById(item_orders._id)
 
-                let message = '';
+                let message = String();
 
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
                 if (created && created.length) {
                   for (const order of created) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
                     const order_quantity = order.quantity.toString().padStart(7);
-                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padEnd(16)
+                    const order_quote = `${(order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.')}g`.padEnd(16)
                     let s = `| C | ${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
-                      guild_channel.send(`\`${message}\``)
-                      message = ''
+                      await guild_channel.send(`\`${message}\``)
+                      message = String().trim()
                     } else {
                       message += s
                     }
@@ -132,11 +132,11 @@ async function timesAndSales (bot) {
                   for (const order of removed) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
                     const order_quantity = order.quantity.toString().padStart(7);
-                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padEnd(16)
+                    const order_quote = `${(order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.')}g`.padEnd(16)
                     let s = `| R | ${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
-                      guild_channel.send(`\`${message}\``)
-                      message = ''
+                      await guild_channel.send(`\`${message}\``)
+                      message = String().trim()
                     } else {
                       message += s
                     }

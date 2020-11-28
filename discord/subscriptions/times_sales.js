@@ -143,7 +143,7 @@ async function timesAndSales (bot) {
                   }
                 }
 
-                if (message.length) await guild_channel.send(message)
+                if (message.length) await guild_channel.send(`\`${message}\``)
               }
 
               for (const slug of connected_realm_id.connected_realms) {

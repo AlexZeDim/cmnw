@@ -116,7 +116,7 @@ async function timesAndSales (bot) {
                   for (const order of created) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id).padEnd(100);
                     const order_quantity = order.quantity.toString().padEnd(7);
-                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(15)
+                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(20)
                     let s = `| C | x${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(message)
@@ -132,7 +132,7 @@ async function timesAndSales (bot) {
                   for (const order of removed) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id).padEnd(100);
                     const order_quantity = order.quantity.toString().padEnd(7);
-                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(15)
+                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(20)
                     let s = `| R | x${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(message)

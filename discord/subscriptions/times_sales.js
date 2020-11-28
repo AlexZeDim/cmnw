@@ -127,7 +127,7 @@ async function timesAndSales (bot) {
                 const removed = differenceBy(item_orders.orders_t1, item_orders.orders_t0, 'id')
                 if (removed && removed.length) {
                   for (const order of removed) {
-                    const order_name = ((item.ticker || item.name.en_GB) || item_orders._id).padEnd(100);
+                    const order_name = ((item.ticker.padEnd(100) || item.name.en_GB.padEnd(100)) || item_orders._id.padEnd(100));
                     const order_quantity = order.quantity.toString().padStart(7);
                     const order_quote = (order.unit_price || (order.buyout || order.bid)).toString().padStart(10)
                     let s = `| R | ${order_name} | ${order_quantity} | ${order_quote}g |\n`

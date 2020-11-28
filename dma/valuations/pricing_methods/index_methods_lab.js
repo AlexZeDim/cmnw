@@ -157,7 +157,7 @@ async function T ({ name, methods }) {
     for (const method of methods) {
       if (!method.derivative.length || !method.item) continue
       method.derivative.map(async derivative_ => {
-        precursor.ticker = `${precursor.mask}:D${derivative_.id}`
+        precursor.ticker = `${precursor.mask}:D${derivative_.id}:${method.item}:`
         precursor.item_id = derivative_.id;
         precursor.recipe_id = parseInt(`${derivative_.id}${method.item}`)
         precursor.item_quantity = derivative_.quantity;
@@ -175,7 +175,7 @@ async function T ({ name, methods }) {
             lean: true,
           }
         )
-        console.info(`U,${pricing_method.expansion}:${pricing_method.profession}:${pricing_method.item_id},${pricing_method._id}`);
+        console.info(`U,${pricing_method.expansion}:${pricing_method.ticker},${pricing_method._id}`);
         precursor.ticker = name
       })
     }
@@ -185,4 +185,6 @@ async function T ({ name, methods }) {
 }
 
 T(disenchant)
+
+T(milling)
 

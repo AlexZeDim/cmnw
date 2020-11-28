@@ -334,31 +334,31 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               open_interest: {
                 $sum: { $multiply: ['$price', '$quantity'] },
               },
-              min: { $min: '$price' },
-              min_size: {
+              value: {
                 $min: {
                   $cond: [
-                    { $gte: ['$quantity', 200] },
+                    { $gte: ['$quantity', (args.stackable || 1)] },
                     '$price',
                     { $min: '$price' },
                   ],
                 },
               },
+              min: '$price',
               orders: { $addToSet: '$id' },
             },
           },
         ])
-        if (market_data.length && market_data[0].min) {
+        if (market_data.length && market_data[0].value) {
           const item_ava = market_data[0]
           /** Initiate constants */
           const flags = ['BUY', 'SELL'];
-          let price = item_ava.min;
-          let price_size = item_ava.min_size;
+          let price = item_ava.value;
+          let min = item_ava.min
           /** BUY / SELL */
           for (let flag of flags) {
             if (flag === 'SELL') {
               price = price * 0.95;
-              price_size = price_size * 0.95;
+              min = min * 0.95
             }
             await valuations.create({
               name: `AUCTION ${flag}`,
@@ -369,7 +369,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               last_modified: last_modified,
               value: Round2(price),
               details: {
-                price_size: Round2(price_size),
+                min_price: min,
                 quantity: quantity,
                 open_interest: Math.round(item_ava.open_interest),
                 orders: item_ava.orders,

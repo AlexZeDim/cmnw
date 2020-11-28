@@ -115,9 +115,9 @@ async function timesAndSales (bot) {
                 if (created && created.length) {
                   for (const order of created) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id).padEnd(100);
-                    const order_quantity = order.quantity.toString().padEnd(7);
-                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(20)
-                    let s = `| C | x${order_quantity} | ${order_quote}g | ${order_name}\n`
+                    const order_quantity = order.quantity.toString().padStart(7);
+                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padEnd(16)
+                    let s = `| C | ${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
                       guild_channel.send(`\`${message}\``)
                       message = ''
@@ -131,9 +131,9 @@ async function timesAndSales (bot) {
                 if (removed && removed.length) {
                   for (const order of removed) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id).padEnd(100);
-                    const order_quantity = order.quantity.toString().padEnd(7);
-                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(20)
-                    let s = `| R | x${order_quantity} | ${order_quote}g | ${order_name}\n`
+                    const order_quantity = order.quantity.toString().padStart(7);
+                    const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padEnd(16)
+                    let s = `| R | ${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
                       guild_channel.send(`\`${message}\``)
                       message = ''

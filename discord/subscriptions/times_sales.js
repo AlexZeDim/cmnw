@@ -42,9 +42,8 @@ async function timesAndSales (bot) {
 
           for (const connected_realm_id of connected_realms) {
             const timestamps = await auctions_db.find({ 'connected_realm_id': connected_realm_id._id }).distinct('last_modified')
-            if (timestamps.length < 2) {
-              return await guild_channel.send(`DMA has not found previous timestamp for Auction House: ${connected_realm_id._id}`)
-            }
+            if (timestamps.length < 2) return await guild_channel.send(`DMA has not found previous timestamp for Auction House: ${connected_realm_id._id}`)
+
             timestamps.sort((a, b) => b - a)
             const [ t0, t1 ] = timestamps;
 
@@ -111,13 +110,15 @@ async function timesAndSales (bot) {
 
                 let message = String();
 
+                const realm = `@${connected_realm_id._id}`.toString().padEnd(6)
+
                 const created = differenceBy(item_orders.orders_t0, item_orders.orders_t1, 'id')
                 if (created && created.length) {
                   for (const order of created) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
                     const order_quantity = order.quantity.toString().padStart(7);
                     const order_quote = `${(order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.')}g`.padEnd(16)
-                    let s = `| C | ${order_quantity} | ${order_quote}g | ${order_name}\n`
+                    let s = `| C | ${realm} | ${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(`\`${message}\``)
                       message = String().trim()
@@ -133,7 +134,7 @@ async function timesAndSales (bot) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
                     const order_quantity = order.quantity.toString().padStart(7);
                     const order_quote = `${(order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.')}g`.padEnd(16)
-                    let s = `| R | ${order_quantity} | ${order_quote}g | ${order_name}\n`
+                    let s = `| R | ${realm} | ${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
                       await guild_channel.send(`\`${message}\``)
                       message = String().trim()

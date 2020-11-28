@@ -26,16 +26,15 @@ schedule.scheduleJob('*/5 * * * *', async () => {
     console.time(`OSINT-indexLFG`)
     const { token } = await keys_db.findOne({ tags: `OSINT-indexGuilds` });
     const osint_lfg = await characters_db.find({ isWatched: true }).lean();
-    if (!osint_lfg || !osint_lfg.length) {
-      return
-    }
     /**
      * If players already exists in OSINT with LFG
      * then => revoke their status for a new once, but keep result in variable
      * for future diffCompare
      * */
-    await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { lfg : 1 } } )
-    console.info(`LFG status revoked for ${osint_lfg.length} characters`)
+    if (osint_lfg && osint_lfg.length) {
+      await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { lfg : 1 } } )
+      console.info(`LFG status revoked for ${osint_lfg.length} characters`)
+    }
     /**
      * Receive HTML table from Kernel's WoWProgress
      */

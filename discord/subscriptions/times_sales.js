@@ -119,7 +119,7 @@ async function timesAndSales (bot) {
                     const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(20)
                     let s = `| C | x${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
-                      await guild_channel.send(message)
+                      guild_channel.send(`\`${message}\``)
                       message = ''
                     } else {
                       message += s
@@ -135,7 +135,7 @@ async function timesAndSales (bot) {
                     const order_quote = (order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.').padStart(20)
                     let s = `| R | x${order_quantity} | ${order_quote}g | ${order_name}\n`
                     if (message.length + s.length > 1999) {
-                      await guild_channel.send(message)
+                      guild_channel.send(`\`${message}\``)
                       message = ''
                     } else {
                       message += s

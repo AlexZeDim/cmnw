@@ -109,7 +109,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
           if (is_commdty) {
             if (is_xrs) {
               /** Build X axis */
-              extended_params.chart.x_axis.push(realm.realms.join(', '))
+              extended_params.chart.x_axis[x] = realm.realms.join(', ');
               /** Build Cluster from Orders */
               if (is_gold) {
                 const dataset = await goldXRS(y_axis, { x: x, connected_realm_id: realm.connected_realm_id, golds: realm.golds })

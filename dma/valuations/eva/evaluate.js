@@ -347,7 +347,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               orders: { $addToSet: '$id' },
             },
           },
-        ])
+        ]).exec()
         if (market_data.length && market_data[0].value) {
           const item_ava = market_data[0]
           /** Initiate constants */
@@ -370,7 +370,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               value: Round2(price),
               details: {
                 min_price: min,
-                quantity: quantity,
+                quantity: item_ava.quantity,
                 open_interest: Math.round(item_ava.open_interest),
                 orders: item_ava.orders,
               },

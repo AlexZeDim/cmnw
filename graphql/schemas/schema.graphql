@@ -216,6 +216,7 @@ type Valuations {
 }
 
 type ValuationsDetails {
+    min_price: Float,
     queue_cost: Float,
     queue_quantity: Float,
     rank: Int,
@@ -302,6 +303,7 @@ type Item {
     value: Float,
     quantity: Float
     xrs: Boolean
+    score: Float
 }
 
 """
@@ -315,6 +317,7 @@ type Query {
     realms(name: String): [Realm]
     wowtoken(region: String): Wowtoken
     hash(query: String!): [Character]
+    items(id: ID!): [Item]
 }
 
 type Mutation {

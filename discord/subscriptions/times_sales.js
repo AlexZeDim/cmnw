@@ -108,7 +108,7 @@ async function timesAndSales (bot) {
               for (const item_orders of groupOrders) {
                 const item = await items_db.findById(item_orders._id)
 
-                let message = String();
+                let message = '\n';
 
                 const realm = `@${connected_realm_id._id}`.toString().padEnd(6)
 
@@ -122,7 +122,7 @@ async function timesAndSales (bot) {
                     if (message.length + s.length > 1999) {
                       message = '`' + message + '`'
                       await guild_channel.send(message)
-                      message = String().trim()
+                      message = '\n';
                     } else {
                       message = message + s
                     }
@@ -139,7 +139,7 @@ async function timesAndSales (bot) {
                     if (message.length + s.length > 1999) {
                       message = '`' + message + '`'
                       await guild_channel.send(message)
-                      message = String().trim()
+                      message = '\n';
                     } else {
                       message = message + s
                     }

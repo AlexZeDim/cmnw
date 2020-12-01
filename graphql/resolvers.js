@@ -4,7 +4,8 @@ const realms_db = require('../db/models/realms_db');
 const osint_logs_db = require('../db/models/osint_logs_db');
 const keys_db = require('../db/models/keys_db');
 const wowtoken_db = require('../db/models/wowtoken_db');
-const messages_db = require('../db/models/messages_db');
+const messages_db = require('../db/models/messages_db')
+const items_db = require('../db/models/items_db');
 
 const getCharacter = require('../osint/characters/get_character');
 const getGuild = require('../osint/guilds/get_guild')
@@ -13,9 +14,7 @@ const itemExtended = require('./handlers/item_extended')
 
 const root = {
   character: async ({ id }) => {
-    if (!id.includes('@')) {
-      return
-    }
+    if (!id.includes('@')) return
     const [ nameSlug, realmSlug ] = id.split('@');
     const realm = await realms_db
       .findOne(
@@ -24,9 +23,7 @@ const root = {
       )
       .sort({ score: { $meta: 'textScore' } })
       .lean()
-    if (!realm) {
-      return
-    }
+    if (!realm) return
     const character = await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     if (!character) {
       const { token } = await keys_db.findOne({
@@ -44,9 +41,7 @@ const root = {
     return character
   },
   guild: async ({ id }) => {
-    if (!id.includes('@')) {
-      return
-    }
+    if (!id.includes('@')) return
     const [ nameSlug, realmSlug ] = id.split('@');
     const realm = await realms_db
       .findOne(
@@ -117,9 +112,7 @@ const root = {
     return guild
   },
   hash: async ({ query }) => {
-    if (!query.includes('@')) {
-      return
-    }
+    if (!query.includes('@')) return
     const [ type, hash ] = query.toLowerCase().split("@")
     return await characters_db.find({ [`hash.${type}`]: hash }).limit(60).lean()
   },
@@ -139,7 +132,7 @@ const root = {
       .lean()
   },
   item: async ({ id, extended }) => {
-    if (!id) {
+    if (!id || !id.includes('@')) {
       return
     }
     const [ itemQuery, realmQuery ] = id.split('@');
@@ -179,6 +172,64 @@ const root = {
   createMessage: async ({ input }) => {
     return messages_db.create(input);
   },
+  items: async ({ id }) => {
+    if (!id || !id.includes('@')) return
+    const [ itemQuery, realmQuery ] = id.split('@');
+
+    return items_db.aggregate([
+      {
+        $match: { $text: { $search: itemQuery.toString() } },
+      },
+      {
+        $addFields: {
+          item_valuation: { $toInt: '$_id' },
+          score: { $meta: "textScore" },
+        }
+      },
+      {
+        $sort: { score: { $meta: "textScore" } }
+      },
+      {
+        $lookup: {
+          from: "realms",
+          pipeline: [
+            {
+              $match: { $text: { $search: realmQuery.toString().replace(';', ' ') } }
+            },
+            {
+              $group: {
+                _id: "$connected_realm_id",
+                realms: { $first: "$$ROOT" },
+              }
+            },
+            { $replaceRoot: { newRoot: "$realms" } }
+          ],
+          as: "realms"
+        }
+      },
+      {
+        $lookup: {
+          from: "valuations",
+          let: { item_id: '$item_valuation', connected_realms: '$realms._id', valuations_timestamp: '$realms.valuations' }, //
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$item_id", "$$item_id"] },
+                    { $ne: [ "$type", 'VENDOR'] },
+                    { $in: ["$connected_realm_id", "$$connected_realms"] },
+                    { $in: ["$last_modified", "$$valuations_timestamp"] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: "valuations"
+        }
+      }
+    ]);
+  }
 }
 
 module.exports = root;

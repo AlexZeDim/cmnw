@@ -110,19 +110,16 @@ module.exports = {
               market_counter = valuations[i].details.orders.length;
             }
           }
-          if (valuations[i].type === 'DERIVATIVE') {
-            derivative_counter += 1;
-          }
+          if (valuations[i].type === 'DERIVATIVE') derivative_counter += 1;
 
-          if (valuations[i].type === 'PREMIUM') {
-            premium_counter += 1;
-          }
+          if (valuations[i].type === 'PREMIUM')  premium_counter += 1;
 
           embed.addField(
       `─────────────`,
       `
               Name: ${valuations[i].name}
               Type: ${valuations[i].type}
+              Realm: @${valuations[i].connected_realm_id}
               Value: ${valuations[i].value}
               ─────────────
               `,

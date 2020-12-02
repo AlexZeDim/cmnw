@@ -187,6 +187,9 @@ const root = {
         }
       },
       {
+        $match: { score: { $gte: 1.5 } }
+      },
+      {
         $sort: { score: { $meta: "textScore" } }
       },
       {

@@ -117,7 +117,7 @@ module.exports = {
           embed.addField(
       `─────────────`,
       `
-              Name: ${valuations[i].name}
+              ${valuations[i].name}
               Type: ${valuations[i].type}
               Realm: @${valuations[i].connected_realm_id}
               Value: ${valuations[i].value}

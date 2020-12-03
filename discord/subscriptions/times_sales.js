@@ -108,7 +108,7 @@ async function timesAndSales (bot) {
               for (const item_orders of groupOrders) {
                 const item = await items_db.findById(item_orders._id)
 
-                let message = '\n';
+                let message = '';
 
                 const realm = `@${connected_realm_id._id}`.toString().padEnd(6)
 
@@ -118,11 +118,10 @@ async function timesAndSales (bot) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
                     const order_quantity = `x${order.quantity}`.toString().padEnd(7);
                     const order_quote = `${(order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.')}g`.padEnd(16)
-                    let s = `| C | ${realm} | ${order_quantity} | ${order_quote} | ${order_name}\n`
+                    let s = `\`| C | ${realm} | ${order_quantity} | ${order_quote} | ${order_name}\`\n`
                     if (message.length + s.length > 1999) {
-                      message = '`' + message + '`'
                       await guild_channel.send(message)
-                      message = '\n';
+                      message = '';
                     } else {
                       message = message + s
                     }
@@ -135,21 +134,17 @@ async function timesAndSales (bot) {
                     const order_name = ((item.ticker || item.name.en_GB) || item_orders._id);
                     const order_quantity = `x${order.quantity}`.toString().padEnd(7);
                     const order_quote = `${(order.unit_price || (order.buyout || order.bid)).toLocaleString('ru-RU').replace(',', '.')}g`.padEnd(16)
-                    let s = `| R | ${realm} | ${order_quantity} | ${order_quote} | ${order_name}\n`
+                    let s = `\`| R | ${realm} | ${order_quantity} | ${order_quote} | ${order_name}\`\n`
                     if (message.length + s.length > 1999) {
-                      message = '`' + message + '`'
                       await guild_channel.send(message)
-                      message = '\n';
+                      message = '';
                     } else {
                       message = message + s
                     }
                   }
                 }
 
-                if (message.length) {
-                  message = '`' + message + '`'
-                  await guild_channel.send(message)
-                }
+                if (message.length) await guild_channel.send(message)
               }
 
               for (const slug of connected_realm_id.connected_realms) {

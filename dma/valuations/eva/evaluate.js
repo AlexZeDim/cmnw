@@ -348,7 +348,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
             },
           },
         ]).exec()
-        if (market_data.length && market_data[0].value) {
+        if (market_data && market_data.length && market_data[0].value) {
           const item_ava = market_data[0]
           /** Initiate constants */
           const flags = ['BUY', 'SELL'];
@@ -388,7 +388,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
      */
     if (asset_class.includes('DERIVATIVE')) {
       const primary_methods = await pricing_methods.find({ item_id: _id, type: { $ne: 'u/r' } }).lean();
-      if (!primary_methods.length) return
+      if (!primary_methods || !primary_methods.length) return
       for (const price_method of primary_methods) {
         const dva = await valuations.findOne({
           item_id: price_method.item_id,
@@ -444,7 +444,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               last_modified: last_modified,
               connected_realm_id: connected_realm_id,
               flag: 'BUY',
-            }).sort('value').lean();
+            }).sort({value: 1}).lean();
 
             /** If CTD not found.. */
             if (!ctd_check) await evaluate(reagent_item)
@@ -454,7 +454,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               last_modified: last_modified,
               connected_realm_id: connected_realm_id,
               flag: 'BUY',
-            }).sort('value').lean();
+            }).sort({value: 1}).lean();
 
             if (!ctd) unsorted_items.push(reagent_item);
 

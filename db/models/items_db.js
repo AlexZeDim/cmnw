@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     /**
      * Blizzard API
@@ -76,6 +76,6 @@ schema.index(
 
 schema.index({ 'expansion': 1, 'is_commdty': 1 }, { name: 'Contracts' });
 
-let items_db = mongoose.model('items', schema, 'items');
+const items_db = mongoose.model('items', schema, 'items');
 
 module.exports = items_db;

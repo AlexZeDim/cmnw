@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     name: String,
     item_id: Number,
@@ -41,6 +41,6 @@ schema.index({ type: -1 }, { name: 'LastModified' });
 schema.index({ flag: -1 }, { name: 'Flag' });
 schema.index({ value: -1 }, { name: 'Sorting' });
 
-let valuations_db = mongoose.model('valuations', schema, 'valuations');
+const valuations_db = mongoose.model('valuations', schema, 'valuations');
 
 module.exports = valuations_db;

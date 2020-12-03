@@ -120,8 +120,10 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
       realm_population.characters_active_max_level = await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, level: max_level })
       realm_population.characters_guild_members = await characters_db.countDocuments({ 'realm.slug': realm.slug, guild: { $exists: true, $ne: null } });
       realm_population.characters_guildless = await characters_db.countDocuments({ 'realm.slug': realm.slug, guild: { $exists: false } });
-      realm_population.players_unique = await characters_db.find({ 'realm.slug': realm.slug }).distinct('personality')
-      realm_population.players_active_unique = await characters_db.find({ 'realm.slug': realm.slug, statusCode: 200 }).distinct('personality')
+      const players_unique = await characters_db.find({ 'realm.slug': realm.slug }).distinct('personality')
+      realm_population.players_unique = players_unique.length
+      const players_active_unique = await characters_db.find({ 'realm.slug': realm.slug, statusCode: 200 }).distinct('personality')
+      realm_population.players_active_unique = players_active_unique.length
 
       /**
        * Class popularity among

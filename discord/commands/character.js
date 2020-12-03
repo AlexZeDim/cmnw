@@ -92,34 +92,32 @@ module.exports = {
       ];
 
       fieldsToCheck.forEach(field => {
-        if (field in character) {
-          if (typeof character[field] === 'object') {
-            if (field === 'hash') {
-              delete character[field].t;
-              Object.entries(character[field]).forEach(([k, v]) => {
-                embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, `[${v}](https://${process.env.domain}/hash/${k}@${v})`, true);
-              });
-            } else if (field === 'media') {
-              embed.setThumbnail(character[field].avatar_url);
-            } else {
-              Object.entries(character[field]).forEach(([k, v]) => {
-                if (v !== null) embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
-              });
-            }
+        if (typeof character[field] === 'object' && character[field] !== null) {
+          if (field === 'hash') {
+            delete character[field].t;
+            Object.entries(character[field]).forEach(([k, v]) => {
+              embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, `[${v}](https://${process.env.domain}/hash/${k}@${v})`, true);
+            });
+          } else if (field === 'media') {
+            embed.setThumbnail(character[field].avatar_url);
           } else {
-            if (field === 'faction') {
-              if (character[field] === 'Alliance') {
-                embed.setColor('#006aff');
-              } else if (character[field] === 'Horde') {
-                embed.setColor('#ff0000');
-              }
-            } else if (field === 'lastModified') {
-              embed.setTimestamp(character[field]);
-            } else if (field === 'createdBy') {
-              embed.setFooter(`${character[field]} | Gonikon`);
-            } else {
-              embed.addField(humanizeString(field.replace('character_', '')), character[field], true);
+            Object.entries(character[field]).forEach(([k, v]) => {
+              if (v !== null) embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
+            });
+          }
+        } else {
+          if (field === 'faction') {
+            if (character[field] === 'Alliance') {
+              embed.setColor('#006aff');
+            } else if (character[field] === 'Horde') {
+              embed.setColor('#ff0000');
             }
+          } else if (field === 'lastModified') {
+            embed.setTimestamp(character[field]);
+          } else if (field === 'createdBy') {
+            embed.setFooter(`${character[field]} | Gonikon`);
+          } else {
+            embed.addField(humanizeString(field.replace('character_', '')), character[field], true);
           }
         }
       });

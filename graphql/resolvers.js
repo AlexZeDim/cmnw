@@ -183,7 +183,7 @@ const root = {
       {
         $addFields: {
           item_valuation: { $toInt: '$_id' },
-          score: { $meta: "textScore" },
+          score: { $round: [ { $meta: "textScore" }, 2] },
         }
       },
       {
@@ -191,6 +191,9 @@ const root = {
       },
       {
         $sort: { score: { $meta: "textScore" } }
+      },
+      {
+        $limit: 250
       },
       {
         $lookup: {

@@ -103,7 +103,7 @@ module.exports = {
               embed.setThumbnail(character[field].avatar_url);
             } else {
               Object.entries(character[field]).forEach(([k, v]) => {
-                embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
+                if (v !== null) embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
               });
             }
           } else {

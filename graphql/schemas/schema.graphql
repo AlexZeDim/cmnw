@@ -219,6 +219,7 @@ type ValuationsDetails {
     min_price: Float,
     queue_cost: Float,
     queue_quantity: Float,
+    queue_share: Float,
     rank: Int,
     reagent_items: [Item],
     premium_items: [Item],

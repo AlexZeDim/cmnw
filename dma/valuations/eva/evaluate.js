@@ -653,7 +653,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
          *
          * Only for Mass Mills and Prospects
          */
-        if (!method_evaluations.single_derivative && price_method.single_reagent) {
+        if (!method_evaluations.single_derivative && method_evaluations.single_reagent) {
           /**
            * evaluate derivative_item_share for every Di
            * from queue_cost via cross x reduce

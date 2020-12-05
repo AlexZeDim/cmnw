@@ -37,12 +37,14 @@ const buildAssetClass = async (...args) => {
           async method => {
             try {
               /** Derivative Asset Class */
-              if (method.item_id) {
-                const item = await items_db.findById(method.item_id);
-                if (item && item.asset_class) {
-                  item.asset_class.addToSet('DERIVATIVE');
-                  await item.save();
-                  console.info(`${item._id},${item.asset_class.toString()}`);
+              if (method.derivatives) {
+                for (let { _id } of method.derivatives) {
+                  const item = await items_db.findById(_id);
+                  if (item && item.asset_class) {
+                    item.asset_class.addToSet('DERIVATIVE');
+                    await item.save();
+                    console.info(`${item._id},${item.asset_class.toString()}`);
+                  }
                 }
               }
               /** Reagent Asset Class */

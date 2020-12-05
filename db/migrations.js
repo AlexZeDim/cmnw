@@ -37,9 +37,6 @@ const pricing_methods_db = require('./models/pricing_methods_db');
     console.log(remove)
     */
 
-
-
-
     /**
      * Rename field in a collection
      */

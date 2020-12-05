@@ -18,7 +18,7 @@ const getItem = require('./get_item');
  * @returns {Promise<void>}
  */
 
-const index_items = async (queryKeys = 'DMA', operation = 'create') => {
+const index_items = async (queryKeys = 'DMA', operation = 'update') => {
   try {
     console.time(`DMA-${index_items.name}`);
 
@@ -26,7 +26,7 @@ const index_items = async (queryKeys = 'DMA', operation = 'create') => {
 
     if (operation === 'update') {
       await items_db
-        .find({})
+        .find({ expansion: 'SHDW' })
         .lean()
         .cursor({ batchSize: 10 })
         .eachAsync(

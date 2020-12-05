@@ -172,7 +172,7 @@ const BlizzAPI = require('blizzapi');
                       writeConcerns.push({...recipe_data, ...{
                         ticker: `${recipe_data.profession}#${recipe_data.id}:P${recipe_data.alliance_crafted_item.id}A`,
                         faction: 'Alliance',
-                        item_id: recipe_data.alliance_crafted_item.id
+                        derivatives: [{ _id: recipe_data.alliance_crafted_item.id, quantity: recipe_data.item_quantity }]
                       }})
                     }
                   }
@@ -181,7 +181,7 @@ const BlizzAPI = require('blizzapi');
                       writeConcerns.push({...recipe_data, ...{
                         ticker: `${recipe_data.profession}#${recipe_data.id}:P${recipe_data.horde_crafted_item.id}H`,
                         faction: 'Horde',
-                        item_id: recipe_data.horde_crafted_item.id
+                        derivatives: [{ _id: recipe_data.horde_crafted_item.id, quantity: recipe_data.item_quantity }]
                       }})
                     }
                   }
@@ -189,7 +189,7 @@ const BlizzAPI = require('blizzapi');
                     if ('id' in recipe_data.crafted_item) {
                       writeConcerns.push({...recipe_data, ...{
                         ticker: `${recipe_data.profession}#${recipe_data.id}:P${recipe_data.crafted_item.id}`,
-                        item_id: recipe_data.crafted_item.id
+                        derivatives: [{ _id: recipe_data.crafted_item.id, quantity: recipe_data.item_quantity }]
                       }})
                     }
                   }
@@ -203,7 +203,7 @@ const BlizzAPI = require('blizzapi');
                       ...recipe_data,
                       ...{
                         ticker: `${recipe_data.profession}#${recipe_data.id}:P${pricing_spell.item_id}`,
-                        item_id: pricing_spell.item_id
+                        derivatives: [{ _id: pricing_spell.item_id, quantity: recipe_data.item_quantity }]
                       }
                     })
                   }
@@ -211,7 +211,7 @@ const BlizzAPI = require('blizzapi');
                   for (const concerns of writeConcerns) {
 
                     const pricing_method = await pricing_methods_db.findOneAndUpdate(
-                    { item_id: concerns.item_id, recipe_id: concerns.recipe_id },
+                    { 'derivatives._id': concerns.derivatives[0]._id, recipe_id: concerns.recipe_id },
                       concerns,
                       {
                         upsert: true,
@@ -220,7 +220,7 @@ const BlizzAPI = require('blizzapi');
                         lean: true,
                       }
                     )
-                    console.info(`U,${pricing_method.expansion}:${pricing_method.profession}:${pricing_method.item_id},${pricing_method.name.en_GB}`);
+                    console.info(`U,${pricing_method.expansion}:${pricing_method.profession}:${concerns.derivatives[0]._id},${pricing_method.name.en_GB}`);
                   }
                 }
               }

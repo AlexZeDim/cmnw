@@ -5,57 +5,63 @@ const milling = {
   name: 'INSC',
   methods: [
     {
-      item: 168589,
-      quantity: 20,
-      derivative: [
-        { id: 173056, quantity: 3.7 },
-        { id: 173057, quantity: 1.96 },
-        { id: 175788, quantity: 0.1 },
+      reagents: [
+        { _id: 168589, quantity: 20 }
+      ],
+      derivatives: [
+        { _id: 173056, quantity: 3.7 },
+        { _id: 173057, quantity: 1.96 },
+        { _id: 175788, quantity: 0.1 },
       ]
     },
     {
-      item: 168583,
-      quantity: 20,
-      derivative: [
-        { id: 173056, quantity: 3.7 },
-        { id: 173057, quantity: 1.96 },
-        { id: 175788, quantity: 0.1 },
+      reagents: [
+        { _id: 168583, quantity: 20 }
+      ],
+      derivatives: [
+        { _id: 173056, quantity: 3.7 },
+        { _id: 173057, quantity: 1.96 },
+        { _id: 175788, quantity: 0.1 },
       ]
     },
     {
-      item: 170554,
-      quantity: 20,
-      derivative: [
-        { id: 173056, quantity: 1.96 },
-        { id: 173057, quantity: 3.7 },
-        { id: 175788, quantity: 0.1 },
+      reagents: [
+        { _id: 170554, quantity: 20 }
+      ],
+      derivatives: [
+        { _id: 173056, quantity: 1.96 },
+        { _id: 173057, quantity: 3.7 },
+        { _id: 175788, quantity: 0.1 },
       ]
     },
     {
-      item: 168586,
-      quantity: 20,
-      derivative: [
-        { id: 173056, quantity: 1.96 },
-        { id: 173057, quantity: 3.7 },
-        { id: 175788, quantity: 0.1 },
+      reagents: [
+        { _id: 168586, quantity: 20 }
+      ],
+      derivatives: [
+        { _id: 173056, quantity: 1.96 },
+        { _id: 173057, quantity: 3.7 },
+        { _id: 175788, quantity: 0.1 },
       ]
     },
     {
-      item: 169701,
-      quantity: 20,
-      derivative: [
-        { id: 173056, quantity: 2.9 },
-        { id: 173057, quantity: 2.9 },
-        { id: 175788, quantity: 0.1 },
+      reagents: [
+        { _id: 169701, quantity: 20 }
+      ],
+      derivatives: [
+        { _id: 173056, quantity: 2.9 },
+        { _id: 173057, quantity: 2.9 },
+        { _id: 175788, quantity: 0.1 },
       ]
     },
     {
-      item: 171315,
-      quantity: 20,
-      derivative: [
-        { id: 173056, quantity: 5 },
-        { id: 173057, quantity: 5 },
-        { id: 175788, quantity: 6.1 },
+      reagents: [
+        { _id: 171315, quantity: 20 }
+      ],
+      derivatives: [
+        { _id: 173056, quantity: 5 },
+        { _id: 173057, quantity: 5 },
+        { _id: 175788, quantity: 6.1 },
       ]
     },
   ]
@@ -65,69 +71,77 @@ const disenchant = {
   name: 'ENCH',
   methods: [
     {
-      item: 173201,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 2.85 }
+      reagents: [
+        { _id: 173201, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 2.04 }
       ]
     },
     {
-      item: 172241,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 2.85 }
+      reagents: [
+        { _id: 172241, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 2.04 }
       ]
     },
     {
-      item: 172257,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 2.85 }
+      reagents: [
+        { _id: 172257, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 2.04 }
       ]
     },
     {
-      item: 171381,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 2.85 }
+      reagents: [
+        { _id: 171381, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 2.04 }
       ]
     },
     {
-      item: 173222,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 1.43 },
-        { id: 172231, quantity: 2.85 }
+      reagents: [
+        { _id: 173222, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 1.35 },
+        { _id: 172231, quantity: 1.44 }
       ]
     },
     {
-      item: 172257,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 1.43 },
-        { id: 172231, quantity: 2.85 }
+      reagents: [
+        { _id: 172257, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 1.35 },
+        { _id: 172231, quantity: 1.44 }
       ]
     },
     {
-      item: 172265,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 1.43 },
-        { id: 172231, quantity: 2.85 }
+      reagents: [
+        { _id: 172265, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 1.35 },
+        { _id: 172231, quantity: 1.44 }
       ]
     },
     {
-      item: 171449,
-      quantity: 1,
-      derivative: [
-        { id: 172230, quantity: 1.43 },
-        { id: 172231, quantity: 2.85 }
+      reagents: [
+        { _id: 171449, quantity: 1 }
+      ],
+      derivatives: [
+        { _id: 172230, quantity: 1.43 },
+        { _id: 172231, quantity: 1.44 }
       ]
     },
   ]
 }
 
-async function T ({ name, methods }) {
+async function MethodsLab ({ name, methods }) {
   try {
     if (!methods.length) return
 
@@ -154,37 +168,35 @@ async function T ({ name, methods }) {
       precursor.spell_id = 13262
     }
 
+    let y = 0;
+
     for (const method of methods) {
-      if (!method.derivative.length || !method.item) continue
-      method.derivative.map(async derivative_ => {
-        precursor.ticker = `${precursor.mask}:D${derivative_.id}:${method.item}:`
-        precursor.item_id = derivative_.id;
-        precursor.recipe_id = parseInt(`${derivative_.id}${method.item}`)
-        precursor.item_quantity = derivative_.quantity;
-        precursor.reagents = [
-          {_id: method.item, quantity: method.quantity }
-        ]
-        console.log(precursor)
-        const pricing_method = await pricing_methods_db.findOneAndUpdate(
-          { item_id: precursor.item_id, recipe_id: precursor.recipe_id },
-          precursor,
-          {
-            upsert: true,
-            new: true,
-            setDefaultsOnInsert: true,
-            lean: true,
-          }
-        )
-        console.info(`U,${pricing_method.expansion}:${pricing_method.ticker},${pricing_method._id}`);
-        precursor.ticker = name
-      })
+      if (!method.derivatives.length || !method.reagents.length) continue
+      y++
+      precursor.recipe_id = parseInt(`${precursor.spell_id}${method.reagents[0]._id}`)
+      precursor.ticker = `${precursor.mask}:D${precursor.recipe_id}:${y}`
+      precursor.reagents = method.reagents
+      precursor.derivatives = method.derivatives
+      const pricing_method = await pricing_methods_db.findOneAndUpdate(
+        { item_id: precursor.item_id, recipe_id: precursor.recipe_id },
+        precursor,
+        {
+          upsert: true,
+          strict: false,
+          new: true,
+          setDefaultsOnInsert: true,
+          lean: true,
+        }
+      )
+      console.info(`U,${pricing_method.expansion}:${pricing_method.ticker},${pricing_method._id}`);
+      precursor.ticker = precursor.mask
     }
   } catch (e) {
     console.error(e)
   }
 }
 
-T(disenchant)
+MethodsLab(disenchant)
 
-T(milling)
+MethodsLab(milling)
 

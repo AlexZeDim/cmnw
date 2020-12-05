@@ -1,50 +1,56 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     /** API or LOCAL */
-    ticker: {
-      type: String,
-    },
+    ticker: String,
     /** API */
-    name: {
-      type: Object,
-    },
-    description: {
-      type: Object,
-    },
-    media: {
-      type: String,
-    },
-    /** API or LOCAL */
-    item_id: {
-      type: Number,
-      required: true,
-    },
+    name: Object,
+    description: Object,
+    media: String,
     /**
-     * LOCAL, see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
+     * API or LOCAL
+     *
      * SkillLineAbility.lua
+     * see https://us.forums.blizzard.com/en/blizzard/t/bug-professions-api/6234 for details
+     *
+     * Build from item_id & item_quantity
+     * for massive proportion evaluation
      */
-    item_quantity: {
-      type: Number,
-      default: 0
-    },
+    derivatives: [
+      {
+        _id: {
+          type: Number,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          default: 0
+        },
+      },
+    ],
     recipe_id: {
       type: Number,
       required: true,
     },
-    spell_id: {
-      type: Number,
-    },
+    spell_id: Number,
     /**
      * API or LOCAL
      * {id: Number, Quantity: Number}
      */
     reagents: [
       {
-        _id: Number,
-        quantity: Number,
+        _id: {
+          type: Number,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          default: 0
+        },
       },
     ],
     modified_crafting_slots: [
@@ -55,33 +61,21 @@ let schema = new mongoose.Schema(
       }
     ],
     /** if Local then Convert from SkillLine */
-    profession: {
-      type: String,
-    },
+    profession: String,
     /** API */
-    expansion: {
-      type: String,
-    },
-    rank: {
-      type: Number,
-    },
+    expansion: String,
+    rank: Number,
     type: {
       type: String,
       required: true,
       enum: ['primary', 'derivative', 'u/r'],
     },
-    createdBy: {
-      type: String,
-    },
-    updatedBy: {
-      type: String,
-    },
+    createdBy: String,
+    updatedBy: String,
     /**
      * IVA, store item_id for singleName
      */
-    single_name: {
-      Number,
-    },
+    single_premium: Number
   },
   {
     timestamps: true,
@@ -93,7 +87,7 @@ schema.index({ recipe_id: -1 }, { name: 'recipe_ID' });
 schema.index({ item_id: -1 }, { name: 'itemID' });
 schema.index({ spell_id: -1 }, { name: 'spellID' });
 
-let pricing_methods_db = mongoose.model(
+const pricing_methods_db = mongoose.model(
   'pricing_methods',
   schema,
   'pricing_methods',

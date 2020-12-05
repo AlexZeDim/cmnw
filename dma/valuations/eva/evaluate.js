@@ -387,11 +387,15 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
      * Derivative Valuation Adjustment
      */
     if (asset_class.includes('DERIVATIVE')) {
-      const primary_methods = await pricing_methods.find({ item_id: _id, type: { $ne: 'u/r' } }).lean();
+      const primary_methods = await pricing_methods.find({ 'derivatives._id': _id, type: { $ne: 'u/r' } }).lean();
       if (!primary_methods || !primary_methods.length) return
+      /**
+       * Iterating every pricing method
+       * and check eva on current timestamp
+       */
       for (const price_method of primary_methods) {
         const dva = await valuations.findOne({
-          item_id: price_method.item_id,
+          item_id: _id,
           last_modified: last_modified,
           connected_realm_id: connected_realm_id,
           name: `${price_method.ticker}`,
@@ -399,24 +403,65 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
         });
         if (dva) continue
 
-        /** Initiate queue_cost, nominal_value, and premium */
-        let queue_cost = 0;
-        let premium = 0;
-        let nominal_value = 0;
-        const premium_items = [];
-        const reagent_items = [];
-        const unsorted_items = [];
-        if (price_method.item_quantity === 0) price_method.item_quantity = 1;
+        /**
+         * Initialize pricing method evaluation constructor
+         * @type {{
+         * unsorted_items: [],
+         * premium_items: [],
+         * reagent_items: [],
+         * premium: number,
+         * single_name: boolean,
+         * nominal_value: number,
+         * nominal_value_draft: number,
+         * single_derivative: boolean,
+         * single_reagent: boolean,
+         * single_premium: boolean,
+         * premium_clearance: boolean,
+         * queue_cost: number,
+         * q_reagents_sum: number,
+         * q_derivatives_sum: number
+         * }}
+         */
+        const method_evaluations = {
+          queue_cost: 0,
+          premium: 0,
+          nominal_value: 0,
+          nominal_value_draft: 0,
+          q_reagents_sum: 0,
+          q_derivatives_sum: 0,
+          premium_items: [],
+          reagent_items: [],
+          unsorted_items: [],
+          single_derivative: true,
+          single_reagent: false,
+          single_premium: false,
+          premium_clearance: true
+        }
 
         /**
-         * Check if reagent_items exists
+         * Check
+         * if reagents exists
+         * if derivatives exist
          * and iterate them one-by-one
          */
         if (!price_method.reagents || !price_method.reagents.length) continue
+        if (!price_method.derivatives || !price_method.derivatives.length) continue;
+
+        /**
+         * Initiate flags and share constants for future evaluation
+         * @type {{quantity: {default: number, type: NumberConstructor, required: boolean}, _id: {type: NumberConstructor, required: boolean}}|number}
+         */
+        method_evaluations.q_derivatives_sum = price_method.derivatives.reduce((accum, derivative ) => accum + derivative.quantity, 0)
+        method_evaluations.q_reagents_sum = price_method.reagents.reduce((accum, reagent ) => accum + reagent.quantity, 0)
+
+        if (price_method.derivatives.length > 1) method_evaluations.single_derivative = false;
+        if (price_method.reagents.length === 1) method_evaluations.single_reagent = true;
 
         for (const reagent of price_method.reagents) {
 
           const reagent_item = await items_db.findById(reagent._id).lean()
+
+          if (!reagent_item) continue;
 
           reagent_item.quantity = reagent.quantity;
           reagent_item.last_modified = last_modified;
@@ -428,15 +473,17 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
            *
            * If premium item is also derivative, like EXPL
            * place them as start of premium_items[]
+           * it allow us evaluate more then one premiums
+           * in one pricing method
            */
           if (reagent_item.asset_class.includes('PREMIUM')) {
             if (reagent_item.asset_class.includes('DERIVATIVE')) {
-              premium_items.unshift(reagent_item);
+              method_evaluations.premium_items.unshift(reagent_item);
             } else {
-              premium_items.push(reagent_item);
+              method_evaluations.premium_items.push(reagent_item);
             }
             /** We add PREMIUM to reagent_items */
-            reagent_items.push(reagent_item);
+            method_evaluations.reagent_items.push(reagent_item);
           } else {
             /** Find cheapest to delivery method for item on current timestamp */
             const ctd_check = await valuations.findOne({
@@ -456,7 +503,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               flag: 'BUY',
             }).sort({value: 1}).lean();
 
-            if (!ctd) unsorted_items.push(reagent_item);
+            if (!ctd) method_evaluations.unsorted_items.push(reagent_item);
 
             /**
              * If ctd is derivative type,
@@ -472,59 +519,60 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
                   if (underlying_item.value) underlying_item.value = Round2(underlying_item.value * reagent_item.quantity);
                   underlying_item.quantity = underlying_item.quantity * reagent_item.quantity;
                   /** if this item is already in reagent_items, then + quantity */
-                  if (reagent_items.some(ri => ri._id === underlying_item._id)) {
+                  if (method_evaluations.reagent_items.some(ri => ri._id === underlying_item._id)) {
                     /** take in focus by arrayIndex and edit properties */
-                    const reagent_itemsIndex = reagent_items.findIndex(item => item._id === underlying_item._id);
+                    const reagent_itemsIndex = method_evaluations.reagent_items.findIndex(item => item._id === underlying_item._id);
                     if (reagent_itemsIndex !== -1) {
-                      reagent_items[reagent_itemsIndex].value += underlying_item.value;
-                      reagent_items[reagent_itemsIndex].quantity += underlying_item.quantity;
+                      method_evaluations.reagent_items[reagent_itemsIndex].value += underlying_item.value;
+                      method_evaluations.reagent_items[reagent_itemsIndex].quantity += underlying_item.quantity;
                     }
                   } else {
-                    reagent_items.push(underlying_item);
+                    method_evaluations.reagent_items.push(underlying_item);
                   }
                 }
               } else {
                 reagent_item.value = Round2(ctd.value * reagent_item.quantity);
-                reagent_items.push(reagent_item);
+                method_evaluations.reagent_items.push(reagent_item);
               }
               /** We add value to queue_cost */
-              queue_cost += Round2(ctd.value * reagent_item.quantity);
+              method_evaluations.queue_cost += Round2(ctd.value * reagent_item.quantity);
             }
           }
 
         }
         /** End of loop for every reagent_item */
 
-        /** Pre-valuate nominal value w/o premium part */
-        nominal_value = Round2(queue_cost / price_method.item_quantity);
+        /**
+         * Premium Reagent Valuation Adjustment
+         *
+         * Only for premium_items
+         * and single_derivative
+         */
+        if (method_evaluations.premium_items.length && method_evaluations.single_derivative) {
+          /** Pre-valuate nominal value w/o premium part */
+          method_evaluations.nominal_value_draft = Round2(method_evaluations.queue_cost / price_method.derivatives[0].quantity);
+          method_evaluations.nominal_value = method_evaluations.nominal_value_draft;
 
-        if (premium_items.length) {
           /** Request market price from method item_id */
           const ava = await valuations.findOne({
-            item_id: price_method.item_id,
+            item_id: _id,
             last_modified: last_modified,
             connected_realm_id: connected_realm_id,
             type: 'MARKET',
             flag: 'SELL',
           });
 
-          let single_name = false;
-          let premium_clearance = true;
-
           /** If ava.exists and premium_items is one */
-          if (premium_items.length === 1 && ava) {
-            single_name = true;
-            premium = Round2(ava.value - queue_cost);
+          if (method_evaluations.premium_items.length === 1 && ava) {
+            method_evaluations.single_premium = true;
+            method_evaluations.premium = Round2(ava.value - method_evaluations.queue_cost);
           }
 
-          /**
-           * Premium Reagent Valuation Adjustment
-           */
-          for (const premium_item of premium_items) {
+          for (const premium_item of method_evaluations.premium_items) {
             /** Single Name Valuation */
-            if (single_name) {
+            if (method_evaluations.single_premium) {
               /** Update existing method as a single name */
-              await pricing_methods.findByIdAndUpdate(price_method._id, { single_name: premium_item._id });
+              await pricing_methods.findByIdAndUpdate(price_method._id, { single_premium: premium_item._id });
               const prva = await valuations.findOne({
                 item_id: premium_item._id,
                 last_modified: last_modified,
@@ -533,15 +581,15 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               });
               if (!prva) {
                 await valuations.create({
-                  name: `${price_method.ticker}`,
+                  ticker: `${price_method.ticker}`,
                   flag: 'SELL',
                   item_id: premium_item._id,
                   connected_realm_id: connected_realm_id,
                   type: 'PREMIUM',
                   last_modified: last_modified,
-                  value: Round2(premium / premium_item.quantity),
+                  value: Round2(method_evaluations.premium / premium_item.quantity),
                   details: {
-                    wi: Round2(premium_item.quantity / price_method.item_quantity * ava.details.quantity,)
+                    wi: Round2(premium_item.quantity / price_method.derivatives[0].quantity * ava.details.quantity,)
                   },
                 })
                 console.info(`DMA-IVA: ${price_method.item_id}@${connected_realm_id}, ${price_method.ticker}`)
@@ -558,7 +606,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
                 last_modified: last_modified,
                 connected_realm_id: connected_realm_id,
                 type: 'DERIVATIVE',
-              }).sort('value');
+              }).sort({ value: 1 });
               const premium_item_eva = { ...premium_item };
               premium_item_eva.last_modified = last_modified;
               premium_item_eva.connected_realm_id = connected_realm_id;
@@ -569,18 +617,19 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
                 last_modified: last_modified,
                 connected_realm_id: connected_realm_id,
                 type: 'DERIVATIVE',
-              }).sort('value');
-              if (!ctd) unsorted_items.push(premium_item);
-              if (ctd) queue_cost += Round2(ctd.value * premium_item.quantity);
+              }).sort({ value: 1 });
+              if (!ctd) method_evaluations.unsorted_items.push(premium_item);
+              if (ctd) method_evaluations.queue_cost += Round2(ctd.value * premium_item.quantity);
             } else {
               /**
                * CTD FOR PREMIUM
                *
                * When we are first time here, the premium is still clear
+               * require additional research
                */
-              if (premium_clearance && ava) {
-                premium = Round2(ava.value - queue_cost);
-                premium_clearance = false;
+              if (method_evaluations.premium_clearance && ava) {
+                method_evaluations.premium = Round2(ava.value - method_evaluations.queue_cost);
+                method_evaluations.premium_clearance = false;
               }
               const prva = await valuations.findOne({
                 item_id: premium_item._id,
@@ -589,9 +638,9 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
                 type: 'PREMIUM',
               }).sort({ 'details.wi': -1 });
               if (prva) {
-                queue_cost += Round2(prva.value * premium_item.quantity);
+                method_evaluations.queue_cost += Round2(prva.value * premium_item.quantity);
               } else {
-                unsorted_items.push(premium_item);
+                method_evaluations.unsorted_items.push(premium_item);
               }
             }
           }
@@ -599,37 +648,73 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
         }
         /** End of PRVA */
 
-        nominal_value = Round2(queue_cost / price_method.item_quantity);
-
-        /** Proc change HAX */
-        if (
-          price_method.expansion === 'BFA' &&
-          price_method.profession === 'ALCH' &&
-          price_method.rank === 3
-        ) {
-          nominal_value = Round2(nominal_value * 0.6);
+        /**
+         * Pricing Method Valuation Adjustment
+         *
+         * Only for Mass Mills and Prospects
+         */
+        if (!method_evaluations.single_derivative && price_method.single_reagent) {
+          /**
+           * evaluate derivative_item_share for every Di
+           * from queue_cost via cross x reduce
+           * @type {number}
+           */
+          for (const derivative_item of price_method.derivatives) {
+            const derivative_item_share = derivative_item.quantity / method_evaluations.q_derivatives_sum
+            await valuations.create({
+              name: `${price_method.ticker}`,
+              flag: 'BUY',
+              item_id: derivative_item._id,
+              connected_realm_id: connected_realm_id,
+              type: 'DERIVATIVE',
+              last_modified: last_modified,
+              value: Round2((method_evaluations.queue_cost * derivative_item_share) / derivative_item.quantity),
+              details: {
+                queue_cost: Round2(method_evaluations.queue_cost),
+                queue_quantity: Number(derivative_item.quantity),
+                queue_share: Round2(derivative_item_share),
+                rank: price_method.rank || 0,
+                reagent_items: method_evaluations.reagent_items,
+                premium_items: method_evaluations.premium_items,
+                unsorted_items: method_evaluations.unsorted_items
+              },
+            })
+            console.info(`DMA-IVA: ${derivative_item._id}@${connected_realm_id}, ${price_method.ticker}`)
+          }
         }
 
-        valuations.create({
-          name: `${price_method.ticker}`,
-          flag: 'BUY',
-          item_id: price_method.item_id,
-          connected_realm_id: connected_realm_id,
-          type: 'DERIVATIVE',
-          last_modified: last_modified,
-          value: Round2(nominal_value),
-          details: {
-            queue_cost: Round2(queue_cost),
-            queue_quantity: parseFloat(price_method.item_quantity),
-            rank: price_method.rank || 0,
-            reagent_items: reagent_items,
-            premium_items: premium_items,
-            unsorted_items: unsorted_items
-          },
-        })
+        /** Single Derivative Pricing Methods */
+        if (method_evaluations.single_derivative) {
+          method_evaluations.nominal_value = Round2(method_evaluations.queue_cost / price_method.derivatives[0].quantity);
 
-        console.info(`DMA-IVA: ${price_method.item_id}@${connected_realm_id}, ${price_method.ticker}`)
+          /** BFA ALCH proc-chance HAX */
+          if (
+            price_method.expansion === 'BFA' &&
+            price_method.profession === 'ALCH' &&
+            price_method.rank === 3
+          ) {
+            method_evaluations.nominal_value = Round2(method_evaluations.nominal_value * 0.6);
+          }
 
+          await valuations.create({
+            name: `${price_method.ticker}`,
+            flag: 'BUY',
+            item_id: price_method.derivatives[0]._id,
+            connected_realm_id: connected_realm_id,
+            type: 'DERIVATIVE',
+            last_modified: last_modified,
+            value: Round2(method_evaluations.nominal_value),
+            details: {
+              queue_cost: Round2(method_evaluations.queue_cost),
+              queue_quantity: Number(price_method.derivatives[0].quantity),
+              rank: price_method.rank || 0,
+              reagent_items: method_evaluations.reagent_items,
+              premium_items: method_evaluations.premium_items,
+              unsorted_items: method_evaluations.unsorted_items
+            },
+          })
+          console.info(`DMA-IVA: ${price_method.derivatives[0]._id}@${connected_realm_id}, ${price_method.ticker}`)
+        }
       }
       /** END of MVA */
     }

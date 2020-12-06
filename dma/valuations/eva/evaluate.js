@@ -699,7 +699,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               item_id: derivative_item._id,
               last_modified: last_modified,
               connected_realm_id: connected_realm_id,
-              name: {'$regex': price_method.ticker },
+              name: { $regex: price_method.ticker },
               type: 'DERIVATIVE',
             });
             if (dva) continue

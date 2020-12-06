@@ -662,28 +662,30 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
            * and sum all for the derivatives cost
            */
           for (const derivative_item of price_method.derivatives) {
-            let ava = await valuations.findOne({
+            const ava_check = await valuations.findOne({
               item_id: derivative_item._id,
               last_modified: last_modified,
               connected_realm_id: connected_realm_id,
               type: 'MARKET',
               flag: 'SELL',
             })
-            if (!ava) {
+            if (!ava_check) {
               derivative_item.last_modified = last_modified;
               derivative_item.connected_realm_id = connected_realm_id;
               derivative_item.iterations = 0;
               await evaluate(derivative_item);
-              ava = await valuations.findOne({
-                item_id: derivative_item._id,
-                last_modified: last_modified,
-                connected_realm_id: connected_realm_id,
-                type: 'MARKET',
-                flag: 'SELL',
-              })
             }
-            derivative_item.price = ava.value
-            method_evaluations.derivatives_cost += ava.value
+            const ava = await valuations.findOne({
+              item_id: derivative_item._id,
+              last_modified: last_modified,
+              connected_realm_id: connected_realm_id,
+              type: 'MARKET',
+              flag: 'SELL',
+            })
+            if (ava && ava.value) {
+              derivative_item.price = ava.value
+              method_evaluations.derivatives_cost += ava.value
+            }
           }
 
           /**

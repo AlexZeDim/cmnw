@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     id: {
       type: Number,
@@ -41,8 +41,8 @@ schema.index(
   { connected_realm_id: 1, last_modified: -1 },
   { name: 'TimestampCheck' },
 );
-schema.index({ 'item.id': -1, connected_realm_id: 1 }, { name: 'PriceLevel' });
+schema.index({ last_modified: -1, 'item.id': -1, connected_realm_id: 1 }, { name: 'PriceLevel' });
 
-let auctions_db = mongoose.model('auctions', schema, 'auctions');
+const auctions_db = mongoose.model('auctions', schema, 'auctions');
 
 module.exports = auctions_db;

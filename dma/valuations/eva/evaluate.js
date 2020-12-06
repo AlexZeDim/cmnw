@@ -670,10 +670,11 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
               flag: 'SELL',
             })
             if (!ava_check) {
-              derivative_item.last_modified = last_modified;
-              derivative_item.connected_realm_id = connected_realm_id;
-              derivative_item.iterations = 0;
-              await evaluate(derivative_item);
+              const derivative = await items_db.findById(derivative_item._id)
+              derivative.last_modified = last_modified;
+              derivative.connected_realm_id = connected_realm_id;
+              derivative.iterations = 0;
+              await evaluate(derivative);
             }
             const ava = await valuations.findOne({
               item_id: derivative_item._id,

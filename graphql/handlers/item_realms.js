@@ -50,7 +50,7 @@ const queryItemAndRealm = async (itemQuery, realmQuery) => {
           )
         } else {
           /** if number */
-          array.push(realms_db.find({ _id: parseInt(realmQuery) }).limit(1).lean())
+          array.push(realms_db.find({ connected_realm_id: parseInt(realmQuery) }).limit(1).lean())
         }
       } else {
         array.push(

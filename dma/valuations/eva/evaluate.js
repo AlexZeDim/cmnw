@@ -411,6 +411,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
          * reagent_items: [],
          * premium: number,
          * single_name: boolean,
+         * derivatives_cost: number,
          * nominal_value: number,
          * nominal_value_draft: number,
          * single_derivative: boolean,
@@ -424,6 +425,7 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
          */
         const method_evaluations = {
           queue_cost: 0,
+          derivatives_cost: 0,
           premium: 0,
           nominal_value: 0,
           nominal_value_draft: 0,
@@ -654,32 +656,95 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
          * Only for Mass Mills and Prospects
          */
         if (!method_evaluations.single_derivative && method_evaluations.single_reagent) {
+
+          /**
+           * We request AVA for each Di
+           * and sum all for the derivatives cost
+           */
+          for (const derivative_item of price_method.derivatives) {
+            let ava = await valuations.findOne({
+              item_id: derivative_item._id,
+              last_modified: last_modified,
+              connected_realm_id: connected_realm_id,
+              type: 'MARKET',
+              flag: 'SELL',
+            })
+            if (!ava) {
+              derivative_item.last_modified = last_modified;
+              derivative_item.connected_realm_id = connected_realm_id;
+              derivative_item.iterations = 0;
+              await evaluate(derivative_item);
+              ava = await valuations.findOne({
+                item_id: derivative_item._id,
+                last_modified: last_modified,
+                connected_realm_id: connected_realm_id,
+                type: 'MARKET',
+                flag: 'SELL',
+              })
+            }
+            derivative_item.price = ava.value
+            method_evaluations.derivatives_cost += ava.value
+          }
+
           /**
            * evaluate derivative_item_share for every Di
            * from queue_cost via cross x reduce
            * @type {number}
            */
           for (const derivative_item of price_method.derivatives) {
-            const derivative_item_share = derivative_item.quantity / method_evaluations.q_derivatives_sum
-            await valuations.create({
-              name: `${price_method.ticker}`,
-              flag: 'BUY',
+
+            const dva = await valuations.findOne({
               item_id: derivative_item._id,
-              connected_realm_id: connected_realm_id,
-              type: 'DERIVATIVE',
               last_modified: last_modified,
-              value: Round2((method_evaluations.queue_cost * derivative_item_share) / derivative_item.quantity),
-              details: {
-                queue_cost: Round2(method_evaluations.queue_cost),
-                queue_quantity: Number(derivative_item.quantity),
-                queue_share: Round2(derivative_item_share),
-                rank: price_method.rank || 0,
-                reagent_items: method_evaluations.reagent_items,
-                premium_items: method_evaluations.premium_items,
-                unsorted_items: method_evaluations.unsorted_items
-              },
-            })
-            console.info(`DMA-IVA: ${derivative_item._id}@${connected_realm_id}, ${price_method.ticker}`)
+              connected_realm_id: connected_realm_id,
+              name: {'$regex': price_method.ticker },
+              type: 'DERIVATIVE',
+            });
+            if (dva) continue
+
+            if (derivative_item.price && method_evaluations.derivatives_cost) {
+              const derivative_cost_share = (derivative_item.price * derivative_item.quantity) /  method_evaluations.derivatives_cost
+              await valuations.create({
+                name: `${price_method.ticker}:M`,
+                flag: 'BUY',
+                item_id: derivative_item._id,
+                connected_realm_id: connected_realm_id,
+                type: 'DERIVATIVE',
+                last_modified: last_modified,
+                value: Round2((method_evaluations.queue_cost * derivative_cost_share) / derivative_item.quantity),
+                details: {
+                  queue_cost: Round2(method_evaluations.queue_cost),
+                  queue_quantity: Number(derivative_item.quantity),
+                  queue_share: Round2(derivative_cost_share),
+                  rank: price_method.rank || 0,
+                  reagent_items: method_evaluations.reagent_items,
+                  premium_items: method_evaluations.premium_items,
+                  unsorted_items: method_evaluations.unsorted_items
+                },
+              })
+              console.info(`DMA-IVA: ${derivative_item._id}@${connected_realm_id}, ${price_method.ticker}:M`)
+            } else {
+              const derivative_item_share = derivative_item.quantity / method_evaluations.q_derivatives_sum
+              await valuations.create({
+                name: `${price_method.ticker}:FAIR`,
+                flag: 'BUY',
+                item_id: derivative_item._id,
+                connected_realm_id: connected_realm_id,
+                type: 'DERIVATIVE',
+                last_modified: last_modified,
+                value: Round2((method_evaluations.queue_cost * derivative_item_share) / derivative_item.quantity),
+                details: {
+                  queue_cost: Round2(method_evaluations.queue_cost),
+                  queue_quantity: Number(derivative_item.quantity),
+                  queue_share: Round2(derivative_item_share),
+                  rank: price_method.rank || 0,
+                  reagent_items: method_evaluations.reagent_items,
+                  premium_items: method_evaluations.premium_items,
+                  unsorted_items: method_evaluations.unsorted_items
+                },
+              })
+              console.info(`DMA-IVA: ${derivative_item._id}@${connected_realm_id}, ${price_method.ticker}:FAIR`)
+            }
           }
         }
 

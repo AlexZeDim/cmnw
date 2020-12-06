@@ -75,7 +75,7 @@ const disenchant = {
         { _id: 173201, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 2.04 }
+        { _id: 172230, quantity: 2 }
       ]
     },
     {
@@ -83,7 +83,7 @@ const disenchant = {
         { _id: 172241, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 2.04 }
+        { _id: 172230, quantity: 2 }
       ]
     },
     {
@@ -91,7 +91,7 @@ const disenchant = {
         { _id: 172257, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 2.04 }
+        { _id: 172230, quantity: 2 }
       ]
     },
     {
@@ -99,7 +99,7 @@ const disenchant = {
         { _id: 171381, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 2.04 }
+        { _id: 172230, quantity: 2 }
       ]
     },
     {
@@ -107,8 +107,8 @@ const disenchant = {
         { _id: 173222, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 1.35 },
-        { _id: 172231, quantity: 1.44 }
+        { _id: 172230, quantity: 1.5 },
+        { _id: 172231, quantity: 1.4 }
       ]
     },
     {
@@ -116,8 +116,8 @@ const disenchant = {
         { _id: 172257, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 1.35 },
-        { _id: 172231, quantity: 1.44 }
+        { _id: 172230, quantity: 1.5 },
+        { _id: 172231, quantity: 1.4 }
       ]
     },
     {
@@ -125,8 +125,8 @@ const disenchant = {
         { _id: 172265, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 1.35 },
-        { _id: 172231, quantity: 1.44 }
+        { _id: 172230, quantity: 1.5 },
+        { _id: 172231, quantity: 1.4 }
       ]
     },
     {
@@ -134,8 +134,8 @@ const disenchant = {
         { _id: 171449, quantity: 1 }
       ],
       derivatives: [
-        { _id: 172230, quantity: 1.43 },
-        { _id: 172231, quantity: 1.44 }
+        { _id: 172230, quantity: 1.5 },
+        { _id: 172231, quantity: 1.4 }
       ]
     },
   ]
@@ -207,6 +207,84 @@ const decks = {
   ]
 }
 
+const prospect = {
+  name: 'JWLC',
+  methods: [
+    {
+      reagents: [
+        { _id: 171828, quantity: 20 }, //LAE
+      ],
+      derivatives: [
+        { _id: 173109, quantity: 2.0 },
+        { _id: 173108, quantity: 2.0 },
+        { _id: 173110, quantity: 1.8 },
+        { _id: 173170, quantity: 0.155 },
+        { _id: 173172, quantity: 0.155 },
+        { _id: 173171, quantity: 0.155 },
+        { _id: 173173, quantity: 0.155 },
+      ]
+    },
+    {
+      reagents: [
+        { _id: 171832, quantity: 20 }, //SINVYR
+      ],
+      derivatives: [
+        { _id: 173109, quantity: 2.35 },
+        { _id: 173108, quantity: 2.28 },
+        { _id: 173110, quantity: 1.4 },
+        { _id: 173171, quantity: 1.35 },
+      ]
+    },
+    {
+      reagents: [
+        { _id: 171831, quantity: 20 }, //PHAE
+      ],
+      derivatives: [
+        { _id: 173109, quantity: 1.6 },
+        { _id: 173108, quantity: 2.28 },
+        { _id: 173110, quantity: 2.25 },
+        { _id: 173170, quantity: 1.35 },
+      ]
+    },
+    {
+      reagents: [
+        { _id: 171830, quantity: 20 }, //OXXE
+      ],
+      derivatives: [
+        { _id: 173109, quantity: 2.5 },
+        { _id: 173108, quantity: 1.5 },
+        { _id: 173110, quantity: 2.25 },
+        { _id: 173172, quantity: 1.14 },
+      ]
+    },
+    {
+      reagents: [
+        { _id: 171831, quantity: 20 }, //SOLENUM
+      ],
+      derivatives: [
+        { _id: 173109, quantity: 2 },
+        { _id: 173108, quantity: 2 },
+        { _id: 173110, quantity: 2 },
+        { _id: 173173, quantity: 1.14 },
+      ]
+    },
+    {
+      reagents: [
+        { _id: 171833, quantity: 20 }, //ELET
+      ],
+      derivatives: [
+        { _id: 173109, quantity: 4.5 },
+        { _id: 173108, quantity: 3.1 },
+        { _id: 173110, quantity: 4.4 },
+        { _id: 173170, quantity: 1.5 },
+        { _id: 173172, quantity: 1.5 },
+        { _id: 173171, quantity: 1.5 },
+        { _id: 173173, quantity: 1.5 },
+      ]
+    },
+  ]
+}
+
 async function MethodsLab ({ name, methods }) {
   try {
     if (!methods.length) return
@@ -232,6 +310,11 @@ async function MethodsLab ({ name, methods }) {
     }
 
     if (name === 'DECK') precursor.media = 'https://render-eu.worldofwarcraft.com/icons/56/inv_inscription_darkmooncard_generic01.jpg'
+
+    if (name === 'JWLC') {
+      precursor.media = 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_gem_bloodgem_01.jpg'
+      precursor.spell_id = 31252
+    }
 
     let y = 0;
 
@@ -415,3 +498,5 @@ MethodsLab(disenchant)
 MethodsLab(milling)
 
 MethodsLab(decks)
+
+MethodsLab(prospect)

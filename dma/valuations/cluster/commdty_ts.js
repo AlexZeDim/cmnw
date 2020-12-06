@@ -25,9 +25,9 @@ async function commdtyTS (y_axis = [], item_id = 168487, connected_realm_id = 16
       await auctions_db.aggregate([
         {
           $match: {
+            'last_modified': timestamps[i],
             'item.id': item_id,
-            'connected_realm_id': connected_realm_id,
-            'last_modified': timestamps[i]
+            'connected_realm_id': connected_realm_id
           }
         },
         {

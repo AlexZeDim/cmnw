@@ -16,16 +16,14 @@ async function commdtyTS (y_axis = [], item_id = 168487, connected_realm_id = 16
     const chart = [];
     if (!y_axis.length) return chart
     if (!connected_realm_id) return chart
-
     /** Find distinct timestamps for each realm */
-    const timestamps = await auctions_db.find({ 'item.id': item_id, connected_realm_id: connected_realm_id }, 'last_modified').distinct('last_modified');
+    const timestamps = await auctions_db.find({ 'item.id': item_id, connected_realm_id: connected_realm_id }, 'last_modified').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('last_modified');
     timestamps.sort((a, b) => a - b)
-
-    for (let i = 0; i < timestamps.length; i++) {
+    await Promise.all(timestamps.map(async (timestamp, i) => {
       await auctions_db.aggregate([
         {
           $match: {
-            'last_modified': timestamps[i],
+            'last_modified': timestamp,
             'item.id': item_id,
             'connected_realm_id': connected_realm_id
           }
@@ -71,7 +69,7 @@ async function commdtyTS (y_axis = [], item_id = 168487, connected_realm_id = 16
             })
           }
         }, { parallel: 20 })
-    }
+    }));
     return [ chart, timestamps ]
   } catch (error) {
     console.error(error)

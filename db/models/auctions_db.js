@@ -41,6 +41,7 @@ schema.index(
   { connected_realm_id: 1, last_modified: -1 },
   { name: 'TimestampCheck' },
 );
+schema.index({ 'item.id': -1, connected_realm_id: 1 }, { name: 'Quotes' });
 schema.index({ last_modified: -1, 'item.id': -1, connected_realm_id: 1 }, { name: 'PriceLevel' });
 
 const auctions_db = mongoose.model('auctions', schema, 'auctions');

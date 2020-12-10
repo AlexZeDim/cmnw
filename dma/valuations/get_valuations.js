@@ -21,7 +21,7 @@ const evaluate = require('./eva/evaluate');
 
 schedule.scheduleJob('*/15 * * * *', async (
   t,
-  realmQuery = { region: 'Europe' },
+  realmQuery = 'Europe',
   bulkSize = 1,
 ) => {
   try {
@@ -29,7 +29,7 @@ schedule.scheduleJob('*/15 * * * *', async (
     await realms_db
       .aggregate([
         {
-          $match: realmQuery,
+          $match: { region: realmQuery },
         },
         {
           $group: {

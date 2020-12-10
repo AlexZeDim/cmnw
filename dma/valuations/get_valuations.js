@@ -19,7 +19,7 @@ const evaluate = require('./eva/evaluate');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('*/15 * * * *', async (
+schedule.scheduleJob('01,16,31,46 * * * *', async (
   t,
   realmQuery = 'Europe',
   bulkSize = 1,

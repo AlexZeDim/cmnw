@@ -23,16 +23,14 @@ const { Round2 } = require('../../db/setters');
  * @param bulkSize
  * @returns {Promise<void>}
  */
-
 schedule.scheduleJob('30,59 * * * *', async (
   t,
-  queryKeys = { tags: `DMA` },
-  realmQuery = { region: 'Europe' },
+  queryKeys = `DMA`,
   bulkSize = 2,
 ) => {
   try {
     console.time(`DMA-getAuctionData`);
-    const { _id, secret, token } = await keys_db.findOne(queryKeys);
+    const { _id, secret, token } = await keys_db.findOne({ tags: queryKeys });
     const api = new BlizzAPI({
       region: 'eu',
       clientId: _id,
@@ -42,7 +40,7 @@ schedule.scheduleJob('30,59 * * * *', async (
     await realms_db
       .aggregate([
         {
-          $match: realmQuery,
+          $limit: 1
         },
         {
           $group: {
@@ -59,59 +57,40 @@ schedule.scheduleJob('30,59 * * * *', async (
         async ({ _id }) => {
           try {
             console.info(`R,${_id.connected_realm_id}`);
-            if (_id.timestamp) {
-              _id.timestamp = `${moment.unix(_id.timestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
-            }
-            let market = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
+            if (_id.timestamp) _id.timestamp = `${moment.unix(_id.timestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+            const market = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
               timeout: 30000,
               params: { locale: 'en_GB' },
               headers: {
                 'Battlenet-Namespace': 'dynamic-eu',
                 'If-Modified-Since': _id.timestamp
               }
-            }).catch(error => {
-              console.info(`E,${_id.connected_realm_id}:${error}`);
-              return void 0;
-            });
+            }).catch(error => console.info(`E,${_id.connected_realm_id}:${error}`));
             if (market && market.auctions && market.auctions.length) {
-              let auctions = market.auctions;
-              for (let i = 0; i < auctions.length; i++) {
-                if ('item' in auctions[i]) {
+              const last_modified = moment(new Date(market.lastModified)).format('X')
+              const orders = await Promise.all(market.auctions.map(async order => {
+                if (order.item) {
                   /** Pet fix */
-                  if (auctions[i].item.id && auctions[i].item.id === 82800) {
-                    if (auctions[i].item.modifiers && auctions[i].item.modifiers.length) {
-                      const display_id = auctions[i].item.modifiers.find(m => m.type === 6);
-                      if (display_id) {
-                        let pet = await pets_db.findOne({display_id: display_id.value})
-                        if (pet) {
-                          auctions[i].item.id = pet.item_id;
-                        }
+                  if (order.item.id && order.item.id === 82800) {
+                    if (order.item.modifiers && order.item.modifiers.length) {
+                      const display_id = order.item.modifiers.find(m => m.type === 6);
+                      if (display_id && display_id.value) {
+                        const pet = await pets_db.findOne({ display_id: display_id.value }).lean().exec()
+                        if (pet && pet.item_id) order.item.id = pet.item_id
                       }
                     }
                   }
                 }
-                if ('bid' in auctions[i])
-                  auctions[i].bid = Round2(auctions[i].bid / 10000);
-                if ('buyout' in auctions[i])
-                  auctions[i].buyout = Round2(auctions[i].buyout / 10000);
-                if ('unit_price' in auctions[i])
-                  auctions[i].unit_price = Round2(
-                    auctions[i].unit_price / 10000,
-                  );
-                auctions[i].connected_realm_id = _id.connected_realm_id;
-                auctions[i].last_modified = moment(
-                  new Date(market.lastModified),
-                ).format('X');
-              }
-              await auctions_db.insertMany(auctions).then(auctions => {
-                console.info(`U,${_id.connected_realm_id},${auctions.length}`);
-              });
-              await realms_db.updateMany(
-                { connected_realm_id: _id.connected_realm_id },
-                {
-                  auctions: moment(new Date(market.lastModified)).format('X'),
-                },
-              );
+
+                if (order.bid) order.bid = Round2(order.bid / 10000);
+                if (order.buyout) order.buyout = Round2(order.buyout / 10000);
+                if (order.unit_price) order.unit_price = Round2(order.unit_price / 10000);
+                order.connected_realm_id = _id.connected_realm_id;
+                order.last_modified = last_modified;
+                return order
+              }))
+              await auctions_db.insertMany(orders).then(auctions => console.info(`U,${_id.connected_realm_id},${auctions.length}`));
+              await realms_db.updateMany({ connected_realm_id: _id.connected_realm_id }, { auctions: last_modified });
             }
           } catch (error) {
             console.error(error);

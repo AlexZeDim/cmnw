@@ -40,9 +40,6 @@ schedule.scheduleJob('30,59 * * * *', async (
     await realms_db
       .aggregate([
         {
-          $limit: 1
-        },
-        {
           $group: {
             _id: {
               connected_realm_id: '$connected_realm_id',

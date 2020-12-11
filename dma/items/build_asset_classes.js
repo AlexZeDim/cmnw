@@ -21,7 +21,7 @@ const schedule = require('node-schedule');
 const buildAssetClass = async (...args) => {
   try {
     console.time(`DMA-${buildAssetClass.name}`);
-    const bulkSize = 10;
+    const bulkSize = 2;
 
     /**
      * This stage add asset_classes from pricing_methods
@@ -206,7 +206,7 @@ const buildAssetClass = async (...args) => {
 }
 
 
-schedule.scheduleJob('00 12 * * *',  function () {
+schedule.scheduleJob('00 12 */2 * *',  function () {
   buildAssetClass('pricing_methods', 'auctions', 'contracts', 'currency', 'tags').then(r => r);
 })
 

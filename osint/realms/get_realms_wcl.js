@@ -9,7 +9,7 @@ const realms_db = require('../../db/models/realms_db');
  */
 
 const Xray = require('x-ray');
-let x = Xray();
+const x = Xray();
 
 /***
  * Index every realm for WCL id,
@@ -23,13 +23,11 @@ let x = Xray();
   try {
     console.time(`OSINT-indexRealms_WCL`);
     for (let wcl_id = startId; wcl_id < endId; wcl_id++) {
-      let realm_name = await x(
+      const realm_name = await x(
         `https://www.warcraftlogs.com/server/id/${wcl_id}`,
         '.server-name',
-      ).then(res => {
-        return res;
-      });
-      let realm = await realms_db.findOne({
+      ).then(res => res);
+      const realm = await realms_db.findOne({
         $or: [
           { name: realm_name },
           { name_locale: realm_name },

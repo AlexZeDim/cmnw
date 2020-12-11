@@ -96,7 +96,7 @@ const detectiveRoster = async (
       default:
         message = '';
     }
-    let event = new osint_logs_db({
+    const event = new osint_logs_db({
       root_id: root_id,
       root_history: [root_id],
       type: type,

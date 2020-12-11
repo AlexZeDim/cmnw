@@ -26,7 +26,7 @@ const detectiveGuilds = async (guildOld, guildNew) => {
                 $push: { root_history: guildNew._id },
               },
             );
-            let event = new osint_logs_db({
+            const event = new osint_logs_db({
               root_id: guildNew._id,
               root_history: [guildNew._id],
               type: 'guild',
@@ -56,7 +56,7 @@ const detectiveGuilds = async (guildOld, guildNew) => {
 
             if (check === 'faction') message = `${guildNew.name} changed faction from ${guildOld[check]} to ${guildNew[check]}`;
 
-            let event = new osint_logs_db({
+            const event = new osint_logs_db({
               root_id: guildNew._id,
               root_history: [guildNew._id],
               type: 'guild',

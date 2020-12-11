@@ -95,6 +95,22 @@ let schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    mounts: [
+      {
+        _id: Number,
+        name: String,
+      }
+    ],
+    pets: [
+      {
+        _id: Number,
+        name: String,
+      }
+    ],
+    covenant: {
+      chosen_covenant: String,
+      renown_level: Number
+    },
     professions: [
       {
         _id: false,
@@ -133,7 +149,6 @@ schema.index({ 'isWatched': 1 }, { name: 'LFG' });
 schema.index({ 'hash.a': 1 }, { name: 'Hash A' });
 schema.index({ 'hash.b': 1 }, { name: 'Hash B' });
 schema.index({ 'hash.c': 1 }, { name: 'Hash C' });
-schema.index({ 'hash.ex': 1 }, { name: 'Hash EX' });
 schema.index({ 'hash.t': 1 }, { name: 'Hash T' });
 
 schema.index({ 'personality': 1 }, { name: 'VOLUSPA' });

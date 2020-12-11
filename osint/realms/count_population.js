@@ -99,7 +99,7 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
     /** Unique classes from players */
     const classes_unique = await characters_db.find({ character_class: { $ne: null } }).distinct('character_class')
 
-    await realms_db.find().cursor().eachAsync(async realm => {
+    await realms_db.find({ locale: 'ru_RU' }).cursor().eachAsync(async realm => {
 
       /**
        * Calculations populations for each realm
@@ -107,6 +107,8 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
        */
       const populations = [...realm.toObject().populations];
       realm.populations = undefined;
+      realm.guilds = undefined;
+      realm.players = undefined;
 
       const realm_population = {};
 
@@ -154,11 +156,44 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
           value: await characters_db.countDocuments({
             'realm.slug': realm.slug,
             statusCode: 200,
-            professions: { id: id }
+            'professions.id': id
           })
         })
       }
       realm_population.characters_professions = characters_professions;
+
+      /**
+       * Count covenant stats
+       * for every active character
+       */
+      const characters_covenants = [];
+      for (const covenant of ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord']) {
+        characters_covenants.push({
+          name: covenant,
+          value: await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, 'covenant.chosen_covenant': covenant }),
+          group: await characters_db.aggregate([
+            {
+              $match: {
+                'covenant.chosen_covenant': covenant
+              }
+            },
+            {
+              $group: {
+                _id: '$covenant.renown_level',
+                value: { $sum: 1 }
+              }
+            },
+            {
+              $project: {
+                _id: 0,
+                level: "$_id",
+                value: 1
+              }
+            }
+          ])
+        })
+      }
+      realm_population.characters_covenants = characters_covenants;
 
       /**
        * Guild number

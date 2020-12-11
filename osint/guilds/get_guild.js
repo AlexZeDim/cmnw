@@ -23,33 +23,37 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 /**
  * Request guild from Blizzard API and add it to OSINT-DB (guilds)
  * (if we found a new character from guild-members, then adding it to OSINT-DB (characters))
- * @param guild_
- * @param token
- * @param createOnlyUnique
- * @param i
- * @returns {Promise<*>}
+ * @param name {string}
+ * @param realm {Object<{ _id: number, name: string, slug: string }>}
+ * @param token {string=}
+ * @param createOnlyUnique {Boolean=}
+ * @param iterations {number=}
+ * @param args {Object=}
+ * @returns {Promise<void>}
  */
 
 async function getGuild (
-  guild_ = {},
-  token = '',
-  createOnlyUnique = true,
-  i = 0
+  {
+    name,
+    realm,
+    token,
+    createOnlyUnique,
+    iterations,
+    ...args
+  }
 ) {
   try {
 
-    let guildOld;
+    const guild_last = {};
 
     /**
      * Check realm before start
      */
-    let realm = await realms_db.findOne({ $text: { $search: guild_.realm.slug } }, { _id: 1, slug: 1, name: 1 }).lean();
-    if (!realm) {
-      return
-    }
+    const realm_ = await realms_db.findOne({ $text: { $search: realm.slug } }, { _id: 1, slug: 1, name: 1 }).lean();
+    if (!realm_) return
 
-    const name_slug = toSlug(guild_.name);
-    const _id = toSlug(`${guild_.name}@${realm.slug}`);
+    const name_slug = toSlug(name);
+    const _id = toSlug(`${name}@${realm_.slug}`);
 
     /**
      * BlizzAPI
@@ -70,8 +74,9 @@ async function getGuild (
         console.info(`E:${guild.name}@${guild.realm.name}#${guild.id}:${createOnlyUnique}`);
         return
       }
-      guildOld = { ...guild.toObject() }
+      Object.assign(guild_last, guild.toObject())
       guild.statusCode = 100;
+      if (args.updatedBy) guild.updatedBy = args.updatedBy
     } else {
       guild = new guild_db({
         _id: _id,
@@ -87,7 +92,7 @@ async function getGuild (
     /**
      * Request Data for Guild
      */
-    const [guildData, guildRoster] = await Promise.allSettled([
+    const [summary, roster] = await Promise.allSettled([
       api.query(`/data/wow/guild/${realm.slug}/${name_slug}`, {
         timeout: 10000,
         params: { locale: 'en_GB' },
@@ -100,52 +105,45 @@ async function getGuild (
       }),
     ]);
 
-    if (guildData && guildData.value) {
+    if (summary && summary.value) {
 
-      if (Object.keys(guildData.value).length) {
-        const fields = ['id', 'name', 'crest', 'achievement_points', 'member_count', 'created_timestamp', 'lastModified']
-        for (let field of fields) {
-          if (field in guildData.value) {
-            if (field === 'lastModified') {
-              guild[field] = new Date(guildData.value[field]);
-            } else {
-              guild[field] = guildData.value[field]
-            }
+      if (Object.keys(summary.value).length) {
+        const fields = ['id', 'name', 'crest', 'achievement_points', 'member_count', 'created_timestamp']
+        for (const field of fields) {
+          if (field in summary.value) {
+            guild[field] = summary.value[field]
           }
         }
+        if (summary.value.lastModified) guild.lastModified = new Date(summary.value['lastModified'])
       }
 
       guild.statusCode = 200;
 
       /** if Blizzard API returns realm as null */
-      if (guildData.value.realm.name !== null) {
-        guild.realm._id = guildData.value.realm.id
-        guild.realm.name = guildData.value.realm.name
-        guild.realm.slug = guildData.value.realm.slug
+      if (summary.value.realm.name !== null) {
+        guild.realm._id = summary.value.realm.id
+        guild.realm.name = summary.value.realm.name
+        guild.realm.slug = summary.value.realm.slug
       } else {
-        guild.realm = realm
+        guild.realm = realm_
       }
 
       /** if Blizzard API returns faction as null */
-      if (guildData.value.faction.name === null) {
-        if (guildData.value.faction.type.toString().startsWith('A')) {
-          guild.faction = 'Alliance'
-        }
-        if (guildData.value.faction.type.toString().startsWith('H')) {
-          guild.faction = 'Horde'
-        }
+      if (summary.value.faction.name === null) {
+        if (summary.value.faction.type.toString().startsWith('A')) guild.faction = 'Alliance'
+        if (summary.value.faction.type.toString().startsWith('H')) guild.faction = 'Horde'
       } else {
-        guild.faction = guildData.value.faction.name;
+        guild.faction = summary.value.faction.name;
       }
 
       /**
        * ROSTER
        */
       if (
-        guildRoster &&
-        guildRoster.value &&
-        guildRoster.value.members &&
-        guildRoster.value.members.length
+        roster &&
+        roster.value &&
+        roster.value.members &&
+        roster.value.members.length
       ) {
         /** Playable Class table */
         const playable_class = new Map([
@@ -164,63 +162,23 @@ async function getGuild (
         ]);
 
         /** New Guild Roster */
-        let updated_members = [];
+        const members_updated = [];
 
         /** Convert to (Old) Roster array */
-        const old_members = guildOld.members;
+        const members_old = guild_last.members;
+
+        const array = [];
+        let iterations = 0
 
         /** Members loop */
-        for (let member of guildRoster.value.members) {
+        for (const member of roster.value.members) {
           if (member && 'character' in member && 'rank' in member) {
-            /** Is every guild member is in OSINT-DB? */
-            let character = await characters_db.findById(toSlug(`${member.character.name}@${guild.realm.slug}`));
-
-            /** guild_member object for array.push */
-            let guild_member = {
-              _id: `${member.character.name}@${guild.realm.slug}`,
-              id: parseInt(member.character.id),
-              rank: parseInt(member.rank),
-            };
-            /** Check if data from guild roster > current character */
-            if (character) {
-              let guildExist = false;
-
-              if (character.guild) {
-                /**
-                 * Is character guild is the same
-                 * as requested guild we update rank
-                 */
-                if (character.guild.name === guild.name) {
-                  character.guild.rank = member.rank;
-                } else {
-                  guildExist = true;
-                }
-              }
-
-              /**
-               * If guild endpoint somehow up-to-date then character's
-               */
-              let g_lastModified = new Date(guildData.value.lastModified);
-              let c_lastModified = new Date(character.lastModified);
-              if (guildExist && c_lastModified < g_lastModified) {
-                character.guild = {
-                  _id: `${name_slug}@${guild.realm.slug}`,
-                  name: guild.name,
-                  slug: name_slug,
-                  rank: member.rank,
-                };
-              }
-
-              character.lastModified = new Date(guildData.value.lastModified);
-
-              character.save();
-            } else {
-              /**
-               * If new name in OSINT then
-               * find class and let
-               * getCharacter F() handle it
-               */
-              let character_Object = {
+            /**
+             * Index every character from guild roster
+             * in OSINT DB
+             */
+            array.push(
+              getCharacter({
                 id: member.character.id,
                 name: member.character.name,
                 realm: {
@@ -234,84 +192,68 @@ async function getGuild (
                   slug: name_slug,
                   rank: member.rank,
                 },
-                faction: guildData.value.faction.name,
+                character_class: ('playable_class' in member.character && playable_class.has(member.character.playable_class.id)) ? (playable_class.get(member.character.playable_class.id)) : undefined,
+                faction: summary.value.faction.name,
                 level: member.character.level,
-                lastModified: new Date(guildData.value.lastModified),
-                createdAt: guild.updatedBy,
-                updatedBy: guild.updatedBy
-              };
-              if (member.character.hasOwnProperty('playable_class')) {
-                Object.assign(character_Object, { character_class: playable_class.get(member.character.playable_class.id) });
-              }
-              await getCharacter(
-                character_Object,
-                token,
-                false,
-                false
-              );
+                lastModified: guild.lastModified,
+                updatedBy: guild.updatedBy,
+                token: token,
+                iterations: iterations++,
+                guildRank: false,
+                createOnlyUnique: false
+              })
+            )
+
+            if (parseInt(member.rank) === 0 || array.length >= 10 || member.character.id === roster.value.members[roster.value.members.length - 1].character.id) {
+              await Promise.allSettled(array)
+              array.length = 0;
             }
+
+            /** guild_member object for array.push */
+            const guild_member = {
+              _id: `${member.character.name}@${guild.realm.slug}`,
+              id: parseInt(member.character.id),
+              rank: parseInt(member.rank),
+            };
 
             /**
              * If compare rosters
              */
-            if (old_members && old_members.length) {
+            if (members_old && members_old.length) {
               /**
                * It's GM, check the older one
                */
               if (parseInt(member.rank) === 0) {
                 /** Find old GM */
-                let gm_old = old_members.find(m => parseInt(m.rank) === 0);
+                const gm_old = members_old.find(m => parseInt(m.rank) === 0);
 
                 /** Transfer of power has been made */
                 if (gm_old.id !== guild_member.id) {
-                  const [nameO, realmO] = gm_old._id.split('@');
-                  const [nameN, realmN] = guild_member._id.split('@');
-                  /** Request force update for hash comparison */
-                  await Promise.all([
-                    await getCharacter(
-                      { name: nameO, realm: { slug: realmO }, createdBy: guild.updatedBy, updatedBy: guild.updatedBy },
-                      token,
-                      false,
-                      false
-                    ),
-                    await getCharacter(
-                      { name: nameN, realm: { slug: realmN }, createdBy: guild.updatedBy, updatedBy: guild.updatedBy },
-                      token,
-                      false,
-                      false
-                    ),
-                  ]);
                   /** Receive both characters */
-                  const [
-                    character_gm_old,
-                    character_gm_new,
-                  ] = await Promise.all([
-                    await characters_db.findOne({
+                  const [character_gm_old, character_gm_new] = await Promise.all([
+                    characters_db.findOne({
                       'id': gm_old.id,
-                      'realm.slug': guildData.value.realm.slug,
-                    }),
-                    await characters_db.findOne({
+                      'realm.slug': summary.value.realm.slug,
+                    }).lean().exec(),
+                    characters_db.findOne({
                       'id': guild_member.id,
-                      'realm.slug': guildData.value.realm.slug,
-                    }),
+                      'realm.slug': summary.value.realm.slug,
+                    }).lean().exec(),
                   ]);
                   /** Make sure that both exists */
                   if (character_gm_old && character_gm_new) {
                     /** And both have hash values to check */
-                    let ownership_flag = false;
-                    if (character_gm_old.hash.c && character_gm_new.hash.c) {
-                      if (
-                        character_gm_old.hash.c === character_gm_new.hash.c
-                      ) {
-                        /** Transfer title */
+                    if (character_gm_old.hash.a && character_gm_new.hash.a) {
+                      /** Transfer title */
+                      if (character_gm_old.hash.a === character_gm_new.hash.a) {
                         detectiveRoster(
                           character_gm_new._id,
                           'character',
                           `${character_gm_old._id}#${guild._id}`,
                           `${character_gm_new._id}#${guild._id}`,
                           'title',
-                          new Date(guildData.value.lastModified),
                           new Date(guild.lastModified),
+                          guild_last.lastModified,
                         );
                         detectiveRoster(
                           character_gm_old._id,
@@ -319,8 +261,8 @@ async function getGuild (
                           `${character_gm_old._id}#${guild._id}`,
                           `${character_gm_new._id}#${guild._id}`,
                           'title',
-                          new Date(guildData.value.lastModified),
                           new Date(guild.lastModified),
+                          guild_last.lastModified,
                         );
                         detectiveRoster(
                           `${guild._id}`,
@@ -328,44 +270,39 @@ async function getGuild (
                           `${character_gm_old._id}`,
                           `${character_gm_new._id}`,
                           'title',
-                          new Date(guildData.value.lastModified),
                           new Date(guild.lastModified),
+                          guild_last.lastModified,
                         );
                       } else {
-                        ownership_flag = true;
+                        /** Transfer ownership */
+                        detectiveRoster(
+                          character_gm_new._id,
+                          'character',
+                          `${character_gm_old._id}#${guild._id}`,
+                          `${character_gm_new._id}#${guild._id}`,
+                          'ownership',
+                          new Date(guild.lastModified),
+                          guild_last.lastModified,
+                        );
+                        detectiveRoster(
+                          character_gm_old._id,
+                          'character',
+                          `${character_gm_old._id}#${guild._id}`,
+                          `${character_gm_new._id}#${guild._id}`,
+                          'ownership',
+                          new Date(guild.lastModified),
+                          guild_last.lastModified,
+                        );
+                        detectiveRoster(
+                          `${guild._id}`,
+                          'guild',
+                          `${character_gm_old._id}`,
+                          `${character_gm_new._id}`,
+                          'ownership',
+                          new Date(guild.lastModified),
+                          guild_last.lastModified,
+                        );
                       }
-                    } else {
-                      ownership_flag = true;
-                    }
-                    /** Transfer ownership */
-                    if (ownership_flag) {
-                      detectiveRoster(
-                        character_gm_new._id,
-                        'character',
-                        `${character_gm_old._id}#${guild._id}`,
-                        `${character_gm_new._id}#${guild._id}`,
-                        'ownership',
-                        new Date(guildData.value.lastModified),
-                        new Date(guild.lastModified),
-                      );
-                      detectiveRoster(
-                        character_gm_old._id,
-                        'character',
-                        `${character_gm_old._id}#${guild._id}`,
-                        `${character_gm_new._id}#${guild._id}`,
-                        'ownership',
-                        new Date(guildData.value.lastModified),
-                        new Date(guild.lastModified),
-                      );
-                      detectiveRoster(
-                        `${guild._id}`,
-                        'guild',
-                        `${character_gm_old._id}`,
-                        `${character_gm_new._id}`,
-                        'ownership',
-                        new Date(guildData.value.lastModified),
-                        new Date(guild.lastModified),
-                      );
                     }
                   }
                 }
@@ -375,10 +312,8 @@ async function getGuild (
                * If new member was found in old
                * check for rank change
                */
-              if (old_members.some(({ id }) => id === guild_member.id)) {
-                let guild_member_old = old_members.find(
-                  ({ id }) => id === guild_member.id,
-                );
+              if (members_old.some(({ id }) => id === guild_member.id)) {
+                const guild_member_old = members_old.find(({ id }) => id === guild_member.id);
                 /**
                  * Demote
                  */
@@ -389,8 +324,8 @@ async function getGuild (
                     `${guild._id}#${guild.id} // R:${guild_member_old.rank}`,
                     `${guild._id}#${guild.id} // R:${guild_member.rank}`,
                     'demote',
-                    new Date(guildData.value.lastModified),
                     new Date(guild.lastModified),
+                    guild_last.lastModified,
                   );
                   detectiveRoster(
                     `${guild._id}`,
@@ -398,8 +333,8 @@ async function getGuild (
                     `${guild_member._id} // R:${guild_member_old.rank}`,
                     `${guild_member._id} // R:${guild_member.rank}`,
                     'demote',
-                    new Date(guildData.value.lastModified),
                     new Date(guild.lastModified),
+                    guild_last.lastModified,
                   );
                 }
                 /**
@@ -412,8 +347,8 @@ async function getGuild (
                     `${guild._id}#${guild.id} // R:${guild_member_old.rank}`,
                     `${guild._id}#${guild.id} // R:${guild_member.rank}`,
                     'promote',
-                    new Date(guildData.value.lastModified),
                     new Date(guild.lastModified),
+                    guild_last.lastModified,
                   );
                   detectiveRoster(
                     `${guild._id}`,
@@ -421,8 +356,8 @@ async function getGuild (
                     `${guild_member._id} // R:${guild_member_old.rank}`,
                     `${guild_member._id} // R:${guild_member.rank}`,
                     'promote',
-                    new Date(guildData.value.lastModified),
                     new Date(guild.lastModified),
+                    guild_last.lastModified,
                   );
                 }
               } else {
@@ -436,8 +371,8 @@ async function getGuild (
                   ``,
                   `${guild._id}#${guild.id} // R:${guild_member.rank}`,
                   'join',
-                  new Date(guildData.value.lastModified),
                   new Date(guild.lastModified),
+                  guild_last.lastModified,
                 );
                 detectiveRoster(
                   `${guild._id}`,
@@ -445,13 +380,13 @@ async function getGuild (
                   ``,
                   `${guild_member._id} // R:${guild_member.rank}`,
                   'join',
-                  new Date(guildData.value.lastModified),
                   new Date(guild.lastModified),
+                  guild_last.lastModified,
                 );
               }
             }
             /** Push to guild.members */
-            updated_members.push(guild_member);
+            members_updated.push(guild_member);
           }
         }
         /** End of Members loop */
@@ -460,7 +395,7 @@ async function getGuild (
          * If old member not in a new_roster
          * then LEAVE
          */
-        const leaves = differenceBy(old_members, updated_members, 'id');
+        const leaves = differenceBy(members_old, members_updated, 'id');
 
         if (leaves && leaves.length) {
           for (let character_left of leaves) {
@@ -470,8 +405,8 @@ async function getGuild (
               `${guild._id}#${guild.id} // R:${character_left.rank}`,
               ``,
               'leave',
-              new Date(guildData.value.lastModified),
               new Date(guild.lastModified),
+              guild_last.lastModified,
             );
             detectiveRoster(
               `${guild._id}`,
@@ -479,35 +414,36 @@ async function getGuild (
               `${character_left._id} // R:${character_left.rank}`,
               ``,
               'leave',
-              new Date(guildData.value.lastModified),
               new Date(guild.lastModified),
+              guild_last.lastModified,
             );
           }
         }
         /** Update old guild roster with a new roster */
-        guild.members = updated_members;
+        guild.members = undefined
+        guild.members = members_updated;
       }
 
       /** If guild new, check rename version of it */
       if (guild.isNew) {
         /** Check was guild renamed */
-        const renamedGuild = await guild_db.findOne({
+        const guild_renamed = await guild_db.findOne({
           'id': guild.id,
           'realm.slug': guild.realm.slug,
         });
-        if (renamedGuild) {
-          await detectiveGuilds(renamedGuild, guild)
+        if (guild_renamed) {
+          await detectiveGuilds(guild_renamed, guild)
         }
       } else {
-        await detectiveGuilds(guildOld, guild)
+        await detectiveGuilds(guild_last, guild)
       }
 
       guild.markModified('members');
-      guild = await guild.save();
-      console.info(`U:${i}:${guild.name}@${guild.realm.name}#${guild.id}:${guild.statusCode}`);
+      await guild.save();
+      console.info(`U:${(iterations) ? (iterations + ':') : ('')}${guild.name}@${guild.realm.name}#${guild.id}:${guild.statusCode}`);
     }
   } catch (error) {
-    console.error(`E,${getGuild.name},${guild_.name}@${guild_.realm.slug},${error}`);
+    console.error(`E,getGuild,${error}`);
   }
 }
 

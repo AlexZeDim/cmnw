@@ -4,15 +4,15 @@
 require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const personalities_db = require('../../db/models/personalities_db');
-const keys_db = require('../../db/models/keys_db');
+//const keys_db = require('../../db/models/keys_db');
 
-const getCharacter = require('../../osint/characters/get_character');
+//const getCharacter = require('../../osint/characters/get_character');
 
 (async function build_personalities (bulkSize = 5) {
   try {
     console.time(`OSINT-${build_personalities.name}`);
 
-    const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
+    //const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
 
     await characters_db
       .aggregate([
@@ -46,9 +46,9 @@ const getCharacter = require('../../osint/characters/get_character');
       .exec()
       .eachAsync(
         async unique_c => {
-          for (const character_ of unique_c.characters) {
+          /*for (const character_ of unique_c.characters) {
             await getCharacter(character_, token, false, false, 0)
-          }
+          }*/
           const unique_a = await characters_db.find({ 'hash.c': unique_c._id.hash_c }).distinct('hash.a')
           for (const hash_a of unique_a) {
             const ids = await characters_db.find({ 'hash.c': unique_c._id.hash_c, 'hash.a': hash_a }, { _id: 1 })

@@ -12,27 +12,27 @@ apps:
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 10000
   - script: ./dma/auctions/get_auctions.js
     name: 'DMA-MARKET'
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 10000
   - script: ./dma/golds/get_gold.js
     name: 'DMA-GOLD'
     instances: 1
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 10000
   - script: ./dma/contracts/create_contracts.js
     name: 'DMA-CONTRACTS'
     instances: 1
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 300000
+    restart_delay: 10000
   - script: ./dma/items/build_asset_classes.js
     name: 'DMA-ASSET-CLASS'
     instances: 1

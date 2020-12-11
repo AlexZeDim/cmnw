@@ -26,7 +26,7 @@ const { Round2 } = require('../../db/setters');
 schedule.scheduleJob('30,59 * * * *', async (
   t,
   queryKeys = `DMA`,
-  bulkSize = 2,
+  bulkSize = 1,
 ) => {
   try {
     console.time(`DMA-getAuctionData`);

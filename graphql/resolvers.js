@@ -29,12 +29,7 @@ const root = {
       const { token } = await keys_db.findOne({
         tags: `OSINT-indexCharacters`,
       });
-      await getCharacter(
-        { name: nameSlug, realm: { slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`},
-        token,
-        true,
-        true
-      );
+      await getCharacter({ name: nameSlug, realm: { slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`, token: token, guildRank: true, createOnlyUnique: true});
       return await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     }
     character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
@@ -42,7 +37,8 @@ const root = {
   },
   guild: async ({ id }) => {
     if (!id.includes('@')) return
-    const [ nameSlug, realmSlug ] = id.split('@');
+    const [ name, realmSlug ] = id.split('@');
+    const nameSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/'+/g, '')
     const realm = await realms_db
       .findOne(
         { $text: { $search: realmSlug } },
@@ -56,7 +52,7 @@ const root = {
     const [guild] = await guilds_db.aggregate([
       {
         $match: {
-          _id: `${nameSlug.toLowerCase()}@${realm.slug}`,
+          _id: `${nameSlug}@${realm.slug}`,
         },
       },
       {
@@ -80,15 +76,11 @@ const root = {
       const { token } = await keys_db.findOne({
         tags: `OSINT-indexCharacters`,
       });
-      await getGuild(
-        { name: nameSlug, realm: realm, createdBy: 'OSINT-userInput', updatedBy: 'OSINT-userInput' },
-        token,
-        true
-      )
+      await getGuild({ name: nameSlug, realm: realm, createdBy: 'OSINT-userInput', updatedBy: 'OSINT-userInput', token: token, createOnlyUnique: true })
       return await guilds_db.aggregate([
         {
           $match: {
-            _id: `${nameSlug.toLowerCase()}@${realm.slug}`,
+            _id: `${nameSlug}@${realm.slug}`,
           },
         },
         {

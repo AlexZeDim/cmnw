@@ -28,7 +28,10 @@ const evaluate = async function ({ _id, asset_class, connected_realm_id, quantit
   try {
     if (iterations) iterations += 1;
     if (!_id || !connected_realm_id) return
-    if (iterations && iterations > 50) return
+    if (iterations && iterations > 50) {
+      console.warn(`DMA-IVA: ${_id}@${connected_realm_id} Warning: ${iterations} ierations`)
+      return
+    }
     /**
      * If item don't have timestamp
      * we get it from realm

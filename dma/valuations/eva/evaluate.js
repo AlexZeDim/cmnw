@@ -24,9 +24,9 @@ const { Round2 } = require('../../../db/setters');
  * @returns {Promise<void>}
  */
 
-const evaluate = async function ({ _id, asset_class= [], connected_realm_id, quantity, last_modified, iterations, ...args}) {
+const evaluate = async function ({ _id, asset_class= [], connected_realm_id, quantity, last_modified, iterations = 0, ...args}) {
   try {
-    if (iterations) iterations += 1;
+    iterations += 1;
     if (!_id || !connected_realm_id) return
     if (iterations && iterations > 50) {
       console.warn(`DMA-IVA: ${_id}@${connected_realm_id} Warning: ${iterations} ierations`)

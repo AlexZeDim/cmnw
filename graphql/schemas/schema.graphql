@@ -94,6 +94,11 @@ type Logs {
     after: Float,
 }
 
+type Covenant {
+    chosen_covenant: String,
+    renown_level: Int
+}
+
 type Character {
     _id: ID!,
     id: Float!,
@@ -116,7 +121,8 @@ type Character {
     updatedBy: String,
     isWatched: Boolean,
     personality: String,
-    logs: [Logs]
+    logs: [Logs],
+    covenant: Covenant,
     createdAt: Float,
     updatedAt: Float,
 }
@@ -184,7 +190,7 @@ type ItemModifier {
 type OrderItem {
     id: Float,
     context: Float,
-    bonus_list: [Int],
+    bonus_lists: [Int],
     modifiers: [ItemModifier]
 }
 

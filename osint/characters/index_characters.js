@@ -19,7 +19,7 @@ const getCharacter = require('./get_character');
  * @returns {Promise<void>}
  */
 
-async function indexCharacters (
+(async function indexCharacters (
   queryKeys = { tags: `OSINT-${indexCharacters.name}` },
   bulkSize = 5,
 ) {
@@ -47,6 +47,4 @@ async function indexCharacters (
     console.timeEnd(`OSINT-${indexCharacters.name}`);
     process.exit(0)
   }
-}
-
-indexCharacters();
+})();

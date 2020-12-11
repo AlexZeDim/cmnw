@@ -91,10 +91,24 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
           $nor: [{ type: 'VENDOR' }, { type: 'VSP' }],
         }).sort({ value: 1 }).lean()
         if (!valuation) {
-          const iva = {...item}
-          iva.connected_realm_id = realm.connected_realm_id;
-          iva.last_modified = realm.auctions;
-          iva.iteration = 0;
+          /**
+           * @type {{
+           *  stackable: number,
+           *  asset_class: string[],
+           *  _id: number,
+           *  last_modified: number,
+           *  iterations: number,
+           *  connected_realm_id: number
+           * }}
+           */
+          const iva = {
+            ...item,
+            ...{
+              connected_realm_id: realm.connected_realm_id,
+              last_modified: realm.auctions,
+              iterations: 0
+            }
+          }
           await evaluate(iva)
         }
         const valuations = await valuations_db.find({

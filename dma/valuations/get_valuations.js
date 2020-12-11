@@ -22,7 +22,7 @@ const evaluate = require('./eva/evaluate');
 schedule.scheduleJob('01,16,31,46 * * * *', async (
   t,
   realmQuery = 'Europe',
-  bulkSize = 2,
+  bulkSize = 1,
 ) => {
   try {
     console.time(`DMA-getValuationsData`);
@@ -140,7 +140,7 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                 await items_db
                   .find(ac)
                   .lean()
-                  .cursor({ batchSize: 5 })
+                  .cursor({ batchSize: 10 })
                   .eachAsync(
                     async item => {
                       console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
@@ -150,7 +150,7 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                       await evaluate(item);
                       console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
                     },
-                    { parallel: 5 },
+                    { parallel: 10 },
                   );
                 console.timeEnd(`DMA-XVA-${_id}-${k}`);
               }

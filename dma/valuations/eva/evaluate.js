@@ -17,14 +17,14 @@ const { Round2 } = require('../../../db/setters');
  * @param _id {number}
  * @param asset_class {[string]}
  * @param connected_realm_id {number}
- * @param quantity {number}
- * @param last_modified {number}
- * @param iterations {number}
- * @param args
+ * @param quantity {number=}
+ * @param last_modified {number=}
+ * @param iterations {number=}
+ * @param args {Object=}
  * @returns {Promise<void>}
  */
 
-const evaluate = async function ({ _id, asset_class, connected_realm_id, quantity, last_modified, iterations, ...args}) {
+const evaluate = async function ({ _id, asset_class= [], connected_realm_id, quantity, last_modified, iterations, ...args}) {
   try {
     if (iterations) iterations += 1;
     if (!_id || !connected_realm_id) return

@@ -22,7 +22,7 @@ const evaluate = require('./eva/evaluate');
 schedule.scheduleJob('01,16,31,46 * * * *', async (
   t,
   realmQuery = 'Europe',
-  bulkSize = 1,
+  bulkSize = 2,
 ) => {
   try {
     console.time(`DMA-getValuationsData`);
@@ -69,7 +69,7 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                     ],
                   },
                 ],
-                [3,
+                /*[3,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -85,8 +85,8 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                       },
                     ],
                   },
-                ],
-                [4,
+                ],*/
+                [3,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -98,7 +98,7 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                     ],
                   },
                 ],
-                [5,
+                /*[4,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -114,8 +114,8 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                       },
                     ],
                   },
-                ],
-                [6,
+                ],*/
+                [4,
                   {
                     $and: [
                       { expansion: 'SHDW' },
@@ -140,7 +140,7 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                 await items_db
                   .find(ac)
                   .lean()
-                  .cursor({ batchSize: 10 })
+                  .cursor({ batchSize: 5 })
                   .eachAsync(
                     async item => {
                       console.time(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
@@ -150,7 +150,7 @@ schedule.scheduleJob('01,16,31,46 * * * *', async (
                       await evaluate(item);
                       console.timeEnd(`DMA-${item._id}-${_id}:${item.name.en_GB}`);
                     },
-                    { parallel: 10 },
+                    { parallel: 5 },
                   );
                 console.timeEnd(`DMA-XVA-${_id}-${k}`);
               }

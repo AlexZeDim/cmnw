@@ -58,6 +58,15 @@ let schema = new mongoose.Schema(
           name: String,
           value: Number
         }],
+        characters_covenants: [{
+          _id: false,
+          name: String,
+          value: Number,
+          group: [{
+            level: Number,
+            value: Number,
+          }]
+        }],
         guilds_total: Number,
         guilds_alliance: Number,
         guilds_horde: Number,

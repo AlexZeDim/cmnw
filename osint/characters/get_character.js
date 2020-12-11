@@ -3,7 +3,7 @@
  */
 const characters_db = require('../../db/models/characters_db');
 const realms_db = require('../../db/models/realms_db');
-
+const personalities_db = require('../../db/models/personalities_db');
 
 /**
  * Modules
@@ -20,31 +20,28 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
 /**
  * Request characters from Blizzard API and add it to OSINT-DB (guilds)
- * @param character_ {Object} - provides any additional data for requested character
- * @param token {String} - provide a battle.net token
- * @param guildRank {Boolean} - if this value true, we will request guild roster to check guild rank of this character
- * @param createOnlyUnique {Boolean} - if value is true, we create characters only that doesn't exist. Ignore update dont update them.
- * @param i {Number}
+ * @param _id {string=}
+ * @param id {number=}
+ * @param name {string}
+ * @param realm {Object<{_id: number, name: string, slug: string}>}
+ * @param iterations {number=}
+ * @param token {string}
+ * @param guildRank {Boolean=}
+ * @param createOnlyUnique {Boolean=}
+ * @param args {Object=}
+ * @returns {Promise<void>}
  */
 
 
-async function getCharacter (
-  character_ = {},
-  token = '',
-  guildRank = false,
-  createOnlyUnique = false,
-  i = 0
-) {
+async function getCharacter ({ _id, id, name, realm, iterations, token, guildRank = false, createOnlyUnique = false, ...args}) {
   try {
-    const characterOld = {};
+    const character_last = {};
 
-    const realm = await realms_db.findOne({ $text: { $search: character_.realm.slug } }, { _id: 1, slug: 1, name: 1 });
+    const realm_ = await realms_db.findOne({ $text: { $search: realm.slug } }, { _id: 1, slug: 1, name: 1 });
 
-    if (!realm) {
-      return
-    }
+    if (!realm_) return
 
-    const name_slug = toSlug(character_.name)
+    const name_slug = toSlug(name)
 
     /** Check if character exists */
     let character = await characters_db.findById(`${name_slug}@${realm.slug}`);
@@ -52,16 +49,17 @@ async function getCharacter (
     if (character) {
       /** If character exists and createOnlyUnique initiated, then return */
       if (createOnlyUnique) {
-        console.info(`E:${character.name}@${character.realm.name}#${character.id}:${createOnlyUnique}`);
+        console.info(`E:${name}@${realm.name}#${id}:${createOnlyUnique}`);
         return
       }
-      Object.assign(characterOld, character.toObject())
+      Object.assign(character_last, character.toObject())
       character.statusCode = 100
+      if (args.updatedBy) character.updatedBy = args.updatedBy
     } else {
       character = new characters_db({
         _id: `${name_slug}@${realm.slug}`,
-        name: fromSlug(character_.name),
         id: Date.now(),
+        name: fromSlug(name),
         statusCode: 100,
         createdBy: 'OSINT-getCharacter',
         updatedBy: 'OSINT-getCharacter',
@@ -70,36 +68,21 @@ async function getCharacter (
       /**
        * Upload other fields from imported values
        */
-      if (character_.id) {
-        character.id = character_.id
-      }
-      if (character_.faction) {
-        character.faction = character_.faction
-      }
-      if (character_.character_class) {
-        character.character_class = character_.character_class
-      }
-      if (character_.level) {
-        character.level = character_.level
-      }
-      if (character_.lastModified) {
-        character.lastModified = character_.lastModified
-      }
-      if (character_.createdBy) {
-        character.createdBy = character_.createdBy
-      }
-      if (character_.updatedBy) {
-        character.updatedBy = character_.updatedBy
-      }
+      if (id) character.id = id
+      if (args.faction) character.faction = args.faction
+      if (args.guild) character.guild = args.guild
+      if (args.character_class) character.character_class = args.character_class
+      if (args.level) character.level = args.level
+      if (args.lastModified) character.lastModified = args.lastModified
+      if (args.createdBy) character.createdBy = args.createdBy
+      if (args.updatedBy) character.updatedBy = args.updatedBy
     }
 
-    if (realm) {
-      character.realm = {
-        _id: realm._id,
-        name: realm.name,
-        slug: realm.slug,
-      };
-    }
+    character.realm = {
+      _id: realm._id,
+      name: realm.name,
+      slug: realm.slug,
+    };
 
     /**
      * BlizzAPI
@@ -114,16 +97,18 @@ async function getCharacter (
     const character_status = await api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/status`, {
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
-    }).catch(e => e)
+    }).catch(() => { if (character.isNew && character.createdBy === 'OSINT-userInput') throw new Error(`${name}@${character.realm.slug}:${createOnlyUnique}`) })
 
-    /** Define character id for sure */
+    /**
+     * Define character id for sure
+     */
     if (character_status && character_status.id) {
       character.id = character_status.id
       character.lastModified = character_status.lastModified
     }
 
     if (character_status && 'is_valid' in character_status) {
-      const [characterData, characterPets, characterMount, characterProfessions, characterMedia] = await Promise.allSettled([
+      const [summary, pets_collection, mount_collection, professions, media] = await Promise.allSettled([
         api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}`, {
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' }
@@ -147,42 +132,28 @@ async function getCharacter (
       ]);
 
       /**
-       * Character Data
+       * Summary
        */
-      if (characterData && characterData.value) {
-        if (Object.keys(characterData.value).length) {
-          if (characterData.value.faction && characterData.value.faction.name) {
-            character.faction = characterData.value.faction.name
+      if (summary && summary.value) {
+        if (summary.value.faction && summary.value.faction.name) character.faction = summary.value.faction.name
+        if (summary.value.gender && summary.value.gender.name) character.gender = summary.value.gender.name
+        if (summary.value.race && summary.value.race.name) character.race = summary.value.race.name
+        if (summary.value.character_class && summary.value.character_class.name) character.character_class = summary.value.character_class.name
+        if ('active_spec' in summary.value && summary.value.active_spec.name) character.spec = summary.value.active_spec.name
+        if (summary.value.id) character.id = summary.value.id
+        if (summary.value.name) character.name = summary.value.name
+        if (summary.value.level) character.level = summary.value.level
+        if ('covenant_progress' in summary.value) {
+          if ('chosen_covenant' in summary.value.covenant_progress) {
+            if (summary.value.covenant_progress.chosen_covenant.name) character.covenant.chosen_covenant = summary.value.covenant_progress.chosen_covenant.name;
           }
-          if (characterData.value.gender && characterData.value.gender.name) {
-            character.gender = characterData.value.gender.name
-          }
-          if (characterData.value.race && characterData.value.race.name) {
-            character.race = characterData.value.race.name
-          }
-          if (characterData.value.character_class && characterData.value.character_class.name) {
-            character.character_class = characterData.value.character_class.name
-          }
-          if ('active_spec' in characterData.value && characterData.value.active_spec.name) {
-            character.spec = characterData.value.active_spec.name
-          }
-          if (characterData.value.id) {
-            character.id = characterData.value.id
-          }
-          if (characterData.value.name) {
-            character.name = characterData.value.name
-          }
-          if (characterData.value.level) {
-            character.level = characterData.value.level
-          }
-          if ('last_login_timestamp' in characterData.value) {
-            character.lastModified = new Date(characterData.value['last_login_timestamp'])
-          }
-          if ('average_item_level' in characterData.value && 'equipped_item_level' in characterData.value) {
-            character.ilvl = {};
-            character.ilvl.avg = characterData.value['average_item_level']
-            character.ilvl.eq = characterData.value['equipped_item_level']
-          }
+          if ('renown_level' in summary.value.covenant_progress) character.covenant.renown_level = summary.value.covenant_progress.renown_level
+        }
+        if ('last_login_timestamp' in summary.value) character.lastModified = new Date(summary.value['last_login_timestamp'])
+        if ('average_item_level' in summary.value && 'equipped_item_level' in summary.value) {
+          character.ilvl = {};
+          character.ilvl.avg = summary.value['average_item_level']
+          character.ilvl.eq = summary.value['equipped_item_level']
         }
 
         character.statusCode = 200;
@@ -191,8 +162,8 @@ async function getCharacter (
          * Active title
          * Hash T
          */
-        if ('active_title' in characterData.value) {
-          let { active_title } = characterData.value
+        if ('active_title' in summary.value) {
+          let { active_title } = summary.value
           if (active_title.id) {
             character.hash.t = parseInt(active_title.id, 16);
           }
@@ -202,20 +173,20 @@ async function getCharacter (
          * Realm
          * Sometimes Blizzard return null values
          */
-        if (characterData.value.realm && characterData.value.realm.name !== null) {
+        if (summary.value.realm && summary.value.realm.name !== null) {
           character.realm = {
-            _id: characterData.value.realm.id,
-            name: characterData.value.realm.name,
-            slug: characterData.value.realm.slug,
+            _id: summary.value.realm.id,
+            name: summary.value.realm.name,
+            slug: summary.value.realm.slug,
           };
         }
 
         /**
          * Guild
          */
-        if (characterData.value.guild) {
-          character.guild.name = characterData.value.guild.name;
-          character.guild.slug = characterData.value.guild.name;
+        if (summary.value.guild) {
+          character.guild.name = summary.value.guild.name;
+          character.guild.slug = summary.value.guild.name;
           character.guild._id = `${toSlug(character.guild.name)}@${character.realm.slug}`;
           if (guildRank === true) {
             await api.query(`data/wow/guild/${character.realm.slug}/${toSlug(character.guild.name)}/roster`, {
@@ -238,41 +209,36 @@ async function getCharacter (
        * Character Pets
        * Hash A & Hash C
        */
-      if (characterPets && characterPets.value) {
-        let pets_array = [];
-        let active_pets = [];
-        let names_a = [];
-        let names_c = [];
+      if (pets_collection && pets_collection.value) {
+        const collection_pets = [];
+        const active_pets = [];
 
-        let { pets } = characterPets.value;
+        const { pets } = pets_collection.value;
 
         if (pets && pets.length) {
-          for (let pet of pets) {
+          character.pets = undefined;
+          character.pets = [];
+
+          for (const pet of pets) {
+
+            character.pets.addToSet({
+              _id: pet.id,
+              name: pet.species.name,
+            })
+
             if ('is_active' in pet) {
               if ('name' in pet) {
                 active_pets.push(pet.name);
-                names_c.push(pet.name, pet.level);
               }
               active_pets.push(pet.species.name, pet.level);
             }
             if ('name' in pet) {
-              pets_array.push(pet.name);
-              names_a.push(pet.name, pet.level)
+              collection_pets.push(pet.name);
             }
-            pets_array.push(pet.species.name, pet.level);
+            collection_pets.push(pet.species.name, pet.level);
           }
-
-          if (names_c.length > 2) {
-            character.hash.c = crc32.calculate(Buffer.from(names_c.toString())).toString(16);
-          } else if (active_pets.length) {
-            character.hash.c = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
-          }
-
-          if (names_a.length > 2) {
-            character.hash.a = crc32.calculate(Buffer.from(names_a.toString())).toString(16);
-          } else if (pets_array.length) {
-            character.hash.a = crc32.calculate(Buffer.from(pets_array.toString())).toString(16);
-          }
+          if (collection_pets.length) character.hash.a = crc32.calculate(Buffer.from(collection_pets.toString())).toString(16);
+          if (active_pets.length) character.hash.b = crc32.calculate(Buffer.from(active_pets.toString())).toString(16);
         }
       }
 
@@ -280,27 +246,35 @@ async function getCharacter (
        * Character Mounts
        * Hash B
        */
-      if (characterMount && characterMount.value) {
-        let mount_array = [];
+      if (mount_collection && mount_collection.value) {
+        const collection_mounts = [];
 
-        let { mounts } = characterMount.value;
+        const { mounts } = mount_collection.value;
 
         if (mounts && mounts.length) {
-          for (let mount of mounts) {
-            mount_array.push(mount.id);
+          character.mounts = undefined;
+          character.mounts = [];
+
+          for (const { mount } of mounts) {
+            character.mounts.addToSet({
+              _id: mount.id,
+              name: mount.name
+            })
+
+            collection_mounts.push(mount.id);
           }
-          character.hash.b = crc32.calculate(Buffer.from(mount_array.toString())).toString(16);
+          if (collection_mounts.length) character.hash.с = crc32.calculate(Buffer.from(collection_mounts.toString())).toString(16);
         }
       }
       /**
        * Character Professions
        * On exist, reset current profession status
        */
-      if (characterProfessions && characterProfessions.value) {
+      if (professions && professions.value) {
         character.professions = undefined;
         character.professions = [];
-        if ('primaries' in characterProfessions.value) {
-          const professions_primary = characterProfessions.value.primaries
+        if ('primaries' in professions.value) {
+          const professions_primary = professions.value.primaries
           if (professions_primary && professions_primary.length) {
             for (const primary of professions_primary) {
               if (primary.profession && primary.profession.name && primary.profession.id) {
@@ -328,8 +302,8 @@ async function getCharacter (
             }
           }
         }
-        if ('secondaries' in characterProfessions.value) {
-          const professions_secondary = characterProfessions.value.secondaries
+        if ('secondaries' in professions.value) {
+          const professions_secondary = professions.value.secondaries
           if (professions_secondary && professions_secondary.length) {
             for (const secondary of professions_secondary) {
               if (secondary.profession && secondary.profession.name && secondary.profession.id) {
@@ -361,11 +335,11 @@ async function getCharacter (
        * Character Media
        * ID
        */
-      if (characterMedia && characterMedia.value && characterMedia.value.assets) {
-        const assets = characterMedia.value.assets;
+      if (media && media.value && media.value.assets) {
+        const assets = media.value.assets;
         if (assets && assets.length) {
           let avatar_url, bust_url, render_url;
-          for (let { key , value } of assets) {
+          for (const { key , value } of assets) {
             if (key === 'avatar' && value) {
               if (!character.id) {
                 character.id = parseInt(
@@ -400,19 +374,45 @@ async function getCharacter (
      * Hash.ex
      */
     if (character.id && character.character_class) {
-      let hash_ex = [character.id, character.character_class];
+      const hash_ex = [character.id, character.character_class];
       character.hash.ex = crc32.calculate(Buffer.from(hash_ex.toString())).toString(16);
     }
 
     if (character.isNew) {
-      await shadowCharacters(character.toObject(), token)
+      const shadowCharacter = { ...character.toObject(), ...{ token: token }}
+      await shadowCharacters(shadowCharacter)
     } else {
-      await detectiveCharacters(characterOld, character.toObject())
+      const character_current = { ...character.toObject() }
+      await detectiveCharacters(character_last, character_current)
     }
 
+    /**
+     * Personalities Control
+     */
+    if (!character.personality && character.hash && character.hash.a) {
+      const personalities = await characters_db.find({ 'hash.a': character.hash.a }).lean().distinct('personality');
+      if (!personalities.length) {
+        const persona = await personalities_db.create({
+          aliases: [
+            {
+              type: 'character',
+              value: character._id
+            }
+          ]
+        })
+        character.personality = persona._id;
+      } else if (personalities.length === 1) {
+        character.personality = personalities[0]
+        await personalities_db.findByIdAndUpdate(character.personality, { '$push': {'aliases': { type: 'character', value: character._id } } })
+      } else if (personalities.length > 1) console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
+    }
+
+
+    character.markModified('pets');
+    character.markModified('mounts');
     character.markModified('professions');
     await character.save({ w: 1, j: true, wtimeout: 10000 })
-    console.info(`U:${i}:${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
+    console.info(`U:${(iterations) ? (iterations + ':') : ('')}${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
   } catch (error) {
     console.error(`E,getCharacter,${error}`);
   }

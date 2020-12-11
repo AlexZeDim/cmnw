@@ -14,14 +14,12 @@ const getCharacter = require('./get_character');
 
 /***
  * Indexing every character in bulks from OSINT-DB for updated information
- * @param queryFind - index guild bu this argument
  * @param queryKeys - token access
  * @param bulkSize - block data per certain number
  * @returns {Promise<void>}
  */
 
 async function indexCharacters (
-  queryFind = {},
   queryKeys = { tags: `OSINT-${indexCharacters.name}` },
   bulkSize = 5,
 ) {
@@ -29,18 +27,18 @@ async function indexCharacters (
     console.time(`OSINT-indexCharacters`);
     const { token } = await keys_db.findOne(queryKeys);
     await characters_db.syncIndexes()
-    await characters_db.collection.createIndex({ 'updatedAt': 1 }, { name: `OSINT-${indexCharacters.name}` })
+    await characters_db.collection.createIndex({ 'updatedAt': 1, 'hash.a': 1, 'statusCode': 1 }, { name: `OSINT-${indexCharacters.name}` })
     await characters_db
-      .find(queryFind)
-      .sort({ updatedAt: 1 })
+      .find()
+      .sort({ 'updatedAt': 1, 'hash.a': 1, 'statusCode': 1 })
       .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
-      .eachAsync(async ({ _id, realm }, i) => {
+      .eachAsync(async ({ _id, realm }, iterations) => {
           const name = _id.split('@')[0]
-          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-${indexCharacters.name}` }, token, false, false, i);
+          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-${indexCharacters.name}`, token: token, guildRank: false, createOnlyUnique: false, iterations: iterations });
         }, { parallel: bulkSize }
       );
   } catch (error) {

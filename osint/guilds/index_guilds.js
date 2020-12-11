@@ -14,33 +14,34 @@ const getGuild = require('./get_guild');
 
 /**
  * Indexing every guild in bulks from OSINT-DB for updated information
- * @param queryFind - index guild bu this argument
- * @param queryKeys - token access
- * @param bulkSize - block data per certain number
+ * @param queryKeys {string} - token access
+ * @param bulkSize {number} - block data per certain number
  * @returns {Promise<void>}
  */
 
 schedule.scheduleJob('0 8,20 * * *', async (
   t,
-  queryFind = {},
-  queryKeys = { tags: `OSINT-indexGuilds` },
-  bulkSize = 3,
+  queryKeys = `OSINT-indexGuilds`,
+  bulkSize = 1,
 ) => {
   try {
     console.time(`OSINT-indexGuilds`);
-    const { token } = await keys_db.findOne(queryKeys);
+    const { token } = await keys_db.findOne({ tags: queryKeys });
     await guild_db
-      .find(queryFind, null, { timeout: false })
+      .find()
       .lean()
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(
-        async ({ name, realm }, i) => {
+        async ({ name, realm }, iterations) => {
           await getGuild({
             name: name,
             realm: realm,
-            updatedBy: `OSINT-indexGuilds`
-          }, token, false, i);
+            updatedBy: `OSINT-indexGuilds`,
+            token: token,
+            createOnlyUnique: true,
+            iterations:  iterations
+          });
         },
         { parallel: bulkSize },
       );

@@ -64,12 +64,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
         }
         /** Find character in OSINT DB */
         if (character_name && character_realm) {
-          await getCharacter(
-            { name: character_name, realm: { slug: character_realm }, createdBy: `OSINT-LFG`, updatedBy: `OSINT-LFG` },
-            token,
-            true,
-            false
-          )
+          await getCharacter({ name: character_name, realm: { slug: character_realm }, createdBy: `OSINT-LFG`, updatedBy: `OSINT-LFG`, token: token, guildRank: true, createOnlyUnique: false })
           const _id = `${toSlug(character_name)}@${character_realm}`
           if (!_id) continue
           const character = await characters_db.findById(_id)
@@ -100,15 +95,15 @@ schedule.scheduleJob('*/5 * * * *', async () => {
               await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${character.realm.slug}&name=${character.name}&fields=mythic_plus_scores_by_season:current,raid_progression`)).then(response => {
                 if (response.data) {
                   if ('raid_progression' in response.data) {
-                    let raid_progress = response.data.raid_progression;
+                    let raid_progress = response.data['raid_progression'];
                     let pve_progress = {};
                     for (const [key, value] of Object.entries(raid_progress)) {
-                      pve_progress[key] = value.summary
+                      pve_progress[key] = value['summary']
                     }
                     character.lfg.progress = pve_progress;
                   }
                   if ('mythic_plus_scores_by_season' in response.data) {
-                    let rio_score = response.data.mythic_plus_scores_by_season
+                    let rio_score = response.data['mythic_plus_scores_by_season']
                     if (rio_score && rio_score.length) {
                       for (let rio of rio_score) {
                         if ('scores' in rio) {

@@ -33,25 +33,11 @@ const getCharacter = require('./get_character');
           .replace('\t\t', '')
           .split(',');
         if (array.length <= 10) {
-          array.push(
-            getCharacter(
-              { name: name, realm: { slug: slug_locale}, updatedBy: `OSINT-fromLua` },
-              token,
-              false,
-              false
-            )
-          )
+          array.push(getCharacter({ name: name, realm: { slug: slug_locale}, updatedBy: `OSINT-fromLua`, token: token, guildRank: true, createOnlyUnique: true }))
         } else {
           await Promise.allSettled(array)
           array.length = 0;
-          array.push(
-            getCharacter(
-              { name: name, realm: { slug: slug_locale}, updatedBy: `OSINT-fromLua` },
-              token,
-              false,
-              true,
-            )
-          )
+          array.push(getCharacter({ name: name, realm: { slug: slug_locale}, updatedBy: `OSINT-fromLua`, token: token, createOnlyUnique: true, guildRank: true }))
         }
       }
     }

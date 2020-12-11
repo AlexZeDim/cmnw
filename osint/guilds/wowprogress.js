@@ -48,52 +48,43 @@ schedule.scheduleJob('0 5 1,15 * *', async (
   t,
   queryFind = { region: 'Europe' },
   path = './temp',
-  raidTier = 26,
+  raidTier = 27,
   region = 'eu',
   queryKeys = { tags: `OSINT-indexGuilds` },
 ) => {
   try {
     console.time(`OSINT-fromJSON`);
 
-    let realms = await realms_db.find(queryFind);
+    const realms = await realms_db.find(queryFind);
 
     if (!fs.existsSync(path)) fs.mkdirSync(path);
     console.time(`Downloading stage`);
-    let urls = await x(`https://www.wowprogress.com/export/ranks/`, 'pre', [
+    const urls = await x(`https://www.wowprogress.com/export/ranks/`, 'pre', [
       'a@href',
-    ]).then(res => {
-      return res;
-    });
-    for (let url of urls) {
+    ]).then(res => res);
+    for (const url of urls) {
       if (
         url.includes(`_tier${raidTier}.json.gz`) &&
         url.includes(`${region}_`)
       ) {
-        let string = encodeURI(decodeURI(url));
-        let file_name = decodeURIComponent(
-          url.substr(url.lastIndexOf('/') + 1),
-        );
-        const checkFilename = obj =>
-          obj.slug_locale === file_name.match(/(?<=_)(.*?)(?=_)/g)[0];
+        const string = encodeURI(decodeURI(url));
+        const file_name = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
+        const checkFilename = obj => obj.slug_locale === file_name.match(/(?<=_)(.*?)(?=_)/g)[0];
         if (realms.some(checkFilename)) {
           console.info(`Downloading: ${file_name}`);
           await axios({
             url: string,
             responseType: 'stream',
-          }).then(async function (response) {
-            return response.data.pipe(
-              fs.createWriteStream(`${path}/${file_name}`),
-            );
-          });
+          }).then(async response => response.data.pipe(fs.createWriteStream(`${path}/${file_name}`)));
         }
       }
     }
     console.timeEnd(`Downloading stage`);
 
     console.time(`Unzipping stage`);
-    let files = await readDir(path);
-    if (files) {
-      for (let file of files) {
+    const unzip_files = await readDir(path);
+    if (unzip_files) {
+      for (const file of unzip_files) {
         if (file.match(/gz$/g)) {
           console.info(`Unzipping: ${file}`);
           const fileContents = await fs.createReadStream(`${path}/${file}`);
@@ -108,33 +99,30 @@ schedule.scheduleJob('0 5 1,15 * *', async (
     console.timeEnd(`Unzipping stage`);
 
     console.time(`Parsing JSON files`);
-    files = await readDir(path);
-    for (let file of files) {
+    const read_files = await readDir(path);
+    let iterations = 0;
+    for (const file of read_files) {
       if (file.match(/json$/g)) {
         const { token } = await keys_db.findOne(queryKeys);
-        let indexOfRealms = realms.findIndex(
-          r => r.slug_locale === file.match(/(?<=_)(.*?)(?=_)/g)[0],
-        );
+        const indexOfRealms = realms.findIndex(r => r.slug_locale === file.match(/(?<=_)(.*?)(?=_)/g)[0]);
         if (indexOfRealms !== -1) {
           console.info(`Parsing: ${file}`);
-          let stringJSON = await readFile(`${path}/${file}`);
+          const stringJSON = await readFile(`${path}/${file}`);
           if (stringJSON) {
-            const guildsJSON = JSON.parse(stringJSON);
+            const guildsJSON = await JSON.parse(stringJSON);
             if (guildsJSON.length) {
               for (let guild of guildsJSON) {
                 if (!guild.name.includes('[raid]')) {
-                  await getGuild(
-                    {
-                      name: guild.name,
-                      realm: {
-                        slug: realms[indexOfRealms].slug,
-                      },
-                      createdBy: `OSINT-fromJSON`,
-                      updatedBy: `OSINT-fromJSON`,
-                    },
-                    token,
-                    true
-                  );
+                  iterations++
+                  await getGuild({
+                    name: guild.name,
+                    realm: { slug: realms[indexOfRealms].slug },
+                    createdBy: `OSINT-fromJSON`,
+                    updatedBy: `OSINT-fromJSON`,
+                    iterations: iterations,
+                    token: token,
+                    createOnlyUnique: true
+                  });
                 }
               }
             }

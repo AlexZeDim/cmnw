@@ -21,15 +21,11 @@ const osint_logs_db = require('../../db/models/osint_logs_db');
  */
 
 const detectiveCharacters = async (characterOld = {}, characterNew = {}) => {
-  if (!characterNew.lastModified) {
-    characterNew.lastModified = Date.now()
-  }
-  if (!characterOld.lastModified) {
-    characterOld.lastModified = characterOld.updatedAt
-  }
+  if (!characterNew.lastModified) characterNew.lastModified = Date.now()
+  if (!characterOld.lastModified) characterOld.lastModified = characterOld.updatedAt
   try {
     const detectiveCheck = ['realm', 'name', 'race', 'gender', 'faction'];
-    for (let check of detectiveCheck) {
+    for (const check of detectiveCheck) {
       let message;
 
       if (check in characterOld && check in characterNew) {

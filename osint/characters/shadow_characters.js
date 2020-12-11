@@ -10,10 +10,9 @@ const detectiveCharacters = require('./detective_characters');
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
 
-async function shadowCharacter (character, token) {
+async function shadowCharacter ({ id, name, realm, character_class, level, token, ...args }) {
   try {
-    if (!character) return
-    if (!character.id || !character.realm.slug || !character.character_class) return
+    if (!id || !realm.slug || !character_class) return
 
     const api = new BlizzAPI({
       region: 'eu',
@@ -22,86 +21,116 @@ async function shadowCharacter (character, token) {
       accessToken: token
     });
     /**
-     * If we found rename within one realm and anything else
+     * If we found character with the duplicate id within the realm
+     * consider it as a rename character, then delete old copy
+     * Else, setting confidence and flag
+     * and start detecting for realm transfer
      */
-    const renamedCopy = await characters_db.findOne({
-      'realm.slug': character.realm.slug,
-      id: character.id,
-      character_class: character.character_class,
-    });
-    if (renamedCopy) {
-      await detectiveCharacters(renamedCopy.toObject(), character.toObject())
-      await characters_db.deleteOne({ _id: renamedCopy._id });
+    const character_renamed = await characters_db.findOne({
+      'realm.slug': realm.slug,
+      id: id,
+      character_class: character_class,
+    }).lean();
+
+    const transfer_character = {
+      hash_exists: false,
+      transfer_flag: false,
+      title_flag: false,
+      confidence: 0,
+      candidate: {},
+      transfer_query: {
+        'realm.slug': { "$ne": realm.slug },
+        name: name,
+        character_class: character_class,
+        level: level,
+      },
+      shadow_query: {
+        'realm.slug': { $ne: realm.slug },
+        name: { $ne: name },
+        character_class: character_class,
+        level: level,
+      }
+    }
+
+    /**
+     * Looking for transfer without rename
+     * by hash A and hash B
+     */
+
+    if (args.hash) {
+      if (args.hash.a) {
+        transfer_character.hash_exists = true;
+        Object.assign(transfer_character.transfer_query, { 'hash.a': args.hash.a })
+        Object.assign(transfer_character.shadow_query, { 'hash.a': args.hash.a })
+      }
+      if (args.hash.b) {
+        transfer_character.hash_exists = true;
+        Object.assign(transfer_character.transfer_query, { 'hash.b': args.hash.b })
+        Object.assign(transfer_character.shadow_query, { 'hash.b': args.hash.b })
+      }
+      if (args.hash.t) transfer_character.title_flag = true;
+    }
+
+    if (character_renamed) {
+      const character = {
+        name: name,
+        realm: realm,
+        character_class: character_class,
+        level: level,
+      }
+      await detectiveCharacters(character_renamed, { ...character, ...args })
+      await characters_db.deleteOne({ _id: character_renamed._id });
     } else {
-      /** Setting confidence and flag */
-      let transfer_flag = false;
-      let confidence = 0;
-      let transfer_character;
       /**
-       * Transfer without rename
-       * allows us to find yourself in past
+       * Search for transfer only if criteria has at least one hash
        */
-      const transfer_query = {
-        'realm.slug': { "$ne": character.realm.slug },
-        name: character.name,
-        character_class: character.character_class,
-        level: character.level,
-      };
-      if (character.hash.a) {
-        Object.assign(transfer_query, {'hash.a': character.hash.a})
-      }
-      if (character.hash.c) {
-        Object.assign(transfer_query, {'hash.c': character.hash.c})
-      }
-      if (Object.keys(transfer_query).length > 4) {
-        const transferCopy = await characters_db.find(transfer_query);
-
-        if (transferCopy && transferCopy.length) {
-
-          let transferArray = [];
-
+      if (transfer_character.hash_exists) {
+        const character_predict_transfer = await characters_db.find(transfer_character.transfer_query).lean();
+        if (character_predict_transfer && character_predict_transfer.length) {
+          const characters_transferred = [];
           /**
            * Request for every character that has been found by query
            * and check it on 404 status, if 404 - transfer has been made
            */
-          for (let transferCopyElement of transferCopy) {
-            await api.query(`/profile/wow/character/${transferCopyElement.realm.slug}/${toSlug(transferCopyElement.name)}/status`, {
+          for (const character_predict of character_predict_transfer) {
+            await api.query(`/profile/wow/character/${character_predict.realm.slug}/${toSlug(character_predict.name)}/status`, {
               timeout: 10000,
               params: { locale: 'en_GB' },
               headers: { 'Battlenet-Namespace': 'profile-eu' }
-            }).catch(() => transferArray.push(transferCopyElement));
+            })
+              .then(res => {
+                if (res && 'is_valid' in res) {
+                  if (res.is_valid === false) {
+                    characters_transferred.push(character_predict)
+                  }
+                }
+              })
+              .catch(() => characters_transferred.push(character_predict));
           }
 
-          confidence = 1 / transferArray.length;
+          transfer_character.confidence = 1 / characters_transferred.length;
 
-          if (transferArray.length) {
-            /** if more then 50% */
-            if (confidence > 0.5) {
-              transfer_flag = true;
-              transfer_character = transferArray[0]
-            } else {
-              let t_flag = false;
-              if (character.hash && character.hash.t) {
-                t_flag = true;
-              }
-              for (let transferArrayElement of transferArray) {
-                /** If character has T */
-                if (t_flag) {
-                  /** Check for rejected T */
-                  if (transferArrayElement.hash && transferArrayElement.hash.t) {
-                    if (character.hash.t === transferArrayElement.hash.t) {
-                      transfer_flag = true
-                      transfer_character = transferArrayElement
-                      break
-                    }
-                  }
-                } else {
-                  /** If character has no T and rejected character has no T also */
-                  if (transferArrayElement.hash && !transferArrayElement.hash.t) {
-                    transfer_flag = true
-                    transfer_character = transferArrayElement
+          if (characters_transferred.length === 1) {
+            transfer_character.transfer_flag = true;
+            transfer_character.candidate = characters_transferred[0]
+          }
+          if (characters_transferred.length > 1) {
+            for (const character_transfer of characters_transferred) {
+              /** If character has title */
+              if (transfer_character.title_flag) {
+                if (character_transfer.hash && character_transfer.hash.t) {
+                  if (args.hash.t === character_transfer.hash.t) {
+                    transfer_character.transfer_flag = true
+                    transfer_character.candidate = character_transfer
                     break
                   }
+                }
+              } else {
+                /** If character has no title and rejected character has no title also */
+                if (character_transfer.hash && !character_transfer.hash.t) {
+                  transfer_character.transfer_flag = true
+                  transfer_character.candidate = character_transfer
+                  break
                 }
               }
             }
@@ -111,8 +140,15 @@ async function shadowCharacter (character, token) {
            *
            * if transfer flag === true
            * */
-          if (transfer_flag) {
-            await detectiveCharacters(transfer_character.toObject(), character.toObject())
+          if (transfer_character.transfer_flag) {
+            await detectiveCharacters(transfer_character, {
+              ...{
+                name: name,
+                realm: realm,
+                character_class: character_class
+              },
+              ...args
+            })
             await characters_db.deleteOne({ _id: transfer_character._id });
           }
         } else {
@@ -120,73 +156,58 @@ async function shadowCharacter (character, token) {
            * If transfer has been made rename, then
            * search via shadow_query
            */
-          let shadow_query = {
-            'realm.slug': { $ne: character.realm.slug },
-            name: { $ne: character.name },
-            character_class: character.character_class,
-            level: character.level,
-          };
-          if (character.hash.a) {
-            Object.assign(shadow_query, {'hash.a': character.hash.a})
-          }
-          if (character.hash.c) {
-            Object.assign(shadow_query, {'hash.c': character.hash.c})
-          }
-          /**
-           * If criteria is > 4 of 6
-           */
-          if (Object.keys(shadow_query).length > 4) {
-            const shadowCopy = await characters_db.find(shadow_query);
+          if (transfer_character.hash_exists) {
+            const character_shadows = await characters_db.find(transfer_character.shadow_query).lean();
             /**
              * If we found shadowCopy characters with have the same
              * hashed, level, statusCode and class
              */
-            if (shadowCopy && shadowCopy.length) {
-
-              let shadowArray = [];
-
+            if (character_shadows && character_shadows.length) {
+              const predicted_shadows = [];
               /**
                * Request for every character that has been found by query
                * and check it on 404 status, if 404 - transfer has been made
                */
-              for (let shadowCopyElement of shadowCopy) {
-                await api.query(`/profile/wow/character/${shadowCopyElement.realm.slug}/${toSlug(shadowCopyElement.name)}/status`, {
+              for (const character_shadow of character_shadows) {
+                await api.query(`/profile/wow/character/${character_shadow.realm.slug}/${toSlug(character_shadow.name)}/status`, {
                   timeout: 10000,
                   params: { locale: 'en_GB' },
                   headers: { 'Battlenet-Namespace': 'profile-eu' }
-                }).catch(() => shadowArray.push(shadowCopyElement));
+                })
+                  .then(res => {
+                    if (res && 'is_valid' in res) {
+                      if (res.is_valid === false) {
+                        predicted_shadows.push(character_shadow)
+                      }
+                    }
+                  })
+                  .catch(() => predicted_shadows.push(character_shadow));
               }
 
-              confidence = 1 / shadowArray.length;
+              transfer_character.confidence = 1 / character_shadows.length;
 
-              if (shadowArray.length) {
-                /** if more then 50% */
-                if (confidence > 0.5) {
-                  transfer_flag = true;
-                  transfer_character = shadowArray[0]
-                } else {
-                  let t_flag = false;
-                  if (character.hash && character.hash.t) {
-                    t_flag = true;
-                  }
-                  for (let shadowArrayElement of shadowArray) {
-                    /** If character has T */
-                    if (t_flag) {
-                      /** Check for rejected T */
-                      if (shadowArrayElement.hash && shadowArrayElement.hash.t) {
-                        if (character.hash.t === shadowArrayElement.hash.t) {
-                          transfer_flag = true
-                          transfer_character = shadowArrayElement
-                          break
-                        }
-                      }
-                    } else {
-                      /** If character has no T and rejected character has no T also */
-                      if (shadowArrayElement.hash && !shadowArrayElement.hash.t) {
-                        transfer_flag = true
-                        transfer_character = shadowArrayElement
+              if (predicted_shadows.length === 1) {
+                transfer_character.transfer_flag = true;
+                transfer_character.candidate = predicted_shadows[0]
+              }
+
+              if (predicted_shadows.length > 1) {
+                for (const character_shadow of predicted_shadows) {
+                  /** If character has title */
+                  if (transfer_character.title_flag) {
+                    if (character_shadow.hash && character_shadow.hash.t) {
+                      if (args.hash.t === character_shadow.hash.t) {
+                        transfer_character.transfer_flag = true
+                        transfer_character.candidate = character_shadow
                         break
                       }
+                    }
+                  } else {
+                    /** If character has no title and rejected character has no title also */
+                    if (character_shadow.hash && !character_shadow.hash.t) {
+                      transfer_character.transfer_flag = true
+                      transfer_character.candidate = character_shadow
+                      break
                     }
                   }
                 }
@@ -197,8 +218,15 @@ async function shadowCharacter (character, token) {
                *
                * if transfer flag === true
                * */
-              if (transfer_flag) {
-                await detectiveCharacters(transfer_character.toObject(), character.toObject())
+              if (transfer_character.transfer_flag) {
+                await detectiveCharacters(transfer_character, {
+                  ...{
+                    name: name,
+                    realm: realm,
+                    character_class: character_class
+                  },
+                  ...args
+                })
                 await characters_db.deleteOne({ _id: transfer_character._id });
               }
             }

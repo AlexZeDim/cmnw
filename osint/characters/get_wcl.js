@@ -20,7 +20,7 @@ let x = Xray();
 
 schedule.scheduleJob('0 2 * * *', async (
   t,
-  queryFind = { region: 'Europe' },
+  queryFind = 'Europe',
   delay = 10,
   startPage = 0,
   endPage = 100,
@@ -30,75 +30,80 @@ schedule.scheduleJob('0 2 * * *', async (
   try {
     console.time(`OSINT-fromLogs`);
     await realms_db
-      .find(queryFind)
+      .find({ region: queryFind })
       .lean()
       .cursor({ batchSize: 1 })
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(
         async realm => {
           if (realm.slug && realm.wcl_id) {
-            let { wcl_id, slug } = realm;
-            let ep_counter = 0;
-            let ft_counter = 0;
-            for (let page = startPage; page < endPage; page++) {
+            const { wcl_id, slug } = realm;
+            const page_config = {
+              existing_page: 0,
+              fault_tolerance: 0,
+            }
+            for (let page = startPage; page <= endPage; page++) {
               /** Creating safe delay */
               await new Promise(resolve => setTimeout(resolve, delay * 1000));
               /** Parsing page with the requested delay */
-              const indexLogs = await x(
-                `https://www.warcraftlogs.com/zone/reports?zone=24&server=${wcl_id}&page=${page}`,
+              const index_logs = await x(
+                `https://www.warcraftlogs.com/zone/reports?zone=26&server=${wcl_id}&page=${page}`,
                 '.description-cell',
                 [
                   {
                     link: 'a@href',
                   },
                 ],
-              ).then(res => {
-                return res;
-              });
+              ).then(res => res);
               /** If parsed page have results */
-              if (indexLogs.length) {
-                for (let index_log of indexLogs) {
+              if (index_logs && index_logs.length) {
+                for (const index_log of index_logs) {
                   if ('link' in index_log) {
-                    let link = index_log.link.match(/(.{16})\s*$/g)[0];
-                    if (index_log.link.includes('reports') === true) {
+                    const link = index_log.link.match(/(.{16})\s*$/g)[0];
+                    if (index_log.link.includes('reports')) {
                       /*** Check logs in collection */
-                      let log = await logs_db.findById({
-                        _id: link,
-                      });
+                      const log = await logs_db.findById(link);
 
                       if (log) {
                         /** If exists counter +1*/
-                        ft_counter += 1;
-                        console.info(`E,${log._id}@${log.realm},${ft_counter}`);
+                        page_config.fault_tolerance += 1;
+                        console.info(`E,${log._id}@${log.realm},${page_config.fault_tolerance}`);
                       } else {
                         /** Else, counter -1 and create in DB */
-                        if (ft_counter > 1) {
-                          ft_counter -= 1;
-                        }
-                        log = new logs_db({
+                        if (page_config.fault_tolerance > 1) page_config.fault_tolerance -= 1;
+
+                        await logs_db.create({
                           _id: link,
                           realm: slug,
                           isIndexed: false,
                           source: `OSINT-fromLogs`,
                         });
 
-                        await log.save();
-                        console.info(`C,${log._id}@${log.realm}`);
+                        console.info(`C,${link}@${slug}`);
                       }
                     }
                   }
                 }
-                if (ft_counter >= faultTolerance) {
-                  console.info(`E,${page}:${slug},${ft_counter}`);
+                /**
+                 * If indexing logs on page have ended
+                 * and page fault tolerance is more then
+                 * config, then break for loop
+                 */
+                if (page_config.fault_tolerance >= faultTolerance) {
+                  console.info(`E,${page}:${slug},${page_config.fault_tolerance}`);
                   break;
                 }
-              } else {
-                /** If page doesn't have any logs, ep_counter +1 */
-                console.info(`E,${wcl_id}:${slug},${ep_counter}`);
-                ep_counter += 1;
-                if (ep_counter === emptyPage) {
-                  break;
-                }
+              }
+              /**
+               * If page doesn't have any logs
+               * we add +1 to empty pages and
+               * if empty >= emptyPage we stop
+               * iterating
+               */
+              if (!index_logs.length) {
+                page_config.existing_page += 1;
+                console.info(`E,${wcl_id}:${slug},${page_config.existing_page}`);
+                if (page_config.existing_page >= emptyPage) break;
               }
             }
           }

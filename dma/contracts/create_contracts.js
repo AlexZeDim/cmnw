@@ -14,10 +14,10 @@ const contracts_db = require('../../db/models/contracts_db');
 const schedule = require('node-schedule');
 const moment = require('moment');
 
-schedule.scheduleJob('00 */2 * * *', async () => {
+schedule.scheduleJob('00 10,18 * * *', async () => {
   try {
     console.time(`DMA-contracts`);
-    const bulkSize = 5;
+    const bulkSize = 2;
     const d = moment().get('date');
     const w = moment().get('week');
     const m = moment().get('month') + 1;

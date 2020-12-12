@@ -71,7 +71,7 @@ async function getGuild (
     let guild = await guild_db.findById(_id);
     if (guild) {
       if (createOnlyUnique) {
-        console.info(`E:${guild.name}@${guild.realm.name}#${guild.id}:${createOnlyUnique}`);
+        console.warn(`E:${guild.name}@${guild.realm.name}#${guild.id}:${createOnlyUnique}`);
         return
       }
       Object.assign(guild_last, guild.toObject())

@@ -20,17 +20,17 @@ const getCharacter = require('./get_character');
  */
 
 (async function indexCharacters (
-  queryKeys = { tags: `OSINT-${indexCharacters.name}` },
+  queryKeys = `OSINT-indexCharacters`,
   bulkSize = 5,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);
-    const { token } = await keys_db.findOne(queryKeys);
+    const { token } = await keys_db.findOne({ tags: queryKeys });
     await characters_db.syncIndexes()
-    await characters_db.collection.createIndex({ 'updatedAt': 1, 'hash.a': 1, 'statusCode': 1 }, { name: `OSINT-${indexCharacters.name}` })
+    await characters_db.collection.createIndex({ 'hash.a': 1, 'updatedAt': 1, 'statusCode': 1 }, { name: `OSINT-${indexCharacters.name}` })
     await characters_db
       .find()
-      .sort({ 'updatedAt': 1, 'hash.a': 1, 'statusCode': 1 })
+      .sort({ 'hash.a': 1, 'updatedAt': 1, 'statusCode': 1, })
       .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()

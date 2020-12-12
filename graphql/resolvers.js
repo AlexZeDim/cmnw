@@ -26,9 +26,7 @@ const root = {
     if (!realm) return
     const character = await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     if (!character) {
-      const { token } = await keys_db.findOne({
-        tags: `OSINT-indexCharacters`,
-      });
+      const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
       await getCharacter({ name: nameSlug, realm: { slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`, token: token, guildRank: true, createOnlyUnique: true});
       return await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     }
@@ -39,6 +37,7 @@ const root = {
     if (!id.includes('@')) return
     const [ name, realmSlug ] = id.split('@');
     const nameSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/'+/g, '')
+    console.log(nameSlug)
     const realm = await realms_db
       .findOne(
         { $text: { $search: realmSlug } },
@@ -46,9 +45,7 @@ const root = {
       )
       .sort({ score: { $meta: 'textScore' } })
       .lean()
-    if (!realm) {
-      return
-    }
+    if (!realm) return
     const [guild] = await guilds_db.aggregate([
       {
         $match: {
@@ -77,7 +74,7 @@ const root = {
         tags: `OSINT-indexCharacters`,
       });
       await getGuild({ name: nameSlug, realm: realm, createdBy: 'OSINT-userInput', updatedBy: 'OSINT-userInput', token: token, createOnlyUnique: true })
-      return await guilds_db.aggregate([
+      const [guild_updated] = await guilds_db.aggregate([
         {
           $match: {
             _id: `${nameSlug}@${realm.slug}`,
@@ -99,7 +96,8 @@ const root = {
             as: 'logs',
           },
         },
-      ]).allowDiskUse(true).exec()[0];
+      ]).allowDiskUse(true).exec();
+      return guild_updated
     }
     return guild
   },
@@ -129,9 +127,7 @@ const root = {
     }
     const [ itemQuery, realmQuery ] = id.split('@');
     const [ item, realms ] = await queryItemAndRealm(itemQuery, realmQuery);
-    if (!item || !realms) {
-      return
-    }
+    if (!item || !realms) return
 
     /** WoW Token */
     if (item._id === 122284 || item._id === 122270) {

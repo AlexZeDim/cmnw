@@ -42,11 +42,7 @@ schedule.scheduleJob('30 4 * * *', async (
       .eachAsync(async (realm, iterations) => {
         if (realm.slug) {
           const { token } = await keys_db.findOne({ tags: queryKeys });
-          const guild_slugs = await characters_db
-            .distinct('guild.slug', {
-              'realm.slug': realm.slug,
-            })
-            .lean();
+          const guild_slugs = await characters_db.distinct('guild.slug', { 'realm.slug': realm.slug, }).lean();
           for (const guild_slug of guild_slugs) {
             await getGuild({
               name: guild_slug,

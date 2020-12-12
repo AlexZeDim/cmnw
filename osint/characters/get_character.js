@@ -49,7 +49,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     if (character) {
       /** If character exists and createOnlyUnique initiated, then return */
       if (createOnlyUnique) {
-        console.info(`E:${name}@${realm.name}#${id}:${createOnlyUnique}`);
+        console.warn(`E:${name}@${character.realm.name}#${character._id}:${createOnlyUnique}`);
         return
       }
       Object.assign(character_last, character.toObject())
@@ -97,7 +97,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     const character_status = await api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/status`, {
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
-    }).catch(() => { if (character.isNew && character.createdBy === 'OSINT-userInput') throw new Error(`${name}@${character.realm.slug}:${createOnlyUnique}`) })
+    }).catch(() => { if (character.isNew && character.createdBy.toString() === 'OSINT-userInput') throw new Error(`${name}@${character.realm.slug}:${createOnlyUnique}`) })
 
     /**
      * Define character id for sure

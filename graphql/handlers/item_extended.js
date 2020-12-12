@@ -113,7 +113,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
         }
         const valuations = await valuations_db.find({
           item_id: item._id,
-          last_modified: realm.valuations,
+          last_modified: realm.auctions,
           connected_realm_id: realm.connected_realm_id,
         }).sort({ value: 1 }).lean()
         extended_params.valuations.push(...valuations)

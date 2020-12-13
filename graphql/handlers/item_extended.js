@@ -86,7 +86,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
          */
         const valuation = await valuations_db.findOne({
           item_id: item._id,
-          last_modified: realm.valuations,
+          last_modified: realm.auctions,
           connected_realm_id: realm.connected_realm_id,
           $nor: [{ type: 'VENDOR' }, { type: 'VSP' }],
         }).sort({ value: 1 }).lean()

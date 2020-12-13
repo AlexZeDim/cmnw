@@ -46,7 +46,7 @@ const evaluate = async function ({ _id, asset_class= [], connected_realm_id, qua
      */
     if (asset_class.includes('GOLD')) {
       /** Request timestamp for gold */
-      let t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions golds').lean();
+      const t = await realms_db.findOne({ connected_realm_id: connected_realm_id }).select('auctions golds').lean();
       /** Check existing pricing */
       const currency = await valuations.findOne({
         item_id: _id,

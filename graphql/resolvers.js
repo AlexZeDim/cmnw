@@ -25,9 +25,9 @@ const root = {
       .lean()
     if (!realm) return
     const character = await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
-    if (!character) {
+    if (!character || (new Date().getTime() - 2.628e+9 > character.updatedAt.getTime())) {
       const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
-      await getCharacter({ name: nameSlug, realm: { slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`, token: token, guildRank: true, createOnlyUnique: true});
+      await getCharacter({ name: nameSlug, realm: { slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`, token: token, guildRank: true, createOnlyUnique: false});
       return await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
     }
     character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)

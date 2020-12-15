@@ -37,7 +37,6 @@ const root = {
     if (!id.includes('@')) return
     const [ name, realmSlug ] = id.split('@');
     const nameSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/'+/g, '')
-    console.log(nameSlug)
     const realm = await realms_db
       .findOne(
         { $text: { $search: realmSlug } },

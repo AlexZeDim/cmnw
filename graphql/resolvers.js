@@ -25,19 +25,25 @@ const root = {
       .lean()
     if (!realm) return
 
-    const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
-    await getCharacter({
-      name: nameSlug,
-      realm: { slug: realm.slug },
-      createdBy: `OSINT-userInput`,
-      updatedBy: `OSINT-userInput`,
-      token: token,
-      guildRank: true,
-      createOnlyUnique: false,
-    });
-
     const character = await characters_db.findById(`${nameSlug}@${realm.slug}`).lean();
-    if (character) character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
+    if (!character || (new Date().getTime() - (24 * 60 * 60 * 1000) > character.updatedAt.getTime())) {
+      const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
+      await getCharacter({
+        name: nameSlug,
+        realm: { slug: realm.slug },
+        createdBy: `OSINT-userInput`,
+        updatedBy: `OSINT-userInput`,
+        token: token,
+        guildRank: true,
+        createOnlyUnique: false,
+      });
+      const [c , l] = await Promise.all([
+        await characters_db.findById(`${nameSlug}@${realm.slug}`).lean(),
+        await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000).lean()
+      ])
+      return { ...c, ...{ logs: l || [] }}
+    }
+    character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
     return character
   },
   guild: async ({ id }) => {

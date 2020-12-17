@@ -28,12 +28,13 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param token {string}
  * @param guildRank {Boolean=}
  * @param createOnlyUnique {Boolean=}
+ * @param forceUpdate {Boolean=}
  * @param args {Object=}
  * @returns {Promise<void>}
  */
 
 
-async function getCharacter ({ _id, id, name, realm, iterations, token, guildRank = false, createOnlyUnique = false, ...args}) {
+async function getCharacter ({ _id, id, name, realm, iterations, token, guildRank = false, createOnlyUnique = false, forceUpdate = false, ...args}) {
   try {
     const character_last = {};
 
@@ -47,11 +48,18 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     let character = await characters_db.findById(`${name_slug}@${realm_.slug}`);
 
     if (character) {
-      /** If character exists and createOnlyUnique initiated, then return */
+
+      /**
+       * If character exists and createOnlyUnique initiated,
+       * or updated recently return
+       */
       if (createOnlyUnique) {
         console.warn(`E:${name}@${character.realm.name}#${character._id}:${createOnlyUnique}`);
         return
       }
+
+      if (new Date().getTime() - (48 * 60 * 60 * 1000) > character.updatedAt.getTime() || !forceUpdate) return
+
       Object.assign(character_last, character.toObject())
       character.statusCode = 100
       if (args.updatedBy) character.updatedBy = args.updatedBy

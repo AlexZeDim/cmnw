@@ -25,7 +25,7 @@ const root = {
       .lean()
     if (!realm) return
     const character = await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
-    if (!character || (new Date().getTime() - 2.628e+9 > character.updatedAt.getTime())) {
+    if (!character || (new Date().getTime() - (24 * 60 * 60 * 1000) > character.updatedAt.getTime())) {
       const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
       await getCharacter({ name: nameSlug, realm: { slug: realm.slug }, createdBy: `OSINT-userInput`, updatedBy: `OSINT-userInput`, token: token, guildRank: true, createOnlyUnique: false});
       return await characters_db.findById(`${nameSlug.toLowerCase()}@${realm.slug}`).lean();
@@ -121,9 +121,7 @@ const root = {
       .lean()
   },
   item: async ({ id, extended }) => {
-    if (!id || !id.includes('@')) {
-      return
-    }
+    if (!id || !id.includes('@')) return
     const [ itemQuery, realmQuery ] = id.split('@');
     const [ item, realms ] = await queryItemAndRealm(itemQuery, realmQuery);
     if (!item || !realms) return

@@ -30,7 +30,7 @@ const getCharacter = require('./get_character');
     await characters_db.collection.createIndex({ 'hash.a': 1, 'updatedAt': 1, 'statusCode': 1 }, { name: `OSINT-${indexCharacters.name}` })
     await characters_db
       .find()
-      .sort({ 'hash.a': 1, 'updatedAt': 1, 'statusCode': 1, })
+      .sort({ 'hash.a': 1, 'updatedAt': 1, 'statusCode': 1 })
       .maxTimeMS(0)
       .batchSize(bulkSize)
       .lean()

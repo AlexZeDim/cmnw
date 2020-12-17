@@ -79,9 +79,9 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     }
 
     character.realm = {
-      _id: realm._id,
-      name: realm.name,
-      slug: realm.slug,
+      _id: realm_._id,
+      name: realm_.name,
+      slug: realm_.slug,
     };
 
     /**
@@ -404,7 +404,11 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
       } else if (personalities.length === 1) {
         character.personality = personalities[0]
         await personalities_db.findByIdAndUpdate(character.personality, { '$push': {'aliases': { type: 'character', value: character._id } } })
-      } else if (personalities.length > 1) console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
+      } else if (personalities.length === 2) {
+
+      } else {
+        console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
+      }
     }
 
 

@@ -12,89 +12,91 @@ module.exports = {
   aliases: ['DIRECT', 'DM', 'dm', 'Direct'],
   cooldown: 10,
   args: true,
-  execute(message, args, client) {
-    let time = 60000;
-    let messages = 50;
-    let destruction = 10000;
-    let res = true;
+  async execute(message, args, client) {
     const params = args.split(' ');
 
-    /** Amount of messages, 50 by default */
-    if (params.includes('-m')) {
-      messages = parseInt(params[params.indexOf('-m') + 1]);
-    }
-    /** Amount of time in seconds, 1 min by default */
-    if (params.includes('-t')) {
-      time = parseInt(params[params.indexOf('-t') + 1]) * 1000;
+    const settings = {
+      user: params[0],
+      time: 60000,
+      messages: 50,
+      destruction: 10000,
+      base64: false,
+      hex: false,
+      reply: false,
+      contexts: []
     }
 
-    message.channel.send(
-      `Connection established: ${params[0]} for ${time / 1000}s`,
-    );
+    /** Amount of messages, 50 by default */
+    if (params.includes('-m')) settings.messages = parseInt(params[params.indexOf('-m') + 1]);
+    /** Amount of time in seconds, 1 min by default */
+    if (params.includes('-t')) settings.time = parseInt(params[params.indexOf('-t') + 1]) * 1000;
+
+    if (params.includes('-s') && params[params.indexOf('-s') + 1] === 'hex') settings.hex = true
+
+    if (params.includes('-s') && params[params.indexOf('-s') + 1] === 'base64') settings.base64 = true
+
+    if (params.includes('-r')) settings.reply = true
+
+    if (params.includes('-d')) settings.destruction = parseFloat(params[params.indexOf('-d') + 1]) * 1000;
+
+    await message.channel.send(`Connection established: ${settings.user} for ${settings.time / 1000}s`);
 
     /** Start message collection event */
     const filter = m => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector(filter, {
-      max: messages,
-      time: time,
+      max: settings.messages,
+      time: settings.time,
       errors: ['time'],
     });
+
     collector.on('collect', async m => {
       try {
         /** -End or -Close to close the connection */
-        if (m.content === '-end' || m.content === '-close') {
-          collector.close();
-        }
+        if (m.content === '-end' || m.content === '-close') await collector.stop()
         /** Secured argument, can be a base64 or hex value */
-        if (
-          params.includes('-s') &&
-          params[params.indexOf('-s') + 1] === 'hex'
-        ) {
+        if (settings.hex) {
           m.content = Buffer.from(m.content, 'utf8')
             .toString('hex')
             .match(/.{1,8}/g)
             .join(' ');
         }
-        if (
-          params.includes('-s') &&
-          params[params.indexOf('-s') + 1] === 'base64'
-        ) {
+        if (settings.base64) {
           m.content = Buffer.from(m.content, 'utf8').toString('base64');
         }
-        let sentMessage = await client.users.fetch(params[0]).then(user => {
-          return user.send(`${m.content}`);
-        });
-        /** Allow message receiver to reply back */
-        if (params.includes('-r') && res) {
-          res = false;
-          const res_filter = m => m.author.id === params[0];
+
+        const user = await client.users.fetch(settings.user);
+
+        if (!user) {
+          await message.channel.send(`No user: ${settings.user} found!`)
+          return
+        }
+
+        while (m.content.length) {
+          settings.contexts.push(m.content.substr(0, 1990))
+          m.content = m.content.substr(1990);
+        }
+
+        await Promise.allSettled(settings.contexts.map(async m => await user.send('\`\`\`' + m.content + '\`\`\`' ).delete({ timeout: settings.destruction })))
+
+        /** Allows message receiver to reply back */
+        /*if (settings.reply) {
+          const res_filter = m => m.author.id === settings.user;
           const res_collector = sentMessage.channel.createMessageCollector(
             res_filter,
             {
-              time: time,
+              time: settings.time,
               errors: ['time'],
             },
           );
-          res_collector.on('collect', m => {
-            client.users.fetch(message.author.id).then(u => {
-              return u.send(`${m.content}`);
-            });
-          });
-        }
-        /** Enables destruction for messages, in seconds. 10 seconds by default */
-        if (params.includes('-d')) {
-          destruction = parseFloat(params[params.indexOf('-d') + 1]) * 1000;
-          await sentMessage.delete({ timeout: destruction });
-        }
+          res_collector.on('collect', m => client.users.fetch(message.author.id).then(u => u.send(m.content)));
+        }*/
       } catch (error) {
-        await message.channel.send(`Message wasn't sent to ${params[0]}`);
+        await message.channel.send(`Message wasn't sent to ${settings.user}`);
       }
     });
 
     collector.on('end', collected => {
-      message.channel.send(
-        `Connection closed with ${params[0]}. You send ${collected.size} messages`,
-      );
+      message.channel.send(`Connection closed with ${settings.user}. You send ${collected.size} messages`);
     });
   },
 };

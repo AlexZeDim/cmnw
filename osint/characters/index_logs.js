@@ -45,7 +45,15 @@ schedule.scheduleJob('0 3 * * *', async (
             if (wcl_log && wcl_log.exportedCharacters && wcl_log.exportedCharacters.length) {
               for (const character of wcl_log.exportedCharacters) {
                 if (character.name && character.server) {
-                  await getCharacter({ name: character.name, realm: { slug: character.server }, createdBy: `OSINT-indexLogs`, updatedBy: `OSINT-indexLogs`, token: token, guildRank: true, createOnlyUnique: true });
+                  await getCharacter({
+                    name: character.name,
+                    realm: { slug: character.server },
+                    createdBy: `OSINT-indexLogs`,
+                    updatedBy: `OSINT-indexLogs`,
+                    token: token,
+                    guildRank: true,
+                    createOnlyUnique: true
+                  });
                 }
               }
             }

@@ -44,7 +44,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     const name_slug = toSlug(name)
 
     /** Check if character exists */
-    let character = await characters_db.findById(`${name_slug}@${realm.slug}`);
+    let character = await characters_db.findById(`${name_slug}@${realm_.slug}`);
 
     if (character) {
       /** If character exists and createOnlyUnique initiated, then return */

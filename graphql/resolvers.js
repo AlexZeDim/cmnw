@@ -37,8 +37,8 @@ const root = {
   },
   guild: async ({ id }) => {
     if (!id.includes('@')) return
-    const [ name, realmSlug ] = id.split('@');
-    const nameSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/'+/g, '')
+    const [ name, realmSlug ] = id.toLowerCase().split('@');
+    const nameSlug = name.replace(/\s+/g, '-').replace(/'+/g, '')
     const realm = await realms_db
       .findOne(
         { $text: { $search: realmSlug } },

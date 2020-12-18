@@ -37,11 +37,11 @@ const root = {
         guildRank: true,
         createOnlyUnique: false,
       });
-      const [c , l] = await Promise.all([
+      const [char , logs] = await Promise.all([
         await characters_db.findById(`${nameSlug}@${realm.slug}`).lean(),
         await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000).lean()
       ])
-      return { ...c, ...{ logs: l || [] }}
+      return { ...char, ...{ logs: logs || [] }}
     }
     character.logs = await osint_logs_db.find({ root_id: character._id }).sort({ createdBy: -1 }).limit(1000)
     return character

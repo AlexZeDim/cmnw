@@ -58,7 +58,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
         return
       }
 
-      if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) > character.updatedAt.getTime()) return
+      if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) < character.updatedAt.getTime()) return
 
       Object.assign(character_last, character.toObject())
       character.statusCode = 100

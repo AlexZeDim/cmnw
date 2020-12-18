@@ -29,7 +29,6 @@ schedule.scheduleJob('30,59 * * * *', async (
   bulkSize = 1,
 ) => {
   try {
-    console.time(`DMA-getAuctionData`);
     const { _id, secret, token } = await keys_db.findOne({ tags: queryKeys });
     const api = new BlizzAPI({
       region: 'eu',
@@ -45,15 +44,17 @@ schedule.scheduleJob('30,59 * * * *', async (
               connected_realm_id: '$connected_realm_id',
               timestamp: '$auctions',
             },
+            name: { $first: "$name" }
           },
         },
       ])
       .cursor({ batchSize: bulkSize })
       .exec()
       .eachAsync(
-        async ({ _id }) => {
+        async ({ _id, name }) => {
           try {
-            console.info(`R,${_id.connected_realm_id}`);
+            console.time(`DMA-getAuctionData-${_id.connected_realm_id}`);
+            console.info(`R,${_id.connected_realm_id},${name}`);
             if (_id.timestamp) _id.timestamp = `${moment.unix(_id.timestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
             const market = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
               timeout: 30000,
@@ -86,9 +87,10 @@ schedule.scheduleJob('30,59 * * * *', async (
                 order.last_modified = last_modified;
                 return order
               }))
-              await auctions_db.insertMany(orders).then(auctions => console.info(`U,${_id.connected_realm_id},${auctions.length}`));
+              await auctions_db.insertMany(orders).then(auctions => console.info(`U,${_id.connected_realm_id},${auctions.length},${name}`));
               await realms_db.updateMany({ connected_realm_id: _id.connected_realm_id }, { auctions: last_modified });
             }
+            console.timeEnd(`DMA-getAuctionData-${_id.connected_realm_id}`);
           } catch (error) {
             console.error(error);
           }
@@ -98,7 +100,6 @@ schedule.scheduleJob('30,59 * * * *', async (
   } catch (error) {
     console.error(error);
   } finally {
-    console.timeEnd(`DMA-getAuctionData`);
     process.exit(0)
   }
 });

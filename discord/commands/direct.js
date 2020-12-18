@@ -17,13 +17,14 @@ module.exports = {
 
     const settings = {
       user: params[0],
+      reply_channel: undefined,
       time: 60000,
       messages: 50,
       destruction: 10000,
       base64: false,
       hex: false,
       reply: false,
-      contexts: []
+      quotes: ''
     }
 
     /** Amount of messages, 50 by default */
@@ -34,6 +35,8 @@ module.exports = {
     if (params.includes('-s') && params[params.indexOf('-s') + 1] === 'hex') settings.hex = true
 
     if (params.includes('-s') && params[params.indexOf('-s') + 1] === 'base64') settings.base64 = true
+
+    if (params.includes('-s')) settings.quotes = '\`\`\`'
 
     if (params.includes('-r')) settings.reply = true
 
@@ -49,10 +52,19 @@ module.exports = {
       errors: ['time'],
     });
 
+    const user = await client.users.fetch(settings.user);
+
+    if (!user) {
+      await message.channel.send(`No user: ${settings.user} found!`)
+      return
+    }
+
+    settings.reply_channel = await user.createDM()
+
     collector.on('collect', async m => {
       try {
         /** -End or -Close to close the connection */
-        if (m.content === '-end' || m.content === '-close') await collector.stop()
+        if (m.content === '-end' || m.content === '-close' || m.content === '-exit') await collector.stop()
         /** Secured argument, can be a base64 or hex value */
         if (settings.hex) {
           m.content = Buffer.from(m.content, 'utf8')
@@ -64,39 +76,31 @@ module.exports = {
           m.content = Buffer.from(m.content, 'utf8').toString('base64');
         }
 
-        const user = await client.users.fetch(settings.user);
-
-        if (!user) {
-          await message.channel.send(`No user: ${settings.user} found!`)
-          return
-        }
-
         while (m.content.length) {
-          settings.contexts.push(m.content.substr(0, 1990))
+          const message = await user.send(settings.quotes + m.content.substr(0, 1990) + settings.quotes)
           m.content = m.content.substr(1990);
+          await message.delete({ timeout: settings.destruction })
         }
-
-        await Promise.allSettled(settings.contexts.map(async m => await user.send('\`\`\`' + m.content + '\`\`\`' ).delete({ timeout: settings.destruction })))
-
-        /** Allows message receiver to reply back */
-        /*if (settings.reply) {
-          const res_filter = m => m.author.id === settings.user;
-          const res_collector = sentMessage.channel.createMessageCollector(
-            res_filter,
-            {
-              time: settings.time,
-              errors: ['time'],
-            },
-          );
-          res_collector.on('collect', m => client.users.fetch(message.author.id).then(u => u.send(m.content)));
-        }*/
       } catch (error) {
         await message.channel.send(`Message wasn't sent to ${settings.user}`);
       }
     });
+    collector.on('end', collected => message.channel.send(`Connection closed with ${settings.user}. You send ${collected.size} messages`));
 
-    collector.on('end', collected => {
-      message.channel.send(`Connection closed with ${settings.user}. You send ${collected.size} messages`);
-    });
+    /** Allows message receiver to reply back */
+    if (settings.reply && settings.reply_channel) {
+      const reply_user = await client.users.fetch(message.author.id)
+      const reply_channel = await reply_user.createDM()
+      const reply_filter = m => m.author.id === settings.user;
+      const reply_collector = settings.reply_channel.createMessageCollector(
+        reply_filter,
+        {
+          time: settings.time,
+          errors: ['time'],
+        },
+      );
+      reply_collector.on('collect', async m => await reply_channel.send(m.content));
+      reply_collector.on('end', () => settings.reply_channel.send(`Session was closed.`));
+    }
   },
 };

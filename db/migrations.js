@@ -16,10 +16,9 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove field via $unset
      */
     /*
-    const unset = await characters_db.updateMany({ personality: { $exists: true } }, { $unset: { "personality": 1 } });
+    const unset = await characters_db.updateMany({ personality: { $ne: null } }, { $unset: { "personality": 1 } });
     console.log(unset)
     */
-
 
     /**
      * UpdateMany

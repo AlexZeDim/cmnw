@@ -21,11 +21,12 @@ const getCharacter = require('./get_character');
 
 (async function indexCharacters (
   queryKeys = `OSINT-indexCharacters`,
-  bulkSize = 8,
+  bulkSize = 65,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);
     const { token } = await keys_db.findOne({ tags: queryKeys });
+    let i = 0;
     await characters_db
       .aggregate([
         {
@@ -49,9 +50,8 @@ const getCharacter = require('./get_character');
       .cursor({ batchSize: 1000 })
       .exec()
       .addCursorFlag('noCursorTimeout',true)
-      .eachAsync(async (block, iterations) => {
+      .eachAsync(async block => {
         if (block.characters.length) {
-          let i = 0;
           for (const character of block.characters) {
             const [name, realm] = character._id.split('@')
             await getCharacter({
@@ -61,7 +61,7 @@ const getCharacter = require('./get_character');
               token: token,
               guildRank: false,
               createOnlyUnique: false,
-              iterations: iterations + (i++),
+              iterations: i++,
               forceUpdate: true
             });
           }

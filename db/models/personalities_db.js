@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
-    codename: {
+    cryptonym: {
       type: String,
       default: 'Unknown',
       required: true,
@@ -11,7 +11,7 @@ let schema = new mongoose.Schema(
     clearance: [
       {
         _id: false,
-        access: {
+        level: {
           type: Number,
           enum: [
             0,
@@ -21,7 +21,7 @@ let schema = new mongoose.Schema(
           ],
           default: 0,
         },
-        codeword: {
+        access: {
           type: String,
           default: 'WoW',
         },
@@ -54,6 +54,6 @@ let schema = new mongoose.Schema(
 
 schema.index({ 'aliases.type': 1, 'aliases.value': 1 }, { name: 'Aliases' });
 
-let personalities_db = mongoose.model('personalities', schema, 'personalities');
+const personalities_db = mongoose.model('personalities', schema, 'personalities');
 
 module.exports = personalities_db;

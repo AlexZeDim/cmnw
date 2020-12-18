@@ -20,60 +20,33 @@ const getCharacter = require('./get_character');
  */
 
 (async function indexCharacters (
-  queryKeys = `OSINT-indexCharacters`,
-  bulkSize = 10,
+  bulkSize = 30,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);
-    const { token } = await keys_db.findOne({ tags: queryKeys });
-    let i = 0;
+    const keys = await keys_db.find({ tags: /Characters/ }).limit(2);
     await characters_db
-      .aggregate([
-        {
-          $match: {
-            'hash': { $exists: true },
-            'hash.a': { $ne: null }
-          }
-        },
-        {
-          $group: {
-            _id: { hash_a: '$hash.a' },
-            characters: {
-              $addToSet: {
-                _id: '$_id'
-              }
-            },
-          }
-        },
-      ])
+      .find()
+      .sort({ 'hash.a': 1 })
+      .lean()
       .cursor({ batchSize: bulkSize })
-      .option({
-        allowDiskUse: true,
-        noCursorTimeout: true,
-        maxTimeMS: 0
-      })
-      .exec()
-      .eachAsync(block => {
-        if (block.characters.length) {
-          block.characters.forEach(character => {
-            const [name, realm] = character._id.split('@')
-            getCharacter({
-              name: name,
-              realm: { slug: realm },
-              updatedBy: `OSINT-indexCharacters`,
-              token: token,
-              guildRank: false,
-              createOnlyUnique: false,
-              iterations: i++,
-              forceUpdate: true
-            });
-          })
-        }
+      .eachAsync(async ({ _id }, iterations) => {
+        const [name, realm] = _id.split('@')
+        await getCharacter({
+          name: name,
+          realm: { slug: realm },
+          updatedBy: 'OSINT-indexCharacters',
+          token: keys[iterations % 2].token,
+          guildRank: false,
+          createOnlyUnique: false,
+          iterations: iterations
+        });
+        if (iterations > 10500000) process.exit(0)
       }, { parallel: bulkSize })
   } catch (error) {
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-indexCharacters`);
-    //process.exit(0)
+    process.exit(0)
   }
 })();

@@ -58,7 +58,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
         return
       }
 
-      if (new Date().getTime() - (48 * 60 * 60 * 1000) > character.updatedAt.getTime() || !forceUpdate) return
+      if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) > character.updatedAt.getTime()) return
 
       Object.assign(character_last, character.toObject())
       character.statusCode = 100
@@ -411,9 +411,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
         character.personality = persona._id;
       } else if (personalities.length === 1) {
         character.personality = personalities[0]
-        await personalities_db.findByIdAndUpdate(character.personality, { '$push': {'aliases': { type: 'character', value: character._id } } })
-      } else if (personalities.length === 2) {
-
+        await personalities_db.findByIdAndUpdate(character.personality, { '$push': { 'aliases': { type: 'character', value: character._id } } })
       } else {
         console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
       }

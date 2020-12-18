@@ -54,12 +54,12 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
        * or updated recently return
        */
       if (createOnlyUnique) {
-        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}#${character._id}:${createOnlyUnique}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}:${createOnlyUnique}`);
         return
       }
 
       if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) < character.updatedAt.getTime()) {
-        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}#${character._id}:${forceUpdate}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}:${forceUpdate}`);
         return
       }
 

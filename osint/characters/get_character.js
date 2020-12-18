@@ -38,7 +38,13 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
   try {
     const character_last = {};
 
-    const realm_ = await realms_db.findOne({ $text: { $search: realm.slug } }, { _id: 1, slug: 1, name: 1 });
+    const realm_ = await realms_db
+      .findOne(
+        { $text: { $search: realm.slug } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean()
 
     if (!realm_) return
 

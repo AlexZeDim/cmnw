@@ -1,8 +1,9 @@
+require('../connection')
 const mongoose = require('mongoose');
 const { toSlug } = require('../setters');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     _id: Number,
     region: String,
@@ -79,19 +80,29 @@ let schema = new mongoose.Schema(
   },
 );
 
-schema.index({ name: 1 }, { name: 'Name', collation: { strength: 1 } });
-schema.index({ slug: 1 }, { name: 'Slug', collation: { strength: 1 } });
-schema.index(
-  { name_locale: 1 },
-  { name: 'NameLocale', collation: { strength: 1 } },
-);
-schema.index({ ticker: 1 }, { name: 'Ticker', collation: { strength: 1 } });
 schema.index({ connected_realm_id: 1 }, { name: 'ConnectedRealms' });
 schema.index(
-  { name: 'text', slug: 'text', name_locale: 'text', ticker: 'text', region: 'text', locale: 'text' },
-  { name: 'SearchQuery' },
+  {
+    slug: 'text',
+    name: 'text',
+    name_locale: 'text',
+    ticker: 'text',
+    region: 'text',
+    locale: 'text'
+  },
+  {
+    weights: {
+      'slug': 10,
+      'name': 1,
+      'name_locale': 1,
+      'ticker': 3,
+      'region': 1,
+      'locale': 1
+    },
+    name: 'SearchQuery'
+  },
 );
 
-let realms_db = mongoose.model('realms', schema, 'realms');
+const realms_db = mongoose.model('realms', schema, 'realms');
 
 module.exports = realms_db;

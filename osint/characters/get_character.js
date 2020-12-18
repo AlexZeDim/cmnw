@@ -60,12 +60,12 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
        * or updated recently return
        */
       if (createOnlyUnique) {
-        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}:${createOnlyUnique}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${character._id}:${createOnlyUnique}`);
         return
       }
 
       if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) < character.updatedAt.getTime()) {
-        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}:${forceUpdate}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${character._id}:${forceUpdate}`);
         return
       }
 
@@ -114,7 +114,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     const character_status = await api.query(`/profile/wow/character/${character.realm.slug}/${name_slug}/status`, {
       params: { locale: 'en_GB' },
       headers: { 'Battlenet-Namespace': 'profile-eu' }
-    }).catch(() => { if (character.isNew && character.createdBy.toString() === 'OSINT-userInput') throw new Error(`${name}@${character.realm.slug}:${createOnlyUnique}`) })
+    }).catch(() => { if (character.isNew && character.createdBy.toString() === 'OSINT-userInput') throw new Error(`${character._id}:${createOnlyUnique}`) })
 
     /**
      * Define character id for sure
@@ -423,7 +423,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
           character.personality = personalities[0]
           await personalities_db.findByIdAndUpdate(character.personality, { '$push': { 'aliases': { type: 'character', value: character._id } } })
         } else {
-          console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
+          console.warn(`P:${character._id} personalities: ${personalities.length}`)
         }
       }
     }
@@ -432,7 +432,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     character.markModified('mounts');
     character.markModified('professions');
     await character.save({ w: 1, j: true, wtimeout: 10000 })
-    console.info(`U:${(iterations) ? (iterations + ':') : ('')}${character.name}@${character.realm.name}#${character.id}:${character.statusCode}`);
+    console.info(`U:${(iterations) ? (iterations + ':') : ('')}${character._id}#${character.id}:${character.statusCode}`);
   } catch (error) {
     console.error(`E,getCharacter,${error}`);
   }

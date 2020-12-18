@@ -48,23 +48,22 @@ const getCharacter = require('./get_character');
       .exec()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async (block, iterations) => {
-          if (block.characters.length) {
-            let i = 0;
-            for (const character of block.characters) {
-              await getCharacter({
-                name: character.name,
-                realm: character.realm,
-                updatedBy: `OSINT-indexCharacters`,
-                token: token,
-                guildRank: false,
-                createOnlyUnique: false,
-                iterations: iterations + (i++),
-                forceUpdate: true
-              });
-            }
+        if (block.characters.length) {
+          let i = 0;
+          for (const character of block.characters) {
+            await getCharacter({
+              name: character.name,
+              realm: character.realm,
+              updatedBy: `OSINT-indexCharacters`,
+              token: token,
+              guildRank: false,
+              createOnlyUnique: false,
+              iterations: iterations + (i++),
+              forceUpdate: true
+            });
           }
-        }, { parallel: bulkSize }
-      )
+        }
+      }, { parallel: bulkSize })
   } catch (error) {
     console.error(error);
   } finally {

@@ -63,7 +63,7 @@ schedule.scheduleJob('30,59 * * * *', async (
                 'Battlenet-Namespace': 'dynamic-eu',
                 'If-Modified-Since': _id.timestamp
               }
-            }).catch(error => console.info(`E,${_id.connected_realm_id}:${error}`));
+            }).catch(error => console.info(`E,${_id.connected_realm_id},${name}:${error}`));
             if (market && market.auctions && market.auctions.length) {
               const last_modified = moment(new Date(market.lastModified)).format('X')
               const orders = await Promise.all(market.auctions.map(async order => {

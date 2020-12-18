@@ -21,7 +21,7 @@ connection.on('error', console.error.bind(console, 'Connection error:'));
 connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
 connection.once('close', (e) => console.info('Connected to database on ' + process.env.hostname + ' closed by ' + e));
 
-[`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach((eventType) => process.on(eventType, () => connection.close()))
+[`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach((eventType) => process.on(eventType, () => connection.close(eventType)))
 
 
 

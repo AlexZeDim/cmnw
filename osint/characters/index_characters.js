@@ -21,7 +21,7 @@ const getCharacter = require('./get_character');
 
 (async function indexCharacters (
   queryKeys = `OSINT-indexCharacters`,
-  bulkSize = 65,
+  bulkSize = 10,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);
@@ -46,15 +46,18 @@ const getCharacter = require('./get_character');
           }
         },
       ])
-      .allowDiskUse(true)
-      .cursor({ batchSize: 1000 })
+      .cursor({ batchSize: bulkSize })
+      .option({
+        allowDiskUse: true,
+        noCursorTimeout: true,
+        maxTimeMS: 0
+      })
       .exec()
-      .addCursorFlag('noCursorTimeout',true)
-      .eachAsync(async block => {
+      .eachAsync(block => {
         if (block.characters.length) {
-          for (const character of block.characters) {
+          block.characters.forEach(character => {
             const [name, realm] = character._id.split('@')
-            await getCharacter({
+            getCharacter({
               name: name,
               realm: { slug: realm },
               updatedBy: `OSINT-indexCharacters`,
@@ -64,13 +67,13 @@ const getCharacter = require('./get_character');
               iterations: i++,
               forceUpdate: true
             });
-          }
+          })
         }
       }, { parallel: bulkSize })
   } catch (error) {
     console.error(error);
   } finally {
     console.timeEnd(`OSINT-indexCharacters`);
-    process.exit(0)
+    //process.exit(0)
   }
 })();

@@ -44,7 +44,7 @@ const getCharacter = require('./get_character');
         },
       ])
       .allowDiskUse(true)
-      .cursor({ batchSize: bulkSize })
+      .cursor({ batchSize: 1000 })
       .exec()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async (block, iterations) => {

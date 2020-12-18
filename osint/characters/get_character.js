@@ -397,26 +397,27 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     /**
      * Personalities Control
      */
-    if (!character.personality && character.hash && character.hash.a) {
-      const personalities = await characters_db.find({ 'hash.a': character.hash.a }).lean().distinct('personality');
-      if (!personalities.length) {
-        const persona = await personalities_db.create({
-          aliases: [
-            {
-              type: 'character',
-              value: character._id
-            }
-          ]
-        })
-        character.personality = persona._id;
-      } else if (personalities.length === 1) {
-        character.personality = personalities[0]
-        await personalities_db.findByIdAndUpdate(character.personality, { '$push': { 'aliases': { type: 'character', value: character._id } } })
-      } else {
-        console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
+    if (createOnlyUnique) {
+      if (!character.personality && character.hash && character.hash.a) {
+        const personalities = await characters_db.find({ 'hash.a': character.hash.a }).lean().distinct('personality');
+        if (!personalities.length) {
+          const persona = await personalities_db.create({
+            aliases: [
+              {
+                type: 'character',
+                value: character._id
+              }
+            ]
+          })
+          character.personality = persona._id;
+        } else if (personalities.length === 1) {
+          character.personality = personalities[0]
+          await personalities_db.findByIdAndUpdate(character.personality, { '$push': { 'aliases': { type: 'character', value: character._id } } })
+        } else {
+          console.warn(`P:${character.name}@${character.realm.name} personalities: ${personalities.length}`)
+        }
       }
     }
-
 
     character.markModified('pets');
     character.markModified('mounts');

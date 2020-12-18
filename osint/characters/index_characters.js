@@ -26,8 +26,6 @@ const getCharacter = require('./get_character');
   try {
     console.time(`OSINT-indexCharacters`);
     const { token } = await keys_db.findOne({ tags: queryKeys });
-    await characters_db.syncIndexes()
-    await characters_db.collection.createIndex({ 'hash.a': 1, 'updatedAt': 1, 'statusCode': 1 }, { name: `OSINT-${indexCharacters.name}` })
     await characters_db
       .aggregate([
         {

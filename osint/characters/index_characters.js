@@ -38,7 +38,8 @@ const getCharacter = require('./get_character');
           token: keys[iterations % 2].token,
           guildRank: false,
           createOnlyUnique: false,
-          iterations: iterations
+          iterations: iterations,
+          forceUpdate: true
         });
         if (iterations > 10500000) process.exit(0)
       }, { parallel: bulkSize })

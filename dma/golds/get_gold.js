@@ -29,8 +29,8 @@ schedule.scheduleJob('00 * * * *', async () => {
   try {
     console.time(`DMA-getGoldData`);
     const ts = moment().format('X');
-    let goldData = [];
-    let goldOrders = await x('https://funpay.ru/chips/2/', '.tc-item', [
+    const goldData = [];
+    const goldOrders = await x('https://funpay.ru/chips/2/', '.tc-item', [
       {
         realm: '.tc-server', //@data-server num
         faction: '.tc-side', //@data-side 0/1
@@ -42,7 +42,7 @@ schedule.scheduleJob('00 * * * *', async () => {
     ]).then(res => res);
     if (goldOrders.length !== 0) {
       for (let i = 0; i < goldOrders.length; i++) {
-        let realm = await realms_db
+        const realm = await realms_db
           .findOne({ $text: { $search: goldOrders[i].realm } })
           .select('connected_realm_id')
           .lean();
@@ -51,9 +51,7 @@ schedule.scheduleJob('00 * * * *', async () => {
             { connected_realm_id: realm.connected_realm_id },
             { golds: ts },
           );
-          if (
-            parseFloat(goldOrders[i].quantity.replace(/\s/g, '')) < 15000000
-          ) {
+          if (parseFloat(goldOrders[i].quantity.replace(/\s/g, '')) < 15000000) {
             goldData.push({
               connected_realm_id: realm.connected_realm_id,
               faction: goldOrders[i].faction,

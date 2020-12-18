@@ -17,7 +17,7 @@ const getCharacter = require('./get_character');
 const scraper = require('table-scraper');
 const axios = require('axios');
 const Xray = require('x-ray');
-let x = Xray();
+const x = Xray();
 
 const { toSlug } = require('../../db/setters');
 

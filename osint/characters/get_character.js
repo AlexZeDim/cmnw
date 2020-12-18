@@ -54,11 +54,14 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
        * or updated recently return
        */
       if (createOnlyUnique) {
-        console.warn(`E:${name}@${character.realm.name}#${character._id}:${createOnlyUnique}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}#${character._id}:${createOnlyUnique}`);
         return
       }
 
-      if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) < character.updatedAt.getTime()) return
+      if (!forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) < character.updatedAt.getTime()) {
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${name}@${character.realm.name}#${character._id}:${forceUpdate}`);
+        return
+      }
 
       Object.assign(character_last, character.toObject())
       character.statusCode = 100

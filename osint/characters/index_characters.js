@@ -9,7 +9,6 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-//const schedule = require('node-schedule');
 const getCharacter = require('./get_character');
 
 /***
@@ -20,7 +19,7 @@ const getCharacter = require('./get_character');
  */
 
 (async function indexCharacters (
-  bulkSize = 30,
+  bulkSize = 10,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);

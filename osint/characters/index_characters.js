@@ -21,7 +21,7 @@ const getCharacter = require('./get_character');
 
 (async function indexCharacters (
   queryKeys = `OSINT-indexCharacters`,
-  bulkSize = 5,
+  bulkSize = 8,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);
@@ -37,14 +37,23 @@ const getCharacter = require('./get_character');
       .cursor()
       .addCursorFlag('noCursorTimeout',true)
       .eachAsync(async ({ _id, realm }, iterations) => {
-          const name = _id.split('@')[0]
-          await getCharacter({ name: name, realm: realm, updatedBy: `OSINT-${indexCharacters.name}`, token: token, guildRank: false, createOnlyUnique: false, iterations: iterations });
+          const [name] = _id.split('@')
+          await getCharacter({
+            name: name,
+            realm: realm,
+            updatedBy: `OSINT-indexCharacters`,
+            token: token,
+            guildRank: false,
+            createOnlyUnique: false,
+            iterations: iterations,
+            forceUpdate: true
+          });
         }, { parallel: bulkSize }
       );
   } catch (error) {
     console.error(error);
   } finally {
-    console.timeEnd(`OSINT-${indexCharacters.name}`);
+    console.timeEnd(`OSINT-indexCharacters`);
     process.exit(0)
   }
 })();

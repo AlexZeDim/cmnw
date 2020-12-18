@@ -31,6 +31,9 @@ const getCharacter = require('./get_character');
     await characters_db
       .aggregate([
         {
+          $match: { 'hash.a': { $exists: true } }
+        },
+        {
           $sort: { updatedAt: 1 }
         },
         {
@@ -39,8 +42,7 @@ const getCharacter = require('./get_character');
             characters: {
               $addToSet: {
                 name: '$name',
-                realm: '$realm',
-                lastModified: '$lastModified'
+                realm: '$realm'
               }
             },
           }

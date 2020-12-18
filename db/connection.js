@@ -12,7 +12,7 @@ connect(
     bufferMaxEntries: 0,
     useCreateIndex: true,
     w: 'majority',
-    socketTimeoutMS: 1200000,
+    socketTimeoutMS: 1800000,
     family: 4,
   },
 ).then(r => r);

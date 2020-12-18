@@ -34,9 +34,6 @@ const getCharacter = require('./get_character');
           $match: { 'hash.a': { $exists: true } }
         },
         {
-          $sort: { updatedAt: 1 }
-        },
-        {
           $group: {
             _id: { hash_a: '$hash.a' },
             characters: {

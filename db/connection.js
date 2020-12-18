@@ -12,6 +12,7 @@ connect(
     bufferMaxEntries: 0,
     useCreateIndex: true,
     w: 'majority',
+    socketTimeoutMS: 1200000,
     family: 4,
   },
 ).then(r => r);
@@ -20,10 +21,10 @@ connection.on('error', console.error.bind(console, 'Connection error:'));
 connection.once('open', () => console.log('Connected to database on ' + process.env.hostname));
 
 [`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`].forEach((eventType) => {
-    process.on(eventType, function () {
-        connection.close();
-        connection.once('close', () => console.info('Connected to database on ' + process.env.hostname + ' closed by ' + eventType));
-    });
+  process.on(eventType, function () {
+    connection.close();
+    connection.once('close', () => console.info('Connected to database on ' + process.env.hostname + ' closed by ' + eventType));
+  });
 })
 
 

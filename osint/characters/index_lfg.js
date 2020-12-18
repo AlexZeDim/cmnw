@@ -64,7 +64,15 @@ schedule.scheduleJob('*/5 * * * *', async () => {
         }
         /** Find character in OSINT DB */
         if (character_name && character_realm) {
-          await getCharacter({ name: character_name, realm: { slug: character_realm }, createdBy: `OSINT-LFG`, updatedBy: `OSINT-LFG`, token: token, guildRank: true, createOnlyUnique: false })
+          await getCharacter({
+            name: character_name,
+            realm: { slug: character_realm },
+            createdBy: `OSINT-LFG`,
+            updatedBy: `OSINT-LFG`,
+            token: token,
+            guildRank: true,
+            createOnlyUnique: false
+          })
           const _id = `${toSlug(character_name)}@${character_realm}`
           if (!_id) continue
           const character = await characters_db.findById(_id)

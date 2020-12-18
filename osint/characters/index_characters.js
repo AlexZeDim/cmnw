@@ -29,15 +29,17 @@ const getCharacter = require('./get_character');
     await characters_db
       .aggregate([
         {
-          $match: { 'hash.a': { $exists: true } }
+          $match: {
+            'hash': { $exists: true },
+            'hash.a': { $ne: null }
+          }
         },
         {
           $group: {
             _id: { hash_a: '$hash.a' },
             characters: {
               $addToSet: {
-                name: '$name',
-                realm: '$realm'
+                _id: '$_id'
               }
             },
           }
@@ -51,9 +53,10 @@ const getCharacter = require('./get_character');
         if (block.characters.length) {
           let i = 0;
           for (const character of block.characters) {
+            const [name, realm] = character._id.split('@')
             await getCharacter({
-              name: character.name,
-              realm: character.realm,
+              name: name,
+              realm: { slug: realm },
               updatedBy: `OSINT-indexCharacters`,
               token: token,
               guildRank: false,

@@ -15,7 +15,7 @@ const getCharacter = require('./get_character');
 (async function indexLua (key = `conglomerat`, path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\SavedVariables\\OSINT.lua') {
   try {
     console.time(`OSINT-fromLua`);
-    const { token } = await keys_db.findOne({ keys: key });
+    const { token } = await keys_db.findOne({ tags: key });
     const array = [];
     const osint = fs.readFileSync(path, 'utf8').split('["csv"] = ')[1];
     const arrayOfLines = osint.match(/[^\r\n]+/g);

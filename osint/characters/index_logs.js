@@ -26,7 +26,7 @@ const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 schedule.scheduleJob('0 3 * * *', async (
   t,
   bulkSize = 1,
-  queryKeys = `OSINT-indexCharacters`,
+  queryKeys = `OSINT-indexLogs`,
 ) => {
   try {
     console.time(`OSINT-indexLogs`);

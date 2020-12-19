@@ -27,7 +27,7 @@ const root = {
 
     const character = await characters_db.findById(`${nameSlug}@${realm.slug}`).lean();
     if (!character || (new Date().getTime() - (24 * 60 * 60 * 1000) > character.updatedAt.getTime())) {
-      const { token } = await keys_db.findOne({ tags: `OSINT-indexCharacters` });
+      const { token } = await keys_db.findOne({ tags: `conglomerat` });
       await getCharacter({
         name: nameSlug,
         realm: { slug: realm.slug },
@@ -36,6 +36,7 @@ const root = {
         token: token,
         guildRank: true,
         createOnlyUnique: false,
+        forceUpdate: true
       });
       const [char , logs] = await Promise.all([
         await characters_db.findById(`${nameSlug}@${realm.slug}`).lean(),
@@ -83,7 +84,7 @@ const root = {
     ]).allowDiskUse(true).exec();
     if (!guild) {
       const { token } = await keys_db.findOne({
-        tags: `OSINT-indexCharacters`,
+        tags: `conglomerat`,
       });
       await getGuild({ name: nameSlug, realm: realm, createdBy: 'OSINT-userInput', updatedBy: 'OSINT-userInput', token: token, createOnlyUnique: true })
       const [guild_updated] = await guilds_db.aggregate([

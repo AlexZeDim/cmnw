@@ -74,7 +74,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
       if (args.updatedBy) character.updatedBy = args.updatedBy
     } else {
       character = new characters_db({
-        _id: `${name_slug}@${realm.slug}`,
+        _id: `${name_slug}@${realm_.slug}`,
         id: Date.now(),
         name: fromSlug(name),
         statusCode: 100,

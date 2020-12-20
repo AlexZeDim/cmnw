@@ -9,7 +9,6 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const schedule = require('node-schedule');
 const getGuild = require('./get_guild');
 
 /**
@@ -19,7 +18,7 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('0 8,20 * * *', async (
+(async (
   t,
   queryKeys = `OSINT-indexGuilds`,
   bulkSize = 1,
@@ -31,7 +30,9 @@ schedule.scheduleJob('0 8,20 * * *', async (
       .find()
       .lean()
       .cursor()
-      .addCursorFlag('noCursorTimeout',true)
+      .option({
+        noCursorTimeout: true
+      })
       .eachAsync(
         async ({ name, realm }, iterations) => {
           await getGuild({
@@ -51,4 +52,4 @@ schedule.scheduleJob('0 8,20 * * *', async (
     console.timeEnd(`OSINT-indexGuilds`);
     process.exit(0)
   }
-});
+})();

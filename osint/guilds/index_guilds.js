@@ -37,7 +37,7 @@ const getGuild = require('./get_guild');
             realm: realm,
             updatedBy: `OSINT-indexGuilds`,
             token: token,
-            createOnlyUnique: true,
+            createOnlyUnique: false,
             iterations:  iterations
           });
         },

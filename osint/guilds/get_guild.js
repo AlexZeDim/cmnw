@@ -38,9 +38,9 @@ async function getGuild (
     name,
     realm,
     token,
-    createOnlyUnique,
+    createOnlyUnique = false,
     iterations,
-    forceUpdate,
+    forceUpdate = false,
     ...args
   }
 ) {
@@ -77,7 +77,7 @@ async function getGuild (
         console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${createOnlyUnique}`);
         return
       }
-      if (!forceUpdate && (t - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime()) {
+      if (!forceUpdate && ((t - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime())) {
         console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${forceUpdate}`);
         return
       }

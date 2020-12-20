@@ -35,14 +35,16 @@ schedule.scheduleJob('30 4 * * *', async (
     console.time(`OSINT-fromCharacters`);
     await realms_db
       .find({ region: queryFind })
-      .maxTimeMS(0)
       .lean()
       .cursor()
-      .addCursorFlag('noCursorTimeout', true)
+      .option({
+        noCursorTimeout: true,
+        maxTimeMS: 0
+      })
       .eachAsync(async (realm, iterations) => {
         if (realm.slug) {
           const { token } = await keys_db.findOne({ tags: queryKeys });
-          const guild_slugs = await characters_db.distinct('guild.slug', { 'realm.slug': realm.slug, }).lean();
+          const guild_slugs = await characters_db.distinct('guild.slug', { 'realm.slug': realm.slug, });
           for (const guild_slug of guild_slugs) {
             await getGuild({
               name: guild_slug,

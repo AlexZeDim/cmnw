@@ -12,7 +12,7 @@ const keys_db = require('../../db/models/keys_db');
 const axios = require('axios');
 const zlib = require('zlib');
 const Xray = require('x-ray');
-let x = Xray();
+const x = Xray();
 const fs = require('fs');
 
 const { promisify } = require('util');

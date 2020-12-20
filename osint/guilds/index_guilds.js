@@ -30,9 +30,6 @@ const getGuild = require('./get_guild');
       .find()
       .lean()
       .cursor()
-      .option({
-        noCursorTimeout: true
-      })
       .eachAsync(
         async ({ name, realm }, iterations) => {
           await getGuild({

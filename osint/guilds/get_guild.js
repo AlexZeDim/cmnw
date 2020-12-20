@@ -27,6 +27,7 @@ const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
  * @param realm {Object<{ _id: number, name: string, slug: string }>}
  * @param token {string=}
  * @param createOnlyUnique {Boolean=}
+ * @param forceUpdate {Boolean=}
  * @param iterations {number=}
  * @param args {Object=}
  * @returns {Promise<void>}
@@ -39,6 +40,7 @@ async function getGuild (
     token,
     createOnlyUnique,
     iterations,
+    forceUpdate,
     ...args
   }
 ) {
@@ -71,7 +73,11 @@ async function getGuild (
     let guild = await guild_db.findById(_id);
     if (guild) {
       if (createOnlyUnique) {
-        console.warn(`E:${guild.name}@${guild.realm.name}#${guild.id}:${createOnlyUnique}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${createOnlyUnique}`);
+        return
+      }
+      if (!forceUpdate && (new Date().getTime() - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime()) {
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${forceUpdate}`);
         return
       }
       Object.assign(guild_last, guild.toObject())
@@ -440,7 +446,7 @@ async function getGuild (
 
       guild.markModified('members');
       await guild.save();
-      console.info(`U:${(iterations) ? (iterations + ':') : ('')}${guild.name}@${guild.realm.name}#${guild.id}:${guild.statusCode}`);
+      console.info(`U:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${guild.statusCode}`);
     }
   } catch (error) {
     console.error(`E,getGuild,${error}`);

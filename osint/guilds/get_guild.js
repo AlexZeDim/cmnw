@@ -46,6 +46,7 @@ async function getGuild (
 ) {
   try {
 
+    const t = new Date().getTime();
     const guild_last = {};
 
     /**
@@ -76,7 +77,7 @@ async function getGuild (
         console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${createOnlyUnique}`);
         return
       }
-      if (!forceUpdate && (new Date().getTime() - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime()) {
+      if (!forceUpdate && (t - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime()) {
         console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${forceUpdate}`);
         return
       }

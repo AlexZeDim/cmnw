@@ -37,10 +37,6 @@ schedule.scheduleJob('30 4 * * *', async (
       .find({ region: queryFind })
       .lean()
       .cursor()
-      .option({
-        noCursorTimeout: true,
-        maxTimeMS: 0
-      })
       .eachAsync(async (realm, iterations) => {
         if (realm.slug) {
           const { token } = await keys_db.findOne({ tags: queryKeys });

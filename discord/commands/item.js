@@ -57,7 +57,7 @@ module.exports = {
           title_name += item.name.en_GB
         }
 
-        if (realms.length === 1) {
+        if (realms && realms.length === 1) {
           if (realms[0].ticker) {
             title_name += `@${realms[0].ticker}`;
           } else {
@@ -86,45 +86,47 @@ module.exports = {
           embed.setThumbnail(item.icon);
         }
 
-        for (let i = 0; i < valuations.length; i++) {
-          if (i === 19) {
-            embed.addField(
-        `─────────────`,
-        `
+        if (valuations && valuations.length) {
+          for (let i = 0; i < valuations.length; i++) {
+            if (i === 19) {
+              embed.addField(
+                `─────────────`,
+                `
                 Full
                 Pricing
                 Available
                 At
                 [Conglomerat](https://${process.env.domain}/item/${item._id}@${realms_string})
                 ─────────────`,
-          true,
-            );
-            break;
-          }
-          if (valuations[i].type === 'MARKET') {
-            if (
-              valuations[i].details &&
-              valuations[i].details.orders &&
-              valuations[i].details.orders.length
-            ) {
-              market_counter = valuations[i].details.orders.length;
+                true,
+              );
+              break;
             }
-          }
-          if (valuations[i].type === 'DERIVATIVE') derivative_counter += 1;
+            if (valuations[i].type === 'MARKET') {
+              if (
+                valuations[i].details &&
+                valuations[i].details.orders &&
+                valuations[i].details.orders.length
+              ) {
+                market_counter = valuations[i].details.orders.length;
+              }
+            }
+            if (valuations[i].type === 'DERIVATIVE') derivative_counter += 1;
 
-          if (valuations[i].type === 'PREMIUM')  premium_counter += 1;
+            if (valuations[i].type === 'PREMIUM')  premium_counter += 1;
 
-          embed.addField(
-      `─────────────`,
-      `
+            embed.addField(
+              `─────────────`,
+              `
               ${valuations[i].name}
               Type: ${valuations[i].type}
               Realm: @${valuations[i].connected_realm_id}
               Value: ${valuations[i].value}
               ─────────────
               `,
-      true,
-          );
+              true,
+            );
+          }
         }
 
         if (derivative_counter) {

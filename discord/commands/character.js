@@ -62,19 +62,14 @@ module.exports = {
         }`,
         variables: { id },
       }).then(({ data: { data: { character } } }) => {
-      let _id, name, guild, realm;
-      ({ _id, name, guild, realm } = character);
+      const { _id, name, guild, realm } = character;
       if (guild) {
         let guild_string = guild.name.toString().toUpperCase();
-        if (guild.rank) {
-          guild_string = guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`);
-        }
+        if (guild.rank) guild_string = guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`);
         embed.setTitle(guild_string);
         embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild.slug}@${realm.slug}`));
       }
-      if (_id) {
-        embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${name}@${realm.slug}`));
-      }
+      if (_id) embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${name}@${realm.slug}`));
 
       const fieldsToCheck = [
         'id',

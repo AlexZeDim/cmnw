@@ -56,6 +56,23 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     if (character) {
 
       /**
+       * If guild rank true and character is exists
+       * and lastModified from guild > character lastModified
+       */
+      if (guildRank) {
+        if (character.guild) {
+          if (character.guild.name === args.guild.name) {
+            character.guild.rank = args.guild.rank
+          } else if (character.lastModified && args.lastModified) {
+            if (args.lastModified.getTime() > character.lastModified.getTime()) {
+              character.guild = args.guild
+            }
+          }
+          await character.save()
+        }
+      }
+
+      /**
        * If character exists and createOnlyUnique initiated,
        * or updated recently return
        */
@@ -69,6 +86,10 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
         return
       }
 
+      /**
+       * We create copy of character to compare it
+       * with previous timestamp
+       */
       Object.assign(character_last, character.toObject())
       character.statusCode = 100
       if (args.updatedBy) character.updatedBy = args.updatedBy
@@ -205,14 +226,14 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
           character.guild.name = summary.value.guild.name;
           character.guild.slug = summary.value.guild.name;
           character.guild._id = `${toSlug(character.guild.name)}@${character.realm.slug}`;
-          if (guildRank === true) {
+          if (!character.guild.rank && guildRank === true) {
             await api.query(`data/wow/guild/${character.realm.slug}/${toSlug(character.guild.name)}/roster`, {
               timeout: 10000,
               params: { locale: 'en_GB' },
               headers: { 'Battlenet-Namespace': 'profile-eu' }
             })
             .then (({members}) => {
-              const { rank } = members.find(({ character }) => character.id === character.id);
+              const { rank } = members.find(({ c }) => c.id === character.id);
               character.guild.rank = rank;
             })
             .catch(e => e);
@@ -432,7 +453,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     character.markModified('mounts');
     character.markModified('professions');
     await character.save({ w: 1, j: true, wtimeout: 10000 })
-    console.info(`U:${(iterations) ? (iterations + ':') : ('')}${character._id}#${character.id}:${character.statusCode}`);
+    console.info(`${(character.isNew) ? ('C') : ('U')}:${(iterations) ? (iterations + ':') : ('')}${character._id}#${character.id}:${character.statusCode}`);
   } catch (error) {
     console.error(`E,getCharacter,${error}`);
   }

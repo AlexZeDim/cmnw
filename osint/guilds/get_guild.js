@@ -206,8 +206,8 @@ async function getGuild (
                 updatedBy: guild.updatedBy,
                 token: token,
                 iterations: iterations++,
-                guildRank: false,
-                createOnlyUnique: false
+                guildRank: true,
+                createOnlyUnique: true
               })
             )
 

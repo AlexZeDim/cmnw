@@ -52,6 +52,7 @@ let schema = new mongoose.Schema(
       a: String,
       b: String,
       c: String,
+      f: String,
       ex: String,
       t: String,
     },
@@ -148,6 +149,7 @@ schema.index({ 'isWatched': 1 }, { name: 'LFG' });
 schema.index({ 'hash.a': 1 }, { name: 'Hash A' });
 schema.index({ 'hash.b': 1 }, { name: 'Hash B' });
 schema.index({ 'hash.c': 1 }, { name: 'Hash C' });
+schema.index({ 'hash.f': 1 }, { name: 'Hash F' });
 schema.index({ 'hash.t': 1 }, { name: 'Hash T' });
 
 schema.index({ 'personality': 1 }, { name: 'VOLUSPA' });

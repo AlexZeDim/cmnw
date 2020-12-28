@@ -41,7 +41,6 @@ const getCharacter = require('./get_character');
           iterations: iterations,
           forceUpdate: true
         });
-        if (iterations > 10500000) process.exit(0)
       }, { parallel: bulkSize })
   } catch (error) {
     console.error(error);

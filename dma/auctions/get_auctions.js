@@ -55,7 +55,7 @@ schedule.scheduleJob('30,59 * * * *', async (
           try {
             const time = new Date().getTime();
             console.time(`DMA-getAuctionData-${time}:${_id.connected_realm_id}`);
-            console.info(`R,${_id.connected_realm_id},${name},`);
+            console.info(`R,${_id.connected_realm_id},${name}`);
             if (_id.timestamp) _id.timestamp = `${moment.unix(_id.timestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
             const market = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
               timeout: 30000,

@@ -53,8 +53,9 @@ schedule.scheduleJob('30,59 * * * *', async (
       .eachAsync(
         async ({ _id, name }) => {
           try {
-            console.time(`DMA-getAuctionData-${_id.connected_realm_id}`);
-            console.info(`R,${_id.connected_realm_id},${name}`);
+            const time = new Date();
+            console.time(`DMA-getAuctionData-${time}:${_id.connected_realm_id}`);
+            console.info(`R,${_id.connected_realm_id},${name},`);
             if (_id.timestamp) _id.timestamp = `${moment.unix(_id.timestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
             const market = await api.query(`/data/wow/connected-realm/${_id.connected_realm_id}/auctions`, {
               timeout: 30000,
@@ -79,7 +80,6 @@ schedule.scheduleJob('30,59 * * * *', async (
                     }
                   }
                 }
-
                 if (order.bid) order.bid = Round2(order.bid / 10000);
                 if (order.buyout) order.buyout = Round2(order.buyout / 10000);
                 if (order.unit_price) order.unit_price = Round2(order.unit_price / 10000);
@@ -90,7 +90,7 @@ schedule.scheduleJob('30,59 * * * *', async (
               await auctions_db.insertMany(orders).then(auctions => console.info(`U,${_id.connected_realm_id},${auctions.length},${name}`));
               await realms_db.updateMany({ connected_realm_id: _id.connected_realm_id }, { auctions: last_modified });
             }
-            console.timeEnd(`DMA-getAuctionData-${_id.connected_realm_id}`);
+            console.timeEnd(`DMA-getAuctionData--${time}:${_id.connected_realm_id}`);
           } catch (error) {
             console.error(error);
           }

@@ -90,7 +90,7 @@ schedule.scheduleJob('30,59 * * * *', async (
               await auctions_db.insertMany(orders).then(auctions => console.info(`U,${_id.connected_realm_id},${auctions.length},${name}`));
               await realms_db.updateMany({ connected_realm_id: _id.connected_realm_id }, { auctions: last_modified });
             }
-            console.timeEnd(`DMA-getAuctionData--${time}:${_id.connected_realm_id}`);
+            console.timeEnd(`DMA-getAuctionData-${time}:${_id.connected_realm_id}`);
           } catch (error) {
             console.error(error);
           }

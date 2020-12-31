@@ -51,7 +51,7 @@ schedule.scheduleJob('0 3 * * *', async (
                     createdBy: `OSINT-indexLogs`,
                     updatedBy: `OSINT-indexLogs`,
                     token: token,
-                    guildRank: true,
+                    guildRank: false,
                     createOnlyUnique: true
                   });
                 }

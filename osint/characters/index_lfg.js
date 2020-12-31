@@ -38,11 +38,9 @@ schedule.scheduleJob('*/5 * * * *', async () => {
     /**
      * Receive HTML table from Kernel's WoWProgress
      */
-    let lfg = await scraper
+    const lfg = await scraper
       .get('https://www.wowprogress.com/gearscore/?lfg=1&raids_week=&lang=ru&sortby=ts')
-      .then(function(tableData) {
-        return tableData[0] || [];
-      });
+      .then((tableData) => [tableData] || []);
     /**
      * Make sure that table is exist
      */

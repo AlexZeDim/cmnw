@@ -33,7 +33,7 @@ const getCharacter = require('./get_character');
               realm: { slug: slug_locale},
               updatedBy: `OSINT-fromLua`,
               token: token,
-              guildRank: true,
+              guildRank: false,
               createOnlyUnique: true
             })
           )
@@ -47,7 +47,7 @@ const getCharacter = require('./get_character');
               updatedBy: `OSINT-fromLua`,
               token: token,
               createOnlyUnique: true,
-              guildRank: true })
+              guildRank: false })
           )
         }
       }

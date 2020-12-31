@@ -14,7 +14,7 @@ module.exports = {
     '\n' +
     '**FILTERS:** \n' +
     'sub {"key": "string", "number_key": 123, "array_key": ["string", 123]} \n' +
-    'Use JSON format string for managing your **FILTERS**. Before import, check for validate string syntax here: https://tools.learningcontainer.com/json-validator/ \n' +
+    'Use **only JSON format string** for managing your **FILTERS**. "Quotes": "are" important! You could validate your filters string at: \`https://tools.learningcontainer.com/json-validator/\` \n' +
     '\n' +
     '  **id** (array of [numbers] | 123 (number)): `{"type":"orders" | "t&s"}`: track selected item by id \n' +
     '  **faction** ("string" [Alliance | Horde]): `{"type":"recruiting"}`: filter characters by exact faction value\n' +
@@ -44,25 +44,43 @@ module.exports = {
       })
 
       if (discord_subscriber && !args) {
-        return message.channel.send("\`\`\`" + JSON.stringify({ ...discord_subscriber.filters, ...{ type: discord_subscriber.type } }) + "\`\`\`");
+        return message.channel.send("\`\`\`" + JSON.stringify({ ...discord_subscriber.toObject().filters, ...{ type: discord_subscriber.type } }, null, 2) + "\`\`\`");
       }
 
-      const obj = JSON.parse(args)
-      if (obj) {
-        if (obj.type && obj.type === 'remove') {
+      const parse_args = JSON.parse(args)
+      if (parse_args) {
+        if (parse_args.type && parse_args.type === 'remove') {
           await discord_db.findOneAndRemove({
             discord_id: message.channel.guild.id,
             channel_id: message.channel.id
           })
           return message.channel.send("Your subscription has been removed")
         }
-        if (obj.id && typeof obj.id === 'number') obj.id = [obj.id]
-        if (obj.id && typeof obj.id === 'string') {
-          const items = await items_db.find({ $text: { $search: obj.id } }, { _id: 1 }).limit(50);
-          obj.id = items.map(({ _id }) => _id);
+        if (parse_args.items) {
+          if (typeof parse_args.items === 'string') {
+            const items = await items_db.find({ $text: { $search: parse_args.id } }, { _id: 1 }).limit(50).lean();
+            parse_args.items = items.map(({ _id }) => _id);
+          } else if (typeof parse_args.items === 'number') {
+            parse_args.items = [parse_args.items]
+          } else if (Array.isArray(parse_args.items)) {
+            parse_args.items = parse_args.items.map(i => parseInt(i))
+          }
         }
-        if (obj.realm && typeof obj.realm === 'string') obj.realm = await realms_db.find({ $text: { $search: obj.realm } }, { _id: 0, slug: 1, auctions: 1 });
-        if (obj.character_class && typeof obj.character_class === 'string') obj.character_class = [capitalCase(obj.character_class)]
+        if (parse_args.realms) {
+          if (typeof parse_args.realms === 'string') {
+            const realms = await realms_db.find({ $text: { $search: parse_args.realm } }, { _id: 1 }).lean()
+            parse_args.realms = realms.map(({ _id }) => _id);
+          } else if (Array.isArray(parse_args.realms)) {
+            parse_args.realms = parse_args.realms.map(r => parseInt(r))
+          }
+        }
+        if (parse_args.character_class) {
+          if (typeof parse_args.character_class === 'string') {
+            parse_args.character_class = [capitalCase(parse_args.character_class)]
+          } else if (Array.isArray(parse_args.character_class)) {
+            parse_args.character_class = parse_args.character_class.map(c => capitalCase(c))
+          }
+        }
       }
 
       if (!discord_subscriber) {
@@ -73,42 +91,42 @@ module.exports = {
             channel_id: message.channel.id,
             channel_name: message.channel.name,
           },
-          ...{ type: obj.type, filters: obj}
+          ...{ type: parse_args.type, filters: parse_args}
         }
         await discord_db.create(subscriber)
         return message.channel.send("Your subscription have been successfully created. To check the filter params, type: **subscribe**")
       }
 
-      if (obj.type) discord_subscriber.type = obj.type
-      if (obj.id && obj.id.length) {
-        for (const id of obj.id) {
-          discord_subscriber.filters.id.addToSet(id)
+      if (parse_args.type) discord_subscriber.type = parse_args.type
+      if (parse_args.items && parse_args.items.length) {
+        for (const item of parse_args.items) {
+          discord_subscriber.filters.id.addToSet(item)
         }
       }
-      if (obj.realm && obj.realm.length) {
-        for (const realm of obj.realm) {
-          discord_subscriber.filters.realm.addToSet({ slug: realm.slug, auctions: realm.auctions })
+      if (parse_args.realm && parse_args.realm.length) {
+        for (const realm of parse_args.realm) {
+          discord_subscriber.filters.realm.addToSet(realm)
         }
       }
-      if (obj.character_class && obj.character_class.length) {
-        for (const character_class of obj.character_class) {
+      if (parse_args.character_class && parse_args.character_class.length) {
+        for (const character_class of parse_args.character_class) {
           discord_subscriber.filters.character_class.addToSet(character_class)
         }
       }
-      if (obj.faction) {
-        discord_subscriber.filters.faction = obj.faction
+      if (parse_args.faction) {
+        discord_subscriber.filters.faction = parse_args.faction
       }
-      if (obj.ilvl) {
-        discord_subscriber.filters.ilvl = obj.ilvl
+      if (parse_args.ilvl) {
+        discord_subscriber.filters.ilvl = parse_args.ilvl
       }
-      if (obj.days_from) {
-        discord_subscriber.filters.days_from = obj.days_from
+      if (parse_args.days_from) {
+        discord_subscriber.filters.days_from = parse_args.days_from
       }
-      if (obj.wcl) {
-        discord_subscriber.filters.wcl = obj.wcl
+      if (parse_args.wcl) {
+        discord_subscriber.filters.wcl = parse_args.wcl
       }
-      if (obj.rio) {
-        discord_subscriber.filters.rio = obj.rio
+      if (parse_args.rio) {
+        discord_subscriber.filters.rio = parse_args.rio
       }
       await discord_subscriber.save()
       return message.channel.send(`Subscription for channel ${discord_subscriber.channel_id} has been updated. You could check the filtering params with command **subscribe**`)

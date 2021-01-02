@@ -2,17 +2,14 @@ const mongoose = require('mongoose');
 const { toSlug } = require('../setters');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     _id: {
       type: String,
+      lowercase: true
     },
-    id: {
-      type: Number,
-    },
-    name: {
-      type: String,
-    },
+    id: Number,
+    name: String,
     realm: {
       _id: Number,
       name: String,
@@ -21,9 +18,7 @@ let schema = new mongoose.Schema(
         set: toSlug,
       },
     },
-    faction: {
-      type: String,
-    },
+    faction: String,
     crest: {
       emblem: Object,
       border: Object,
@@ -39,43 +34,21 @@ let schema = new mongoose.Schema(
         rank: Number,
       },
     ],
-    achievement_points: {
-      type: Number,
-    },
-    member_count: {
-      type: Number,
-    },
-    lastModified: {
-      type: Date,
-    },
-    created_timestamp: {
-      type: Date,
-    },
-    statusCode: {
-      type: Number,
-    },
-    isWatched: {
-      type: Boolean,
-    },
-    createdBy: {
-      type: String,
-    },
-    updatedBy: {
-      type: String,
-    },
+    achievement_points: Number,
+    member_count: Number,
+    lastModified: Date,
+    created_timestamp: Date,
+    statusCode: Number,
+    createdBy: String,
+    updatedBy: String,
   },
   {
     timestamps: true,
   },
 );
 
-schema.index({ name: 1 }, { name: 'Name' });
-schema.index({ 'realm.slug': 1 }, { name: 'RealmSlug' });
-schema.index({ id: 1, 'realm.slug': 1 }, { name: 'RenameGuild' });
-schema.index({ updatedAt: 1 }, { name: 'UpdatedAt' });
+schema.index({ 'realm.slug': 1, id: 1 }, { name: 'RenameGuild' });
 
-let guild_db = mongoose.model('guilds', schema, 'guilds');
-
-//mongoose.connection.close()
+const guild_db = mongoose.model('guilds', schema, 'guilds');
 
 module.exports = guild_db;

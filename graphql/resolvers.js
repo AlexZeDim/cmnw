@@ -74,6 +74,16 @@ const root = {
         },
       },
       {
+        $unwind: '$members'
+      },
+      { $unset: [ "members.professions", "members.pets", "members.mounts", "members.isWatched", "members.statusCode", "members.createdBy", "members.updatedBy" ] },
+      {
+        $group: {
+          _id: "$_id",
+          members: { $push: "$members" }
+        }
+      },
+      {
         $lookup: {
           from: 'osint_logs',
           localField: '_id',
@@ -81,7 +91,9 @@ const root = {
           as: 'logs',
         },
       },
-    ]).allowDiskUse(true).exec();
+    ]).option({
+      allowDiskUse: true
+    });
     if (!guild) {
       const { token } = await keys_db.findOne({
         tags: `conglomerat`,
@@ -102,6 +114,16 @@ const root = {
           },
         },
         {
+          $unwind: '$members'
+        },
+        { $unset: [ "members.professions", "members.pets", "members.mounts", "members.isWatched", "members.statusCode", "members.createdBy", "members.updatedBy" ] },
+        {
+          $group: {
+            _id: "$_id",
+            members: { $push: "$members" }
+          }
+        },
+        {
           $lookup: {
             from: 'osint_logs',
             localField: '_id',
@@ -109,7 +131,9 @@ const root = {
             as: 'logs',
           },
         },
-      ]).allowDiskUse(true).exec();
+      ]).option({
+        allowDiskUse: true
+      });
       return guild_updated
     }
     return guild
@@ -117,7 +141,7 @@ const root = {
   hash: async ({ query }) => {
     if (!query.includes('@')) return
     const [ type, hash ] = query.toLowerCase().split("@")
-    return await characters_db.find({ [`hash.${type}`]: hash }).limit(60).lean()
+    return await characters_db.find({ [`hash_${type}`]: hash }).limit(100).lean()
   },
   wowtoken: async ({ region }) => {
     return await wowtoken_db
@@ -215,14 +239,14 @@ const root = {
       {
         $lookup: {
           from: "valuations",
-          let: { item_id: '$item_valuation', connected_realms: '$realms._id', valuations_timestamp: '$realms.valuations' }, //
+          let: { item_id: '$item_valuation', connected_realms: '$realms._id', valuations_timestamp: '$realms.valuations' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
                     { $eq: ["$item_id", "$$item_id"] },
-                    { $ne: [ "$type", 'VENDOR'] },
+                    { $ne: ["$type", 'VENDOR'] },
                     { $in: ["$connected_realm_id", "$$connected_realms"] },
                     { $in: ["$last_modified", "$$valuations_timestamp"] }
                   ]

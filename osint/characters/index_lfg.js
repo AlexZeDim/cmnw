@@ -35,12 +35,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
       await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { lfg : 1 } } )
       console.info(`LFG status revoked for ${osint_lfg.length} characters`)
     }
-    /**
-     * Receive HTML table from Kernel's WoWProgress
-     */
-    const lfg = await scraper
-      .get('https://www.wowprogress.com/gearscore/?lfg=1&raids_week=&lang=ru&sortby=ts')
-      .then((tableData) => [tableData] || []);
+    //TODO const { getLookingForGuild } = require('./get_lfg');
     /**
      * Make sure that table is exist
      */
@@ -89,7 +84,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
             await page.goto(`https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}#difficulty=5`);
             const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
             if (getXpath) {
-              const bestPrefAvg = await page.evaluate(name => name.innerText, getXpath);
+              const bestPrefAvg = await page.evaluate(name => name['innerText'], getXpath);
               if (bestPrefAvg && bestPrefAvg !== '-') {
                 character.lfg.wcl_percentile = parseFloat(bestPrefAvg)
               }
@@ -102,7 +97,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
                 if (response.data) {
                   if ('raid_progression' in response.data) {
                     let raid_progress = response.data['raid_progression'];
-                    let pve_progress = {};
+                    let pve_progress = {};;
                     for (const [key, value] of Object.entries(raid_progress)) {
                       pve_progress[key] = value['summary']
                     }

@@ -1,30 +1,15 @@
-/***
- *
- * char.aggregate by class, id, realm_slug
- * if count + 1 then (check for gender, name, race, faction)
- *
- * if statusCode 200 not longer 200, then =>
- *   then find all (hash_a + hash_b) && class =>
- *     A. (store count and if +1)
- *     B. OSINT original 200.lastModified =
- *
- * @returns {Promise<void>}
- */
-
 const osint_logs_db = require('../../db/models/osint_logs_db');
 
 /**
  *
- * @param root_id
- * @param type
- * @param original_value Old value
- * @param new_value New value
- * @param action
- * @param before New timestamp
- * @param after Old timestamp
- * @returns {{fieldName: *, status: boolean}}
+ * @param root_id {string}
+ * @param type {string}
+ * @param original_value {string}
+ * @param new_value {string}
+ * @param action {string}
+ * @param before {Date}
+ * @param after {Date}
  */
-
 const detectiveRoster = async (
   root_id,
   type,
@@ -34,15 +19,12 @@ const detectiveRoster = async (
   before,
   after
 ) => {
-  /**
-   * Find change
-   */
-  if (original_value === new_value) {
-    return { fieldName: action, status: true };
-  } else {
+  try {
     /**
+     * Find change
      * Log evidence of change // logger message
      */
+    if (original_value !== new_value) return
     let message;
     switch (action) {
       case 'join':
@@ -96,7 +78,7 @@ const detectiveRoster = async (
       default:
         message = '';
     }
-    const event = new osint_logs_db({
+    await osint_logs_db.create({
       root_id: root_id,
       root_history: [root_id],
       type: type,
@@ -107,9 +89,51 @@ const detectiveRoster = async (
       before: before,
       after: after,
     });
-    event.save();
-    return { fieldName: action, status: false };
+  } catch (error) {
+    console.error(`E,${detectiveRoster.name},${root_id}:${error}`)
   }
 }
 
-module.exports = detectiveRoster;
+const detectiveGuildDiffs = async (guildOld, guildNew) => {
+  try {
+    const detectiveCheck = ['name', 'faction'];
+    await Promise.all(detectiveCheck.map(async check => {
+      let message;
+      if (check in guildOld && check in guildNew) {
+        if (guildOld[check] !== guildNew[check]) {
+          if (check === 'name') {
+            message = `${guildNew.name} changed name from ${guildOld[check]} to ${guildNew[check]}`;
+            //TODO update characters from roster and delete original guild?
+            await osint_logs_db.updateMany(
+              {
+                root_id: guildOld._id,
+              },
+              {
+                root_id: guildNew._id,
+                $push: { root_history: guildNew._id },
+              },
+            );
+          }
+
+          if (check === 'faction') message = `${guildNew.name} changed faction from ${guildOld[check]} to ${guildNew[check]}`;
+
+          await osint_logs_db.create({
+            root_id: guildNew._id,
+            root_history: [guildNew._id],
+            type: 'guild',
+            original_value: guildOld[check],
+            new_value: guildNew[check],
+            message: message,
+            action: check,
+            before: guildNew.lastModified,
+            after: guildOld.lastModified,
+          });
+        }
+      }
+    }))
+  } catch (error) {
+    console.error(`E,${detectiveGuildDiffs.name}:${error}`)
+  }
+}
+
+module.exports = { detectiveRoster, detectiveGuildDiffs }

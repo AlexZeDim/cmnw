@@ -123,6 +123,10 @@ const schema = new mongoose.Schema(
       }
     ],
     lfg: {
+      status: {
+        type: Boolean,
+        index: true
+      },
       battle_tag: String,
       rio: Number,
       days_from: Number,
@@ -130,7 +134,8 @@ const schema = new mongoose.Schema(
       wcl_percentile: Number,
       progress: Object,
       role: String,
-      transfer: Boolean
+      transfer: Boolean,
+      languages: [String]
     }
   },
   {

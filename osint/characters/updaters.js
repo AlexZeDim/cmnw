@@ -1,7 +1,19 @@
+/**
+ * Mongo Models
+ */
+
 const characters_db = require('../../db/models/characters_db');
 const personalities_db = require('../../db/models/personalities_db');
+
+/**
+ * Modules
+ */
+
 const crc32 = require('fast-crc32c');
 const { toSlug } = require('../../db/setters');
+const puppeteer = require('puppeteer');
+const axios = require('axios');
+const Xray = require('x-ray');
 
 /**
  *
@@ -10,7 +22,7 @@ const { toSlug } = require('../../db/setters');
  * @param BlizzAPI {Object} Blizzard API
  * @returns {Promise<{}>} returns media information about character
  */
-exports.updateMedia = async (name_slug, realm_slug, BlizzAPI) => {
+const updateMedia = async (name_slug, realm_slug, BlizzAPI) => {
   try {
     const media = {};
     const response = await BlizzAPI.query(`/profile/wow/character/${realm_slug}/${name_slug}/character-media`, {
@@ -40,7 +52,7 @@ exports.updateMedia = async (name_slug, realm_slug, BlizzAPI) => {
     }
     return media
   } catch (error) {
-    console.error(`E,updateMedia,${name_slug}@${realm_slug}:${error}`)
+    console.error(`E,${updateMedia.name},${name_slug}@${realm_slug}:${error}`)
     return {}
   }
 }
@@ -52,7 +64,7 @@ exports.updateMedia = async (name_slug, realm_slug, BlizzAPI) => {
  * @param BlizzAPI {Object} Blizzard API
  * @returns {Promise<{}>} returns mount collection for the selected character
  */
-exports.updateMounts = async (name_slug, realm_slug, BlizzAPI) => {
+const updateMounts = async (name_slug, realm_slug, BlizzAPI) => {
   try {
     const mounts_collection = {};
     const response = await BlizzAPI.query(`/profile/wow/character/${realm_slug}/${name_slug}/collections/mounts`, {
@@ -73,7 +85,7 @@ exports.updateMounts = async (name_slug, realm_slug, BlizzAPI) => {
     })
     return mounts_collection
   } catch (error) {
-    console.error(`E,updateMounts,${name_slug}@${realm_slug}:${error}`)
+    console.error(`E,${updateMounts.name},${name_slug}@${realm_slug}:${error}`)
     return {}
   }
 }
@@ -84,7 +96,7 @@ exports.updateMounts = async (name_slug, realm_slug, BlizzAPI) => {
  * @param hash_a {string} hash_a value for searching similarities
  * @returns {Promise<{}>} returns hash_f value and personality ID
  */
-exports.updatePersonality = async (_id, hash_a) => {
+const updatePersonality = async (_id, hash_a) => {
   try {
     const file = {}
     if ( _id || !hash_a) return file
@@ -109,7 +121,7 @@ exports.updatePersonality = async (_id, hash_a) => {
     }
     return file
   } catch (error) {
-    console.error(`E,updatePersonality,${_id}:${error}`)
+    console.error(`E,${updatePersonality.name},${_id}:${error}`)
     return {}
   }
 }
@@ -121,7 +133,7 @@ exports.updatePersonality = async (_id, hash_a) => {
  * @param BlizzAPI {Object} Blizzard API
  * @returns {Promise<{}>} returns pets collection and hash values for the selected character
  */
-exports.updatePets = async (name_slug, realm_slug, BlizzAPI) => {
+const updatePets = async (name_slug, realm_slug, BlizzAPI) => {
   try {
     const hash_b = [];
     const hash_a = [];
@@ -149,7 +161,7 @@ exports.updatePets = async (name_slug, realm_slug, BlizzAPI) => {
     if (hash_a.length) pets_collection.hash_b = crc32.calculate(Buffer.from(hash_a.toString())).toString(16);
     return pets_collection
   } catch (error) {
-    console.error(`E,updatePets,${name_slug}@${realm_slug}:${error}`)
+    console.error(`E,${updatePets.name},${name_slug}@${realm_slug}:${error}`)
     return {}
   }
 }
@@ -161,7 +173,7 @@ exports.updatePets = async (name_slug, realm_slug, BlizzAPI) => {
  * @param BlizzAPI {Object} Blizzard API
  * @returns {Promise<{}>} returns profession array for the requested character
  */
-exports.updateProfessions = async (name_slug, realm_slug, BlizzAPI) => {
+const updateProfessions = async (name_slug, realm_slug, BlizzAPI) => {
   try {
     const professions = {};
     const response = await BlizzAPI.query(`/profile/wow/character/${realm_slug}/${name_slug}/professions`, {
@@ -229,7 +241,7 @@ exports.updateProfessions = async (name_slug, realm_slug, BlizzAPI) => {
     }
     return professions
   } catch (error) {
-    console.error(`E,updateProfessions,${name_slug}@${realm_slug}:${error}`)
+    console.error(`E,${updateProfessions.name},${name_slug}@${realm_slug}:${error}`)
     return {}
   }
 }
@@ -241,7 +253,7 @@ exports.updateProfessions = async (name_slug, realm_slug, BlizzAPI) => {
  * @param BlizzAPI {Object} Blizzard API
  * @returns {Promise<{}>} returns summary status, like guild, realms and so on
  */
-exports.updateSummary = async (name_slug, realm_slug, BlizzAPI) => {
+const updateSummary = async (name_slug, realm_slug, BlizzAPI) => {
   try {
     const summary = {}
     const response = await BlizzAPI.query(`/profile/wow/character/${realm_slug}/${name_slug}`, {
@@ -292,7 +304,106 @@ exports.updateSummary = async (name_slug, realm_slug, BlizzAPI) => {
     summary.statusCode = 200;
     return summary
   } catch (error) {
-    console.error(`E,updateSummary,${name_slug}@${realm_slug}:${error}`)
+    console.error(`E,${updateSummary.name},${name_slug}@${realm_slug}:${error}`)
     return {}
   }
 }
+
+
+/**
+ * This is quite heavy CPU and RAM function, do not run concurrent!
+ * @param name {string} first-uppercase character's name
+ * @param realm_slug {string} realm slug for current character
+ * @returns {Promise<{}>} return Mythic Logs Performance from Kihra's WarcraftLogs
+ */
+const updateWarcraftLogs = async (name, realm_slug) => {
+  try {
+    const warcraft_logs = {};
+    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.goto(`https://www.warcraftlogs.com/character/eu/${realm_slug}/${name}#difficulty=5`);
+    const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
+    if (getXpath) {
+      const bestPrefAvg = await page.evaluate(name => name['innerText'], getXpath);
+      if (bestPrefAvg && bestPrefAvg !== '-') {
+        warcraft_logs.wcl_percentile = parseFloat(bestPrefAvg)
+      }
+    }
+    await browser.close();
+    return warcraft_logs;
+  } catch (error) {
+    console.log(`E,${updateWarcraftLogs.name},${name}@${realm_slug}:${error}`)
+    return {}
+  }
+}
+
+/**
+ *
+ * @param name {string} first-uppercase character's name
+ * @param realm_slug {string} realm slug for current character
+ * @returns {Promise<{}>}
+ */
+const updateWProgress = async (name, realm_slug) => {
+  try {
+    const wow_progress = {};
+    const x = Xray();
+    const wowprogress = await x(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`), '.registeredTo', ['.language']);
+    if (!Array.isArray(wowprogress) || !wowprogress || !wowprogress.length) return wow_progress
+    await Promise.all(wowprogress.map(line => {
+      const [key, value] = line.split(':')
+      if (key === 'Battletag') wow_progress.battle_tag = value.trim();
+      if (key === 'Looking for guild') wow_progress.transfer = value.includes('ready to transfer');
+      if (key === 'Raids per week') {
+        if (value.includes(' - ')) {
+          const [from, to] = value.split(' - ');
+          wow_progress.days_from = parseInt(from);
+          wow_progress.days_to = parseInt(to)
+        }
+      }
+      if (key === 'Specs playing') wow_progress.role = value.trim()
+      if (key === 'Languages') wow_progress.languages = value.split(',').map(s => s.trim())
+    }))
+    return wow_progress
+  } catch (error) {
+    console.log(`E,${updateWProgress.name},${name}@${realm_slug}:${error}`)
+    return {}
+  }
+}
+
+/**
+ *
+ * @param name {string} first-uppercase character's name
+ * @param realm_slug {string} realm slug for current character
+ * @returns {Promise<{}>}
+ */
+const updateRaiderIO = async (name, realm_slug) => {
+  try {
+    const raider_io = {};
+    const response = await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`));
+    if (!response || !response.data) return raider_io
+    if ('raid_progression' in response.data) {
+      const raid_progress = response.data['raid_progression'];
+      const pve_progress = {};
+      for (const [key, value] of Object.entries(raid_progress)) {
+        pve_progress[key] = value['summary']
+      }
+      raider_io.progress = pve_progress;
+    }
+    if ('mythic_plus_scores_by_season' in response.data) {
+      const rio_score = response.data['mythic_plus_scores_by_season']
+      if (rio_score && rio_score.length) {
+        for (const rio of rio_score) {
+          if ('scores' in rio) {
+            raider_io.rio = rio.scores.all
+          }
+        }
+      }
+    }
+    return raider_io
+  } catch (error) {
+    console.log(`E,${updateRaiderIO.name},${name}@${realm_slug}:${error}`)
+    return {}
+  }
+}
+
+module.exports = { updateSummary, updateMedia, updateMounts, updatePets, updateProfessions, updatePersonality, updateWarcraftLogs, updateWProgress, updateRaiderIO }

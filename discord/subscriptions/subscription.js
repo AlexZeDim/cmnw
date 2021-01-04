@@ -1,19 +1,91 @@
 const { groupBy, differenceBy } = require('lodash')
 const { MessageEmbed } = require('discord.js');
+const { capitalCase }  = require("capital-case");
 const discord_db = require('../../db/models/discord_db');
 const auctions_db = require('../../db/models/auctions_db');
+const characters_db = require('../../db/models/characters_db');
 
 async function subscription ({ _id, type, filters }, channel) {
   try {
 
     switch (type) {
       case 'recruiting':
+
+        if (!filters.realms.length) return await channel.send("No realms were found, please use \`-subscription\` command to try again");
+
         const query = { lfg: { status: true } };
+        if (filters.faction) Object.assign(query, { faction: filters.faction });
+        if (filters.item_level) Object.assign(query, { item_level: { $gte: filters.item_level } });
+        if (filters.rio) query.lfg = { ...query.lfg, ...{ rio: { $gte: filters.rio } } };
+        if (filters.days_from) query.lfg = { ...query.lfg, ...{ days_from: { $gte: filters.days_from } } };
+        if (filters.days_to) query.lfg = { ...query.lfg, ...{ days_to: { $lte: filters.days_to } } };
+        if (filters.wcl_percentile) query.lfg = { ...query.lfg, ...{ wcl_percentile: { $lte: filters.wcl_percentile } } };
+        if (filters.languages) query.lfg = { ...query.lfg, ...{ languages: { $elemMatch: filters.languages } } };
+        Object.assign(query, { 'realm.slug': { $in: [...new Set(filters.realms.map(realm => realm.connected_realm))] } } )
+
+        const characters = await characters_db.find(query).lean().limit(50)
+
+        await Promise.all(characters.map(async character => {
+          const embed = new MessageEmbed();
+          embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm.slug}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm.slug}/${character.name})\n`)
+          embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус & Форжспирит`);
+          if (character.guild) {
+            const guild = {};
+            guild._id = character.guild._id;
+            guild.name = character.guild.name.toString().toUpperCase();
+            if (typeof character.guild.rank !== 'undefined') {
+              if (parseInt(character.guild.rank) === 0) {
+                guild.rank = ' // GM';
+              } else {
+                guild.rank = ` // R${character.guild.rank}`;
+              }
+            }
+            embed.setTitle(`${guild.name}${(guild.rank) ? (guild.rank) : ('')}`)
+            embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild._id}`));
+          }
+
+          if (character.media && character.media.avatar_url) embed.setThumbnail(character.media.avatar_url.toString());
+
+          if (character.faction) {
+            if (character.faction === 'Alliance') {
+              embed.setColor('#006aff');
+            } else if (character.faction === 'Horde') {
+              embed.setColor('#ff0000');
+            }
+          }
+          if (character.lastModified) embed.setTimestamp(character.lastModified);
+          if (character.ilvl) embed.addField('Item Level', character.ilvl.avg, true);
+          if (character.character_class) embed.addField('Class', character.character_class, true);
+          if (character.active_spec) embed.addField('Spec', character.active_spec, true);
+          if (character.hash_a) embed.addField('Hash A', `[${character.hash_a}](https://${process.env.domain}/hash/a@${character.hash_a})`, true);
+          if (character.hash_b) embed.addField('Hash B', `[${character.hash_b}](https://${process.env.domain}/hash/b@${character.hash_b})`, true);
+          if (character.hash_f) embed.addField('Hash F', `[${character.hash_f}](https://${process.env.domain}/hash/f@${character.hash_f})`, true);
+          if (character.lfg) {
+            if (character.lfg.rio) embed.addField('RIO', character.lfg.rio, true);
+            if (character.lfg.language) embed.addField('Language', character.lfg.language.join(','), true);
+            if (character.lfg.wcl_percentile) embed.addField('WCL Best.Perf.Avg', `${character.lfg.wcl_percentile} Mythic`, true);
+            if (character.lfg.role) embed.addField('Role', character.lfg.role.toString().toUpperCase(), true);
+            if (character.lfg.days_from && character.lfg.days_to) embed.addField('RT days', `${character.lfg.days_from} - ${character.lfg.days_to}`, true);
+            if (character.lfg.battle_tag) embed.addField('Battle.tag', character.lfg.battle_tag, true);
+            if (character.lfg.transfer) {
+              embed.addField('Transfer', `:white_check_mark:`, true);
+            } else {
+              embed.addField('Transfer', `:x:`, true);
+            }
+            if (character.lfg.progress) {
+              Object.entries(character.lfg.progress).map(([key, value]) => {
+                embed.addField(capitalCase(key), value, true);
+              })
+            }
+          }
+          await channel.send(embed);
+        }))
+        await discord_db.findByIdAndUpdate(_id, { message_sent: Date.now() } );
         break;
       case 't&s':
       case 'orders':
 
-        if (!filters.realms.length || !filters.items.length) return await channel.send("No realms or items found, please use \`-sub\` to check your filters and try again")
+        if (!filters.realms.length || !filters.items.length) return await channel.send("No realms or items found, please use \`-subscription\` command to try again");
 
         const connected_realms = groupBy(filters.realms, 'connected_realm_id')
 

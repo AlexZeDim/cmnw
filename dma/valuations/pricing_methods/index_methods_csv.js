@@ -43,7 +43,7 @@ async function indexMethodsCSV(path) {
       console.time('Importing')
       const L = data.length;
 
-      for (let i = 209895; i < L; i++) { //FIXME 1
+      for (let i = 1; i < L; i++) {
         const row = {};
         /** Form object from each row */
         await Promise.all([

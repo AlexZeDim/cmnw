@@ -9,14 +9,15 @@ const schema = new mongoose.Schema(
     channel_name: String,
     type: {
       type: String,
-      enum: ['recruiting', 'orders', 't&s'],
-      default: 'recruiting',
+      enum: ['recruiting', 'orders', 'marketdata'],
+      lowercase: true,
       required: true,
     },
     message_sent: {
       type: Number,
       default: 0,
     },
+    lang: String,
     fault_tolerance: Number,
     filters: {
       items: [Number],
@@ -28,8 +29,10 @@ const schema = new mongoose.Schema(
         }
       ],
       faction: String,
-      ilvl: Number,
+      item_level: Number,
       days_from: Number,
+      days_to: Number,
+      language: [String],
       wcl: Number,
       rio: Number,
       character_class: [String],

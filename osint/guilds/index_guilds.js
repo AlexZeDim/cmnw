@@ -19,7 +19,6 @@ const getGuild = require('./get_guild');
  */
 
 (async (
-  t,
   queryKeys = `OSINT-indexGuilds`,
   bulkSize = 1,
 ) => {

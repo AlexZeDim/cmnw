@@ -23,7 +23,7 @@ const questions = [
       'Or you could type language locale group or entire region name and include search on all realms available. Don\'t worry about connected realms, our bot always knows about them and works correctly.\n' +
       'Available examples, for realm or realms: \`silvermoon\`, \`tarren mill, kazzak\` \n' +
       'For language locale group(s): \`en_GB\`, \`en_GB, de_DE\` \n' +
-      'Within the entire region: \`Europe\` \n'
+      'Within the entire region: \`Europe\`'
   },
   {
     id: 2,
@@ -39,7 +39,7 @@ const questions = [
     lang: 'eng',
     question: 'Hm, recruiting, nice choice! :hugging: So let\'s start with query parameters. What language your candidates should know before joining your guild?\n' +
       '**This parameter is optional and can be skipped! In that case the search will completed by every criteria!**\n' +
-      'Available parameters are: \`russian\`, \`english\` or \`skip\`'
+      'Available parameters are: \`russian\`, \`english\`, \`german, french, greek, spanish, polish\` any single one that WoWProgress profile supports or \`skip\`'
   },
   {
     id: 100,
@@ -136,7 +136,7 @@ const questions = [
     id: 200,
     lang: 'eng',
     question: 'And now we need items, but not just items, but their **IDs**. Like previous steps with realms.\n' +
-      'For example: \`142085\`. Or don\`t be shy to use an array of values like \`183017, 183035, 182978\` Come on, only imaging tracking every BoS.. '
+      'For example: \`142085\`. Or don\'t be shy to use an array of values like \`183017, 183035, 182978\` Come on, only imaging tracking every BoS.. '
   },
   {
     id: 200,

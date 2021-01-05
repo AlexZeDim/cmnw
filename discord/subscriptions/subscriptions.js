@@ -51,12 +51,17 @@ const installer = async ({ current, next, type, index, reply, route, lang, filte
         }
         if (['русский', 'russian'].includes(reply)) {
           const { id, question } = questions.find(q => q.lang === lang && q.id === route[type][index+1])
-          filters.language = 'russian';
+          filters.languages = 'russian';
           return { filters: filters, question: question, prev: next, next: id, index: index + 1 }
         }
         if (['английский', 'english'].includes(reply)) {
           const { id, question } = questions.find(q => q.lang === lang && q.id === route[type][index+1])
-          filters.language = 'english';
+          filters.languages = 'english';
+          return { filters: filters, question: question, prev: next, next: id, index: index + 1 }
+        }
+        if (['german', 'french', 'greek', 'spanish', 'polish'].includes(reply)) {
+          const { id, question } = questions.find(q => q.lang === lang && q.id === route[type][index+1])
+          filters.languages = reply;
           return { filters: filters, question: question, prev: next, next: id, index: index + 1 }
         }
         return {};
@@ -204,12 +209,33 @@ const worker = async ({ _id, type, filters }, channel) => {
         if (filters.languages) Object.assign(query, { 'lfg.languages': { '$elemMatch': filters.languages } });
         Object.assign(query, { 'realm.slug': { '$in': [...new Set(filters.realms.map(realm => realm.connected_realm))] } } )
 
-        const characters = await characters_db.find(query).lean().limit(50)
+        const characters = await characters_db.aggregate([
+          {
+            $match: query
+          },
+          {
+            $limit: 50
+          },
+          {
+            $lookup: {
+              from: "realms",
+              localField: "realm._id",
+              foreignField: "_id",
+              as: "realm"
+            }
+          },
+          {
+            $addFields: {
+              realm: { $arrayElemAt: ["$realm", 0] },
+            }
+          }
+        ]);
 
         await Promise.all(characters.map(async character => {
           const embed = new MessageEmbed();
           embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm.slug}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm.slug}/${character.name})\n`)
           embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус & Форжспирит`);
+          embed.setAuthor(`${character.name}@${character.realm.name}`.toUpperCase())
           if (character.guild) {
             const guild = {};
             guild._id = character.guild._id;
@@ -263,7 +289,7 @@ const worker = async ({ _id, type, filters }, channel) => {
         }))
         await discord_db.findByIdAndUpdate(_id, { message_sent: Date.now() } );
         break;
-      case 't&s':
+      case 'marketdata':
       case 'orders':
 
         if (!filters.realms.length || !filters.items.length) return await channel.send("No realms or items found, please use \`-subscription\` command to try again");
@@ -364,7 +390,7 @@ const worker = async ({ _id, type, filters }, channel) => {
                   differenceBy(orders.orders_t1, orders.orders_t0, 'id')
                 ])
 
-                if (type === 't&s') {
+                if (type === 'orders') {
                   const message_text = {
                     message: '',
                     line: '',
@@ -412,7 +438,7 @@ const worker = async ({ _id, type, filters }, channel) => {
                   }
                   if (message_text.message.length) await channel.send(message_text.message)
                 }
-                if (type === 'orders') {
+                if (type === 'marketdata') {
                   const data = {
                     created_quantity: 0,
                     created_oi: 0,
@@ -532,8 +558,6 @@ const subscriptions = async (bot) => {
       })
   } catch (error) {
     console.error(`E,${subscriptions.name}:${error}`)
-  } finally {
-    process.exit(0)
   }
 }
 

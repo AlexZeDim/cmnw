@@ -135,10 +135,7 @@ const schema = new mongoose.Schema(
       progress: Object,
       role: String,
       transfer: Boolean,
-      languages: {
-        type: [String],
-        lowercase: true
-      }
+      languages: [String]
     }
   },
   {

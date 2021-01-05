@@ -269,7 +269,7 @@ const worker = async ({ _id, type, filters }, channel) => {
           if (character.hash_f) embed.addField('Hash F', `[${character.hash_f}](https://${process.env.domain}/hash/f@${character.hash_f})`, true);
           if (character.lfg) {
             if (character.lfg.rio) embed.addField('RIO', character.lfg.rio, true);
-            if (character.lfg.language) embed.addField('Language', character.lfg.language.join(','), true);
+            if (character.lfg.languages) embed.addField('Language', character.lfg.languages.join(','), true);
             if (character.lfg.wcl_percentile) embed.addField('WCL Best.Perf.Avg', `${character.lfg.wcl_percentile} Mythic`, true);
             if (character.lfg.role) embed.addField('Role', character.lfg.role.toString().toUpperCase(), true);
             if (character.lfg.days_from && character.lfg.days_to) embed.addField('RT days', `${character.lfg.days_from} - ${character.lfg.days_to}`, true);
@@ -501,6 +501,7 @@ const worker = async ({ _id, type, filters }, channel) => {
             }
           }
           await discord_db.findOneAndUpdate({ _id: _id, 'filters.timestamps._id': parseInt(connected_realm_id) }, { 'filters.timestamps.$.auctions': t0 } )
+          await discord_db.findByIdAndUpdate(_id, { message_sent: Date.now() } );
         }
         break
       default:

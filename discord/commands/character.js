@@ -44,6 +44,11 @@ module.exports = {
             lastModified
             chosen_covenant
             renown_level
+            professions {
+              name
+              tier
+              skill_points
+            }
             media {
               avatar_url
               bust_url
@@ -94,6 +99,13 @@ module.exports = {
       if (character.average_item_level && character.equipped_item_level) embed.addField('Item Level', `${character.equipped_item_level} // ${character.average_item_level}`, true);
       if (character.media && character.media.avatar_url) embed.setThumbnail(character.media.avatar_url.toString());
       if (character.lastModified) embed.setTimestamp(character.lastModified);
+      if (character.professions && character.professions.length) {
+        character.professions.filter(profession => {
+          if (profession.tier === 'Primary' && profession.skill_points) {
+            embed.addField(profession.name, profession.skill_points, true);
+          }
+        })
+      }
       if (character.createdBy) embed.setFooter(`${character.createdBy} | Gonikon`);
     });
     await message.channel.send(embed);

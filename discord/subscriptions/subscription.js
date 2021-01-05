@@ -15,7 +15,7 @@ async function subscription ({ _id, type, filters }, channel) {
 
         const query = { lfg: { status: true } };
         if (filters.faction) Object.assign(query, { faction: filters.faction });
-        if (filters.item_level) Object.assign(query, { average_item_level: { $gte: filters.item_level } });
+        if (filters.item_level) Object.assign(query, { item_level: { $gte: filters.item_level } });
         if (filters.rio) query.lfg = { ...query.lfg, ...{ rio: { $gte: filters.rio } } };
         if (filters.days_from) query.lfg = { ...query.lfg, ...{ days_from: { $gte: filters.days_from } } };
         if (filters.days_to) query.lfg = { ...query.lfg, ...{ days_to: { $lte: filters.days_to } } };

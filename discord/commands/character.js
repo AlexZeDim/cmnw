@@ -47,7 +47,6 @@ module.exports = {
             professions {
               name
               tier
-              skill_points
             }
             media {
               avatar_url
@@ -97,15 +96,11 @@ module.exports = {
       if (character.hash_f) embed.addField('Hash F', `[${character.hash_f}](https://${process.env.domain}/hash/f@${character.hash_f})`, true);
       if (character.chosen_covenant && character.renown_level) embed.addField('Covenant', `${character.chosen_covenant} // ${character.renown_level}`, true);
       if (character.average_item_level && character.equipped_item_level) embed.addField('Item Level', `${character.equipped_item_level} // ${character.average_item_level}`, true);
+      if (character.professions && character.professions.length) {
+        embed.addField('Professions', character.professions.filter(profession => profession.tier === 'Primary').join(' // '), true);
+      }
       if (character.media && character.media.avatar_url) embed.setThumbnail(character.media.avatar_url.toString());
       if (character.lastModified) embed.setTimestamp(character.lastModified);
-      if (character.professions && character.professions.length) {
-        character.professions.filter(profession => {
-          if (profession.tier === 'Primary' && profession.skill_points) {
-            embed.addField(profession.name, profession.skill_points, true);
-          }
-        })
-      }
       if (character.createdBy) embed.setFooter(`${character.createdBy} | Gonikon`);
     });
     await message.channel.send(embed);

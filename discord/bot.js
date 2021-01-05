@@ -55,7 +55,7 @@ bot.on('message', async message => {
     args = message.content.split(/(?<=^\S+)\s/)[1];
   }
 
-  let command =
+  const command =
     bot.commands.get(commandName) ||
     bot.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 

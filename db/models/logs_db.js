@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     _id: {
       type: String,
@@ -24,6 +23,6 @@ let schema = new mongoose.Schema(
 schema.index({ isIndexed: 1 }, { name: 'isIndexed' });
 schema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 604800 });
 
-let logs_db = mongoose.model('logs', schema, 'logs');
+const logs_db = mongoose.model('logs', schema, 'logs');
 
 module.exports = logs_db;

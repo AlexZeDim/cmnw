@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     connected_realm_id: Number,
     faction: String,
@@ -30,6 +29,6 @@ schema.index(
   { name: 'GoldsQuotes' },
 );
 
-let golds_db = mongoose.model('golds', schema, 'golds');
+const golds_db = mongoose.model('golds', schema, 'golds');
 
 module.exports = golds_db;

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
 /**
  *  Effect - effect flag
@@ -24,7 +23,6 @@ const schema = new mongoose.Schema(
     },
   }
 );
-
 
 const skill_line = mongoose.model('skill_effect', schema, 'skill_effect');
 

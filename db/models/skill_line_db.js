@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
 /**
  * ID - recipeID
@@ -31,7 +30,6 @@ const schema = new mongoose.Schema(
     skill_up_skill_line_id: Number,
   }
 );
-
 
 const skill_line = mongoose.model('skill_line', schema, 'skill_line');
 

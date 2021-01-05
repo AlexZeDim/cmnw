@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { toSlug, fromSlug } = require('../setters');
-mongoose.Promise = global.Promise;
 
 const schema = new mongoose.Schema(
   {

@@ -31,7 +31,7 @@ const schema = new mongoose.Schema(
       item_level: Number,
       days_from: Number,
       days_to: Number,
-      language: [String],
+      languages: [String],
       wcl: Number,
       rio: Number,
       character_class: [String],

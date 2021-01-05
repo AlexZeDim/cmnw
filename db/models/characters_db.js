@@ -5,7 +5,7 @@ mongoose.Promise = global.Promise;
 const schema = new mongoose.Schema(
   {
     /**
-     * _id and id field represents Blizzard GUID name@realm-id
+     * _id and id field represents Blizzard GUID name@realm
      * https://wow.gamepedia.com/GUID
      */
     _id: {
@@ -33,14 +33,13 @@ const schema = new mongoose.Schema(
     guild: {
       _id: {
         type: String,
-        lowercase: true,
-        index: true,
+        lowercase: true
       },
       id: Number,
       name: String,
       rank: Number,
     },
-    ilvl: { //FIXME deprecated
+    ilvl: {
       eq: Number,
       avg: Number,
     },
@@ -80,10 +79,6 @@ const schema = new mongoose.Schema(
     level: Number,
     achievement_points: Number,
     statusCode: Number,
-    average_item_level: Number,
-    equipped_item_level: Number,
-    chosen_covenant: String,
-    renown_level: Number,
     media: {
       avatar_url: String,
       bust_url: String,
@@ -111,6 +106,10 @@ const schema = new mongoose.Schema(
         name: String,
       }
     ],
+    covenant: {
+      chosen_covenant: String,
+      renown_level: Number
+    },
     professions: [
       {
         _id: false,

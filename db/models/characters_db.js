@@ -40,22 +40,12 @@ const schema = new mongoose.Schema(
       name: String,
       rank: Number,
     },
-    ilvl: { //FIXME deprecated
-      eq: Number,
-      avg: Number,
-    },
     /***
      * A - full pets with names unique,
      * B - pet slots,
      * F - file in persona_db
      * T - active title
      */
-    hash: { //TODO deprecated
-      a: String,
-      b: String,
-      f: String,
-      t: String,
-    },
     hash_a: {
       type: String,
       index: true

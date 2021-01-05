@@ -26,7 +26,7 @@ const getCharacter = require('./get_character');
     const keys = await keys_db.find({ tags: /Characters/ }).limit(2);
     await characters_db
       .find()
-      .sort({ 'hash_a': 1 })
+      .sort({ 'hash.a': 1 })
       .lean()
       .cursor({ batchSize: bulkSize })
       .eachAsync(async ({ _id }, iterations) => {

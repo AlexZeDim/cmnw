@@ -59,83 +59,17 @@ const root = {
       .sort({ score: { $meta: 'textScore' } })
       .lean()
     if (!realm) return
-    const [guild] = await guilds_db.aggregate([
-      {
-        $match: {
-          _id: `${nameSlug}@${realm.slug}`,
-        },
-      },
-      {
-        $lookup: {
-          from: 'characters',
-          localField: 'members._id',
-          foreignField: '_id',
-          as: 'members',
-        },
-      },
-      {
-        $unwind: '$members'
-      },
-      { $unset: [ "members.professions", "members.pets", "members.mounts", "members.isWatched", "members.statusCode", "members.createdBy", "members.updatedBy" ] },
-      {
-        $group: {
-          _id: "$_id",
-          members: { $push: "$members" }
-        }
-      },
-      {
-        $lookup: {
-          from: 'osint_logs',
-          localField: '_id',
-          foreignField: 'root_id',
-          as: 'logs',
-        },
-      },
-    ]).option({
-      allowDiskUse: true
-    });
+    const guild = await guilds_db.findById(`${nameSlug}@${realm.slug}`).lean();
     if (!guild) {
-      const { token } = await keys_db.findOne({
-        tags: `conglomerat`,
-      });
+      const { token } = await keys_db.findOne({ tags: `conglomerat` });
       await getGuild({ name: nameSlug, realm: realm, createdBy: 'OSINT-userInput', updatedBy: 'OSINT-userInput', token: token, createOnlyUnique: true })
-      const [guild_updated] = await guilds_db.aggregate([
-        {
-          $match: {
-            _id: `${nameSlug}@${realm.slug}`,
-          },
-        },
-        {
-          $lookup: {
-            from: 'characters',
-            localField: 'members._id',
-            foreignField: '_id',
-            as: 'members',
-          },
-        },
-        {
-          $unwind: '$members'
-        },
-        { $unset: [ "members.professions", "members.pets", "members.mounts", "members.isWatched", "members.statusCode", "members.createdBy", "members.updatedBy" ] },
-        {
-          $group: {
-            _id: "$_id",
-            members: { $push: "$members" }
-          }
-        },
-        {
-          $lookup: {
-            from: 'osint_logs',
-            localField: '_id',
-            foreignField: 'root_id',
-            as: 'logs',
-          },
-        },
-      ]).option({
-        allowDiskUse: true
-      });
+      const guild_updated = await guilds_db.findById(`${nameSlug}@${realm.slug}`).lean();
+      guild_updated.members = await characters_db.find({ _id: { $in: guild_updated.members.map(({_id}) => _id)} }, { professions: 0, pets: 0, mounts: 0, isWatched: 0, statusCode: 0, createdBy: 0, updatedBy: 0 }).lean();
       return guild_updated
     }
+    //TODO promise.all thread
+    guild.members = await characters_db.find({ _id: { $in: guild.members.map(({_id}) => _id)} }, { professions: 0, pets: 0, mounts: 0, isWatched: 0, statusCode: 0, createdBy: 0, updatedBy: 0 }).lean();
+    guild.logs = await osint_logs_db.find({ type: 'guild', root_id: guild._id }).lean()
     return guild
   },
   hash: async ({ query }) => {

@@ -31,17 +31,12 @@ module.exports = {
               slug
               rank
             }
-            ilvl {
-              eq
-              avg
-            }
-            hash {
-              a
-              b
-              c
-              ex
-              t
-            }
+            average_item_level
+            equipped_item_level
+            hash_a
+            hash_b
+            hash_f
+            hash_t
             race
             character_class
             spec

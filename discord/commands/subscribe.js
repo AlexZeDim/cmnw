@@ -1,4 +1,4 @@
-const { subscriptionWizard } = require('../subscriptions/subscriptionWizard')
+const { installer } = require('../subscriptions/subscriptions')
 const discord_db = require('../../db/models/discord_db');
 
 module.exports = {
@@ -52,7 +52,7 @@ module.exports = {
       collector.on('collect', async m => {
         try {
           config.reply = m.content.toLowerCase()
-          const response = await subscriptionWizard(config)
+          const response = await installer(config)
           Object.assign(config, response)
           if (response.question) {
             await message.channel.send(response.question)

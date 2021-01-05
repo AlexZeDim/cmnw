@@ -22,8 +22,8 @@ bot.login(process.env.bluratella).then(r => r);
 
 bot.on('ready', () => {
   console.log(`Logged in as ${bot.user.tag}!`);
-  schedule.scheduleJob('01/5 * * * *', function() {
-   //TODO CRON
+  schedule.scheduleJob('01/5 * * * *', () => {
+
   });
 });
 

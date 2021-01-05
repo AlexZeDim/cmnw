@@ -5,7 +5,7 @@ const characters_db = require('../../db/models/characters_db');
 
 const BlizzAPI = require('blizzapi');
 const { toSlug } = require('../../db/setters');
-const { detectiveDiffs } = require('./detectives');
+const detectiveCharacters = require('./detective_characters');
 
 const clientId = '530992311c714425a0de2c21fcf61c7d';
 const clientSecret = 'HolXvWePoc5Xk8N28IhBTw54Yf8u2qfP';
@@ -56,18 +56,20 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
      * Looking for transfer without rename
      * by hash A and hash B
      */
-    //TODO refactor hash
-    if (args.hash_a) {
-      transfer_character.hash_exists = true;
-      Object.assign(transfer_character.transfer_query, { hash_a: args.hash_a })
-      Object.assign(transfer_character.shadow_query, { hash_a: args.hash_a })
+
+    if (args.hash) {
+      if (args.hash.a) {
+        transfer_character.hash_exists = true;
+        Object.assign(transfer_character.transfer_query, { 'hash.a': args.hash.a })
+        Object.assign(transfer_character.shadow_query, { 'hash.a': args.hash.a })
+      }
+      if (args.hash.b) {
+        transfer_character.hash_exists = true;
+        Object.assign(transfer_character.transfer_query, { 'hash.b': args.hash.b })
+        Object.assign(transfer_character.shadow_query, { 'hash.b': args.hash.b })
+      }
+      if (args.hash.t) transfer_character.title_flag = true;
     }
-    if (args.hash_b) {
-      transfer_character.hash_exists = true;
-      Object.assign(transfer_character.transfer_query, { hash_b: args.hash_b })
-      Object.assign(transfer_character.shadow_query, { hash_b: args.hash_b })
-    }
-    if (args.hash_t) transfer_character.title_flag = true;
 
     if (character_renamed) {
       const character = {
@@ -76,7 +78,7 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
         character_class: character_class,
         level: level,
       }
-      await detectiveDiffs(character_renamed, { ...character, ...args })
+      await detectiveCharacters(character_renamed, { ...character, ...args })
       await characters_db.deleteOne({ _id: character_renamed._id });
     } else {
       /**
@@ -116,8 +118,8 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
             for (const character_transfer of characters_transferred) {
               /** If character has title */
               if (transfer_character.title_flag) {
-                if (character_transfer.hash_t) {
-                  if (args.hash_t === character_transfer.hash_t) {
+                if (character_transfer.hash && character_transfer.hash.t) {
+                  if (args.hash.t === character_transfer.hash.t) {
                     transfer_character.transfer_flag = true
                     transfer_character.candidate = character_transfer
                     break
@@ -125,7 +127,7 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
                 }
               } else {
                 /** If character has no title and rejected character has no title also */
-                if (!character_transfer.hash_t) {
+                if (character_transfer.hash && !character_transfer.hash.t) {
                   transfer_character.transfer_flag = true
                   transfer_character.candidate = character_transfer
                   break
@@ -139,7 +141,7 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
            * if transfer flag === true
            * */
           if (transfer_character.transfer_flag) {
-            await detectiveDiffs(transfer_character, {
+            await detectiveCharacters(transfer_character, {
               ...{
                 name: name,
                 realm: realm,
@@ -193,8 +195,8 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
                 for (const character_shadow of predicted_shadows) {
                   /** If character has title */
                   if (transfer_character.title_flag) {
-                    if (character_shadow.hash && character_shadow.hash_t) {
-                      if (args.hash_t === character_shadow.hash_t) {
+                    if (character_shadow.hash && character_shadow.hash.t) {
+                      if (args.hash.t === character_shadow.hash.t) {
                         transfer_character.transfer_flag = true
                         transfer_character.candidate = character_shadow
                         break
@@ -202,7 +204,7 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
                     }
                   } else {
                     /** If character has no title and rejected character has no title also */
-                    if (!character_shadow.hash_t) {
+                    if (character_shadow.hash && !character_shadow.hash.t) {
                       transfer_character.transfer_flag = true
                       transfer_character.candidate = character_shadow
                       break
@@ -217,7 +219,7 @@ async function shadowCharacter ({ id, name, realm, character_class, level, token
                * if transfer flag === true
                * */
               if (transfer_character.transfer_flag) {
-                await detectiveDiffs(transfer_character, {
+                await detectiveCharacters(transfer_character, {
                   ...{
                     name: name,
                     realm: realm,

@@ -49,7 +49,6 @@ async function lfgQuene (bot) {
           }
         ]);
         if (characters.length) {
-          //TODO refactor this shit
           for (let character of characters) {
             /** Additional filters check */
             if (subscriber.filters) {
@@ -105,11 +104,11 @@ async function lfgQuene (bot) {
             if (character.character_class) {
               embed.addField('Class', character.character_class, true)
             }
-            if (character.active_spec) {
-              embed.addField('Spec', character.active_spec, true)
+            if (character.spec) {
+              embed.addField('Spec', character.spec, true)
             }
-            if (character.hash_f) {
-              embed.addField('Hash F', `[${character.hash_f}](https://${process.env.domain}/hash/f@${character.hash_f})`, true)
+            if (character.hash && character.hash.a) {
+              embed.addField('Hash A', `[${character.hash.a}](https://${process.env.domain}/hash/a@${character.hash.a})`, true)
             }
             if (character.lfg) {
               if (character.lfg.rio) {

@@ -57,10 +57,9 @@ const pricing_methods_db = require('./models/pricing_methods_db');
     /**
      * Remove documents
      */
-    /*
-    const remove = await characters_db.deleteMany({_id: /[А-Я]/})
+
+    const remove = await characters_db.deleteMany({ hash_a: null, statusCode: { $ne: 200 } })
     console.log(remove)
-    */
 
     /**
      * Rename field in a collection

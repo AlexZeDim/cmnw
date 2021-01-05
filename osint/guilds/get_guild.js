@@ -250,9 +250,9 @@ async function getGuild (
                   /** Make sure that both exists */
                   if (character_gm_old && character_gm_new) {
                     /** And both have hash values to check */
-                    if (character_gm_old.hash_a && character_gm_new.hash_a) {
+                    if (character_gm_old.hash.a && character_gm_new.hash.a) {
                       /** Transfer title */
-                      if (character_gm_old.hash_a === character_gm_new.hash_a) {
+                      if (character_gm_old.hash.a === character_gm_new.hash.a) {
                         detectiveRoster(
                           character_gm_new._id,
                           'character',

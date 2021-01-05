@@ -95,7 +95,7 @@ type Character {
     hash_t: String,
     race: String,
     character_class: String,
-    spec: String,
+    active_spec: String,
     gender: String,
     faction: String,
     level: Int,

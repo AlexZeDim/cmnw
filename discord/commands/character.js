@@ -1,6 +1,5 @@
 const { MessageEmbed } = require('discord.js');
 const axios = require('axios');
-const humanizeString = require('humanize-string');
 require('dotenv').config();
 
 /***
@@ -27,8 +26,8 @@ module.exports = {
               slug
             }
             guild {
+              _id
               name
-              slug
               rank
             }
             average_item_level
@@ -36,14 +35,15 @@ module.exports = {
             hash_a
             hash_b
             hash_f
-            hash_t
             race
             character_class
-            spec
+            active_spec
             gender
             faction
             level
             lastModified
+            chosen_covenant
+            renown_level
             media {
               avatar_url
               bust_url
@@ -59,58 +59,42 @@ module.exports = {
       }).then(({ data: { data: { character } } }) => {
       const { _id, name, guild, realm } = character;
       if (guild) {
-        let guild_string = guild.name.toString().toUpperCase();
-        if (guild.rank) guild_string = guild_string.concat(` // ${guild.rank === 0 ? 'GM' : 'R' + guild.rank}`);
-        embed.setTitle(guild_string);
+        const guild_string = {};
+        guild_string.name = guild.name.toString().toUpperCase();
+        if (typeof guild.rank !== 'undefined') {
+          if (parseInt(guild.rank) === 0) {
+            guild_string.rank = ` // GM`
+          } else {
+            guild_string.rank = ` // R${guild.rank}`
+          }
+        }
+
+        embed.setTitle(`${guild_string.name}${(guild_string.rank) ? (guild_string.rank) : ('')}`);
         embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild.slug}@${realm.slug}`));
       }
       if (_id) embed.setAuthor(_id.toUpperCase(), '', encodeURI(`https://${process.env.domain}/character/${name}@${realm.slug}`));
-
-      const fieldsToCheck = [
-        'id',
-        'character_class',
-        'spec',
-        'level',
-        'hash',
-        'ilvl',
-        'faction',
-        'media',
-        'race',
-        'gender',
-        'lastModified',
-        'createdBy',
-      ];
-
-      fieldsToCheck.forEach(field => {
-        if (typeof character[field] === 'object' && character[field] !== null) {
-          if (field === 'hash') {
-            delete character[field].t;
-            Object.entries(character[field]).forEach(([k, v]) => {
-              embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, `[${v}](https://${process.env.domain}/hash/${k}@${v})`, true);
-            });
-          } else if (field === 'media') {
-            embed.setThumbnail(character[field].avatar_url);
-          } else {
-            Object.entries(character[field]).forEach(([k, v]) => {
-              if (v !== null) embed.addField(`${humanizeString(field)} ${humanizeString(k)}`, v, true);
-            });
-          }
-        } else {
-          if (field === 'faction') {
-            if (character[field] === 'Alliance') {
-              embed.setColor('#006aff');
-            } else if (character[field] === 'Horde') {
-              embed.setColor('#ff0000');
-            }
-          } else if (field === 'lastModified') {
-            embed.setTimestamp(character[field]);
-          } else if (field === 'createdBy') {
-            embed.setFooter(`${character[field]} | Gonikon`);
-          } else {
-            embed.addField(humanizeString(field.replace('character_', '')), character[field], true);
-          }
+      if (character.id) embed.addField('ID',character.id, true);
+      if (character.character_class) embed.addField('Class', character.character_class, true);
+      if (character.active_spec) embed.addField('Active Spec', character.active_spec, true);
+      if (character.level) embed.addField('Level', character.level, true);
+      if (character.faction) {
+        if (character.faction === 'Alliance') {
+          embed.setColor('#006aff');
         }
-      });
+        if (character.faction === 'Horde') {
+          embed.setColor('#ff0000');
+        }
+        embed.addField('Faction', character.faction, true);
+      }
+      if (character.race && character.gender) embed.addField('Race & Gender', `${character.race} // ${character.gender}`, true);
+      if (character.hash_a) embed.addField('Hash A', `[${character.hash_a}](https://${process.env.domain}/hash/a@${character.hash_a})`, true);
+      if (character.hash_b) embed.addField('Hash B', `[${character.hash_b}](https://${process.env.domain}/hash/b@${character.hash_b})`, true);
+      if (character.hash_f) embed.addField('Hash F', `[${character.hash_f}](https://${process.env.domain}/hash/f@${character.hash_f})`, true);
+      if (character.chosen_covenant && character.renown_level) embed.addField('Covenant', `${character.chosen_covenant} // ${character.renown_level}`, true);
+      if (character.average_item_level && character.equipped_item_level) embed.addField('Item Level', `${character.equipped_item_level} // ${character.average_item_level}`, true);
+      if (character.media && character.media.avatar_url()) embed.setThumbnail(character.media.avatar_url.toString());
+      if (character.lastModified) embed.setTimestamp(character.lastModified);
+      if (character.createdBy) embed.setFooter(`${character.createdBy} | Gonikon`);
     });
     await message.channel.send(embed);
   },

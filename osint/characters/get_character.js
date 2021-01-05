@@ -241,7 +241,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
       const file = await updatePersonality(character._id, character.hash_a)
       Object.assign(character, file)
     }
-    const result = await character.save({ w: 1, j: true, wtimeout: 10000 })
+    await character.save({ w: 1, j: true, wtimeout: 10000 })
     console.info(`${(character.isNew) ? ('C') : ('U')}:${(iterations) ? (iterations + ':') : ('')}${character._id}:${character.statusCode}`);
     return character;
   } catch (error) {

@@ -3,6 +3,7 @@
  */
 require('../db/connection')
 
+
 /**
  * Modules
  */
@@ -12,19 +13,18 @@ const fs = require('fs');
 const path = require('path');
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
+const lfgQuene = require('./subscriptions/lfg_queue')
+const orderLog = require('./subscriptions/order_log')
+const times_sales = require('./subscriptions/times_sales')
+
 
 /** Init Bot Client */
 
 const bot = new Discord.Client();
 bot.commands = new Discord.Collection();
 
-bot.login(process.env.bluratella).then(r => r);
-
 bot.on('ready', () => {
   console.log(`Logged in as ${bot.user.tag}!`);
-  schedule.scheduleJob('01/5 * * * *', function() {
-   //TODO CRON
-  });
 });
 
 /** Init list of commands */
@@ -93,3 +93,18 @@ bot.on('message', async message => {
     await message.reply('There was an error trying to execute that command!');
   }
 });
+
+
+schedule.scheduleJob('01/5 * * * *', function() {
+  lfgQuene(bot).then(r => r)
+});
+
+schedule.scheduleJob('01/5 * * * *', function() {
+  orderLog(bot).then(r => r)
+});
+
+schedule.scheduleJob('01/5 * * * *', function() {
+  times_sales(bot).then(r => r)
+});
+
+bot.login(process.env.bluratella);

@@ -112,7 +112,7 @@ const subscriptionWizard = async ({ current, next, type, index, reply, route, la
           const wcl_perf = parseInt(reply)
           if (wcl_perf > 9 && wcl_perf < 90) {
             const { id, question } = questions.find(q => q.lang === lang && q.id === route[type][index+1])
-            filters.wcl_percentile = wcl_perf;
+            filters.wcl = wcl_perf;
             return { filters: filters, question: question, prev: next, next: id, index: index + 1 }
           }
         }
@@ -152,7 +152,7 @@ const subscriptionWizard = async ({ current, next, type, index, reply, route, la
         if (!isNaN(reply)) {
           const days_to = parseInt(reply)
           if (days_to > 1 && days_to < 8) {
-            filters.days_to = days_to;
+            filters.days_from = days_to;
             return { filters: filters, prev: next, next: 1000, index: index }
           }
         }

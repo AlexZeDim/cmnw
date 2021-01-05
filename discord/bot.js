@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
+const { subscriptions } = require('./subscriptions/subscriptions');
 
 /** Init Bot Client */
 
@@ -22,8 +23,8 @@ bot.login(process.env.bluratella).then(r => r);
 
 bot.on('ready', () => {
   console.log(`Logged in as ${bot.user.tag}!`);
-  schedule.scheduleJob('01/5 * * * *', () => {
-
+  schedule.scheduleJob('01/5 * * * *', async () => {
+    await subscriptions(bot);
   });
 });
 

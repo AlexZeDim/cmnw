@@ -14,30 +14,26 @@ const { updateWarcraftLogs, updateWProgress, updateRaiderIO } = require('./updat
 const { getLookingForGuild } = require('./get_lfg');
 const { differenceBy } = require('lodash');
 
-schedule.scheduleJob('*/5 * * * *', async () => {
+const index_LFG = async () => {
+  const t = Date.now()
   try {
-    console.time(`OSINT-indexLFG`)
+    console.time(`OSINT-${index_LFG.name}-${t}`)
+
     const [t1, t0] = await Promise.all([
-      await characters_db.find({ lfg: { status: true } }).limit(100), //TODO criteria
+      await characters_db.find({ 'lfg.status': true }).hint({ 'lfg.status': 1 }).limit(100),
       await getLookingForGuild()
     ])
     if (t1 && t1.length) {
-      await characters_db.updateMany({ lfg: { status: true } }, { lfg: { status: false }, $unset: { lfg : 1 } } ) //TODO are we sure about unset?
-      console.info(`LFG status revoked for ${t1.length} characters`)
+      await characters_db.updateMany({ 'lfg.status': true }, { 'lfg.status': false, 'lfg.new': false } )
+      console.info(`Status revoked for ${t1.length} characters`)
     }
     /**
-     * TODO revoke t1 status
+     *
      * If players already exists in OSINT with LFG
      * then => revoke their status for a new once, but keep result in variable
      * for future diffCompare
-     *
-       if (osint_lfg && osint_lfg.length) {
-        await characters_db.updateMany({ isWatched: true }, { isWatched: false, $unset: { lfg : 1 } } )
-        console.info(`LFG status revoked for ${osint_lfg.length} characters`)
-      }
      * */
-
-    const charactersDiff = differenceBy(t1, t0, '_id') //TODO validation for t1 and t0 arrays
+    const charactersDiff = differenceBy(t0, t1, '_id') //TODO validation for t1 and t0 arrays
     if (!Array.isArray(charactersDiff) || !charactersDiff.length) return
     for (const character of charactersDiff) {
 
@@ -51,7 +47,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
       if (wcl && wcl.value) Object.assign(lfg, wcl.value)
       if (wp && wp.value) Object.assign(lfg, wp.value)
       if (rio && rio.value) Object.assign(lfg, rio.value)
-      if (Object.keys(lfg).length > 0) Object.assign(character, lfg)
+      if (Object.keys(lfg).length > 0) Object.assign(character, { lfg: lfg })
 
       if (character.personality && lfg.battle_tag) {
         await personalities_db.findOneAndUpdate({ _id: character.personality, 'aliases.value': { $ne: lfg.battle_tag }}, { '$push': {'aliases': { type: 'battle.tag', value: lfg.battle_tag } } })
@@ -61,10 +57,12 @@ schedule.scheduleJob('*/5 * * * *', async () => {
   } catch (error) {
     console.error(error)
   } finally {
-    console.timeEnd(`OSINT-indexLFG`)
+    console.time(`OSINT-${index_LFG.name}-${t}`)
     process.exit(0)
   }
-});
+}
 
-
+schedule.scheduleJob('*/5 * * * *', async function(){
+  await index_LFG()
+})
 

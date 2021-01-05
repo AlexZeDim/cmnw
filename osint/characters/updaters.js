@@ -332,7 +332,7 @@ const updateWarcraftLogs = async (name, realm_slug) => {
     await browser.close();
     return warcraft_logs;
   } catch (error) {
-    console.log(`E,${updateWarcraftLogs.name},${name}@${realm_slug}:${error}`)
+    console.error(`E,${updateWarcraftLogs.name},${name}@${realm_slug}:${error}`)
     return {}
   }
 }
@@ -365,7 +365,7 @@ const updateWProgress = async (name, realm_slug) => {
     }))
     return wow_progress
   } catch (error) {
-    console.log(`E,${updateWProgress.name},${name}@${realm_slug}:${error}`)
+    console.error(`E,${updateWProgress.name},${name}@${realm_slug}:${error}`)
     return {}
   }
 }
@@ -401,7 +401,7 @@ const updateRaiderIO = async (name, realm_slug) => {
     }
     return raider_io
   } catch (error) {
-    console.log(`E,${updateRaiderIO.name},${name}@${realm_slug}:${error}`)
+    console.error(`E,${updateRaiderIO.name},${name}@${realm_slug}:${error}`)
     return {}
   }
 }

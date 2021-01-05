@@ -16,13 +16,14 @@ const personalities_db = require('../../db/models/personalities_db');
         },
         {
           $match: {
-            statusCode: 200,
-            hash_a: { $ne: null },
+            'statusCode': 200,
+            'hash': { $exists: true },
+            'hash.a': { $ne: null },
           },
         },
         {
           $group: {
-            _id: '$hash_a'
+            _id: '$hash.a'
           },
         }
       ])
@@ -35,8 +36,8 @@ const personalities_db = require('../../db/models/personalities_db');
         async group => {
 
           const [personalities, block] = await Promise.all([
-            await characters_db.find({ hash_a: group._id }).distinct('personality'),
-            await characters_db.find({ hash_a: group._id }),
+            await characters_db.find({ 'hash.a': group._id }).distinct('personality'),
+            await characters_db.find({ 'hash.a': group._id }),
           ])
           /**
            * If there are no profiles, we create it
@@ -50,7 +51,7 @@ const personalities_db = require('../../db/models/personalities_db');
                 value: alias._id
               }))
             })
-            await Promise.all(block.map(async character => await characters_db.findByIdAndUpdate(character._id, { hash_f: file._id.toString().substr(-6), personality: file._id } )));
+            await Promise.all(block.map(async character => await characters_db.findByIdAndUpdate(character._id, { 'hash.f': file._id.toString().substr(-6), personality: file._id } )));
           } else if (personalities.length === 1 && block.length) {
             const persona = await personalities_db.findById(personalities[0])
             await Promise.all(block.map(character => persona.aliases.addToSet({
@@ -59,7 +60,7 @@ const personalities_db = require('../../db/models/personalities_db');
             })))
             persona.markModified('aliases')
             await persona.save()
-            await Promise.all(block.map(async character => await characters_db.findByIdAndUpdate(character._id, { hash_f: persona._id.toString().substr(-6), personality: persona._id } )));
+            await Promise.all(block.map(async character => await characters_db.findByIdAndUpdate(character._id, { 'hash.f': persona._id.toString().substr(-6), personality: persona._id } )));
             console.log(persona)
           } else if (personalities.length > 1 && block.length) {
             console.warn(`E:${group._id}:${personalities.length}#${block.length}`);

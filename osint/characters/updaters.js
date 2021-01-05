@@ -361,7 +361,7 @@ const updateWProgress = async (name, realm_slug) => {
         }
       }
       if (key === 'Specs playing') wow_progress.role = value.trim()
-      if (key === 'Languages') wow_progress.languages = value.split(',').map(s => s.trim())
+      if (key === 'Languages') wow_progress.languages = value.split(',').map(s => s.toLowerCase().trim())
     }))
     return wow_progress
   } catch (error) {

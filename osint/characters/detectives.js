@@ -80,7 +80,7 @@ const detectiveDiffs = async (character_u, character_o) => {
   }
 }
 
-const detectiveShadows = async ({ _id, id, name, realm, character_class, level, token, ...args }) => {
+const detectiveShadows = async ({ _id, id, name, realm, character_class, level, ...args }) => {
    try {
      /**
       * If we found character with the duplicate id within the realm

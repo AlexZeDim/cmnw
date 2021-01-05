@@ -33,7 +33,10 @@ const schema = new mongoose.Schema(
       item_level: Number,
       days_from: Number,
       days_to: Number,
-      languages: [String],
+      languages: {
+        type: [String],
+        lowercase: true
+      },
       wcl: Number,
       rio: Number,
       character_class: [String],

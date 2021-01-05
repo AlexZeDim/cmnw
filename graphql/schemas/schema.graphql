@@ -105,7 +105,6 @@ type Character {
     media: Character_Media,
     createdBy: String,
     updatedBy: String,
-    isWatched: Boolean,
     personality: String,
     logs: [Logs],
     chosen_covenant: String,
@@ -130,7 +129,6 @@ type Guild {
     statusCode: Int,
     createdBy: String,
     updatedBy: String,
-    isWatched: Boolean,
     logs: [Logs]
     createdAt: Float,
     updatedAt: Float,

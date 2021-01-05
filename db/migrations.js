@@ -16,7 +16,19 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove field via $unset
      */
     /*
-    const unset = await characters_db.updateMany({ personality: { $ne: null } }, { $unset: { "personality": 1 } });
+    const unset = await characters_db.updateMany(
+      {},
+      {
+        $unset:
+          {
+            hash: 1,
+            ilvl: 1,
+            covenant: 1,
+            isWatched: 1,
+            lfg: 1,
+          }
+      }
+    );
     console.log(unset)
     */
 
@@ -24,7 +36,21 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * UpdateMany
      */
     /*
-    const updMany = await items.updateMany({ contracts: true }, { contracts: false });
+    const updMany = await characters_db.updateMany(
+      {},
+      [
+        {
+          $set: {
+            hash_a: "$hash.a",
+            hash_b: "$hash.b",
+            hash_f: "$hash.f",
+            hash_t: "$hash.t",
+            average_item_level: "$ilvl.avg",
+            equipped_item_level: "$ilvl.eq"
+          }
+        }
+      ]
+    );
     console.log(updMany)
     */
 

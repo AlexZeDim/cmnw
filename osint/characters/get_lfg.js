@@ -14,7 +14,7 @@ exports.getLookingForGuild = async () => {
       await scraper.get('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
       await scraper.get('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then((tableData) => tableData[0] || [])
     ])
-    await Promise.all(lfg_pages.map(async req_promise => {
+    await Promise.allSettled(lfg_pages.map(async req_promise => {
       if (req_promise.status !== 'fulfilled' || !Array.isArray(req_promise.value) || !req_promise.value.length) return characters
         await Promise.allSettled(
           req_promise.value.map(async c => {
@@ -23,9 +23,9 @@ exports.getLookingForGuild = async () => {
              */
             if ('Character' in c && 'Realm' in c) {
               const character = await getCharacter({
-                name: c.Character,
+                name: c.Character.trim(),
                 realm: {
-                  slug: c.Realm.split('-')[1],
+                  slug: c.Realm.split('-')[1].trim(),
                 },
                 createdBy: `OSINT-LFG`,
                 updatedBy: `OSINT-LFG`,

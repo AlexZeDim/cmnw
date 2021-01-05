@@ -47,7 +47,7 @@ module.exports = {
         errors: ['time'],
       });
 
-      await message.channel.send(`    ${message.author.username}\nGreeting / Привет \n ${(config.type) ? ('Are you ready to get started with subscriptions? / Готов познакомится с подписками на события?\n') : ('I saw you already familiar with subscriptions. So what about editing the current one? / Смотрю, ты уже знаком с подписками, как насчет того, что бы отредактировать параметры текущих уведомлений?\n')}Type one of two language names below to start / Выбери и напиши один из двух языков, что бы начать \n \`english\` / \`русский\``)
+      await message.channel.send(`${message.author.username}\nGreeting / Привет \n ${(config.type) ? ('Are you ready to get started with subscriptions? / Готов познакомится с подписками на события?\n') : ('I saw you already familiar with subscriptions. So what about editing the current one? / Смотрю, ты уже знаком с подписками, как насчет того, что бы отредактировать параметры текущих уведомлений?\n')}Type one of two language names below to start / Выбери и напиши один из двух языков, что бы начать \n \`english\` / \`русский\``)
 
       collector.on('collect', async m => {
         try {

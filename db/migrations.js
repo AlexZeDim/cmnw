@@ -25,7 +25,6 @@ const pricing_methods_db = require('./models/pricing_methods_db');
             ilvl: 1,
             covenant: 1,
             isWatched: 1,
-            lfg: 1,
           }
       }
     );

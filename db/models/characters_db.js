@@ -127,7 +127,6 @@ const schema = new mongoose.Schema(
         type: Boolean,
         index: true
       },
-      new: Boolean,
       battle_tag: String,
       rio: Number,
       days_from: Number,

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     _id: Number,
     level: Number,
@@ -21,6 +21,6 @@ let schema = new mongoose.Schema(
   },
 );
 
-let bonus_lists_db = mongoose.model('bonus_lists', schema, 'bonus_lists');
+const bonus_lists_db = mongoose.model('bonus_lists', schema, 'bonus_lists');
 
 module.exports = bonus_lists_db;

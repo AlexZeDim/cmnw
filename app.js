@@ -26,6 +26,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 /** GraphQL */
 const schema = fs.readFileSync(path.resolve(__dirname, './graphql/schemas/schema.graphql'), 'utf-8');
 
+/**
+ * TODO cors()
+ */
+
 app.use('/graphql', graphqlHTTP({
   schema: buildSchema(schema),
   rootValue: root,

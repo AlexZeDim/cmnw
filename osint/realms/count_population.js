@@ -99,7 +99,7 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
     /** Unique classes from players */
     const classes_unique = await characters_db.find({ character_class: { $ne: null } }).distinct('character_class')
 
-    await realms_db.find().cursor().eachAsync(async realm => {
+    await realms_db.find({ locale: 'ru_RU' }).cursor().eachAsync(async realm => {
 
       /**
        * Calculations populations for each realm

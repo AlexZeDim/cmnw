@@ -23,8 +23,8 @@ module.exports = {
             name
           }
           guild {
+            _id
             name
-            slug
           }
           faction
         } 
@@ -54,7 +54,7 @@ module.exports = {
               `Name: [${hash[i].name}](https://${process.env.domain}/character/${hash[i]._id})
 ${'realm' in hash[i] ? `Realm: ${hash[i].realm.name}` : ``} 
 ${'faction' in hash[i] ? `Faction: ${hash[i].faction}` : ``} 
-${guild ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${guild.slug}@${hash[i].realm.slug})` : ``} 
+${guild ? `Guild: [${guild.name}](https://${process.env.domain}/guild/${guild._id})` : ``} 
 ${guild && typeof guild.rank !== 'undefined' ? `Rank: ${parseInt(guild.rank) === 0 ? 'GM' : `R${guild.rank}`}` : ``} 
  ─────────────`,
   true,

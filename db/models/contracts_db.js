@@ -3,7 +3,7 @@ mongoose.Promise = global.Promise;
 
 const { Round2 } = require('../setters');
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     _id: {
       type: String,
@@ -52,6 +52,6 @@ let schema = new mongoose.Schema(
 );
 
 
-let contracts_db = mongoose.model('contracts', schema, 'contracts');
+const contracts_db = mongoose.model('contracts', schema, 'contracts');
 
 module.exports = contracts_db;

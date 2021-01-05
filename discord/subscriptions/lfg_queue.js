@@ -4,6 +4,7 @@ const { capitalCase }  = require("capital-case");
 const discord_db = require('../../db/models/discord_db')
 const characters_db = require('../../db/models/characters_db')
 
+
 async function lfgQuene (bot) {
   try {
     /** Every discord subscriber */
@@ -13,9 +14,13 @@ async function lfgQuene (bot) {
       .cursor({ batchSize: 10 })
       .eachAsync( async subscriber => {
         const guild = await bot.guilds.cache.get(subscriber.discord_id);
-        if (!guild) return
+        if (!guild) {
+          return
+        }
         const guild_channel = await guild.channels.cache.get(subscriber.channel_id)
-        if (!guild_channel) return
+        if (!guild_channel) {
+          return
+        }
         const query = { isWatched: true, updatedBy: 'OSINT-LFG-NEW' }
         if (subscriber.filters) {
           if (subscriber.filters.realm && subscriber.filters.realm.length) {

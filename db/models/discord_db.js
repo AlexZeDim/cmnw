@@ -6,6 +6,8 @@ const schema = new mongoose.Schema(
     discord_name: String,
     channel_id: String,
     channel_name: String,
+    author_id: String,
+    author_name: String,
     type: {
       type: String,
       enum: ['recruiting', 'orders', 'marketdata'],

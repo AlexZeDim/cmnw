@@ -62,7 +62,7 @@ let schema = new mongoose.Schema(
     character_class: {
       type: String,
     },
-    active_spec: {
+    spec: {
       type: String,
     },
     gender: {

@@ -8,7 +8,7 @@ async function subscription ({ _id, type, filters }, channel) {
 
     switch (type) {
       case 'recruiting':
-        const query = { lfg: { status: true } };
+
         break;
       case 't&s':
       case 'orders':

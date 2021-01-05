@@ -13,15 +13,15 @@ async function subscription ({ _id, type, filters }, channel) {
 
         if (!filters.realms.length) return await channel.send("No realms were found, please use \`-subscription\` command to try again");
 
-        const query = { lfg: { status: true } };
-        if (filters.faction) Object.assign(query, { faction: filters.faction });
-        if (filters.item_level) Object.assign(query, { average_item_level: { $gte: filters.item_level } });
-        if (filters.rio) query.lfg = { ...query.lfg, ...{ rio: { $gte: filters.rio } } };
-        if (filters.days_from) query.lfg = { ...query.lfg, ...{ days_from: { $gte: filters.days_from } } };
-        if (filters.days_to) query.lfg = { ...query.lfg, ...{ days_to: { $lte: filters.days_to } } };
-        if (filters.wcl_percentile) query.lfg = { ...query.lfg, ...{ wcl_percentile: { $lte: filters.wcl_percentile } } };
-        if (filters.languages) query.lfg = { ...query.lfg, ...{ languages: { $elemMatch: filters.languages } } };
-        Object.assign(query, { 'realm.slug': { $in: [...new Set(filters.realms.map(realm => realm.connected_realm))] } } )
+        const query = { 'lfg.status': true, 'lfg.new': true };
+        if (filters.faction) Object.assign(query, { 'lfg.faction': filters.faction });
+        if (filters.item_level) Object.assign(query, { average_item_level: { '$gte': filters.item_level } });
+        if (filters.rio) Object.assign(query, { 'lfg.rio': { '$gte': filters.rio } });
+        if (filters.days_from) Object.assign(query, { 'lfg.days_from': { '$gte': filters.days_from } });
+        if (filters.days_to) Object.assign(query, { 'lfg.days_to': { '$lte': filters.days_to } });
+        if (filters.wcl_percentile) Object.assign(query, { 'lfg.wcl_percentile': { '$gte': filters.wcl_percentile } });
+        if (filters.languages) Object.assign(query, { 'lfg.languages': { '$elemMatch': filters.languages } });
+        Object.assign(query, { 'realm.slug': { '$in': [...new Set(filters.realms.map(realm => realm.connected_realm))] } } )
 
         const characters = await characters_db.find(query).lean().limit(50)
 

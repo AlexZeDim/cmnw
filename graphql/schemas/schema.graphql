@@ -54,6 +54,19 @@ type Realm {
 Character Sub-Fields
 """
 
+type Ilvl {
+    eq: Int!,
+    avg: Int!,
+}
+
+type Hash {
+    a: String,
+    b: String,
+    c: String,
+    ex: String,
+    t: String,
+}
+
 type Profession {
     name: String,
     tier: String,
@@ -81,18 +94,19 @@ type Logs {
     after: Float,
 }
 
+type Covenant {
+    chosen_covenant: String,
+    renown_level: Int
+}
+
 type Character {
     _id: ID!,
     id: Float!,
     name: String!,
     realm: Realm!,
     guild: Guild,
-    average_item_level: Int,
-    equipped_item_level: Int,
-    hash_a: String,
-    hash_b: String,
-    hash_f: String,
-    hash_t: String,
+    ilvl: Ilvl,
+    hash: Hash,
     race: String,
     character_class: String,
     spec: String,
@@ -108,8 +122,7 @@ type Character {
     isWatched: Boolean,
     personality: String,
     logs: [Logs],
-    chosen_covenant: String,
-    renown_level: Int
+    covenant: Covenant,
     createdAt: Float,
     updatedAt: Float,
 }

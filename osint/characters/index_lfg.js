@@ -21,6 +21,10 @@ schedule.scheduleJob('*/5 * * * *', async () => {
       await characters_db.find({ lfg: { status: true } }).limit(100), //TODO criteria
       await getLookingForGuild()
     ])
+    if (t1 && t1.length) {
+      await characters_db.updateMany({ lfg: { status: true } }, { lfg: { status: false }, $unset: { lfg : 1 } } ) //TODO are we sure about unset?
+      console.info(`LFG status revoked for ${t1.length} characters`)
+    }
     /**
      * TODO revoke t1 status
      * If players already exists in OSINT with LFG
@@ -43,7 +47,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
         await updateWProgress(character.name, character.realm.slug),
         await updateRaiderIO(character.name, character.realm.slug),
       ])
-      const lfg = {};
+      const lfg = { status: true, new: true };
       if (wcl && wcl.value) Object.assign(lfg, wcl.value)
       if (wp && wp.value) Object.assign(lfg, wp.value)
       if (rio && rio.value) Object.assign(lfg, rio.value)
@@ -52,7 +56,7 @@ schedule.scheduleJob('*/5 * * * *', async () => {
       if (character.personality && lfg.battle_tag) {
         await personalities_db.findOneAndUpdate({ _id: character.personality, 'aliases.value': { $ne: lfg.battle_tag }}, { '$push': {'aliases': { type: 'battle.tag', value: lfg.battle_tag } } })
       }
-      //TODO character.updatedBy = 'OSINT-LFG-NEW', save of update
+      await character.save();
     }
   } catch (error) {
     console.error(error)

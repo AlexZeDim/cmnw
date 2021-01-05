@@ -2,14 +2,12 @@ const mongoose = require('mongoose');
 const { toSlug } = require('../setters');
 mongoose.Promise = global.Promise;
 
-const schema = new mongoose.Schema(
+let schema = new mongoose.Schema(
   {
     root_id: {
       type: String,
       set: toSlug,
       get: toSlug,
-      lowercase: true,
-      index: true
     },
     root_history: {
       type: Array,
@@ -30,6 +28,9 @@ const schema = new mongoose.Schema(
   },
 );
 
-const osint_logs_db = mongoose.model('osint_logs', schema, 'osint_logs');
+schema.index({ root_id: 1 }, { name: 'RootID' });
+schema.index({ type: 1, root_id: 1 }, { name: 'Search' });
+
+let osint_logs_db = mongoose.model('osint_logs', schema, 'osint_logs');
 
 module.exports = osint_logs_db;

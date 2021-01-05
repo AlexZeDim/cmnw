@@ -15,18 +15,15 @@ const schema = new mongoose.Schema(
     },
     message_sent: {
       type: Number,
-      default: 0,
+      default: 0
     },
-    fault_tolerance: Number,
     filters: {
-      items: [Number],
-      realms: [Number],
-      timestamps: [
-        {
-          _id: Number,
-          auctions: Number
-        }
-      ],
+      id: [Number],
+      realm: [{
+        _id: false,
+        slug: String,
+        auctions: Number,
+      }],
       faction: String,
       ilvl: Number,
       days_from: Number,

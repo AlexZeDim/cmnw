@@ -163,7 +163,6 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
 
         Object.assign(character, summary.value)
         /**
-         * FIXME
          * Solving the guild problem
          * if guild in updated data not found
          * guild = undefined
@@ -242,9 +241,9 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
       const file = await updatePersonality(character._id, character.hash_a)
       Object.assign(character, file)
     }
-    //const result = await character.save({ w: 1, j: true, wtimeout: 10000 })
+    const result = await character.save({ w: 1, j: true, wtimeout: 10000 })
     console.info(`${(character.isNew) ? ('C') : ('U')}:${(iterations) ? (iterations + ':') : ('')}${character._id}:${character.statusCode}`);
-    return character; //TODO result
+    return character;
   } catch (error) {
     console.error(`E,getCharacter,${_id},${error}`);
   }

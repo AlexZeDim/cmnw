@@ -141,22 +141,22 @@ const root = {
   hash: async ({ query }) => {
     if (!query.includes('@')) return
     const [ type, hash ] = query.toLowerCase().split("@")
-    return await characters_db.find({ [`hash_${type}`]: hash }).limit(100).lean()
+    return characters_db.find({ [`hash_${type}`]: hash }).limit(100).lean();
   },
   wowtoken: async ({ region }) => {
-    return await wowtoken_db
+    return wowtoken_db
       .findOne({ region: region })
       .sort({ _id: -1 })
       .lean();
   },
   realms: async ({ name }) => {
-    return await realms_db
+    return realms_db
       .find(
         { $text: { $search: name } },
         { score: { $meta: 'textScore' } },
       )
       .sort({ score: { $meta: 'textScore' } })
-      .lean()
+      .lean();
   },
   item: async ({ id, extended }) => {
     if (!id || !id.includes('@')) return

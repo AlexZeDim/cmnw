@@ -23,8 +23,8 @@ bot.login(process.env.bluratella).then(r => r);
 
 bot.on('ready', () => {
   console.log(`Logged in as ${bot.user.tag}!`);
-  schedule.scheduleJob('01/5 * * * *', async () => {
-    await subscriptions(bot);
+  schedule.scheduleJob('01/5 * * * *', () => {
+    subscriptions(bot).catch(e => console.error(e));
   });
 });
 

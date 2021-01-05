@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
 const schema = new mongoose.Schema(
   {
@@ -87,10 +86,6 @@ schema.index({ recipe_id: -1 }, { name: 'recipe_ID' });
 schema.index({ item_id: -1 }, { name: 'itemID' });
 schema.index({ spell_id: -1 }, { name: 'spellID' });
 
-const pricing_methods_db = mongoose.model(
-  'pricing_methods',
-  schema,
-  'pricing_methods',
-);
+const pricing_methods_db = mongoose.model('pricing_methods', schema, 'pricing_methods');
 
 module.exports = pricing_methods_db;

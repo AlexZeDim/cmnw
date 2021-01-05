@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     author: String,
     mentions: [String],
@@ -32,6 +31,6 @@ let schema = new mongoose.Schema(
   },
 );
 
-let message_db = mongoose.model('messages', schema, 'messages');
+const message_db = mongoose.model('messages', schema, 'messages');
 
 module.exports = message_db;

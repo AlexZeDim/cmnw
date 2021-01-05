@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     _id: Number,
     region: {
@@ -16,6 +15,6 @@ let schema = new mongoose.Schema(
   },
 );
 
-let wowtoken_db = mongoose.model('wowtoken', schema, 'wowtoken');
+const wowtoken_db = mongoose.model('wowtoken', schema, 'wowtoken');
 
 module.exports = wowtoken_db;

@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
 
-let schema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     /**
      * From Battle.Net ?
@@ -72,6 +71,6 @@ schema.index({ 'display_id': 1, }, { name: 'DisplayID' });
 schema.index({ 'item_id': 1, }, { name: 'ItemID' });
 schema.index({ 'spell_id': 1, }, { name: 'SpellID' });
 
-let pets_db = mongoose.model('pets', schema, 'pets');
+const pets_db = mongoose.model('pets', schema, 'pets');
 
 module.exports = pets_db;

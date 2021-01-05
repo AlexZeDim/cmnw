@@ -29,7 +29,6 @@ const schema = new mongoose.Schema(
         _id: {
           type: String,
           set: toSlug,
-          lowercase: true
         },
         id: Number,
         rank: Number,

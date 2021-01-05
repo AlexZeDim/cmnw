@@ -245,7 +245,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     console.info(`${(character.isNew) ? ('C') : ('U')}:${(iterations) ? (iterations + ':') : ('')}${character._id}:${character.statusCode}`);
     return character;
   } catch (error) {
-    console.error(`E,getCharacter,${_id},${error}`);
+    console.error(`E,${getCharacter.name},${_id},${error}`);
   }
 }
 

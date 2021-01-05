@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { toSlug, fromSlug } = require('../setters');
 mongoose.Promise = global.Promise;
 
-const schema = new mongoose.Schema(
+let schema = new mongoose.Schema(
   {
     /**
      * _id and id field represents Blizzard GUID name@realm
@@ -10,7 +10,6 @@ const schema = new mongoose.Schema(
      */
     _id: {
       type: String,
-      lowercase: true
     },
     id: {
       type: Number,
@@ -18,7 +17,6 @@ const schema = new mongoose.Schema(
     },
     name: {
       type: String,
-      index: true,
       set: fromSlug,
       get: fromSlug,
     },
@@ -31,12 +29,12 @@ const schema = new mongoose.Schema(
       },
     },
     guild: {
-      _id: {
-        type: String,
-        lowercase: true
-      },
-      id: Number,
+      _id: String,
       name: String,
+      slug: {
+        type: String,
+        set: toSlug,
+      },
       rank: Number,
     },
     ilvl: {
@@ -45,54 +43,58 @@ const schema = new mongoose.Schema(
     },
     /***
      * A - full pets with names unique,
-     * B - pet slots,
-     * F - file in persona_db
+     * B - mount collection,
+     * C - pet slots,
+     * EX - id + class
      * T - active title
      */
-    hash: { //TODO deprecated
+    hash: {
       a: String,
       b: String,
+      c: String,
       f: String,
+      ex: String,
       t: String,
     },
-    hash_a: {
+    race: {
       type: String,
-      index: true
     },
-    hash_b: {
+    character_class: {
       type: String,
-      index: true
     },
-    hash_f: {
+    active_spec: {
       type: String,
-      index: true
     },
-    hash_t: {
+    gender: {
       type: String,
-      index: true
     },
-    race: String,
-    character_class: String,
-    active_spec: String,
-    gender: String,
-    faction: String,
-    level: Number,
-    achievement_points: Number,
-    statusCode: Number,
-    media: {
-      avatar_url: String,
-      bust_url: String,
-      render_url: String,
+    faction: {
+      type: String,
+    },
+    level: {
+      type: Number,
     },
     lastModified: {
       type: Date,
       default: Date.now,
     },
-    createdBy: String,
-    updatedBy: String,
-    personality: {
+    statusCode: {
+      type: Number,
+    },
+    media: {
+      avatar_url: String,
+      bust_url: String,
+      render_url: String,
+    },
+    createdBy: {
       type: String,
-      index: true
+    },
+    updatedBy: {
+      type: String,
+    },
+    isWatched: {
+      type: Boolean,
+      default: false,
     },
     mounts: [
       {
@@ -130,13 +132,27 @@ const schema = new mongoose.Schema(
       progress: Object,
       role: String,
       transfer: Boolean
-    }
+    },
+    personality: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   },
 );
 
+schema.index({ 'name': 1 }, { name: 'Name' });
+schema.index({ 'id': 1 }, { name: 'ID' });
+schema.index({ 'isWatched': 1 }, { name: 'LFG' });
+
+schema.index({ 'hash.a': 1 }, { name: 'Hash A' });
+schema.index({ 'hash.b': 1 }, { name: 'Hash B' });
+schema.index({ 'hash.c': 1 }, { name: 'Hash C' });
+schema.index({ 'hash.f': 1 }, { name: 'Hash F' });
+schema.index({ 'hash.t': 1 }, { name: 'Hash T' });
+
+schema.index({ 'personality': 1 }, { name: 'VOLUSPA' });
 schema.index({ 'realm.slug': 1, 'id': 1 }, { name: 'ByGUID' });
 
 const characters_db = mongoose.model('characters', schema, 'characters');

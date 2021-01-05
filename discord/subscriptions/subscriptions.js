@@ -490,7 +490,7 @@ const worker = async ({ _id, type, filters }, channel) => {
                   if (data.created_quantity && data.removed_quantity) {
                     message_embed.addField(
                       '────── CHANGED ──────',
-                      `Orders: ${created.length - removed.length}\nQuantity: ${data.created_quantity - data.removed_quantity}\nInterest Diff: ${(data.created_oi - data.removed_quantity).toFixed(2)}g\n───────────────────`,
+                      `Orders: ${created.length - removed.length}\nQuantity: ${data.created_quantity - data.removed_quantity}\nInterest Diff: ${(data.created_oi - data.removed_oi).toFixed(2)}g\n───────────────────`,
                       false
                     )
                   }

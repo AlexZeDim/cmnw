@@ -207,7 +207,9 @@ const worker = async ({ _id, type, filters }, channel) => {
         if (filters.days_to) Object.assign(query, { 'lfg.days_to': { '$lte': filters.days_to } });
         if (filters.wcl_percentile) Object.assign(query, { 'lfg.wcl_percentile': { '$gte': filters.wcl_percentile } });
         if (filters.languages && filters.languages.length) Object.assign(query, { 'lfg.languages': { '$in': filters.languages } });
-        Object.assign(query, { 'realm.slug': { '$in': [...new Set(filters.realms.map(realm => realm.connected_realm))] } } )
+        const realms_set = new Set()
+        filters.realms.map(realm => realm.connected_realm.map(connected_realm => set.add(connected_realm)))
+        Object.assign(query, { 'realm.slug': { '$in': realms_set } } )
 
         const characters = await characters_db.aggregate([
           {

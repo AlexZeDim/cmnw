@@ -206,7 +206,7 @@ const worker = async ({ _id, type, filters }, channel) => {
         if (filters.days_from) Object.assign(query, { 'lfg.days_from': { '$gte': filters.days_from } });
         if (filters.days_to) Object.assign(query, { 'lfg.days_to': { '$lte': filters.days_to } });
         if (filters.wcl_percentile) Object.assign(query, { 'lfg.wcl_percentile': { '$gte': filters.wcl_percentile } });
-        if (filters.languages) Object.assign(query, { 'lfg.languages': { '$in': filters.languages } });
+        if (filters.languages && filters.languages.length) Object.assign(query, { 'lfg.languages': { '$in': filters.languages } });
         Object.assign(query, { 'realm.slug': { '$in': [...new Set(filters.realms.map(realm => realm.connected_realm))] } } )
 
         const characters = await characters_db.aggregate([
@@ -230,6 +230,8 @@ const worker = async ({ _id, type, filters }, channel) => {
             }
           }
         ]);
+
+        if (!characters.length) return
 
         await Promise.all(characters.map(async character => {
           const embed = new MessageEmbed();

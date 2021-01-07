@@ -22,26 +22,28 @@ schedule.scheduleJob('0-59 * * * *', async () => {
     console.info(`CORE-TOKEN-${t}`)
     console.time(`CORE-TOKEN-${t}`)
     await keys_db.find({ tags: 'BlizzardAPI' }).cursor().eachAsync(async key => {
-      const { access_token, expires_in } = await axios({
-        url: `https://eu.battle.net/oauth/token`,
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        params: {
-          grant_type: 'client_credentials'
-        },
-        auth: {
-          username: key._id,
-          password: key.secret
-        }
-      }).then(res => { return res.data } );
+      if ('secret' in key) {
+        const { access_token, expires_in } = await axios({
+          url: `https://eu.battle.net/oauth/token`,
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          params: {
+            grant_type: 'client_credentials'
+          },
+          auth: {
+            username: key._id,
+            password: key.secret
+          }
+        }).then(res => { return res.data } );
 
-      if (access_token && expires_in) {
-        key.token = access_token
-        key.expired_in = expires_in
-        await key.save()
-        console.info(key)
+        if (access_token && expires_in) {
+          key.token = access_token
+          key.expired_in = expires_in
+          await key.save()
+          console.info(key)
+        }
       }
     });
   } catch (e) {

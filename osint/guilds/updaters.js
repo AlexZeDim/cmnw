@@ -52,6 +52,15 @@ const updateGuildSummary = async (guild_slug, realm_slug, BlizzAPI) => {
   }
 }
 
+/**
+ *
+ * @param name {string}
+ * @param realm {{_id: string, slug: string}}
+ * @param faction {string}
+ * @param args {Object}
+ * @param BlizzAPI
+ * @returns {Promise<{}|[]>}
+ */
 const updateGuildRoster = async ({ name, realm, faction, ...args }, BlizzAPI) => {
   if (!name || !realm.slug) return {}
   try {

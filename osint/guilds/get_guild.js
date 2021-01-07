@@ -67,11 +67,11 @@ async function getGuild (
     let guild = await guild_db.findById(`${name_slug}@${realm_.slug}`);
     if (guild) {
       if (createOnlyUnique) {
-        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${createOnlyUnique}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:createOnlyUnique:${createOnlyUnique}`);
         return
       }
       if (!forceUpdate && ((t - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime())) {
-        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${forceUpdate}`);
+        console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:forceUpdate:${forceUpdate}`);
         return
       }
       Object.assign(guild_last, guild.toObject())

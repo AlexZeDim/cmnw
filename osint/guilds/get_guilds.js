@@ -26,17 +26,14 @@ const schedule = require('node-schedule');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('30 4 * * *', async (
-  t,
-  queryFind = 'Europe',
-  queryKeys = `OSINT-indexGuilds`,
-) => {
+const indexGuild = async (queryFind = 'Europe', queryKeys = `OSINT-indexGuilds`) => {
   try {
     console.time(`OSINT-fromCharacters`);
     await realms_db
       .find({ region: queryFind })
       .lean()
       .cursor()
+      .addCursorFlag('noCursorTimeout', true)
       .eachAsync(async (realm, iterations) => {
         if (realm.slug) {
           const { token } = await keys_db.findOne({ tags: queryKeys });
@@ -61,4 +58,10 @@ schedule.scheduleJob('30 4 * * *', async (
     console.timeEnd(`OSINT-fromCharacters`);
     process.exit(0)
   }
-});
+}
+
+indexGuild('Europe','OSINT-indexGuilds')
+
+/*schedule.scheduleJob('30 4 * * *', () => {
+  indexGuild('Europe', 'OSINT-indexGuilds').then(r => r)
+})*/

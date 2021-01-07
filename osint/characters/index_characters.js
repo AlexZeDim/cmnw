@@ -19,7 +19,7 @@ const getCharacter = require('./get_character');
  */
 
 (async function indexCharacters (
-  bulkSize = 20,
+  bulkSize = 30,
 ) {
   try {
     console.time(`OSINT-indexCharacters`);

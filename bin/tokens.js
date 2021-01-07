@@ -41,7 +41,7 @@ schedule.scheduleJob('0-59 * * * *', async () => {
         key.token = access_token
         key.expired_in = expires_in
         await key.save()
-        console.info(`U,${key._id},${key.expires_in}`)
+        console.info(key)
       }
     });
   } catch (e) {

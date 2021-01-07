@@ -17,8 +17,10 @@ const schedule = require('node-schedule');
  */
 
 schedule.scheduleJob('0-59 * * * *', async () => {
+  const t = Date.now();
   try {
-    console.time('CORE-TOKEN')
+    console.info(`CORE-TOKEN-${t}`)
+    console.time(`CORE-TOKEN-${t}`)
     await keys_db.find({ tags: 'BlizzardAPI' }).cursor().eachAsync(async key => {
       const { access_token, expires_in } = await axios({
         url: `https://eu.battle.net/oauth/token`,
@@ -39,13 +41,13 @@ schedule.scheduleJob('0-59 * * * *', async () => {
         key.token = access_token
         key.expired_in = expires_in
         await key.save()
-        console.info(`U,${key._id},${key.expired_in}`)
+        console.info(`U,${key._id},${key.expires_in}`)
       }
     });
   } catch (e) {
     console.error(e);
   } finally {
-    console.timeEnd('CORE-TOKEN')
+    console.timeEnd(`CORE-TOKEN-${t}`)
     process.exit(0)
   }
 });

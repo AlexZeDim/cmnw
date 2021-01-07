@@ -23,7 +23,7 @@ schedule.scheduleJob('0-59 * * * *', async () => {
     console.time(`CORE-TOKEN-${t}`)
     await keys_db.find({ tags: 'BlizzardAPI' }).cursor().eachAsync(async key => {
       if ('secret' in key) {
-        const { access_token, expires_in } = await axios({
+        const key_pair = await axios({
           url: `https://eu.battle.net/oauth/token`,
           method: 'post',
           headers: {
@@ -38,9 +38,9 @@ schedule.scheduleJob('0-59 * * * *', async () => {
           }
         }).then(res => { return res.data } );
 
-        if (access_token && expires_in) {
-          key.token = access_token
-          key.expired_in = expires_in
+        if ('access_token' in key_pair && 'expires_in' in key_pair) {
+          key.token = key_pair.access_token
+          key.expired_in = key_pair.expires_in
           await key.save()
           console.info(key)
         }

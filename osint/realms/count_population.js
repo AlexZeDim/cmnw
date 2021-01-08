@@ -107,8 +107,6 @@ const countPopulation = async () => {
        */
       const populations = []; //TODO fixme
       realm.populations = undefined;
-      realm.guilds = undefined;
-      realm.players = undefined;
 
       const realm_population = {};
 
@@ -203,7 +201,7 @@ const countPopulation = async () => {
       realm_population.guilds_alliance = await guilds_db.countDocuments({'realm.slug': realm.slug, faction: 'Alliance'})
       realm_population.guilds_horde = await guilds_db.countDocuments({'realm.slug': realm.slug, faction: 'Horde'})
 
-      realm_population.timestamps = new Date().getTime();
+      realm_population.timestamp = new Date().getTime();
 
       /**
        *  If array length in more then 11

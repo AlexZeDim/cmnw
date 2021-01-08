@@ -105,7 +105,7 @@ const countPopulation = async () => {
        * Calculations populations for each realm
        * full copy to new variable and remove old data
        */
-      const populations = []; //TODO fixme
+      const populations = [...realms.toObject().populations]; //TODO fixme
       realm.populations = undefined;
 
       const realm_population = {};
@@ -226,7 +226,7 @@ const countPopulation = async () => {
     process.exit(0)
   }
 }
-countPopulation()
-/*schedule.scheduleJob('0 5 1,8,17,26 * *', () => {
+
+schedule.scheduleJob('0 5 1,8,17,26 * *', () => {
   countPopulation().then(r => r);
-})*/
+})

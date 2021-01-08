@@ -52,10 +52,3 @@ apps:
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
-  - script: ./osint/realms/count_population.js
-    name: 'OSINT-POPULATION'
-    instances: 1
-    out_file: "/dev/null"
-    autorestart: true
-    log_date_format: 'DD/MM HH:mm:ss.SSS'
-    restart_delay: 60000

@@ -61,10 +61,10 @@ const indexRealms = async () => {
           realm.markModified('populations')
         }
 
-        if (wcl_ids.has(realm.name)) {
-          realm.wcl_id = wcl_ids.get(realm.name)
-        } else if (wcl_ids.has(realm.name_locale)) {
-          realm.wcl_id = wcl_ids.get(realm.name_locale)
+        if (wcl_ids && wcl_ids.value.has(realm.name)) {
+          realm.wcl_id = wcl_ids.value.get(realm.name)
+        } else if (wcl_ids && wcl_ids.value.has(realm.name_locale)) {
+          realm.wcl_id = wcl_ids.value.get(realm.name_locale)
         }
 
         await realm.save()
@@ -79,6 +79,6 @@ const indexRealms = async () => {
   }
 };
 
-schedule.scheduleJob('0 5 1,8,17,26 * *', () => {
+schedule.scheduleJob('0 5 1,9,17,26 * *', () => {
   indexRealms().then(r => r)
 })

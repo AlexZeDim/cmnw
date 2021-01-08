@@ -209,7 +209,7 @@ const worker = async ({ _id, type, filters }, channel) => {
         if (filters.languages && filters.languages.length) Object.assign(query, { 'lfg.languages': { '$in': filters.languages } });
         const realms_set = new Set()
         filters.realms.map(realm => realm.connected_realm.map(connected_realm => set.add(connected_realm)))
-        Object.assign(query, { 'realm.slug': { '$in': realms_set } } )
+        Object.assign(query, { 'realm.slug': { '$in': [...realms_set] } } )
 
         const characters = await characters_db.aggregate([
           {

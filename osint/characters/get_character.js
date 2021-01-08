@@ -91,7 +91,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
     } else {
       character = new characters_db({
         _id: `${name_slug}@${realm_.slug}`,
-        id: Date.now(),
+        id: new Date().getTime(),
         name: fromSlug(name),
         statusCode: 100,
         createdBy: 'OSINT-getCharacter',

@@ -13,7 +13,7 @@ const guilds_db = require('../../db/models/guilds_db');
 
 const schedule = require('node-schedule');
 
-schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
+const countPopulation = async () => {
   /**
    * Constants requires for
    * calculation of max level characters
@@ -97,7 +97,7 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
     console.time(`OSINT-count_population`);
 
     /** Unique classes from players */
-    const classes_unique = await characters_db.find({ character_class: { $ne: null } }).distinct('character_class')
+    const classes_unique = await characters_db.find({ 'realm.slug': 'eversong', character_class: { $ne: null } }).distinct('character_class')
 
     await realms_db.find().cursor().eachAsync(async realm => {
 
@@ -105,7 +105,7 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
        * Calculations populations for each realm
        * full copy to new variable and remove old data
        */
-      const populations = [...realm.toObject().populations];
+      const populations = []; //TODO fixme
       realm.populations = undefined;
       realm.guilds = undefined;
       realm.players = undefined;
@@ -120,7 +120,7 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
       realm_population.characters_active_alliance = await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, faction: 'Alliance' })
       realm_population.characters_active_horde = await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, faction: 'Horde' })
       realm_population.characters_active_max_level = await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, level: max_level })
-      realm_population.characters_guild_members = await characters_db.countDocuments({ 'realm.slug': realm.slug, guild: { $exists: true, $ne: null } });
+      realm_population.characters_guild_members = await characters_db.countDocuments({ 'realm.slug': realm.slug, guild: { $ne: null } });
       realm_population.characters_guildless = await characters_db.countDocuments({ 'realm.slug': realm.slug, guild: { $exists: false } });
       const players_unique = await characters_db.find({ 'realm.slug': realm.slug }).distinct('personality')
       realm_population.players_unique = players_unique.length
@@ -142,7 +142,6 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
           })
         })
       }
-
       realm_population.characters_classes = characters_classes_populations;
 
       /**
@@ -170,16 +169,17 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
       for (const covenant of ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord']) {
         characters_covenants.push({
           name: covenant,
-          value: await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, 'covenant.chosen_covenant': covenant }),
+          value: await characters_db.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, 'chosen_covenant': covenant }),
           group: await characters_db.aggregate([
             {
               $match: {
-                'covenant.chosen_covenant': covenant
+                'realm.slug': realm.slug,
+                'chosen_covenant': covenant
               }
             },
             {
               $group: {
-                _id: '$covenant.renown_level',
+                _id: '$renown_level',
                 value: { $sum: 1 }
               }
             },
@@ -203,13 +203,14 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
       realm_population.guilds_alliance = await guilds_db.countDocuments({'realm.slug': realm.slug, faction: 'Alliance'})
       realm_population.guilds_horde = await guilds_db.countDocuments({'realm.slug': realm.slug, faction: 'Horde'})
 
-      realm_population.timestamps = Date.now()
+      realm_population.timestamps = new Date().getTime();
 
       /**
        *  If array length in more then 11
        *  remove the first element
        *  CAPPED 10
        */
+
       populations.push(realm_population)
       if (populations.length > 10) {
         populations.shift()
@@ -226,4 +227,8 @@ schedule.scheduleJob('0 5 1,8,17,26 * *', async () => {
     console.timeEnd(`OSINT-count_population`);
     process.exit(0)
   }
-});
+}
+countPopulation()
+/*schedule.scheduleJob('0 5 1,8,17,26 * *', () => {
+  countPopulation().then(r => r);
+})*/

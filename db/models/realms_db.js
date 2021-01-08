@@ -62,6 +62,7 @@ const schema = new mongoose.Schema(
           name: String,
           value: Number,
           group: [{
+            _id: false,
             level: Number,
             value: Number,
           }]

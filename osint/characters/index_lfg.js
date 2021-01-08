@@ -33,7 +33,7 @@ const index_LFG = async () => {
      * then => revoke their status for a new once, but keep result in variable
      * for future diffCompare
      * */
-    const charactersDiff = differenceBy(t1, t0, '_id') //TODO validation for t1 and t0 arrays
+    const charactersDiff = differenceBy(t0, t1, '_id') //TODO validation for t1 and t0 arrays
     if (!Array.isArray(charactersDiff) || !charactersDiff.length) return
     for (const character of charactersDiff) {
 

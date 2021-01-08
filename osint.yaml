@@ -4,7 +4,6 @@ apps:
     autorestart: true
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-    exec_mode : "fork"
     min_uptime: 60000
     restart_delay: 60000
   - script: ./osint/guilds/index_guilds.js
@@ -14,6 +13,11 @@ apps:
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 60000
     restart_delay: 60000
+  - script: ./osint/realms/indexRealms.js
+    name: 'OSINT-REALMS'
+    instances: 1
+    autorestart: true
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./osint/characters/index_lfg.js
     name: 'OSINT-LFG'
     instances: 1
@@ -25,7 +29,6 @@ apps:
     name: 'OSINT-WCL'
     instances: 1
     autorestart: true
-    max_memory_restart: '1G'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
   - script: ./osint/characters/index_logs.js
@@ -33,7 +36,6 @@ apps:
     instances: 1
     autorestart: true
     out_file: "/dev/null"
-    max_memory_restart: '1G'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
   - script: ./osint/guilds/get_guilds.js

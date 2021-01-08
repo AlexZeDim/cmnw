@@ -271,7 +271,7 @@ const updateSummary = async (name_slug, realm_slug, BlizzAPI) => {
       if (key === 'last_login_timestamp') summary.lastModified = value
       if (key === 'average_item_level') summary.average_item_level = value
       if (key === 'equipped_item_level') summary.equipped_item_level = value
-      if (key === 'covenant_progress'  && typeof value === 'object' && value !== null) {
+      if (key === 'covenant_progress' && typeof value === 'object' && value !== null) {
         if (value.chosen_covenant && value.chosen_covenant.name) summary.chosen_covenant = value.chosen_covenant.name;
         if (value.renown_level) summary.renown_level = value.renown_level;
       }

@@ -16,15 +16,12 @@ const pricing_methods_db = require('./models/pricing_methods_db');
      * Remove field via $unset
      */
     /*
-    const unset = await characters_db.updateMany(
+    const unset = await realms_db.updateMany(
       {},
       {
         $unset:
           {
-            hash: 1,
-            ilvl: 1,
-            covenant: 1,
-            isWatched: 1,
+            players: 1
           }
       }
     );

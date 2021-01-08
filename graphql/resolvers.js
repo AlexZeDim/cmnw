@@ -131,23 +131,14 @@ const root = {
   },
   items: async ({ id }) => {
     if (!id || !id.includes('@')) return
-    const [ itemQuery, realmQuery ] = id.split('@');
-
+    const [ professionQuery, realmQuery ] = id.split('@');
+    if (!professionQuery.includes(':') || !realmQuery) return
+    const [ expansion, profession ] = professionQuery.split(':');
     return items_db.aggregate([
       {
-        $match: { $text: { $search: itemQuery.toString() } },
-      },
-      {
-        $addFields: {
-          item_valuation: { $toInt: '$_id' },
-          score: { $round: [ { $meta: "textScore" }, 2] },
-        }
-      },
-      {
-        $match: { score: { $gte: 1.5 } }
-      },
-      {
-        $sort: { score: { $meta: "textScore" } }
+        $match: {
+          tags: { $all: [ expansion , profession ] }
+        },
       },
       {
         $limit: 250

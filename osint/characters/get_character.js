@@ -187,7 +187,7 @@ async function getCharacter ({ _id, id, name, realm, iterations, token, guildRan
             if (character_last.guild.name === summary.value.guild.name && character_last.guild.rank) character.guild.rank = parseInt(character_last.guild.rank)
           }
         }
-        if (!summary.guild) {
+        if (!summary.value.guild) {
           character.guild = undefined
         }
       }

@@ -39,7 +39,7 @@ const index_LFG = async () => {
     }
 
     const charactersDiff = differenceBy(t1, t0, '_id')
-    console.log(charactersDiff)
+
     if (!Array.isArray(charactersDiff) || !charactersDiff.length) return
     console.info(`${charactersDiff.length} characters have been added to queue`)
     for (const { _id } of charactersDiff) {

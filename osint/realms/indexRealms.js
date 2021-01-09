@@ -79,6 +79,6 @@ const indexRealms = async () => {
   }
 };
 
-schedule.scheduleJob('0 5 1,9,17,26 * *', () => {
+//schedule.scheduleJob('0 5 1,9,17,26 * *', () => {
   indexRealms().then(r => r)
-})
+//})

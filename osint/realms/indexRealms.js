@@ -32,7 +32,7 @@ const indexRealms = async () => {
       }),
       await getWarcraftLogsID(247, 517)
     ])
-    console.log(wcl_ids)
+
     if (realm_list && realm_list.status === 'fulfilled') {
       if (!realm_list.value.realms || !Array.isArray(realm_list.value.realms)) return
       for (const { id, slug } of realm_list.value.realms) {

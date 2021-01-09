@@ -23,16 +23,27 @@ const index_LFG = async () => {
       await characters_db.find({ 'lfg.status': true }).hint({ 'lfg.status': 1 }).limit(100),
       await getLookingForGuild()
     ])
-    if (t1 && t1.length) {
+
+    /**
+     * Revoke characters status from T1
+     */
+    if (t1.length) {
       await characters_db.updateMany({ 'lfg.status': true }, { 'lfg.status': false, 'lfg.new': false } )
       console.info(`Status revoked for ${t1.length} characters`)
     }
+
+    /**
+     * Update status: true from T0
+     */
+    if (t0.length) {
+      await characters_db.updateMany({ _id: { $in: t0.map(c => c._id) } }, { 'lfg.status': true, 'lfg.new': false })
+    }
+
     /**
      *
-     * If players already exists in OSINT with LFG
-     * then => revoke their status for a new once, but keep result in variable
-     * for future diffCompare
-     * */
+     * @type {unknown[]}
+     */
+    if (!Array.isArray(t0) || !Array.isArray(t1)) return
     const charactersDiff = differenceBy(t0, t1, '_id') //TODO validation for t1 and t0 arrays
     if (!Array.isArray(charactersDiff) || !charactersDiff.length) return
     for (const character of charactersDiff) {
@@ -43,7 +54,7 @@ const index_LFG = async () => {
         await updateWProgress(character.name, character.realm.slug),
         await updateRaiderIO(character.name, character.realm.slug),
       ])
-      const lfg = { status: true, new: true };
+      const lfg = { new: true };
       if (wcl && wcl.value) Object.assign(lfg, wcl.value)
       if (wp && wp.value) Object.assign(lfg, wp.value)
       if (rio && rio.value) Object.assign(lfg, rio.value)

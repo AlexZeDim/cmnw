@@ -44,7 +44,7 @@ const index_LFG = async () => {
     console.info(`${charactersDiff.length} characters have been added to queue`)
     for (const { _id } of charactersDiff) {
       const character = characters_db.findById(_id);
-      console.log(character)
+
       if (!character) continue
       /** Request wow_progress and RIO for m+, pve progress and contacts */
       const [wcl, wp, rio] = await Promise.allSettled([

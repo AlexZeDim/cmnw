@@ -36,6 +36,7 @@ const index_LFG = async () => {
      * Update status: true from T0
      */
     if (t0.length) {
+      console.info(`Status updated for ${t0.length} characters`)
       await characters_db.updateMany({ _id: { $in: t0.map(c => c._id) } }, { 'lfg.status': true, 'lfg.new': false })
     }
 

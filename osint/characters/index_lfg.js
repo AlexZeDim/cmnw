@@ -43,7 +43,6 @@ const index_LFG = async () => {
      *
      * @type {unknown[]}
      */
-    if (!Array.isArray(t0) || !Array.isArray(t1)) return
     const charactersDiff = differenceBy(t0, t1, '_id') //TODO validation for t1 and t0 arrays
     if (!Array.isArray(charactersDiff) || !charactersDiff.length) return
     for (const character of charactersDiff) {

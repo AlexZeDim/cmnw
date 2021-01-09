@@ -61,7 +61,7 @@ const getRealm = async (realm_slug, BlizzAPI) => {
             params: { locale: summary.locale },
             headers: { 'Battlenet-Namespace': 'dynamic-eu' }
           })
-          if (realm_locale) {
+          if (realm_locale && realm_locale.name) {
             summary.name_locale = realm_locale.name;
             summary.slug_locale = realm_locale.name;
           }

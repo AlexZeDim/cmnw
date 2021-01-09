@@ -19,51 +19,53 @@ const index_LFG = async () => {
   try {
     console.time(`OSINT-${index_LFG.name}-${t}`)
 
-    const [t1, t0] = await Promise.all([
-      await characters_db.find({ 'lfg.status': true }).hint({ 'lfg.status': 1 }).limit(100),
-      await getLookingForGuild()
-    ])
+    const t0 = await characters_db.find({ 'lfg.status': true }, { _id: 1 }).hint({ 'lfg.status': 1 }).limit(100).lean();
+    const t1 = await getLookingForGuild();
 
     /**
      * Revoke characters status from T1
      */
-    if (t1.length) {
-      await characters_db.updateMany({ 'lfg.status': true }, { 'lfg.status': false, 'lfg.new': false } )
-      console.info(`Status revoked for ${t1.length} characters`)
+    if (t0.length) {
+      const status_revoked = await characters_db.updateMany({ 'lfg.status': true }, { 'lfg.status': false, 'lfg.new': false } )
+      console.info(`Status revoked for ${status_revoked.nModified} characters`)
     }
 
     /**
      * Update status: true from T0
      */
-    if (t0.length) {
-      console.info(`Status updated for ${t0.length} characters`)
-      await characters_db.updateMany({ _id: { $in: t0.map(c => c._id) } }, { 'lfg.status': true, 'lfg.new': false })
+    if (t1.length) {
+      const status_updated = await characters_db.updateMany({ _id: { $in: t1.map(c => c._id) } }, { 'lfg.status': true, 'lfg.new': false })
+      console.info(`Status updated for ${status_updated.nModified} characters`)
     }
 
-    /**
-     *
-     * @type {unknown[]}
-     */
-    const charactersDiff = differenceBy(t0, t1, '_id') //TODO validation for t1 and t0 arrays
+    const charactersDiff = differenceBy(t1, t0, '_id')
+    console.log(charactersDiff)
     if (!Array.isArray(charactersDiff) || !charactersDiff.length) return
-    for (const character of charactersDiff) {
-
+    console.info(`${charactersDiff.length} characters have been added to queue`)
+    for (const { _id } of charactersDiff) {
+      const character = characters_db.findById(_id);
+      console.log(character)
+      if (!character) continue
       /** Request wow_progress and RIO for m+, pve progress and contacts */
       const [wcl, wp, rio] = await Promise.allSettled([
         await updateWarcraftLogs(character.name, character.realm.slug),
         await updateWProgress(character.name, character.realm.slug),
         await updateRaiderIO(character.name, character.realm.slug),
       ])
-      const lfg = { new: true };
+      const lfg = { status: true, new: true };
       if (wcl && wcl.value) Object.assign(lfg, wcl.value)
       if (wp && wp.value) Object.assign(lfg, wp.value)
       if (rio && rio.value) Object.assign(lfg, rio.value)
-      if (Object.keys(lfg).length > 0) Object.assign(character, { lfg: lfg })
 
       if (character.personality && lfg.battle_tag) {
         await personalities_db.findOneAndUpdate({ _id: character.personality, 'aliases.value': { $ne: lfg.battle_tag }}, { '$push': {'aliases': { type: 'battle.tag', value: lfg.battle_tag } } })
       }
-      await character.save();
+
+      if (Object.keys(lfg).length > 2) {
+        Object.assign(character, { lfg: lfg });
+        await character.save();
+        console.info(`U,${character._id},${character.lfg}`)
+      }
     }
   } catch (error) {
     console.error(error)

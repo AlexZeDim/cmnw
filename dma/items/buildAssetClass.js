@@ -37,7 +37,7 @@ const buildAssetClass = async (...args) => {
           async method => {
             try {
               /** Derivative Asset Class */
-              if (method.derivatives) {
+              if ('derivatives' in method) {
                 for (let { _id } of method.derivatives) {
                   const item = await items_db.findById(_id);
                   if (item && item.asset_class) {
@@ -48,7 +48,7 @@ const buildAssetClass = async (...args) => {
                 }
               }
               /** Reagent Asset Class */
-              if (method.reagents && method.reagents.length) {
+              if ('reagents' in method && method.reagents.length) {
                 for (let { _id } of method.reagents) {
                   const item = await items_db.findById(_id);
                   if (item && item.asset_class) {

@@ -11,14 +11,15 @@ const { Round2 } = require('../../db/setters');
 const BlizzAPI = require('blizzapi');
 
 /**
- *  Request data about certain item
- * @param id
- * @param token
+ * Request data about certain item
+ * @param _id {number}
+ * @param token {string}
+ * @param locale {string=}
  * @returns {Promise<void>}
  */
-async function get_item(id, token) {
+const getItem = async ({ _id, token, locale= 'en_GB' }) => {
+  console.time(`${getItem.name},${_id}`)
   try {
-    const locale = 'en_GB';
 
     /**
      * B.net API wrapper
@@ -31,15 +32,15 @@ async function get_item(id, token) {
     });
 
     /** Check is exits */
-    let item = await items_db.findById(id);
+    let item = await items_db.findById(_id);
 
     /** Request item data */
-    const [getItem, getMedia] = await Promise.allSettled([
-      api.query(`/data/wow/item/${id}`, {
+    const [getItemSummary, getItemMedia] = await Promise.allSettled([
+      api.query(`/data/wow/item/${_id}`, {
         timeout: 10000,
         headers: { 'Battlenet-Namespace': 'static-eu' }
       }),
-      api.query(`/data/wow/media/item/${id} `, {
+      api.query(`/data/wow/media/item/${_id} `, {
         timeout: 10000,
         headers: { 'Battlenet-Namespace': 'static-eu' }
       })
@@ -48,11 +49,11 @@ async function get_item(id, token) {
     /** If not, create */
     if (!item) {
       item = new items_db({
-        _id: id,
+        _id: _id,
       });
     }
 
-    if (getItem.value) {
+    if (getItemSummary.value) {
       /** Schema fields */
       const fields = [
         'quality',
@@ -64,42 +65,44 @@ async function get_item(id, token) {
       const gold = ['purchase_price', 'sell_price'];
 
       /** key value */
-      for (const [key] of Object.entries(getItem.value)) {
+      for (const [key] of Object.entries(getItemSummary.value)) {
         /** Loot type */
         if (key === 'preview_item') {
-          if ('binding' in getItem.value[key]) {
-            item.loot_type = getItem.value[key].binding.type;
+          if ('binding' in getItemSummary.value[key]) {
+            item.loot_type = getItemSummary.value[key]['binding'].type;
           }
         }
 
         if (fields.some(f => f === key)) {
-          item[key] = getItem.value[key].name[locale];
+          item[key] = getItemSummary.value[key].name[locale];
         } else {
-          item[key] = getItem.value[key];
+          item[key] = getItemSummary.value[key];
         }
         if (gold.some(f => f === key)) {
           if (key === 'sell_price') {
             item.asset_class.addToSet('VSP');
           }
-          item[key] = Round2(getItem.value[key] / 10000);
+          item[key] = Round2(getItemSummary.value[key] / 10000);
         }
       }
 
       /** Icon media */
       if (
-        getMedia.value &&
-        getMedia.value.assets &&
-        getMedia.value.assets.length
+        getItemMedia.value &&
+        getItemMedia.value.assets &&
+        getItemMedia.value.assets.length
       ) {
-        item.icon = getMedia.value.assets[0].value;
+        item.icon = getItemMedia.value.assets[0].value;
       }
 
       await item.save();
-      console.info(`U,${item._id}`);
+      console.info(`U,${getItem.name},${item._id}`);
     }
-  } catch (err) {
-    console.error(`${get_item.name},${id},${err}`);
+  } catch (error) {
+    console.error(`E,${getItem.name},${_id}:${error}`);
+  } finally {
+    console.timeEnd(`${getItem.name},${_id}`)
   }
 }
 
-module.exports = get_item;
+module.exports = getItem;

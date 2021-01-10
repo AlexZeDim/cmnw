@@ -2,17 +2,17 @@
 # static data or update it
 # on first launch or patch day
 apps:
-  - script: ./dma/items/index_items.js
+  - script: ./dma/items/indexItems.js
     name: 'DMA-ITEMS'
     instances: 1
     args: 'DMA create'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/items/import_taxonomy.js
+  - script: ./dma/items/buildTaxonomy.js
     name: 'DMA-TAXONOMY'
     instances: 1
     args: 'itemsparse'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./dma/pets/index_pets.js
+  - script: ./dma/pets/indexPets.js
     name: 'DMA-PETS'
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'

@@ -7,6 +7,17 @@ type PopulationClassesProfessions {
     value: Float
 }
 
+type CovanantGroup {
+    level: Int,
+    value: Float
+}
+
+type PopulationCovenants {
+    name: String,
+    value: Float,
+    group: [CovanantGroup]
+}
+
 type Population {
     characters_total: Float,
     characters_active: Float,
@@ -19,6 +30,7 @@ type Population {
     players_active_unique: Float,
     characters_classes: [PopulationClassesProfessions],
     characters_professions: [PopulationClassesProfessions],
+    characters_covenants: [PopulationCovenants],
     guilds_total: Float,
     guilds_alliance: Float,
     guilds_horde: Float,
@@ -306,7 +318,7 @@ type Query {
     character(id: ID!): Character
     guild(id: ID!): Guild
     item(id: ID!, extended: Boolean): Item
-    realms(name: String): [Realm]
+    realms(name: String!, limit: Int): [Realm]
     wowtoken(region: String): Wowtoken
     hash(query: String!): [Character]
     items(id: ID!): [Item]

@@ -68,7 +68,7 @@ const root = {
       return guild_updated
     }
     //TODO promise.all thread
-    guild.members = await characters_db.find({ _id: { $in: guild.members.map(({_id}) => _id)} }, { professions: 0, pets: 0, mounts: 0, isWatched: 0, statusCode: 0, createdBy: 0, updatedBy: 0 }).lean();
+    guild.members = await characters_db.find({ _id: { '$in': guild.members.map(({_id}) => _id)} }, { professions: 0, pets: 0, mounts: 0, isWatched: 0, statusCode: 0, createdBy: 0, updatedBy: 0 }).lean();
     guild.logs = await osint_logs_db.find({ type: 'guild', root_id: guild._id }).lean()
     return guild
   },
@@ -83,13 +83,14 @@ const root = {
       .sort({ _id: -1 })
       .lean();
   },
-  realms: async ({ name }) => {
+  realms: async ({ name, limit }) => {
     return realms_db
       .find(
         { $text: { $search: name } },
         { score: { $meta: 'textScore' } },
       )
       .sort({ score: { $meta: 'textScore' } })
+      .limit(limit || 0)
       .lean();
   },
   item: async ({ id, extended }) => {

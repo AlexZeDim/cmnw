@@ -1,12 +1,12 @@
 apps:
-  - script: ./osint/characters/index_characters.js
+  - script: ./osint/characters/indexCharacters.js
     name: 'OSINT-CH-ALL'
     autorestart: true
     instances: 1
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     min_uptime: 60000
     restart_delay: 60000
-  - script: ./osint/guilds/index_guilds.js
+  - script: ./osint/guilds/indexGuilds.js
     name: 'OSINT-GUILDS-ALL'
     instances: 1
     autorestart: true
@@ -18,34 +18,34 @@ apps:
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./osint/characters/index_lfg.js
+  - script: ./osint/characters/indexLookingForGuild.js
     name: 'OSINT-LFG'
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     out_file: "/dev/null"
     restart_delay: 5000
-  - script: ./osint/characters/get_wcl.js
+  - script: ./osint/characters/getLogs.js
     name: 'OSINT-WCL'
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
-  - script: ./osint/characters/index_logs.js
+  - script: ./osint/characters/indexLogs.js
     name: 'OSINT-LOGS'
     instances: 1
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
-  - script: ./osint/guilds/get_guilds.js
+  - script: ./osint/guilds/indexGuildNames.js
     name: 'OSINT-GUILD-CH'
     instances: 1
     autorestart: true
     out_file: "/dev/null"
     log_date_format: 'DD/MM HH:mm:ss.SSS'
     restart_delay: 60000
-  - script: ./osint/guilds/wowprogress.js
+  - script: ./osint/guilds/indexGuildsJSON.js
     name: 'OSINT-WP'
     instances: 1
     autorestart: true

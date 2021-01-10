@@ -11,13 +11,13 @@ const personalities_db = require('../../db/models/personalities_db');
 
 const schedule = require('node-schedule');
 const { updateWarcraftLogs, updateWProgress, updateRaiderIO } = require('./updaters');
-const { getLookingForGuild } = require('./get_lfg');
+const { getLookingForGuild } = require('./getLookingForGuild');
 const { differenceBy } = require('lodash');
 
-const index_LFG = async () => {
+const indexLookingForGuild = async () => {
   const t = Date.now()
   try {
-    console.time(`OSINT-${index_LFG.name}-${t}`)
+    console.time(`OSINT-${indexLookingForGuild.name}-${t}`)
 
     const t0 = await characters_db.find({ 'lfg.status': true }, { _id: 1 }).hint({ 'lfg.status': 1 }).limit(100).lean();
     const t1 = await getLookingForGuild();
@@ -44,7 +44,11 @@ const index_LFG = async () => {
     console.info(`${charactersDiff.length} characters have been added to queue`)
     for (const { _id } of charactersDiff) {
       const character = await characters_db.findById(_id);
-      console.log(character.realm)
+
+      //FIXME debug
+      if (!character.realm) {
+        console.log(character.realm)
+      }
 
       if (!character || !character.realm) continue
       /** Request wow_progress and RIO for m+, pve progress and contacts */
@@ -71,12 +75,12 @@ const index_LFG = async () => {
   } catch (error) {
     console.error(error)
   } finally {
-    console.time(`OSINT-${index_LFG.name}-${t}`)
+    console.time(`OSINT-${indexLookingForGuild.name}-${t}`)
     process.exit(0)
   }
 }
 
 schedule.scheduleJob('*/5 * * * *', async function(){
-  await index_LFG()
+  await indexLookingForGuild()
 })
 

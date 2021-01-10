@@ -1,4 +1,4 @@
-const getCharacter = require('../characters/get_character');
+const getCharacter = require('../characters/getCharacter');
 const characters_db = require('../../db/models/characters_db');
 const { differenceBy } = require('lodash');
 const { detectiveRoster } = require('./detectives')

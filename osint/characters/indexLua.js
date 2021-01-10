@@ -10,7 +10,7 @@ const keys_db = require('../../db/models/keys_db');
  */
 
 const fs = require('fs');
-const getCharacter = require('./get_character');
+const getCharacter = require('./getCharacter');
 
 (async function indexLua (key = `conglomerat`, path = 'C:\\Games\\World of Warcraft\\_retail_\\WTF\\Account\\ALEXZEDIM\\SavedVariables\\OSINT.lua') {
   try {

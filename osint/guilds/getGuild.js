@@ -15,6 +15,7 @@ const { detectiveGuildDiffs } = require('./detectives');
 const { toSlug } = require('../../db/setters');
 
 /**
+ *
  * Request guild from Blizzard API and add it to OSINT-DB (guilds)
  * (if we found a new character from guild-members, then adding it to OSINT-DB (characters))
  * @param name {string}
@@ -24,10 +25,10 @@ const { toSlug } = require('../../db/setters');
  * @param forceUpdate {Boolean=}
  * @param iterations {number=}
  * @param args {Object=}
- * @returns {Promise<void>}
+ * @returns {Promise<{}|*>}
  */
 
-async function getGuild (
+const getGuild = async (
   {
     name,
     realm,
@@ -37,7 +38,7 @@ async function getGuild (
     forceUpdate = false,
     ...args
   }
-) {
+) => {
   try {
 
     const t = new Date().getTime();
@@ -68,11 +69,11 @@ async function getGuild (
     if (guild) {
       if (createOnlyUnique) {
         console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:createOnlyUnique:${createOnlyUnique}`);
-        return
+        return guild
       }
       if (!forceUpdate && ((t - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime())) {
         console.warn(`E:${(iterations) ? (iterations + ':') : ('')}${guild._id}:forceUpdate:${forceUpdate}`);
-        return
+        return guild
       }
       Object.assign(guild_last, guild.toObject())
       guild.statusCode = 100;
@@ -122,6 +123,7 @@ async function getGuild (
 
     await guild.save();
     console.info(`${(guild.isNew) ? ('C') : ('U')}:${(iterations) ? (iterations + ':') : ('')}${guild._id}:${guild.statusCode}`);
+    return guild;
   } catch (error) {
     console.error(`E,getGuild,${error}`);
   }

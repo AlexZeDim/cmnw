@@ -54,7 +54,7 @@ const root = {
     const realm = await realms_db
       .findOne(
         { $text: { $search: realmSlug } },
-        { score: { $meta: 'textScore' } },
+        { score: { $meta: 'textScore' }, populations: 0 },
       )
       .sort({ score: { $meta: 'textScore' } })
       .lean()
@@ -157,7 +157,8 @@ const root = {
                 realms: { $first: "$$ROOT" },
               }
             },
-            { $replaceRoot: { newRoot: "$realms" } }
+            { $replaceRoot: { newRoot: "$realms" } },
+            { $project: { populations: 0 } }
           ],
           as: "realms"
         }

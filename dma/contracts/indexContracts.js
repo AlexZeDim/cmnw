@@ -245,7 +245,7 @@ const indexContracts = async (parallel = 2) => {
           }, { parallel: parallel })
       });
   } catch (error) {
-    console.error(error);
+    console.error(`E,DMA-${indexContracts.name}:${error}`);
   } finally {
     console.timeEnd(`DMA-${indexContracts.name}`);
     process.exit(0)

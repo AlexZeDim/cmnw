@@ -44,7 +44,7 @@ const index_LFG = async () => {
     console.info(`${charactersDiff.length} characters have been added to queue`)
     for (const { _id } of charactersDiff) {
       const character = await characters_db.findById(_id);
-      console.log(!character.realm)
+      console.log(character.realm)
 
       if (!character || !character.realm) continue
       /** Request wow_progress and RIO for m+, pve progress and contacts */

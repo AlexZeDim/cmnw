@@ -9,7 +9,7 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const getGuild = require('./get_guild');
+const getGuild = require('./getGuild');
 
 /**
  * Indexing every guild in bulks from OSINT-DB for updated information
@@ -18,7 +18,7 @@ const getGuild = require('./get_guild');
  * @returns {Promise<void>}
  */
 
-(async (
+const indexGuilds = async (
   queryKeys = `OSINT-indexGuilds`,
   bulkSize = 1,
 ) => {
@@ -49,4 +49,6 @@ const getGuild = require('./get_guild');
     console.timeEnd(`OSINT-indexGuilds`);
     process.exit(0)
   }
-})();
+};
+
+indexGuilds().then(r => r)

@@ -10,7 +10,7 @@ const keys_db = require('../../db/models/keys_db');
  * getGuild indexing
  */
 
-const getGuild = require('./get_guild');
+const getGuild = require('./getGuild');
 
 /**
  * Modules
@@ -26,7 +26,7 @@ const schedule = require('node-schedule');
  * @returns {Promise<void>}
  */
 
-const indexGuild = async (queryFind = 'Europe', queryKeys = `OSINT-indexGuilds`) => {
+const indexGuildNames = async (queryFind = 'Europe', queryKeys = `OSINT-indexGuilds`) => {
   try {
     console.time(`OSINT-fromCharacters`);
     await realms_db
@@ -41,7 +41,7 @@ const indexGuild = async (queryFind = 'Europe', queryKeys = `OSINT-indexGuilds`)
       .eachAsync(async (realm, iterations) => {
         if (!realm || !('slug' in realm)) return
         const { token } = await keys_db.findOne({ tags: queryKeys });
-        const guild_slugs = await characters_db.distinct('guild.slug', { 'realm.slug': realm.slug, });
+        const guild_slugs = await characters_db.distinct('guild.slug', { 'realm.slug': realm.slug });
         for (const guild_slug of guild_slugs) {
           await getGuild({
             name: guild_slug,
@@ -64,5 +64,5 @@ const indexGuild = async (queryFind = 'Europe', queryKeys = `OSINT-indexGuilds`)
 }
 
 schedule.scheduleJob('30 4 * * *', () => {
-  indexGuild('Europe', 'OSINT-indexGuilds').then(r => r)
+  indexGuildNames('Europe', 'OSINT-indexGuilds').then(r => r)
 })

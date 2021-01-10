@@ -24,7 +24,7 @@ const removeDir = promisify(fs.rmdir);
  * getGuild indexing
  */
 
-const getGuild = require('./get_guild');
+const getGuild = require('./getGuild');
 
 /**
  * Modules
@@ -36,7 +36,6 @@ const schedule = require('node-schedule');
  * We takes every gzip archive from Kernel's WoWProgress (https://www.wowprogress.com/export/ranks/
  * Unzipping it, and parse the received JSON files for new guild names for OSINT-DB (guilds)
  *
- * @param queryFind
  * @param path
  * @param raidTier
  * @param region
@@ -44,18 +43,16 @@ const schedule = require('node-schedule');
  * @returns {Promise<void>}
  */
 
-schedule.scheduleJob('0 5 1,15 * *', async (
-  t,
-  queryFind = { region: 'Europe' },
+const indexGuildsJSON = async (
   path = './temp',
   raidTier = 27,
   region = 'eu',
-  queryKeys = { tags: `OSINT-indexGuilds` },
+  queryKeys = `OSINT-indexGuilds`,
 ) => {
   try {
     console.time(`OSINT-fromJSON`);
 
-    const realms = await realms_db.find(queryFind);
+    const realms = await realms_db.find();
 
     if (!fs.existsSync(path)) fs.mkdirSync(path);
     console.time(`Downloading stage`);
@@ -103,7 +100,7 @@ schedule.scheduleJob('0 5 1,15 * *', async (
     let iterations = 0;
     for (const file of read_files) {
       if (file.match(/json$/g)) {
-        const { token } = await keys_db.findOne(queryKeys);
+        const { token } = await keys_db.findOne({ tags: queryKeys });
         const indexOfRealms = realms.findIndex(r => r.slug_locale === file.match(/(?<=_)(.*?)(?=_)/g)[0]);
         if (indexOfRealms !== -1) {
           console.info(`Parsing: ${file}`);
@@ -138,4 +135,8 @@ schedule.scheduleJob('0 5 1,15 * *', async (
     console.timeEnd(`OSINT-fromJSON`);
     process.exit(0)
   }
+};
+
+schedule.scheduleJob('0 5 1,15 * *', () => {
+  indexGuildsJSON().then(r => r)
 });

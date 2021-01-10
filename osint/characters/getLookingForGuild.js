@@ -1,6 +1,6 @@
 const scraper = require('table-scraper');
 const keys_db = require('../../db/models/keys_db');
-const getCharacter = require('./get_character');
+const getCharacter = require('./getCharacter');
 
 /**
  * Return array of characters _id as array from WoWProgress Looking for Guild queue

@@ -11,23 +11,18 @@ const keys_db = require('../../db/models/keys_db');
 
 const schedule = require('node-schedule');
 const axios = require('axios');
-const getCharacter = require('./get_character');
+const getCharacter = require('./getCharacter');
 
 /**
  * Parse all open logs from Kihra's WCL API (https://www.warcraftlogs.com/) for new characters for OSINT-DB (characters)
- * @param queryInput
- * @param bulkSize
- * @param queryKeys
+ * @param bulkSize {number}
+ * @param queryKeys {string}
  * @returns {Promise<void>}
  */
 
 const pub_key = '71255109b6687eb1afa4d23f39f2fa76';
 
-schedule.scheduleJob('0 3 * * *', async (
-  t,
-  bulkSize = 1,
-  queryKeys = `OSINT-indexLogs`,
-) => {
+const indexLogs = async (bulkSize = 1, queryKeys = `OSINT-indexLogs`) => {
   try {
     console.time(`OSINT-indexLogs`);
     const { token } = await keys_db.findOne({ tags: queryKeys });
@@ -73,4 +68,8 @@ schedule.scheduleJob('0 3 * * *', async (
     console.timeEnd(`OSINT-indexLogs`);
     process.exit(0)
   }
+};
+
+schedule.scheduleJob('0 3 * * *', () => {
+  indexLogs().then(r => r)
 });

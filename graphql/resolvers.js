@@ -7,8 +7,8 @@ const wowtoken_db = require('../db/models/wowtoken_db');
 const messages_db = require('../db/models/messages_db')
 const items_db = require('../db/models/items_db');
 
-const getCharacter = require('../osint/characters/get_character');
-const getGuild = require('../osint/guilds/get_guild')
+const getCharacter = require('../osint/characters/getCharacter');
+const getGuild = require('../osint/guilds/getGuild')
 const queryItemAndRealm = require('./handlers/item_realms');
 const itemExtended = require('./handlers/item_extended')
 

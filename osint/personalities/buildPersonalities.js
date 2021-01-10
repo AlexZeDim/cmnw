@@ -5,9 +5,9 @@ require('../../db/connection')
 const characters_db = require('../../db/models/characters_db');
 const personalities_db = require('../../db/models/personalities_db');
 
-(async function build_personalities (bulkSize = 5) {
+const buildPersonalities = async (bulkSize = 5) => {
   try {
-    console.time(`OSINT-${build_personalities.name}`);
+    console.time(`OSINT-${buildPersonalities.name}`);
 
     await characters_db
       .aggregate([
@@ -66,8 +66,10 @@ const personalities_db = require('../../db/models/personalities_db');
         { parallel: bulkSize },
       );
   } catch (err) {
-    console.error(`OSINT-${build_personalities.name},${err}`);
+    console.error(`OSINT-${buildPersonalities.name},${err}`);
   } finally {
-    console.timeEnd(`OSINT-${build_personalities.name}`);
+    console.timeEnd(`OSINT-${buildPersonalities.name}`);
   }
-})()
+};
+
+buildPersonalities().then(r => r)

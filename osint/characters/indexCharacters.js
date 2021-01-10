@@ -9,7 +9,7 @@ const keys_db = require('../../db/models/keys_db');
  * Modules
  */
 
-const getCharacter = require('./get_character');
+const getCharacter = require('./getCharacter');
 
 /***
  * Indexing every character in bulks from OSINT-DB for updated information

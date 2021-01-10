@@ -12,7 +12,7 @@ const realms_db = require('../../db/models/realms_db');
 const schedule = require('node-schedule');
 const { range } = require('lodash');
 const Xray = require('x-ray');
-let x = Xray();
+const x = Xray();
 
 
 

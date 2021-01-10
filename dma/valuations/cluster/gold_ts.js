@@ -38,7 +38,7 @@ async function goldTS (y_axis = [], connected_realm_id = 1604) {
               orders: { $sum: 1 },
               value: { $sum: "$quantity" },
               oi: {
-                $sum: { $multiply: ['$unit_price', { $divide: [ "$quantity", 1000 ] }] },
+                $sum: { $multiply: ['$price', { $divide: [ "$quantity", 1000 ] }] },
               }
             }
           }

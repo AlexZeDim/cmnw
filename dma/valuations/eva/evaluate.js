@@ -24,7 +24,7 @@ const { Round2 } = require('../../../db/setters');
  * @returns {Promise<void>}
  */
 
-const evaluate = async function ({ _id, asset_class= [], connected_realm_id, quantity, last_modified, iterations = 0, ...args}) {
+const evaluate = async function ({ _id, asset_class = [], connected_realm_id, quantity, last_modified, iterations = 0, ...args}) {
   try {
     iterations += 1;
     if (!_id || !connected_realm_id) return

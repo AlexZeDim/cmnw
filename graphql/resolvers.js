@@ -85,11 +85,8 @@ const root = {
   },
   realms: async ({ name, limit }) => {
     return realms_db
-      .find(
-        { $text: { $search: name } },
-        { score: { $meta: 'textScore' } },
-      )
-      .sort({ score: { $meta: 'textScore' } })
+      .find({ $text: { $search: name } }, { score: { $meta: 'textScore' } })
+      .sort({ 'populations.characters_total': -1 })
       .limit(limit || 0)
       .lean();
   },

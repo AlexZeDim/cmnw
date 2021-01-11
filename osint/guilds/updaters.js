@@ -130,7 +130,7 @@ const updateGuildRoster = async ({ name, realm, faction, ...args }, BlizzAPI) =>
         })
       }
     }
-    return members
+    return { members: members }
   } catch (error) {
     console.error(`E,${updateGuildRoster.name},${name}@${realm.slug}:${error}`)
   }

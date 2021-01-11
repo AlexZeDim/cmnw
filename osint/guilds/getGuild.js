@@ -10,7 +10,7 @@ const realms_db = require('../../db/models/realms_db');
  */
 
 const BlizzAPI = require('blizzapi');
-const { updateGuildRoster, updateGuildSummary } = require('./updaters');
+const { updateGuildRoster, updateGuildSummary, updateLogsRoster } = require('./updaters');
 const { detectiveGuildDiffs } = require('./detectives');
 const { toSlug } = require('../../db/setters');
 
@@ -108,7 +108,6 @@ const getGuild = async (
       Object.assign(guild, { members: roster })
     }
 
-
     /** If guild new, check rename version of it */
     if (guild.isNew) {
       /** Check was guild renamed */
@@ -118,6 +117,7 @@ const getGuild = async (
       }).lean();
       if (guild_renamed) await detectiveGuildDiffs(guild_renamed, guild.toObject())
     } else {
+      await updateLogsRoster(guild_last, guild.toObject())
       await detectiveGuildDiffs(guild_last, guild.toObject())
     }
 

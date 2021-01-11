@@ -272,10 +272,10 @@ const worker = async ({ _id, type, filters }, channel) => {
           if (character.hash_b) embed.addField('Hash B', `[${character.hash_b}](https://${process.env.domain}/hash/b@${character.hash_b})`, true);
           if (character.hash_f) embed.addField('Hash F', `[${character.hash_f}](https://${process.env.domain}/hash/f@${character.hash_f})`, true);
           if (character.lfg) {
+            if (character.lfg.role) embed.addField('Role', character.lfg.role.toString().toUpperCase(), true);
             if (character.lfg.rio) embed.addField('RIO', character.lfg.rio, true);
             if (character.lfg.languages) embed.addField('Language', character.lfg.languages.join(','), true);
             if (character.lfg.wcl_percentile) embed.addField('WCL Best.Perf.Avg', `${character.lfg.wcl_percentile} Mythic`, true);
-            if (character.lfg.role) embed.addField('Role', character.lfg.role.toString().toUpperCase(), true);
             if (character.lfg.days_from && character.lfg.days_to) embed.addField('RT days', `${character.lfg.days_from} - ${character.lfg.days_to}`, true);
             if (character.lfg.battle_tag) embed.addField('Battle.tag', character.lfg.battle_tag, true);
             if (character.lfg.transfer) {

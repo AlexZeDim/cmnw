@@ -1,7 +1,6 @@
-const Discord = require('discord.js');
+const Discord = require('discord-voluspa');
 
 const bot = new Discord.Client();
-
 
 //TESSIE Nzk3OTIzNTIzOTEzMTg3MzM4.X_tj2w.JoqPua1xYeDKPE3SSanwLazp6tk
 //GOSSIP NzI3NjIyMDg2MzYwNjk0ODc1.XzCMuw.DllkWDlms4u0g7iLcyoRyXqjgwQ

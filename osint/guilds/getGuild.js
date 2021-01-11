@@ -103,9 +103,9 @@ const getGuild = async (
     Object.assign(guild, summary)
 
     const roster = await updateGuildRoster(guild.toObject(), api);
-    if (roster) {
+    if (roster.members) {
       guild.markModified('members');
-      Object.assign(guild, { members: roster })
+      Object.assign(guild, roster)
     }
 
     /** If guild new, check rename version of it */

@@ -239,7 +239,7 @@ const worker = async ({ _id, type, filters }, channel) => {
           const embed = new MessageEmbed();
           embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm.slug}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm.slug}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm.slug}/${character.name})\n`)
           embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус & Форжспирит`);
-          embed.setAuthor(`[${character.name}@${(character.realm.name_locale) ? (character.realm.name_locale) : (character.realm.name)}](https://${process.env.domain}/character/${character._id})`.toUpperCase())
+          embed.setAuthor(`${character.name}@${(character.realm.name_locale) ? (character.realm.name_locale) : (character.realm.name)}`.toUpperCase(),'', 'https://${process.env.domain}/character/${character._id}')
           if (character.guild) {
             const guild = {};
             guild._id = character.guild._id;

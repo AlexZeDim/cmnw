@@ -37,7 +37,7 @@ const schema = new mongoose.Schema(
         type: [String],
         lowercase: true
       },
-      wcl: Number,
+      wcl_percentile: Number,
       rio: Number,
       character_class: [String],
     },

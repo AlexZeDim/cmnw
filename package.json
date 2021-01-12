@@ -42,6 +42,7 @@
     "moment": "^2.27.0",
     "mongoose": "^5.11.10",
     "morgan": "1.10.0",
+    "node-nlp": "^4.17.2",
     "node-schedule": "^1.3.2",
     "request-x-ray": "latest",
     "table-scraper": "^1.0.3",

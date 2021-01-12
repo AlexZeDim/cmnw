@@ -16,3 +16,8 @@ apps:
     instances: 1
     autorestart: true
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+  - script: ./discord/subscriptions.js
+    name: 'CORE-SUBSCRIPTIONS'
+    instances: 1
+    autorestart: true
+    log_date_format: 'DD/MM HH:mm:ss.SSS'

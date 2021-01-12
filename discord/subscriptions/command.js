@@ -1,4 +1,4 @@
-const { installer } = require('../subscriptions/subscriptions')
+const { installer } = require('./services');
 const discord_db = require('../../db/models/discord_db');
 
 module.exports = {

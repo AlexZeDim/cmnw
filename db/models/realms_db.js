@@ -49,24 +49,16 @@ const schema = new mongoose.Schema(
       guilds_alliance: [Number],
       guilds_horde: [Number],
       characters_classes: [{
-        _id: false,
-        name: String,
+        _id: String,
         value: [Number]
       }],
       characters_professions: [{
-        _id: false,
-        name: String,
+        _id: String,
         value: [Number]
       }],
       characters_covenants: [{
-        _id: false,
-        name: String,
-        value: [Number],
-        group: [{
-          _id: false,
-          level: Number,
-          value: Number,
-        }]
+        _id: String,
+        value: [Number]
       }],
       timestamps: [Number]
     },

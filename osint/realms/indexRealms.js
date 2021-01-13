@@ -44,7 +44,7 @@ const indexRealms = async () => {
           });
         }
 
-        const [ summary, populations ] = await Promise.allSettled([
+        const [ summary, population ] = await Promise.allSettled([
           await getRealm(slug, api),
           await countPopulation(slug)
         ]);
@@ -53,12 +53,43 @@ const indexRealms = async () => {
           Object.assign(realm, summary.value)
         }
 
-        if (populations && populations.value) {
-          realm.populations.push(populations.value)
-          if (realm.populations.length > 10) {
-            realm.populations.shift()
+        if (population && population.value) {
+
+          for (const [key, value] of Object.entries(population.value)) {
+            if (key in realm.population && Array.isArray(realm.population[key])) {
+
+              /**
+               * If value is number, then we add it to key:[number]
+               */
+              if (Number.isInteger(value)) {
+                if (realm.population[key].length > 10) realm.population[key].shift()
+                realm.population[key].push(value)
+              }
+
+              /**
+               * If value is [Objects] then we enter
+               * find by _id and add value to [number]
+               */
+              if (Array.isArray(value)) {
+                for (const object of value) {
+                  if (object._id && object.value) {
+                    const sub_doc = realm.population[key].find(document => document._id === object._id)
+                    if (sub_doc) {
+                      if (sub_doc.value.length > 10) sub_doc.value.shift()
+                      sub_doc.value.push(object.value)
+                    } else {
+                      realm.population[key].push({
+                        _id: object._id,
+                        value: [object.value]
+                      })
+                    }
+                  }
+                }
+              }
+              realm.population.markModified(key)
+            }
           }
-          realm.markModified('populations')
+          realm.population.timestamps.push(time);
         }
 
         if (wcl_ids && wcl_ids.value.has(realm.name)) {

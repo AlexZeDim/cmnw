@@ -82,7 +82,7 @@ const getRealm = async (realm_slug, BlizzAPI) => {
             if (connected_realm.id) summary.connected_realm_id = connected_realm.id;
             if (connected_realm.has_queue) summary.has_queue = connected_realm.has_queue;
             if (connected_realm.status && connected_realm.status.name) summary.status = connected_realm.status.name;
-            if (connected_realm.population && connected_realm.population.name) summary.population = connected_realm.population.name;
+            if (connected_realm.population && connected_realm.population.name) summary.population_status = connected_realm.population.name;
             if (connected_realm.realms && Array.isArray(connected_realm.realms) && connected_realm.realms.length) {
               summary.connected_realm = connected_realm.realms.map(({ slug }) => slug);
             }
@@ -128,7 +128,7 @@ const countPopulation = async (realm_slug) => {
      */
     for (const character_class of CharactersClasses) {
       population.characters_classes.push({
-        name: character_class,
+        _id: character_class,
         value: await characters_db.countDocuments({
           'realm.slug': realm_slug,
           statusCode: 200,
@@ -143,7 +143,7 @@ const countPopulation = async (realm_slug) => {
      */
     for (const { name, id } of CharactersProfessions) {
       population.characters_professions.push({
-        name: name,
+        _id: name,
         value: await characters_db.countDocuments({
           'realm.slug': realm_slug,
           statusCode: 200,
@@ -158,29 +158,8 @@ const countPopulation = async (realm_slug) => {
      */
     for (const covenant of ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord']) {
       population.characters_covenants.push({
-        name: covenant,
-        value: await characters_db.countDocuments({ 'realm.slug': realm_slug, statusCode: 200, 'chosen_covenant': covenant }),
-        group: await characters_db.aggregate([
-          {
-            $match: {
-              'realm.slug': realm_slug,
-              'chosen_covenant': covenant
-            }
-          },
-          {
-            $group: {
-              _id: '$renown_level',
-              value: { $sum: 1 }
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              level: "$_id",
-              value: 1
-            }
-          }
-        ])
+        _id: covenant,
+        value: await characters_db.countDocuments({ 'realm.slug': realm_slug, statusCode: 200, 'chosen_covenant': covenant })
       })
     }
 
@@ -191,8 +170,6 @@ const countPopulation = async (realm_slug) => {
     population.guilds_total = await guilds_db.countDocuments({'realm.slug': realm_slug})
     population.guilds_alliance = await guilds_db.countDocuments({'realm.slug': realm_slug, faction: 'Alliance'})
     population.guilds_horde = await guilds_db.countDocuments({'realm.slug': realm_slug, faction: 'Horde'})
-
-    population.timestamp = new Date().getTime();
 
     return population;
   } catch (error) {

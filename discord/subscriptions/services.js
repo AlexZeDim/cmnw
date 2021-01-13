@@ -200,7 +200,7 @@ const worker = async ({ _id, type, filters }, channel) => {
         if (!filters.realms.length) return await channel.send("No realms were found, please use \`-subscription\` command to try again");
 
         const query = { 'lfg.status': true, 'lfg.new': true };
-        if (filters.faction) Object.assign(query, { 'lfg.faction': filters.faction });
+        if (filters.faction) Object.assign(query, { 'faction': filters.faction });
         if (filters.item_level) Object.assign(query, { 'average_item_level': { '$gte': filters.item_level } });
         if (filters.rio) Object.assign(query, { 'lfg.rio': { '$gte': filters.rio } });
         if (filters.days_from) Object.assign(query, { 'lfg.days_from': { '$gte': filters.days_from } });

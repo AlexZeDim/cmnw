@@ -19,7 +19,7 @@ const schema = new mongoose.Schema(
     is_tournament: Boolean,
     has_queue: Boolean,
     status: String,
-    population: String,
+    population_status: String,
     connected_realm_id: Number,
     connected_realm: [String],
     ticker: String,
@@ -35,44 +35,41 @@ const schema = new mongoose.Schema(
     auctions: Number,
     valuations: Number,
     golds: Number,
-    populations: [
-      {
+    population: {
+      characters_total: [Number],
+      characters_active: [Number],
+      characters_active_alliance: [Number],
+      characters_active_horde: [Number],
+      characters_active_max_level: [Number],
+      characters_guild_members: [Number],
+      characters_guildless: [Number],
+      players_unique: [Number],
+      players_active_unique: [Number],
+      guilds_total: [Number],
+      guilds_alliance: [Number],
+      guilds_horde: [Number],
+      characters_classes: [{
         _id: false,
-        characters_total: Number,
-        characters_active: Number,
-        characters_active_alliance: Number,
-        characters_active_horde: Number,
-        characters_active_max_level: Number,
-        characters_guild_members: Number,
-        characters_guildless: Number,
-        players_unique: Number,
-        players_active_unique: Number,
-        characters_classes: [{
+        name: String,
+        value: [Number]
+      }],
+      characters_professions: [{
+        _id: false,
+        name: String,
+        value: [Number]
+      }],
+      characters_covenants: [{
+        _id: false,
+        name: String,
+        value: [Number],
+        group: [{
           _id: false,
-          name: String,
-          value: Number
-        }],
-        characters_professions: [{
-          _id: false,
-          name: String,
-          value: Number
-        }],
-        characters_covenants: [{
-          _id: false,
-          name: String,
+          level: Number,
           value: Number,
-          group: [{
-            _id: false,
-            level: Number,
-            value: Number,
-          }]
-        }],
-        guilds_total: Number,
-        guilds_alliance: Number,
-        guilds_horde: Number,
-        timestamp: Number
-      }
-    ]
+        }]
+      }],
+      timestamps: [Number]
+    },
   },
   {
     timestamps: true,

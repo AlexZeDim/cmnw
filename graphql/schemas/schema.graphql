@@ -3,7 +3,7 @@ Realm Sub-Fields
 """
 
 type PopulationGroup {
-    _id: Int,
+    _id: String,
     value: [Float]
 }
 

@@ -2,39 +2,28 @@
 Realm Sub-Fields
 """
 
-type PopulationClassesProfessions {
-    name: String,
-    value: Float
-}
-
-type CovanantGroup {
-    level: Int,
-    value: Float
-}
-
-type PopulationCovenants {
-    name: String,
-    value: Float,
-    group: [CovanantGroup]
+type PopulationGroup {
+    _id: Int,
+    value: [Float]
 }
 
 type Population {
-    characters_total: Float,
-    characters_active: Float,
-    characters_active_alliance: Float,
-    characters_active_horde: Float,
-    characters_active_max_level: Float,
-    characters_guild_members: Float,
-    characters_guildless: Float,
-    players_unique: Float,
-    players_active_unique: Float,
-    characters_classes: [PopulationClassesProfessions],
-    characters_professions: [PopulationClassesProfessions],
-    characters_covenants: [PopulationCovenants],
-    guilds_total: Float,
-    guilds_alliance: Float,
-    guilds_horde: Float,
-    timestamp: Float
+    characters_total: [Float],
+    characters_active: [Float],
+    characters_active_alliance: [Float],
+    characters_active_horde: [Float],
+    characters_active_max_level: [Float],
+    characters_guild_members: [Float],
+    characters_guildless: [Float],
+    players_unique: [Float],
+    players_active_unique: [Float],
+    characters_classes: [PopulationGroup],
+    characters_professions: [PopulationGroup],
+    characters_covenants: [PopulationGroup],
+    guilds_total: [Float],
+    guilds_alliance: [Float],
+    guilds_horde: [Float],
+    timestamps: [Float]
 }
 
 type Realm {
@@ -59,7 +48,7 @@ type Realm {
     auctions: Float,
     valuations: Float,
     golds: Float,
-    populations: [Population]
+    populations: Population
 }
 
 """

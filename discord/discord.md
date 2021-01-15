@@ -11,14 +11,6 @@ Arguments for this command are case-insensitive.
 CHAR блюрателла@гордунни
 ```
 
-### CLOGS [name]@[realm]
-
-[REDACTED]
-
-### GLOGS [name]@[realm]
-
-[REDACTED]
-
 ### WHOAMI
 
 Shows your discord username and ID.
@@ -46,14 +38,14 @@ or even TICKER (FLASK.INT). So does for the realm argument. Please notice that i
 EVA FLASK.INT@GORDUNNI
 ```
 
-### FIND A || B || C || ALL || ANY [query]
+### HASH A || B || F [query]
 
 Allows you to find no more than 15 (_available_) alternative characters (twinks) in OSINT-DB across different realms.
 
-Requires a query parameter, which can be a hash string `f97efc28` or a character's name and realm `блюрателла@гордунни`
+Requires a query parameter, which can be a hash string `f97efc28`.
 
 ```text
-FindAll блюрателла@гордунни
+hash a@f97efc28
 ```
 
 > Remember, that match by any of this hash values separately doesn't guarantee that a selected character would belong to one identity.

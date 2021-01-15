@@ -40,7 +40,7 @@ type Realm {
     is_tournament: Boolean,
     has_queue: Boolean,
     status: String,
-    population: String,
+    population_status: String,
     connected_realm_id: Int,
     connected_realm: [String],
     ticker: String,
@@ -48,7 +48,7 @@ type Realm {
     auctions: Float,
     valuations: Float,
     golds: Float,
-    populations: Population
+    population: Population
 }
 
 """

@@ -47,25 +47,27 @@ const indexGold = async () => {
 
     const realms_set = new Set()
 
-    /**
-     * @type {[]}
-     */
-    const orders = await Promise.all(listing.map(async order => {
+    const orders = [];
+
+    await Promise.all(listing.map(async order => {
       const realm = await realms_db
         .findOne({ $text: { $search: order.realm } })
         .select('connected_realm_id')
         .lean();
-      if (!realm || !realm.connected_realm_id) return
-      if (parseFloat(order.quantity.replace(/\s/g, '')) < 15000000) {
-        realms_set.add(realm.connected_realm_id)
-        return {
-          connected_realm_id: realm.connected_realm_id,
-          faction: order.faction,
-          quantity: +order.quantity.replace(/\s/g, ''),
-          status: order.status ? 'Online' : 'Offline',
-          owner: order.owner,
-          price: +order.price.replace(/ ₽/g, ''),
-          last_modified: timestamp,
+      if (realm && realm.connected_realm_id && order && order.price && order.quantity) {
+        const price = parseFloat(order.price.replace(/ ₽/g, ''));
+        const quantity = parseInt(order.quantity.replace(/\s/g, ''));
+        if (quantity < 15000000) {
+          realms_set.add(realm.connected_realm_id)
+          orders.push({
+            connected_realm_id: realm.connected_realm_id,
+            faction: order.faction,
+            quantity: quantity,
+            status: order.status ? 'Online' : 'Offline',
+            owner: order.owner,
+            price: price,
+            last_modified: timestamp,
+          })
         }
       }
     }))

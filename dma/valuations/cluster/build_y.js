@@ -41,13 +41,13 @@ async function buildY (item_id, connected_realms_id = [], is_commdty = false, is
     if (!is_gold && is_xrs) {
       const { auctions } = await realms_db.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('auctions').sort({ 'auctions': 1 })
       /** Find distinct prices for each realm */
-      const quotes = await auctions_db.find({ 'last_modified': { $gte: auctions }, 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'unit_price').distinct('unit_price');
+      const quotes = await auctions_db.find({ 'last_modified': { $gte: auctions }, 'item.id': item_id, connected_realm_id: { $in: connected_realms_id }, quantity: { $gt: 1 } }, 'unit_price').distinct('unit_price');
       return await priceRange(quotes, blocks)
     }
 
     if (!is_gold && !is_xrs) {
       /** Find distinct prices for each realm */
-      const quotes = await auctions_db.find({ 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'unit_price').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('unit_price');
+      const quotes = await auctions_db.find({ 'item.id': item_id, connected_realm_id: { $in: connected_realms_id }, quantity: { $gt: 1 } }, 'unit_price').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('unit_price');
       return await priceRange(quotes, blocks)
     }
 

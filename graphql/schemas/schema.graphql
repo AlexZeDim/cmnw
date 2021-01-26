@@ -196,6 +196,11 @@ type Order {
 Item Valuations
 """
 
+type RealmTooltip {
+    _id: String,
+    tooltip: String
+}
+
 type Valuations {
     name: String,
     item_id: Int,
@@ -294,9 +299,16 @@ type Item {
     quotes: [Quotes],
     wowtoken: [Wowtoken],
     value: Float,
-    quantity: Float
-    xrs: Boolean
-    score: Float
+    quantity: Float,
+    score: Float,
+    title: String,
+    item_name: String,
+    realm_name: String,
+    realms_tooltips: [RealmTooltip],
+    latest_timestamp: Float,
+    component: String,
+    is_xrs: Boolean,
+    is_gold: Boolean
 }
 
 """

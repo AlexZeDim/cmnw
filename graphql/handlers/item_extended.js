@@ -12,7 +12,7 @@ const goldTS = require('../../dma/valuations/cluster/gold_ts')
 
 /**
  *
- * @param item {{ _id: number, asset_class: [string], stackable: number }}
+ * @param item {{ _id: number, name: {en_GB: string}, ticker: string || undefined, asset_class: [string], stackable: number, is_xrs: boolean, is_commdty: boolean, is_xrs: boolean, is_gold: boolean }}
  * @param connected_realms_id {[number]}
  * @param extended {Boolean}
  * @returns {Promise<{feed: [], valuations: [], chart: {y_axis: [], x_axis: [], dataset: []}, quotes: []}>}
@@ -27,37 +27,37 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
       dataset: []
     },
     quotes: [],
-    feed: []
+    feed: [],
+    properties: {
+      title: null,
+      realm_name: null,
+      realms_tooltips: [],
+      latest_timestamp: Number.MAX_SAFE_INTEGER,
+    }
   }
 
   if (!connected_realms_id.length) return extended_params
   if (!item._id) return extended_params
 
   try {
-    let is_commdty = false, is_xrs = false, is_gold = false, y_axis = [];
-    if (extended) {
-      /** COMMDTY block */
+    let y_axis = [];
 
-
-      if (item.asset_class && item.asset_class.includes('COMMDTY')) {
-        is_commdty = true;
-      }
-      if (item.stackable && item.stackable > 1) {
-        is_commdty = true;
-      }
-      if (item._id === 1) {
-        is_commdty = true;
-      }
-
-      /** XRS */
-      is_xrs = connected_realms_id.length !== 1;
-      is_gold = item._id === 1;
-
-      /** Request Y axis for cluster  */
-      y_axis = await buildY(item._id, connected_realms_id, is_commdty, is_xrs, is_gold)
-      extended_params.chart.y_axis.push(...y_axis)
+    /** Properties */
+    if (item.ticker) {
+      extended_params.properties.title = item.ticker
+      extended_params.properties.item_name = item.ticker
+      extended_params.properties.toUpperCase = true
+    } else if (item.name && item.name.en_GB) {
+      extended_params.properties.title = item.name.en_GB
+      extended_params.properties.item_name = item.name.en_GB
     }
 
+
+    if (extended) {
+      /** Request Y axis for cluster  */
+      y_axis = await buildY(item._id, connected_realms_id, item.is_commdty, item.is_xrs, item.is_gold)
+      extended_params.chart.y_axis.push(...y_axis)
+    }
 
     /** For each realm */
     await realms_db
@@ -70,6 +70,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
             _id: "$connected_realm_id",
             realms: { $addToSet: "$name_locale" },
             connected_realm_id: { $first: "$connected_realm_id" },
+            slug: { $first: "$slug" },
             auctions: { $first: "$auctions" },
             golds: { $first: "$golds" },
             valuations: { $first: "$valuations" }
@@ -80,6 +81,25 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
       .cursor()
       .exec()
       .eachAsync(async (realm, x) => {
+
+        extended_params.properties.realms_tooltips.push({ _id: realm._id, tooltip: realm.realms.join(', ') })
+
+        extended_params.properties.realm_name = realm.realms[0]
+        extended_params.properties.title += '@' + realm.realms[0]
+
+        if (extended_params.properties.toUpperCase) {
+          extended_params.properties.title = extended_params.properties.title.toUpperCase()
+          extended_params.properties.realm_name = extended_params.properties.realm_name.toUpperCase()
+        }
+
+        if (item.is_gold && realm.golds < extended_params.properties.latest_timestamp) {
+          extended_params.properties.latest_timestamp = realm.golds
+        }
+
+        if (!item.is_gold && realm.auctions < extended_params.properties.latest_timestamp) {
+          extended_params.properties.latest_timestamp = realm.auctions
+        }
+
         /**
          *  =Valuations Thread=>
          * TODO Promise.all & force evaluation
@@ -120,19 +140,19 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
 
         if (extended) {
           /** =Chart Data Thread=> */
-          if (is_commdty) {
-            if (is_xrs) {
+          if (item.is_commdty) {
+            if (item.is_xrs) {
               /** Build X axis */
               extended_params.chart.x_axis[x] = realm.realms.join(', ');
               /** Build Cluster from Orders */
-              if (is_gold) {
+              if (item.is_gold) {
                 const dataset = await goldXRS(y_axis, { x: x, connected_realm_id: realm.connected_realm_id, golds: realm.golds })
                 if (dataset && dataset.length) {
                   extended_params.chart.dataset.push(...dataset);
                 }
               }
 
-              if (!is_gold) {
+              if (!item.is_gold) {
                 const dataset = await commdtyXRS(y_axis, item._id, { x: x, connected_realm_id: realm.connected_realm_id, auctions: realm.auctions })
                 if (dataset && dataset.length) {
                   extended_params.chart.dataset.push(...dataset);
@@ -140,9 +160,9 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
               }
             }
 
-            if (!is_xrs) {
+            if (!item.is_xrs) {
               /** Build Cluster by Timestamp */
-              if (is_gold) {
+              if (item.is_gold) {
                 const [ dataset, xAxis ] = await goldTS(y_axis, realm.connected_realm_id)
                 if (dataset && xAxis) {
                   extended_params.chart.dataset.push(...dataset);
@@ -150,7 +170,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
                 }
               }
 
-              if (!is_gold) {
+              if (!item.is_gold) {
                 const [ dataset, xAxis ] = await commdtyTS(y_axis, item._id, realm.connected_realm_id)
                 if (dataset && xAxis) {
                   extended_params.chart.dataset.push(...dataset);
@@ -161,7 +181,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
           }
 
           /** =Feed Thread=> */
-          if (!is_commdty && !is_gold) {
+          if (!item.is_commdty && !item.is_xrs) {
             /** Create Feed from Orders */
             const feed = await auctions_db.find({
               'last_modified': realm.auctions,
@@ -174,8 +194,8 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
           }
 
           /** =Quotes Thread=> */
-          if (!is_xrs) {
-            if (is_gold) {
+          if (!item.is_xrs) {
+            if (item.is_gold) {
               const quotes = await golds_db.aggregate([
                 {
                   $match: {
@@ -228,7 +248,7 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
               }
             }
 
-            if (!is_gold) {
+            if (!item.is_gold) {
               const quotes = await auctions_db.aggregate([
                 {
                   $match: {

@@ -42,7 +42,7 @@ const queryItemAndRealm = async (itemQuery, realmQuery) => {
             realms_db
               .find(
                 { $text: { $search: realmQuery } },
-                { score: { $meta: 'textScore' }, populations: 0 },
+                { score: { $meta: 'textScore' }, population: 0 },
               )
               .sort({ score: { $meta: 'textScore' } })
               .limit(1)
@@ -57,7 +57,7 @@ const queryItemAndRealm = async (itemQuery, realmQuery) => {
           realms_db
             .find(
               { $text: { $search: realm.toString().replace(';', ' ') } },
-              { score: { $meta: 'textScore' }, populations: 0 },
+              { score: { $meta: 'textScore' }, population: 0 },
             )
             .sort({ score: { $meta: 'textScore' } })
             .lean()

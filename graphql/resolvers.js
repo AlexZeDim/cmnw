@@ -96,31 +96,51 @@ const root = {
     const [ item, realms ] = await queryItemAndRealm(itemQuery, realmQuery);
     if (!item || !realms) return
 
+    item.is_commdty = false
+    item.is_gold = false
+
+    if (item.asset_class && item.asset_class.includes('COMMDTY')) {
+      item.is_commdty = true;
+    } else if (item.stackable && item.stackable > 1) {
+      item.is_commdty = true;
+    }
+
+    if (item._id === 1) {
+      item.is_commdty = true;
+      item.is_gold = true;
+    }
+
     /** WoW Token */
     if (item._id === 122284 || item._id === 122270) {
-      await wowtoken_db
+      item.component = 'WOWTOKEN';
+      const wowtoken = await wowtoken_db
         .find({ region: 'eu' })
         .limit(200)
         .sort({ _id: -1 })
         .lean()
-        .then(wowtoken => Object.assign(item, { wowtoken: wowtoken }))
+      if (wowtoken) Object.assign(item, { wowtoken: wowtoken })
     }
 
     /** Add realms */
     item.realms = [ ...realms];
     const connected_realms_id = [...new Set(realms.map(({ connected_realm_id }) => connected_realm_id))]
-    const xrs = connected_realms_id.length > 1
 
-    const { valuations, chart, quotes, feed } = await itemExtended(item, connected_realms_id, extended)
+    item.is_xrs = connected_realms_id.length > 1
+
+    /** Component */
+    if ('is_commdty' in item && item.is_commdty) item.component = 'QUOTES'
+    if ('is_commdty' in item && !item.is_commdty) item.component = 'ITEM'
+
+    const { valuations, chart, quotes, feed, properties } = await itemExtended(item, connected_realms_id, extended)
 
     if (valuations && valuations.length) item.valuations = valuations
+    Object.assign(item, properties)
 
     if (extended) {
       item.chart = chart
       if (quotes && quotes.length) item.quotes = quotes
       if (feed && feed.length) item.feed = feed
     }
-    item.xrs = xrs
 
     return item
   },

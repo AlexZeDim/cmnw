@@ -1,6 +1,6 @@
 {
   "name": "conglomerat",
-  "version": "4.5.3",
+  "version": "4.5.4",
   "private": true,
   "homepage": "https://conglomerat.group",
   "license": "MIT",
@@ -16,7 +16,7 @@
   "scripts": {
     "tokens": "node bin/tokens.js",
     "discord": "node discord/bot.js",
-    "core": "node bin/server.js",
+    "core": "node app.js",
     "osint": "node osint/characters/indexLua.js"
   },
   "languageName": "node",

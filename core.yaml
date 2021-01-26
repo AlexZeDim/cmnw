@@ -6,7 +6,7 @@ apps:
     autorestart: true
     max_memory_restart: '100M'
     log_date_format: 'DD/MM HH:mm:ss.SSS'
-  - script: ./bin/server.js
+  - script: ./app.js
     name: 'CORE-API'
     instances: 1
     autorestart: true

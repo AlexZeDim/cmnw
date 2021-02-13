@@ -84,12 +84,16 @@ async function itemExtended (item, connected_realms_id = [], extended = false) {
 
         extended_params.properties.realms_tooltips.push({ _id: realm._id, tooltip: realm.realms.join(', ') })
 
-        extended_params.properties.realm_name = realm.realms[0]
-        extended_params.properties.title += '@' + realm.realms[0]
+        if (!item.is_xrs) {
+          extended_params.properties.realm_name = realm.realms[0]
+          extended_params.properties.title += '@' + realm.realms[0]
+        }
 
         if (extended_params.properties.toUpperCase) {
           extended_params.properties.title = extended_params.properties.title.toUpperCase()
-          extended_params.properties.realm_name = extended_params.properties.realm_name.toUpperCase()
+          if (extended_params.properties.realm_name) {
+            extended_params.properties.realm_name = extended_params.properties.realm_name.toUpperCase()
+          }
         }
 
         if (item.is_gold && realm.golds < extended_params.properties.latest_timestamp) {

@@ -77,17 +77,18 @@ const root = {
     const [ type, hash ] = query.toLowerCase().split("@")
     return characters_db.find({ [`hash_${type}`]: hash }).limit(100).lean();
   },
-  wowtoken: async ({ region }) => {
-    return wowtoken_db
-      .findOne({ region: region })
-      .sort({ _id: -1 })
-      .lean();
-  },
   realms: async ({ name, limit }) => {
     return realms_db
       .find({ $text: { $search: name } }, { score: { $meta: 'textScore' } })
       .sort({ 'populations.characters_total': -1 })
       .limit(limit || 0)
+      .lean();
+  },
+  wowtoken: async ({ region = 'eu', limit = 1}) => {
+    return wowtoken_db
+      .find({ region: region })
+      .limit(limit)
+      .sort({ _id: -1 })
       .lean();
   },
   item: async ({ id, extended }) => {
@@ -110,17 +111,6 @@ const root = {
       item.is_gold = true;
     }
 
-    /** WoW Token */
-    if (item._id === 122284 || item._id === 122270) {
-      item.component = 'WOWTOKEN';
-      const wowtoken = await wowtoken_db
-        .find({ region: 'eu' })
-        .limit(200)
-        .sort({ _id: -1 })
-        .lean()
-      if (wowtoken) Object.assign(item, { wowtoken: wowtoken })
-    }
-
     /** Add realms */
     item.realms = [ ...realms];
     const connected_realms_id = [...new Set(realms.map(({ connected_realm_id }) => connected_realm_id))]
@@ -130,6 +120,17 @@ const root = {
     /** Component */
     if ('is_commdty' in item && item.is_commdty) item.component = 'QUOTES'
     if ('is_commdty' in item && !item.is_commdty) item.component = 'ITEM'
+
+    /** WoW Token */
+    if (item._id === 122284 || item._id === 122270) {
+      item.component = 'WOWTOKEN';
+      const wowtoken = await wowtoken_db
+        .find({ region: 'eu' })
+        .limit(100)
+        .sort({ _id: -1 })
+        .lean()
+      if (wowtoken) Object.assign(item, { wowtoken: wowtoken })
+    }
 
     const { valuations, chart, quotes, feed, properties } = await itemExtended(item, connected_realms_id, extended)
 

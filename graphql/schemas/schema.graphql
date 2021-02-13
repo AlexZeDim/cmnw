@@ -297,7 +297,6 @@ type Item {
     feed: [Order],
     chart: ClusterData,
     quotes: [Quotes],
-    wowtoken: [Wowtoken],
     value: Float,
     quantity: Float,
     score: Float,
@@ -307,8 +306,10 @@ type Item {
     realms_tooltips: [RealmTooltip],
     latest_timestamp: Float,
     component: String,
+    wowtoken: [Wowtoken],
     is_xrs: Boolean,
-    is_gold: Boolean
+    is_gold: Boolean,
+    is_commdty: Boolean
 }
 
 """
@@ -320,7 +321,7 @@ type Query {
     guild(id: ID!): Guild
     item(id: ID!, extended: Boolean): Item
     realms(name: String!, limit: Int): [Realm]
-    wowtoken(region: String): Wowtoken
+    wowtoken(region: String!, limit: Int!): [Wowtoken]
     hash(query: String!): [Character]
     items(id: ID!): [Item]
 }

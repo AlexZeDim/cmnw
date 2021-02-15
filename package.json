@@ -1,0 +1,35 @@
+{
+  "name": "conglomerat",
+  "version": "5.0.0",
+  "main": "index.js",
+  "homepage": "https://conglomerat.group",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlexZeDim/conglomerat/issues",
+    "discord": "AlexZeDim#2645"
+  },
+  "author": {
+    "name": "AlexZeDim",
+    "email": "AlexZeDim2812@ya.com",
+    "url": "https://twitter.com/alexzedim2812"
+  },
+  "languageName": "node",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlexZeDim/conglomerat.git"
+  },
+  "dependencies": {
+    "@typegoose/typegoose": "^7.4.8",
+    "@types/dotenv": "^8.2.0",
+    "@types/mongoose": "^5.10.3",
+    "bullmq": "^1.14.4",
+    "dotenv": "^8.2.0",
+    "mongoose": "5.10.18",
+    "pm2": "^4.5.4",
+    "typescript": "^4.1.5"
+  }
+}

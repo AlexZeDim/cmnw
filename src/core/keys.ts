@@ -4,7 +4,7 @@ import { KeysModel } from "../db/mongo/keys.model";
 
 import axios from "axios";
 
-export const Keys = async (job: Job, tag: string = 'BlizzardAPI'): Promise<void> => {
+module.exports = async (job: Job, tag: string = 'BlizzardAPI'): Promise<void> => {
   try {
     await KeysModel.find({ tags: tag })
       .cursor()

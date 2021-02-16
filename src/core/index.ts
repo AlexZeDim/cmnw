@@ -1,6 +1,6 @@
-import { Queue, Worker, Job } from 'bullmq';
+import { Queue, Worker, Job, QueueScheduler } from 'bullmq';
 import { connectionRedis } from "../db/redis/connectionRedis";
-import pm2 from "pm2";
+//import pm2 from "pm2";
 
 /**
  * TODO retry on writes & cron-task
@@ -8,6 +8,7 @@ import pm2 from "pm2";
  */
 
 const queueCore = new Queue('CORE', {connection: connectionRedis});
+const queueScheduler = new QueueScheduler('CORE', {connection: connectionRedis});
 
 /**
  * IIFE for CORE
@@ -19,7 +20,7 @@ const queueCore = new Queue('CORE', {connection: connectionRedis});
     const worker = new Worker('CORE', async (job: Job) => {
       //TODO start immediate and repeat by cron-task
       console.log(job.data)
-      await pm2.connect(err => {
+     /* await pm2.connect(err => {
         if (err) console.error(err)
         pm2.start({
           name: '',
@@ -31,7 +32,7 @@ const queueCore = new Queue('CORE', {connection: connectionRedis});
           pm2.disconnect()
         });
       });
-      return job
+      return job*/
     }, {connection: connectionRedis});
     worker.on('completed', (job) => {
       console.log(`${job.id} has completed!`);

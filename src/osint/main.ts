@@ -1,5 +1,5 @@
 import '../db/mongo/connection'
-import {CharacterModel} from '../db/mongo/characters.model'
+import {CharacterModel} from '../db/mongo/models/characters.model'
 import {queueCharacters} from '../index'
 
 //TODO cron management in another Q

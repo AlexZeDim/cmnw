@@ -1,6 +1,6 @@
 import '../db/mongo/connection';
 import { Job } from 'bullmq';
-import { KeysModel } from "../db/mongo/keys.model";
+import { KeysModel } from "../db/mongo/models/keys.model";
 
 import axios from "axios";
 

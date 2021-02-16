@@ -1,6 +1,6 @@
 import {prop, getModelForClass, modelOptions} from '@typegoose/typegoose';
 
-@modelOptions({ options: { customName: 'guilds' } })
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'guilds' }, options: { customName: 'guilds' } })
 
 class Guild {
   @prop({ lowercase: true })

@@ -1,6 +1,6 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
-@modelOptions({ options: { customName: 'keys' }, schemaOptions: { timestamps: true } })
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'keys' }, options: { customName: 'keys' } })
 
 class Key {
   @prop()

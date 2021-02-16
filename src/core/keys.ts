@@ -1,9 +1,10 @@
 import '../db/mongo/connection';
+import { Job } from 'bullmq';
 import { KeysModel } from "../db/mongo/keys.model";
 
 import axios from "axios";
 
-export const Keys = async (tag: string = 'BlizzardAPI'): Promise<void> => {
+export const Keys = async (job: Job, tag: string = 'BlizzardAPI'): Promise<void> => {
   try {
     await KeysModel.find({ tags: tag })
       .cursor()

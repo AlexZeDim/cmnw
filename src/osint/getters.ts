@@ -1,6 +1,18 @@
-import {ObjectProps, CharacterProps, RealmProps, ConnectedRealmProps, PopulationRealmProps, RealmsTicker, CharactersClasses, CharactersProfessions} from "../interface/constant";
-import {CharacterModel} from '../db/mongo/characters.model'
-import {GuildModel} from '../db/mongo/guilds.model'
+import {
+  ObjectProps,
+  CharacterProps,
+  RealmProps,
+  GuildProps,
+  GuildMemberProps,
+  ConnectedRealmProps,
+  PopulationRealmProps,
+  RealmsTicker,
+  CharactersClasses,
+  CharactersProfessions
+} from "../interface/constant";
+import {CharacterModel} from '../db/mongo/models/characters.model'
+import {GuildModel} from '../db/mongo/models/guilds.model'
+import {RealmModel} from '../db/mongo/models/realms.model'
 import {range} from 'lodash';
 import Xray from 'x-ray';
 import BlizzAPI from 'blizzapi'
@@ -36,6 +48,30 @@ const getWarcraftLogsID = async (start: number = 0, end: number = 517): Promise<
   } catch (error) {
     console.error(`E,${getWarcraftLogsID.name}:${error}`)
     return wcl_map
+  }
+}
+
+/**
+ * TODO refactor
+ */
+const getGuild = async () => {
+  try {
+
+  } catch (e) {
+
+  }
+}
+
+const updateLogsRoster = async (guild: GuildProps, guildLast: GuildProps) => {
+  try {
+    const gm_new: GuildMemberProps | undefined = guild.members.find(m => m.rank === 0);
+    const gm_old: GuildMemberProps | undefined = guildLast.members.find(m => m.rank === 0);
+    /** Guild Master have been changed */
+    if (gm_old && gm_new && gm_old.id !== gm_new.id) {
+      /** FIXME Update both GM ^^^priority */
+    }
+  } catch (e) {
+    console.error(e)
   }
 }
 
@@ -106,6 +142,10 @@ const getRealm = async (realm_slug: string, BlizzAPI: BlizzAPI): Promise<{}> => 
   }
 }
 
+/**
+ *
+ * @param realm_slug
+ */
 const countPopulation = async (realm_slug: string): Promise<PopulationRealmProps> => {
   const population: PopulationRealmProps = {
     characters_classes: [],

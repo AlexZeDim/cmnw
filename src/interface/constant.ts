@@ -10,6 +10,32 @@ interface CharacterProps {
   forceUpdate?: boolean
 }
 
+interface GuildMemberProps {
+  _id: string,
+  id: number,
+  rank: number
+}
+
+interface GuildProps {
+  _id: string,
+  id: number,
+  name: string,
+  realm: {
+    _id: number,
+    name: string,
+    slug: string
+  },
+  members: GuildMemberProps[],
+  faction: string,
+  achievement_points: number,
+  member_count: number,
+  lastModified: Date,
+  created_timestamp: Date,
+  statusCode: number,
+  createdBy: string,
+  updatedBy: string
+}
+
 interface RealmProps extends ObjectProps {
   _id?: string,
   name?: string,
@@ -68,7 +94,7 @@ interface PopulationRealmProps extends ObjectProps {
   }[],
 }
 
-const RealmsTicker = new Map([
+const RealmsTicker: Map<string, string> = new Map([
   ['Gordunni', 'GRDNNI'],
   ['Lich King', 'LCHKNG'],
   ['Soulflayer', 'SLFLYR'],
@@ -89,7 +115,7 @@ const RealmsTicker = new Map([
   ['Blackscar', 'BLKSCR'],
 ]);
 
-const CharactersClasses = [
+const CharactersClasses: string[] = [
   'Death Knight', 'Demon Hunter',
   'Druid',        'Hunter',
   'Mage',         'Monk',
@@ -98,7 +124,7 @@ const CharactersClasses = [
   'Warlock',      'Warrior'
 ];
 
-const CharactersProfessions = [
+const CharactersProfessions: {name: string, id: number}[] = [
   {
     "name": "Blacksmithing",
     "id": 164
@@ -173,6 +199,8 @@ export {
   ObjectProps,
   CharacterProps,
   RealmProps,
+  GuildProps,
+  GuildMemberProps,
   ConnectedRealmProps,
   PopulationRealmProps,
   RealmsTicker,

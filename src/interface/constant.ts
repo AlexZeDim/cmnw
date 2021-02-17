@@ -4,17 +4,32 @@ interface ObjectProps {
 
 interface CharacterProps extends ObjectProps {
   _id: string,
-  name?: string,
-  realm_id: number,
+  name: string,
   realm: string,
+  realm_id: number,
   realm_name: string,
-  race?: string,
-  gender?: string,
-  faction?: string,
-  guildRank?: boolean,
-  createOnlyUnique?: boolean,
-  iteration?: number,
-  forceUpdate?: boolean
+  id: number,
+  guild: string,
+  guild_id: string,
+  guild_guid: number,
+  guild_rank: number,
+  level: number,
+  character_class: string,
+  last_modified: Date,
+  created_by: string,
+  updated_by: string,
+  race: string,
+  gender: string,
+  faction: string,
+  avatar: string,
+  inset: string,
+  main: string,
+  updatedAt: Date,
+  createdAt: Date,
+  guildRank: boolean,
+  createOnlyUnique: boolean,
+  forceUpdate: boolean,
+  iteration: number,
 }
 
 interface GuildMemberProps {
@@ -44,9 +59,9 @@ interface GuildProps {
 }
 
 interface RealmProps extends ObjectProps {
-  _id: string,
-  slug: string,
-  name: string,
+  _id: number,
+  slug?: string,
+  name?: string,
   category?: string,
   race?: string,
   timezone?: string,
@@ -55,7 +70,7 @@ interface RealmProps extends ObjectProps {
   name_locale?: string,
   slug_locale?: string,
   has_queue?: boolean,
-  wcl_id: number,
+  wcl_id?: number,
   connected_realm_id?: number,
   population_status?: string,
   status?: string

@@ -23,6 +23,7 @@
     "url": "https://github.com/AlexZeDim/conglomerat.git"
   },
   "dependencies": {
+    "@node-rs/crc32": "^1.1.0",
     "@typegoose/typegoose": "^7.4.8",
     "@types/dotenv": "^8.2.0",
     "@types/lodash": "^4.14.168",

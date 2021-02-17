@@ -8,17 +8,6 @@ import {capitalize, toSlug} from '../refs'
  * https://wow.gamepedia.com/GUID
  */
 
-class Guild {
-  @prop({ lowercase: true, index: true })
-  public _id?: string;
-  @prop()
-  public id?: number;
-  @prop()
-  public name?: string;
-  @prop()
-  public rank?: number;
-}
-
 class Mount {
   @prop()
   public _id!: number;
@@ -73,8 +62,6 @@ class LookingForGroup {
   public languages?: string[];
 }
 
-//TODO add media
-
 class Character {
   @prop({ required: true, lowercase: true })
   public _id!: string;
@@ -89,7 +76,13 @@ class Character {
   @prop({ required: true, set: (val: string) => toSlug(val) })
   public realm!: string;
   @prop()
-  public guild?: Guild;
+  public guild?: string;
+  @prop({ lowercase: true, index: true })
+  public guild_id?: string;
+  @prop()
+  public guild_guid?: number;
+  @prop()
+  public guild_rank?: number;
   @prop()
   public hash_a?: string;
   @prop()
@@ -129,6 +122,12 @@ class Character {
   @prop()
   public updated_by?: string;
   @prop()
+  public avatar?: string;
+  @prop()
+  public inset?: string;
+  @prop()
+  public main?: string;
+  @prop()
   public personality?: string;
   @prop({ type: [Mount] })
   public mounts?: Mount;
@@ -137,7 +136,11 @@ class Character {
   @prop({ type: Profession, _id: false })
   public professions?: Profession[];
   @prop({ type: LookingForGroup })
-  public lfg?: LookingForGroup
+  public lfg?: LookingForGroup;
+  @prop()
+  public updatedAt!: Date;
+  @prop()
+  public createdAt!: Date;
 }
 
 export const CharacterModel = getModelForClass(Character);

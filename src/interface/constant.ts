@@ -2,8 +2,15 @@ interface ObjectProps {
   [key: string]: any;
 }
 
-interface CharacterProps {
+interface CharacterProps extends ObjectProps {
   _id: string,
+  name?: string,
+  realm_id: number,
+  realm: string,
+  realm_name: string,
+  race?: string,
+  gender?: string,
+  faction?: string,
   guildRank?: boolean,
   createOnlyUnique?: boolean,
   iteration?: number,
@@ -37,17 +44,18 @@ interface GuildProps {
 }
 
 interface RealmProps extends ObjectProps {
-  _id?: string,
-  name?: string,
+  _id: string,
+  slug: string,
+  name: string,
   category?: string,
   race?: string,
   timezone?: string,
-  slug?: string,
   ticker?: string,
   locale?: string,
   name_locale?: string,
   slug_locale?: string,
   has_queue?: boolean,
+  wcl_id: number,
   connected_realm_id?: number,
   population_status?: string,
   status?: string

@@ -1,5 +1,5 @@
 import {prop, getModelForClass, modelOptions} from '@typegoose/typegoose';
-import {fromSlug, toSlug} from '../refs'
+import {capitalize, toSlug} from '../refs'
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters' } })
 
@@ -8,22 +8,13 @@ import {fromSlug, toSlug} from '../refs'
  * https://wow.gamepedia.com/GUID
  */
 
-class Realm {
-  @prop({ required: true })
-  public _id!: number;
-  @prop({ required: true })
-  public name!: string;
-  @prop({ required: true, set: (val: string) => toSlug(val) })
-  public slug!: string;
-}
-
 class Guild {
-  @prop({ required: true, lowercase: true, index: true })
-  public _id!: string;
-  @prop({ required: true })
-  public id!: number;
-  @prop({ required: true })
-  public name!: string;
+  @prop({ lowercase: true, index: true })
+  public _id?: string;
+  @prop()
+  public id?: number;
+  @prop()
+  public name?: string;
   @prop()
   public rank?: number;
 }
@@ -89,10 +80,14 @@ class Character {
   public _id!: string;
   @prop()
   public id?: number;
-  @prop({ index: true, set: (val: string) => fromSlug(val) })
+  @prop({ index: true, set: (val: string) => capitalize(val) })
   public name!: string;
-  @prop({ required: true})
-  public realm!: Realm;
+  @prop({ required: true })
+  public realm_id!: number;
+  @prop({ required: true })
+  public realm_name!: string;
+  @prop({ required: true, set: (val: string) => toSlug(val) })
+  public realm!: string;
   @prop()
   public guild?: Guild;
   @prop()

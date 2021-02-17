@@ -4,7 +4,11 @@ import {prop, getModelForClass, modelOptions} from '@typegoose/typegoose';
 
 class Realm {
   @prop({ lowercase: true })
-  public _id!: string;
+  public _id!: number;
+  @prop()
+  public slug!: string;
+  @prop()
+  public name!: string;
 }
 
 export const RealmModel = getModelForClass(Realm);

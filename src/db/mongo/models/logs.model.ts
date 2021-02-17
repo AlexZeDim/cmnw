@@ -9,15 +9,17 @@ class Log {
   @prop({ type: () => [String] })
   public root_history!: string[];
   @prop()
-  public t1?: string;
+  public original!: string;
   @prop()
-  public t0?: string;
+  public updated!: string;
   @prop()
-  public action?: string;
+  public event!: string;
   @prop()
-  public before?: Date;
+  public action!: string;
   @prop()
-  public after?: Date;
+  public t0!: Date;
+  @prop()
+  public t1!: Date;
 }
 
-//export const LogModel = getModelForClass(Log);
+export const LogModel = getModelForClass(Log);

@@ -1,6 +1,6 @@
 import {prop, getModelForClass, modelOptions, index} from '@typegoose/typegoose';
 
-enum AliasKey {
+export enum AliasKey {
   Discord = "discord",
   Bnet = "battle.tag",
   Twitter = "twitter",
@@ -26,7 +26,7 @@ class Account {
   @prop()
   public tags?: string[];
   @prop({ _id: false })
-  public Alias?: Alias[]
+  public alias?: Alias[]
 }
 
 export const AccountModel = getModelForClass(Account);

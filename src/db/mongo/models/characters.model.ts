@@ -1,7 +1,7 @@
-import {prop, getModelForClass, modelOptions} from '@typegoose/typegoose';
+import {getModelForClass, modelOptions, prop, Severity} from '@typegoose/typegoose';
 import {capitalize, toSlug} from '../refs'
 
-@modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters' } })
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters', allowMixed: Severity.ALLOW } })
 
 /**
  * _id and id field represents Blizzard GUID name@realm-id
@@ -67,13 +67,13 @@ class Character {
   public _id!: string;
   @prop()
   public id?: number;
-  @prop({ index: true, set: (val: string) => capitalize(val) })
+  @prop({ index: true, set: (val: string) => capitalize(val), get: (val: string) => capitalize(val) })
   public name!: string;
   @prop({ required: true })
   public realm_id!: number;
   @prop({ required: true })
   public realm_name!: string;
-  @prop({ required: true, set: (val: string) => toSlug(val) })
+  @prop({ required: true, set: (val: string) => toSlug(val), get: (val: string) => toSlug(val) })
   public realm!: string;
   @prop()
   public guild?: string;

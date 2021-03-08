@@ -129,10 +129,10 @@ class Character {
   public main?: string;
   @prop()
   public personality?: string;
-  @prop({ type: [Mount] })
-  public mounts?: Mount;
-  @prop({ type: [Pet] })
-  public pets?: Pet;
+  @prop({ type: Mount })
+  public mounts?: Mount[];
+  @prop({ type: Pet })
+  public pets?: Pet[];
   @prop({ type: Profession, _id: false })
   public professions?: Profession[];
   @prop({ type: LookingForGroup })

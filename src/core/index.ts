@@ -4,7 +4,7 @@ import path from "path";
 import pm2 from "pm2";
 
 const queueCore = new Queue('CORE', {connection: connectionRedis});
-const queueScheduler = new QueueScheduler('CORE', {connection: connectionRedis});
+new QueueScheduler('CORE', {connection: connectionRedis});
 
 console.log(path.join(__dirname, '..', '..', 'dist/core/key.js'));
 

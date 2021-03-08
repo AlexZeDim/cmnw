@@ -1,17 +1,19 @@
 import { Queue, Worker, Job, QueueScheduler } from 'bullmq';
 import { connectionRedis } from "../db/redis/connectionRedis";
-//import pm2 from "pm2";
-
-/**
- * TODO retry on writes & cron-task
- * TODO queue management system here, with cleans and deletes
- */
+import path from "path";
+import pm2 from "pm2";
 
 const queueCore = new Queue('CORE', {connection: connectionRedis});
 const queueScheduler = new QueueScheduler('CORE', {connection: connectionRedis});
 
+console.log(path.join(__dirname, '..', '..', 'dist/core/key.js'));
+
 /**
  * IIFE for CORE
+ *
+ * we need list of the whole JS/TS files here
+ * this MAIN process runs a worker, which connects to PM2
+ * and manage other processes
  */
 (async function () {
   try {
@@ -19,20 +21,21 @@ const queueScheduler = new QueueScheduler('CORE', {connection: connectionRedis})
     await queueCore.add('CORE:KEYS', {tag: 'BlizzardAPI'}, {repeat: {cron: '*/1 * * * *'}})
     const worker = new Worker('CORE', async (job: Job) => {
       //TODO start immediate and repeat by cron-task
-      console.log(job.data)
-     /* await pm2.connect(err => {
+      pm2.connect(err => {
         if (err) console.error(err)
         pm2.start({
-          name: '',
-          script: '',
-          exec_mode: 'cluster',
-          max_memory_restart: '100M',
+          name: 'test',
+          script: path.join(__dirname, '..', '..', 'dist/core/keys.js'),
+          max_restarts: 1,
+          exec_mode: 'fork',
+          autorestart: false,
+          cron: '*/1 * * * *'
         }, (err) => {
           if (err) console.error(err)
           pm2.disconnect()
         });
       });
-      return job*/
+      return job
     }, {connection: connectionRedis});
     worker.on('completed', (job) => {
       console.log(`${job.id} has completed!`);

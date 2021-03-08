@@ -1,16 +1,13 @@
 import '../db/mongo/connection';
-import { Job } from 'bullmq';
+import axios from "axios";
 import { KeysModel } from "../db/mongo/models/keys.model";
 
-import axios from "axios";
-
-module.exports = async (job: Job, tag: string = 'BlizzardAPI'): Promise<void> => {
+(async (tag: string = 'BlizzardAPI'): Promise<void> => {
   try {
     await KeysModel.find({ tags: tag })
       .cursor()
       .eachAsync(async (key: any) => {
         if (key.secret) {
-          //TODO error?
           const { data } = await axios({
             url: `https://eu.battle.net/oauth/token`,
             method: 'post',
@@ -38,6 +35,6 @@ module.exports = async (job: Job, tag: string = 'BlizzardAPI'): Promise<void> =>
   } finally {
     process.exit(0)
   }
-};
+})();
 
 

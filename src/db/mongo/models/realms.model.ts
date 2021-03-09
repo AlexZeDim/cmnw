@@ -7,42 +7,42 @@ class CharactersPopulation {
   @prop()
   public _id!: string;
   @prop({ type: [Number] })
-  public value?: [number];
+  public value!: number[];
 }
 
 class RealmPopulation {
-  @prop({ type: [Number] })
-  public characters_total?: [number];
-  @prop({ type: [Number] })
-  public characters_active?: [number];
-  @prop({ type: [Number] })
-  public characters_active_alliance?: [number];
-  @prop({ type: [Number] })
-  public characters_active_horde?: [number];
-  @prop({ type: [Number] })
-  public characters_active_max_level?: [number];
-  @prop({ type: [Number] })
-  public characters_guild_members?: [number];
-  @prop({ type: [Number] })
-  public characters_guildless?: [number];
-  @prop({ type: [Number] })
-  public players_unique?: [number];
-  @prop({ type: [Number] })
-  public players_active_unique?: [number];
-  @prop({ type: [Number] })
-  public guilds_total?: [number];
-  @prop({ type: [Number] })
-  public guilds_alliance?: [number];
-  @prop({ type: [Number] })
-  public guilds_horde?: [number];
-  @prop({ type: CharactersPopulation })
-  public characters_classes?: CharactersPopulation;
-  @prop({ type: CharactersPopulation })
-  public characters_professions?: [CharactersPopulation];
-  @prop({ type: CharactersPopulation })
-  public characters_covenants?: [CharactersPopulation];
-  @prop({ type: [Number] })
-  public timestamps?: [number];
+  @prop({ type: () => [Number] })
+  public characters_total!: number[];
+  @prop({ type: () => [Number] })
+  public characters_active!: number[];
+  @prop({ type: () => [Number] })
+  public characters_active_alliance!: number[];
+  @prop({ type: () => [Number] })
+  public characters_active_horde!: number[];
+  @prop({ type: () => [Number] })
+  public characters_active_max_level!: number[];
+  @prop({ type: () => [Number] })
+  public characters_guild_members!: number[];
+  @prop({ type: () => [Number] })
+  public characters_guildless!: number[];
+  @prop({ type: () => [Number] })
+  public players_unique!: number[];
+  @prop({ type: () => [Number] })
+  public players_active_unique!: number[];
+  @prop({ type: () => [Number] })
+  public guilds_total!: number[];
+  @prop({ type: () => [Number] })
+  public guilds_alliance!: number[];
+  @prop({ type: () => [Number] })
+  public guilds_horde!: number[];
+  @prop({ type: () => CharactersPopulation })
+  public characters_classes!: CharactersPopulation[];
+  @prop({ type: () => CharactersPopulation })
+  public characters_professions!: CharactersPopulation[];
+  @prop({ type: () => CharactersPopulation })
+  public characters_covenants!: CharactersPopulation[];
+  @prop({ type: () => [Number] })
+  public timestamps!: number[];
 }
 
 class Realm {
@@ -86,14 +86,14 @@ class Realm {
    * String lastModified timestamp for auctions, gold and valuations
    * Required for valuations, getAuctionData, getGold
    */
-  @prop()
-  public auctions?: number;
-  @prop()
-  public valuations?: number;
-  @prop()
-  public golds?: number;
-  @prop({ type: RealmPopulation, _id: false })
-  public population?: RealmPopulation;
+  @prop({ default: 0 })
+  public auctions!: number;
+  @prop({ default: 0 })
+  public valuations!: number;
+  @prop({ default: 0 })
+  public golds!: number;
+  @prop({ type: () => RealmPopulation, _id: false })
+  public population!: RealmPopulation;
 }
 
 export const RealmModel = getModelForClass(Realm);

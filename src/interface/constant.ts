@@ -60,7 +60,7 @@ interface GuildProps {
 
 interface RealmProps extends ObjectProps {
   _id: number,
-  slug?: string,
+  slug: string,
   name?: string,
   category?: string,
   race?: string,
@@ -90,31 +90,28 @@ interface ConnectedRealmProps extends ObjectProps {
   }]
 }
 
+interface CharactersPopulationRealm {
+  _id: string,
+  value: number[]
+}
+
 interface PopulationRealmProps extends ObjectProps {
-  characters_total?: number,
-  characters_active?: number,
-  characters_active_alliance?: number,
-  characters_active_horde?: number,
-  characters_active_max_level?: number,
-  characters_guild_members?: number,
-  characters_guildless?: number,
-  players_unique?: number,
-  players_active_unique?: number,
-  guilds_total?: number,
-  guilds_alliance?: number,
-  guilds_horde?: number,
-  characters_classes: {
-    _id: string,
-    value: number
-  }[],
-  characters_professions: {
-    _id: string,
-    value: number
-  }[],
-  characters_covenants: {
-    _id: string,
-    value: number
-  }[],
+  characters_total: number[],
+  characters_active: number[],
+  characters_active_alliance: number[],
+  characters_active_horde: number[],
+  characters_active_max_level: number[],
+  characters_guild_members: number[],
+  characters_guildless: number[],
+  players_unique: number[],
+  players_active_unique: number[],
+  guilds_total: number[],
+  guilds_alliance: number[],
+  guilds_horde: number[],
+  characters_classes: CharactersPopulationRealm[],
+  characters_professions: CharactersPopulationRealm[],
+  characters_covenants: CharactersPopulationRealm[],
+  timestamps: number[]
 }
 
 const RealmsTicker: Map<string, string> = new Map([

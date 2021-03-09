@@ -1,12 +1,9 @@
 import { Queue, Worker, Job, QueueScheduler } from 'bullmq';
 import { connectionRedis } from "../db/redis/connectionRedis";
-import path from "path";
-import pm2 from "pm2";
+import { launcher } from "./launcher";
 
 const queueCore = new Queue('CORE', {connection: connectionRedis});
-new QueueScheduler('CORE', {connection: connectionRedis});
-
-console.log(path.join(__dirname, '..', '..', 'dist/core/key.js'));
+const schedulerCore = new QueueScheduler('CORE', {connection: connectionRedis});
 
 /**
  * IIFE for CORE
@@ -21,20 +18,8 @@ console.log(path.join(__dirname, '..', '..', 'dist/core/key.js'));
     await queueCore.add('CORE:KEYS', {tag: 'BlizzardAPI'}, {repeat: {cron: '*/1 * * * *'}})
     const worker = new Worker('CORE', async (job: Job) => {
       //TODO start immediate and repeat by cron-task
-      pm2.connect(err => {
-        if (err) console.error(err)
-        pm2.start({
-          name: 'test',
-          script: path.join(__dirname, '..', '..', 'dist/core/keys.js'),
-          max_restarts: 1,
-          exec_mode: 'fork',
-          autorestart: false,
-          cron: '*/1 * * * *'
-        }, (err) => {
-          if (err) console.error(err)
-          pm2.disconnect()
-        });
-      });
+      console.log(new Date(), job.data)
+      //await launcher(job.data)
       return job
     }, {connection: connectionRedis});
     worker.on('completed', (job) => {

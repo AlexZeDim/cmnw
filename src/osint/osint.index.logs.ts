@@ -16,7 +16,6 @@ const indexLogs = async () => {
     if (!key) return
     await RealmModel
       .find()
-      .limit(1)
       .lean()
       .cursor({ batchSize: 1 })
       .eachAsync(async realm => {
@@ -26,10 +25,9 @@ const indexLogs = async () => {
             existing_page: 0,
             exists_log: 0,
             fault_page: 2,
-            fault_tolerance: 400
+            fault_log: 400
           };
 
-        //TODO review exit
         for (const page of pages) {
           const index_logs = await x(
             `https://www.warcraftlogs.com/zone/reports?zone=26&server=${realm.wcl_id}&page=${page}`,
@@ -43,7 +41,6 @@ const indexLogs = async () => {
           /** If parsed page have results */
           if (index_logs && Array.isArray(index_logs) && index_logs.length) {
             for (const index_log of index_logs) {
-              console.log(page_config)
               if ('link' in index_log) {
                 const [link]: string = index_log.link.match(/(.{16})\s*$/g);
                 if (index_log.link.includes('reports')) {
@@ -73,7 +70,7 @@ const indexLogs = async () => {
                * and page fault tolerance is more then
                * config, then break for loop
                */
-              if (page_config.exists_log >= page_config.fault_tolerance) {
+              if (page_config.exists_log >= page_config.fault_log) {
                 page_config.exists_log = 0
                 break;
               }

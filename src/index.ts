@@ -1,5 +1,5 @@
 import { Queue, Worker, Job, JobsOptions } from 'bullmq';
-import { getCharacter } from "./osint/getters"
+import { getCharacter } from "./osint/osint.getter"
 import { connectionRedis } from "./db/redis/connectionRedis";
 
 const defaultJobOptions: JobsOptions = {

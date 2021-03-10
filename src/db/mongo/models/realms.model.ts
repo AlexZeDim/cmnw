@@ -72,8 +72,8 @@ class Realm {
   public type?: string;
   @prop()
   public population_status?: string;
-  @prop()
-  public connected_realm_id?: number;
+  @prop({ required: true })
+  public connected_realm_id!: number;
   @prop({ type:  [String] })
   public connected_realm?: [string];
   /**

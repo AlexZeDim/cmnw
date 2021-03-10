@@ -1,6 +1,6 @@
 import '../db/mongo/connection';
 import { queueRealms } from "./osint.queue";
-import { getRealmsWarcraftLogsID } from "./getters";
+import { getRealmsWarcraftLogsID } from "./osint.getter";
 import { KeysModel } from '../db/mongo/models/keys.model';
 import BlizzAPI from "blizzapi";
 

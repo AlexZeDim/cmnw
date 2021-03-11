@@ -45,6 +45,8 @@ class ItemNames {
 export class Item {
   @prop({ required: true })
   public _id!: number;
+  @prop({ type: ItemNames })
+  public name?: ItemNames;
   @prop()
   public quality?: string;
   @prop()

@@ -87,6 +87,45 @@ interface RealmProps extends ObjectProps {
   status?: string
 }
 
+interface Locales {
+  en_US: string,
+  es_MX: string,
+  pt_BR: string,
+  de_DE: string,
+  en_GB: string,
+  es_ES: string,
+  fr_FR: string,
+  it_IT: string,
+  ru_RU: string,
+  ko_KR: string,
+  zh_TW: string,
+  zh_CN: string
+}
+
+interface RecipeProps extends ObjectProps {
+  id: number,
+  name: Locales,
+  description: Locales,
+  media: { id: number },
+  recipe_id: number,
+  alliance_crafted_item: {
+    name: Locales,
+    id: number
+  },
+  horde_crafted_item: {
+    name: Locales,
+    id: number
+  },
+  crafted_item: {
+    name: Locales,
+    id: number
+  },
+  reagents: { reagent: ObjectProps, quantity: number }[]
+  crafted_quantity: { value: number },
+  modified_crafting_slots: { slot_type: ObjectProps, display_order: number }[],
+  lastModified: string
+}
+
 interface ConnectedRealmProps extends ObjectProps {
   id: string,
   has_queue: boolean,
@@ -171,6 +210,18 @@ const CharactersClasses: string[] = [
   'Warlock',      'Warrior'
 ];
 
+const ExpansionTicker: Map<string, string> = new Map([
+  ['Shadowlands', 'SHDW'],
+  ['Kul', 'BFA'],
+  ['Zandalari', 'BFA'],
+  ['Legion', 'LGN'],
+  ['Draenor', 'WOD'],
+  ['Pandaria', 'MOP'],
+  ['Cataclysm', 'CATA'],
+  ['Northrend', 'WOTLK'],
+  ['Outland', 'TBC'],
+]);
+
 const CharactersProfessions: {name: string, id: number}[] = [
   {
     "name": "Blacksmithing",
@@ -253,6 +304,8 @@ export {
   AliasKey,
   ItemProps,
   PricingType,
+  RecipeProps,
+  ExpansionTicker,
   RealmsTicker,
   CharactersClasses,
   CharactersProfessions

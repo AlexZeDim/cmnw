@@ -21,15 +21,14 @@ const indexAuctions = async () => {
       .cursor({ batchSize: 5 })
       .exec()
       .eachAsync((realm: any) => {
-        console.log(realm)
-        /*queueAuctions.add(realm.name, {
+        queueAuctions.add(realm.name, {
           connected_realm_id: realm.connected_realm_id,
           auctions: realm.auctions,
           region: 'eu',
           clientId: key._id,
           clientSecret: key.secret,
           accessToken: key.token
-        })*/
+        }, { jobId: realm.connected_realm_id })
       })
   } catch (e) {
     console.error(e)

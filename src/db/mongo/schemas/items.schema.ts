@@ -1,4 +1,4 @@
-import {index, modelOptions, prop} from "@typegoose/typegoose";
+import {index, modelOptions, mongoose, prop} from "@typegoose/typegoose";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'items' }, options: { customName: 'items' } })
 @index({ 'expansion': 1 }, { name: 'C' })
@@ -45,7 +45,7 @@ class ItemNames {
 export class Item {
   @prop({ required: true })
   public _id!: number;
-  @prop({ type: ItemNames })
+  @prop({ _id: false, type: ItemNames, timestamps: false })
   public name?: ItemNames;
   @prop()
   public quality?: string;
@@ -76,8 +76,8 @@ export class Item {
   @prop({ required: true, default: false })
   public contracts!: boolean;
   /** add via indexAssetClass - csv import */
-  @prop({ type: () => [String] })
-  public asset_class!: string[];
+  @prop({ required: true, default: [] })
+  public asset_class!: mongoose.Types.Array<string>;
   /** add via importTaxonomy_CSV('itemsparse') */
   @prop()
   public expansion?: string;
@@ -88,6 +88,6 @@ export class Item {
   public profession_class?: string;
   @prop()
   public ticker?: string;
-  @prop({ type: () => [String] })
+  @prop()
   public tags!: string[];
 }

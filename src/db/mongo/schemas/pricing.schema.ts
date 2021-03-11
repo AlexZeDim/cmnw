@@ -1,7 +1,7 @@
 import {prop, modelOptions, index, mongoose} from '@typegoose/typegoose';
 import { PricingType } from "../../../interface/constant";
 
-@modelOptions({ schemaOptions: { timestamps: true, collection: 'pricing_methods' }, options: { customName: 'pricing_methods' } })
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'pricing_methods' }, options: { customName: 'pricing_methods', allowMixed: 0 } })
 @index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' })
 
 class Item {

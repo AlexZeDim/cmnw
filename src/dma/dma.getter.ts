@@ -1,4 +1,4 @@
-import {RealmModel, AuctionsModel, GoldModel, ItemModel} from "../db/mongo/mongo.model";
+import {RealmModel, AuctionsModel, GoldModel, ItemModel, KeysModel, TokenModel} from "../db/mongo/mongo.model";
 import BlizzAPI, {BattleNetOptions} from 'blizzapi';
 import moment from "moment";
 import {ItemProps, ObjectProps} from "../interface/constant";
@@ -190,8 +190,44 @@ const getItem = async <T extends { _id: number } & BattleNetOptions> (args: T) =
   }
 }
 
+const getToken = async <T extends BattleNetOptions > (args: T) => {
+  try {
+    const key = await KeysModel.findOne({ tags: 'BlizzardAPI' });
+    if (!key) return
+
+    const api = new BlizzAPI({
+      region: args.region,
+      clientId: args.clientId,
+      clientSecret: args.clientSecret,
+      accessToken: args.accessToken
+    });
+
+    //TODO it is capable to implement if-modified-since header
+    const { last_updated_timestamp, price, lastModified } = await api.query(`/data/wow/token/index`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+    })
+
+    const wowtoken = await TokenModel.findById(last_updated_timestamp);
+
+    if (!wowtoken) {
+      await TokenModel.create({
+        _id: last_updated_timestamp,
+        region: 'eu',
+        price: round2(price / 10000),
+        last_modified: lastModified,
+      })
+    }
+
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 export {
   getAuctions,
   getGold,
-  getItem
+  getItem,
+  getToken
 }

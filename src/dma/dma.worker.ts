@@ -5,6 +5,7 @@ import { getAuctions, getItem } from "./dma.getter";
 
 /**
  * TODO job option and cron task for W and Q
+ * TODO add tasks for gold & wowtoken
  */
 const schedulerAuctions = new QueueScheduler('DMA:Auctions', {connection: redisConnection});
 const schedulerItems = new QueueScheduler('DMA:Items', {connection: redisConnection});

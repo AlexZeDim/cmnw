@@ -1,7 +1,30 @@
-import {prop, modelOptions} from '@typegoose/typegoose';
+import {prop, modelOptions, index} from '@typegoose/typegoose';
 import {toSlug} from "../refs";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'realms' }, options: { customName: 'realms' } })
+@index({ connected_realm_id: 1 }, { name: 'CR' })
+@index(
+  {
+    slug: 'text',
+    name: 'text',
+    name_locale: 'text',
+    ticker: 'text',
+    region: 'text',
+    locale: 'text'
+  },
+{
+  weights:
+    {
+      'slug': 10,
+      'name': 1,
+      'name_locale': 1,
+      'ticker': 3,
+      'region': 1,
+      'locale': 1
+    },
+  name: 'SQ'
+  }
+)
 
 class CharactersPopulation {
   @prop()

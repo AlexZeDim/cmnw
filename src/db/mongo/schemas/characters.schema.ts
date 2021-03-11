@@ -1,4 +1,4 @@
-import {getModelForClass, modelOptions, prop, Severity} from '@typegoose/typegoose';
+import {modelOptions, prop, Severity} from '@typegoose/typegoose';
 import {capitalize, toSlug} from '../refs'
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters', allowMixed: Severity.ALLOW } })
@@ -62,7 +62,7 @@ class LookingForGroup {
   public languages?: string[];
 }
 
-class Character {
+export class Character {
   @prop({ required: true, lowercase: true })
   public _id!: string;
   @prop()
@@ -142,5 +142,3 @@ class Character {
   @prop()
   public createdAt!: Date;
 }
-
-export const CharacterModel = getModelForClass(Character);

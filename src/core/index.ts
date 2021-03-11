@@ -1,9 +1,9 @@
 import { Queue, Worker, Job, QueueScheduler } from 'bullmq';
-import { connectionRedis } from "../db/redis/connectionRedis";
+import { redisConnection } from "../db/redis/redis.connection";
 import { launcher } from "./launcher";
 
-const queueCore = new Queue('CORE', {connection: connectionRedis});
-const schedulerCore = new QueueScheduler('CORE', {connection: connectionRedis});
+const queueCore = new Queue('CORE', {connection: redisConnection});
+const schedulerCore = new QueueScheduler('CORE', {connection: redisConnection});
 
 /**
  * IIFE for CORE
@@ -21,7 +21,7 @@ const schedulerCore = new QueueScheduler('CORE', {connection: connectionRedis});
       console.log(new Date(), job.data)
       //await launcher(job.data)
       return job
-    }, {connection: connectionRedis});
+    }, {connection: redisConnection});
     worker.on('completed', (job) => {
       console.log(`${job.id} has completed!`);
     });

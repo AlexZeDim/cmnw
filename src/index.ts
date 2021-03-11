@@ -1,6 +1,6 @@
 import { Queue, Worker, Job, JobsOptions } from 'bullmq';
 import { getCharacter } from "./osint/osint.getter"
-import { connectionRedis } from "./db/redis/connectionRedis";
+import { redisConnection } from "./db/redis/redis.connection";
 
 const defaultJobOptions: JobsOptions = {
   removeOnComplete: true,
@@ -13,7 +13,7 @@ const defaultJobOptions: JobsOptions = {
 (async function () {
   try {
     const worker = new Worker('Characters', async (job: Job) => await getCharacter(job.data), {
-      connection: connectionRedis,
+      connection: redisConnection,
       concurrency: 5
     });
     worker.on('completed', (job) => {
@@ -25,7 +25,7 @@ const defaultJobOptions: JobsOptions = {
 })()
 
 //TODO options for Queue
-export const queueCharacters = new Queue('Characters', {connection: connectionRedis, defaultJobOptions});
+export const queueCharacters = new Queue('Characters', {connection: redisConnection, defaultJobOptions});
 
 /*
 (async function addJobs(){

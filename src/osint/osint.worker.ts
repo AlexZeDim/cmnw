@@ -1,9 +1,9 @@
-import '../db/mongo/connection';
+import '../db/mongo/mongo.connection';
 import {Job, QueueScheduler, Worker} from "bullmq";
 import {getRealm} from "./osint.getter";
-import {connectionRedis} from "../db/redis/connectionRedis";
+import {redisConnection} from "../db/redis/redis.connection";
 
-const schedulerOsint = new QueueScheduler('OSINT:Realms', {connection: connectionRedis});
+const schedulerOsint = new QueueScheduler('OSINT:Realms', {connection: redisConnection});
 
 /**
  * IIFE for main crawler
@@ -12,12 +12,12 @@ const schedulerOsint = new QueueScheduler('OSINT:Realms', {connection: connectio
   try {
     //TODO add another worker for logs
     const worker = new Worker('OSINT:Realms', async (job: Job) => await getRealm(job.data), {
-      connection: connectionRedis,
+      connection: redisConnection,
       concurrency: 2
     });
     /*
     const worker = new Worker('OSINT:Realms', async (job: Job) => await getLog(job.data), {
-      connection: connectionRedis,
+      connection: redisConnection,
       concurrency: 2
     });
      */

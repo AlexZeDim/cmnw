@@ -1,9 +1,9 @@
-import {prop, getModelForClass, modelOptions} from '@typegoose/typegoose';
+import {prop, modelOptions} from '@typegoose/typegoose';
 import {toSlug} from '../refs';
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'logs' }, options: { customName: 'logs' } })
 
-class Log {
+export class Log {
   @prop({ lowercase: true, index: true, set: (val: string) => toSlug(val), get: (val: string) => toSlug(val) })
   public root_id!: string;
   @prop({ type: () => [String] })
@@ -21,5 +21,3 @@ class Log {
   @prop()
   public t1!: Date;
 }
-
-export const LogModel = getModelForClass(Log);

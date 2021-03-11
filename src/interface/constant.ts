@@ -114,6 +114,16 @@ interface PopulationRealmProps extends ObjectProps {
   timestamps: number[]
 }
 
+enum AliasKey {
+  Discord = "discord",
+  Bnet = "battle.tag",
+  Twitter = "twitter",
+  Name = "name",
+  Character = "character",
+  Nickname = "nickname",
+  Codename = "codename",
+}
+
 const RealmsTicker: Map<string, string> = new Map([
   ['Gordunni', 'GRDNNI'],
   ['Lich King', 'LCHKNG'],
@@ -223,6 +233,7 @@ export {
   GuildMemberProps,
   ConnectedRealmProps,
   PopulationRealmProps,
+  AliasKey,
   RealmsTicker,
   CharactersClasses,
   CharactersProfessions

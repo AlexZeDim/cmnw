@@ -1,6 +1,6 @@
-import '../db/mongo/connection';
+import '../db/mongo/mongo.connection';
 import axios from "axios";
-import { KeysModel } from "../db/mongo/models/keys.model";
+import { KeysModel } from "../db/mongo/mongo.model";
 
 (async (tag: string = 'BlizzardAPI'): Promise<void> => {
   try {

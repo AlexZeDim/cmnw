@@ -10,13 +10,16 @@ import {
   RealmProps,
   RealmsTicker
 } from "../interface/constant";
+import {
+  CharacterModel,
+  RealmModel,
+  KeysModel,
+  LogModel,
+  AccountModel,
+  GuildModel
+} from "../db/mongo/mongo.model";
+import {AliasKey} from "../interface/constant";
 import {capitalize, toSlug} from "../db/mongo/refs";
-import {CharacterModel} from '../db/mongo/models/characters.model';
-import {KeysModel} from "../db/mongo/models/keys.model";
-import {GuildModel} from '../db/mongo/models/guilds.model';
-import {RealmModel} from '../db/mongo/models/realms.model';
-import {LogModel} from "../db/mongo/models/logs.model";
-import {AccountModel, AliasKey} from '../db/mongo/models/accounts.model';
 import {range} from 'lodash';
 import BlizzAPI, {BattleNetOptions} from 'blizzapi';
 import {crc32} from '@node-rs/crc32';
@@ -532,8 +535,10 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
       })
       /**
        * Upload other fields from imported values
+       * TODO and make sure that _id not inherit
        */
-      Object.assign(character, args);
+      if (args.created_by) character.created_by = args.created_by;
+      if (args.updated_by) character.created_by = args.created_by;
     }
 
     /**
@@ -664,7 +669,7 @@ const getRealm = async <T extends RealmProps & BattleNetOptions & { population: 
       region: args.region,
       clientId: args.clientId,
       clientSecret: args.clientSecret,
-      accessToken: args.token
+      accessToken: args.accessToken
     });
 
     const response: ObjectProps = await api.query(`/data/wow/realm/${args.slug}`, {
@@ -917,18 +922,54 @@ const getLog = async <T extends { _id: string, wcl: string } & BattleNetOptions>
 }
 
 /**
- * getter for first two wowprogress pages
+ * place in index Q first two wowprogress pages
  */
 
-const getLookingForGuild = async () => {
-  const characters: CharacterProps[] = [];
+const getLookingForGuild = async (): Promise<void> => {
   try {
-    const lfg_pages = await Promise.allSettled([
-      await Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
-      await Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
-      //await scraper.get('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then((tableData) => tableData[0] || [])
+    const key = await KeysModel.findOne({ tags: `index.lfg` });
+    if (!key || !key.token) return
+    const lfg_pages = await Promise.all([
+      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then(([tableData]) => {
+        tableData.map((c: { Character: string, Realm: string }) => {
+          if ('Character' in c && 'Realm' in c) {
+            const character = {
+              name: c.Character.trim(),
+              realm: c.Realm.split('-')[1].trim(),
+              createdBy: `OSINT-lfg`,
+              updatedBy: `OSINT-lfg`,
+              region: 'eu',
+              clientId: key._id,
+              clientSecret: key.secret,
+              accessToken: key.token,
+            }
+            if (character) {
+              //TODO add to character Q, guildRank, create onlyUnique?
+            }
+          }
+        })
+      }),
+      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then(([tableData]) => {
+        tableData.map((c: { Character: string, Realm: string }) => {
+          if ('Character' in c && 'Realm' in c) {
+            const character = {
+              name: c.Character.trim(),
+              realm: c.Realm.split('-')[1].trim(),
+              createdBy: `OSINT-LFG`,
+              updatedBy: `OSINT-LFG`,
+              region: 'eu',
+              clientId: key._id,
+              clientSecret: key.secret,
+              accessToken: key.token,
+            }
+            if (character) {
+              //TODO add to character Q
+            }
+          }
+        })
+      }),
     ])
-    console.log(lfg_pages[0])
+    console.log(lfg_pages)
   } catch (e) {
     console.error(e)
   }

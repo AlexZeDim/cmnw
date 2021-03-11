@@ -1,8 +1,8 @@
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import {prop, modelOptions} from '@typegoose/typegoose';
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'keys' }, options: { customName: 'keys' } })
 
-class Key {
+export class Key {
   @prop()
   public _id!: string;
   @prop({required: true})
@@ -14,5 +14,3 @@ class Key {
   @prop({ type: () => [String] })
   public tags!: string[];
 }
-
-export const KeysModel = getModelForClass(Key);

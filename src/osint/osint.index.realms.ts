@@ -1,7 +1,7 @@
-import '../db/mongo/connection';
+import '../db/mongo/mongo.connection';
 import { queueRealms } from "./osint.queue";
 import { getRealmsWarcraftLogsID } from "./osint.getter";
-import { KeysModel } from '../db/mongo/models/keys.model';
+import { KeysModel } from '../db/mongo/schemas/keys.schema';
 import BlizzAPI from "blizzapi";
 
 const indexRealms = async () => {

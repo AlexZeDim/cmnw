@@ -1,4 +1,4 @@
-import {prop, getModelForClass, modelOptions} from '@typegoose/typegoose';
+import {prop, modelOptions} from '@typegoose/typegoose';
 import {toSlug} from "../refs";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'realms' }, options: { customName: 'realms' } })
@@ -45,7 +45,7 @@ class RealmPopulation {
   public timestamps!: number[];
 }
 
-class Realm {
+export class Realm {
   @prop()
   public _id!: number;
   @prop()
@@ -95,5 +95,3 @@ class Realm {
   @prop({ type: () => RealmPopulation, _id: false })
   public population!: RealmPopulation;
 }
-
-export const RealmModel = getModelForClass(Realm);

@@ -1,14 +1,14 @@
-import '../db/mongo/connection';
+import '../db/mongo/mongo.connection';
 import {Job, QueueScheduler, Worker} from "bullmq";
-import {connectionRedis} from "../db/redis/connectionRedis";
+import {redisConnection} from "../db/redis/redis.connection";
 
 
-const schedulerDma = new QueueScheduler('OSINT:Auctions', {connection: connectionRedis});
+const schedulerDma = new QueueScheduler('OSINT:Auctions', {connection: redisConnection});
 
 (async function (): Promise<void> {
   try {
     const worker = new Worker('OSINT:Realms', async (job: Job) => job.data, {
-      connection: connectionRedis,
+      connection: redisConnection,
       concurrency: 1
     });
     worker.on('completed', (job) => {

@@ -4,6 +4,9 @@ import { redisConnection } from "../db/redis/redis.connection";
 const dmaOptions: JobsOptions = {
   removeOnComplete: true,
   removeOnFail: false,
+  repeat: {
+    cron: '*/5 * * * *'
+  }
 };
 
 const queueAuctions = new Queue('OSINT:Auctions', {connection: redisConnection, defaultJobOptions: dmaOptions});

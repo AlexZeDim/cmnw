@@ -25,10 +25,10 @@ const getAuctions = async <T extends { connected_realm_id: number, auctions: num
         'If-Modified-Since': if_modified_since
       }
     })
-    
-    const ts: number = parseInt(moment(response.lastModified).format('x'))
 
     if (!response || !Array.isArray(response.auctions) || !response.auctions.length) return
+
+    const ts: number = parseInt(moment(response.lastModified).format('x'))
 
     const orders = await Promise.all(response.auctions.map(async order => {
       if (order.item && order.item.id) {

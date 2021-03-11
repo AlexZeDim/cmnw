@@ -1,5 +1,4 @@
 import {prop, modelOptions, index} from '@typegoose/typegoose';
-
 import { AliasKey } from "../../../interface/constant";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'accounts' }, options: { customName: 'accounts', allowMixed: 0 } })

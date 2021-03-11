@@ -2,6 +2,17 @@ interface ObjectProps {
   [key: string]: any;
 }
 
+interface ItemProps extends ObjectProps {
+  quality: string,
+  item_class: string,
+  item_subclass: string,
+  inventory_type: string,
+  purchase_price: number,
+  sell_price: number,
+  preview_item: string,
+  loot_type: string
+}
+
 interface CharacterProps extends ObjectProps {
   _id: string,
   name: string,
@@ -234,6 +245,7 @@ export {
   ConnectedRealmProps,
   PopulationRealmProps,
   AliasKey,
+  ItemProps,
   RealmsTicker,
   CharactersClasses,
   CharactersProfessions

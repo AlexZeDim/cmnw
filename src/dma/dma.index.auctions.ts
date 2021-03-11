@@ -22,16 +22,18 @@ const indexAuctions = async () => {
       .exec()
       .eachAsync((realm: any) => {
         queueAuctions.add(realm.name, {
-          connected_realm_id: realm.connected_realm_id,
-          auctions: realm.auctions,
+          connected_realm_id: realm._id.connected_realm_id,
+          auctions: realm._id.auctions,
           region: 'eu',
           clientId: key._id,
           clientSecret: key.secret,
           accessToken: key.token
-        }, { jobId: realm.connected_realm_id })
+        }, { jobId: realm._id.connected_realm_id })
       })
   } catch (e) {
     console.error(e)
+  } finally {
+    process.exit(0)
   }
 }
 

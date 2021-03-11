@@ -1,10 +1,13 @@
 import '../db/mongo/mongo.connection';
 import {Job, QueueScheduler, Worker} from "bullmq";
 import {redisConnection} from "../db/redis/redis.connection";
-import { getAuctions } from "./dma.getter";
+import { getAuctions, getItem } from "./dma.getter";
 
-
-const schedulerDma = new QueueScheduler('DMA:Auctions', {connection: redisConnection});
+/**
+ * TODO job option and cron task for W and Q
+ */
+const schedulerAuctions = new QueueScheduler('DMA:Auctions', {connection: redisConnection});
+const schedulerItems = new QueueScheduler('DMA:Items', {connection: redisConnection});
 
 (async function (): Promise<void> {
   try {
@@ -12,7 +15,14 @@ const schedulerDma = new QueueScheduler('DMA:Auctions', {connection: redisConnec
       connection: redisConnection,
       concurrency: 2
     });
+    const workerItems = new Worker('DMA:Items', async (job: Job) => await getItem(job.data), {
+      connection: redisConnection,
+      concurrency: 1
+    });
     worker.on('completed', (job) => {
+      console.log(`${job.id} has completed!`);
+    });
+    workerItems.on('completed', (job) => {
       console.log(`${job.id} has completed!`);
     });
   } catch (e) {

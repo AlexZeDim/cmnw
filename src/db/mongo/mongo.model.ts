@@ -6,6 +6,7 @@ import { Character } from "./schemas/characters.schema";
 import { Guild } from "./schemas/guilds.schema";
 import { Key } from "./schemas/keys.schema";
 import { Log } from "./schemas/logs.schema";
+import { Gold } from "./schemas/golds.schema";
 
 const AccountModel = getModelForClass(Account);
 const RealmModel = getModelForClass(Realm);
@@ -14,7 +15,7 @@ const CharacterModel = getModelForClass(Character);
 const GuildModel = getModelForClass(Guild);
 const KeysModel = getModelForClass(Key);
 const LogModel = getModelForClass(Log);
-
+const GoldModel = getModelForClass(Gold);
 
 export {
   AccountModel,
@@ -23,5 +24,6 @@ export {
   CharacterModel,
   GuildModel,
   KeysModel,
-  LogModel
+  LogModel,
+  GoldModel
 }

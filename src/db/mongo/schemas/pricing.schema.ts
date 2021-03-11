@@ -2,6 +2,7 @@ import {prop, modelOptions, index, mongoose} from '@typegoose/typegoose';
 import { PricingType } from "../../../interface/constant";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'pricing_methods' }, options: { customName: 'pricing_methods' } })
+@index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' })
 
 class Item {
   @prop({ required: true })
@@ -38,9 +39,9 @@ export class Pricing {
   public derivatives!: mongoose.Types.Array<Item>;
   @prop({ required: true, default: [] })
   public reagents!: mongoose.Types.Array<Item>;
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], index: true })
   public recipe_id!: number;
-  @prop()
+  @prop({ index: true })
   public spell_id?: number;
   @prop({ default: [] })
   public modified_crafting_slots?: ModifiedCraftingSlot[];

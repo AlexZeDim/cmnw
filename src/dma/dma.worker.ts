@@ -4,11 +4,11 @@ import {redisConnection} from "../db/redis/redis.connection";
 import { getAuctions } from "./dma.getter";
 
 
-const schedulerDma = new QueueScheduler('OSINT:Auctions', {connection: redisConnection});
+const schedulerDma = new QueueScheduler('DMA:Auctions', {connection: redisConnection});
 
 (async function (): Promise<void> {
   try {
-    const worker = new Worker('OSINT:Auctions', async (job: Job) => await getAuctions(job.data), {
+    const worker = new Worker('DMA:Auctions', async (job: Job) => await getAuctions(job.data), {
       connection: redisConnection,
       concurrency: 2
     });

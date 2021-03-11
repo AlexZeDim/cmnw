@@ -9,7 +9,8 @@ const dmaOptions: JobsOptions = {
   }
 };
 
-const queueAuctions = new Queue('OSINT:Auctions', {connection: redisConnection, defaultJobOptions: dmaOptions});
+const queueAuctions = new Queue('DMA:Auctions', {connection: redisConnection, defaultJobOptions: dmaOptions});
+const queueGolds = new Queue('DMA:Golds', { connection: redisConnection })
 
 export {
   queueAuctions

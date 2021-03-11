@@ -29,7 +29,7 @@ import {toSlug} from "../refs";
 class CharactersPopulation {
   @prop()
   public _id!: string;
-  @prop({ type: [Number] })
+  @prop({ type: () => [Number] })
   public value!: number[];
 }
 

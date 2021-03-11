@@ -135,6 +135,12 @@ enum AliasKey {
   Codename = "codename",
 }
 
+enum PricingType {
+  Primary = "primary",
+  Derivative = "derivative",
+  Review = "review"
+}
+
 const RealmsTicker: Map<string, string> = new Map([
   ['Gordunni', 'GRDNNI'],
   ['Lich King', 'LCHKNG'],
@@ -246,6 +252,7 @@ export {
   PopulationRealmProps,
   AliasKey,
   ItemProps,
+  PricingType,
   RealmsTicker,
   CharactersClasses,
   CharactersProfessions

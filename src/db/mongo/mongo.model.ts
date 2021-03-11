@@ -9,6 +9,7 @@ import { Log } from "./schemas/logs.schema";
 import { Gold } from "./schemas/golds.schema";
 import { Item } from "./schemas/items.schema";
 import { Token } from "./schemas/token.schema";
+import { Pricing } from "./schemas/pricing.schema";
 
 const AccountModel = getModelForClass(Account);
 const RealmModel = getModelForClass(Realm);
@@ -19,7 +20,8 @@ const KeysModel = getModelForClass(Key);
 const LogModel = getModelForClass(Log);
 const GoldModel = getModelForClass(Gold);
 const ItemModel = getModelForClass(Item);
-const TokenModel = getModelForClass(Token)
+const TokenModel = getModelForClass(Token);
+const PricingModel = getModelForClass(Pricing);
 
 export {
   AccountModel,
@@ -31,5 +33,6 @@ export {
   LogModel,
   GoldModel,
   ItemModel,
-  TokenModel
+  TokenModel,
+  PricingModel
 }

@@ -170,6 +170,7 @@ enum ValuationType {
   Reagent = "reagent",
   Market = "market",
   Premium = "premium",
+  Funpay = "funpay",
   Otc = "otc",
   Wowtoken = "wowtoken",
 }
@@ -179,6 +180,16 @@ enum FlagType {
   S = "SELL",
   FIX = "PAY FIX",
   FLOAT = "PAY FLOAT",
+}
+
+enum FixFloat {
+  FIX = "PAY FIX",
+  FLOAT = "PAY FLOAT"
+}
+
+enum BuySell {
+  B = "BUY",
+  S = "SELL"
 }
 
 enum AliasKey {
@@ -337,6 +348,8 @@ export {
   PopulationRealmProps,
   ValuationType,
   FlagType,
+  FixFloat,
+  BuySell,
   AliasKey,
   ItemProps,
   PricingType,

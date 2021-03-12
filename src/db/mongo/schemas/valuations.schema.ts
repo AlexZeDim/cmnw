@@ -6,6 +6,14 @@ import {FlagType, ValuationType} from "../../../interface/constant";
 class Details {
   @prop()
   public wi?: number
+  @prop()
+  public quotation?: string
+  @prop()
+  public lot_size?: number
+  @prop()
+  public minimal_settlement_amount?: number
+  @prop()
+  public description?: string
 }
 
 export class Valuations {

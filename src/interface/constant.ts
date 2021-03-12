@@ -201,6 +201,23 @@ const RealmsTicker: Map<string, string> = new Map([
   ['Blackscar', 'BLKSCR'],
 ]);
 
+const professionsTicker = new Map([
+  [164, 'BSMT'],
+  [165, 'LTHR'],
+  [171, 'ALCH'],
+  [182, 'HRBS'],
+  [185, 'COOK'],
+  [186, 'ORE'],
+  [197, 'CLTH'],
+  [202, 'ENGR'],
+  [333, 'ENCH'],
+  [356, 'FISH'],
+  [393, 'SKIN'],
+  [755, 'JWLC'],
+  [773, 'INSC'],
+  [794, 'ARCH'],
+]);
+
 const CharactersClasses: string[] = [
   'Death Knight', 'Demon Hunter',
   'Druid',        'Hunter',
@@ -306,6 +323,7 @@ export {
   PricingType,
   RecipeProps,
   ExpansionTicker,
+  professionsTicker,
   RealmsTicker,
   CharactersClasses,
   CharactersProfessions

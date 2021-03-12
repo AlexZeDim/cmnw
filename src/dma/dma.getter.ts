@@ -1,7 +1,15 @@
-import {RealmModel, AuctionsModel, GoldModel, ItemModel, KeysModel, TokenModel} from "../db/mongo/mongo.model";
+import {
+  RealmModel,
+  AuctionsModel,
+  GoldModel,
+  ItemModel,
+  KeysModel,
+  TokenModel,
+  PricingModel, SkillLineModel, SpellEffectModel, SpellReagentsModel
+} from "../db/mongo/mongo.model";
 import BlizzAPI, {BattleNetOptions} from 'blizzapi';
 import moment from "moment";
-import {ItemProps, ObjectProps} from "../interface/constant";
+import {ItemProps, ObjectProps, professionsTicker} from "../interface/constant";
 import {round2} from "../db/mongo/refs";
 import Xray from "x-ray";
 
@@ -225,9 +233,168 @@ const getToken = async <T extends BattleNetOptions > (args: T) => {
   }
 }
 
+const getPricing = async <T extends { recipe_id: number, expansion: string, profession: number } & BattleNetOptions> (args: T) => {
+  try {
+    const writeConcerns = [];
+
+    const api = new BlizzAPI({
+      region: args.region,
+      clientId: args.clientId,
+      clientSecret: args.clientSecret,
+      accessToken: args.accessToken
+    });
+
+    const [RecipeData, RecipeMedia] = await Promise.all([
+      api.query(`/data/wow/recipe/${args.recipe_id}`, {
+        timeout: 10000,
+        headers: { 'Battlenet-Namespace': 'static-eu' }
+      }),
+      api.query(`/data/wow/media/recipe/${args.recipe_id}`, {
+        timeout: 10000,
+        headers: { 'Battlenet-Namespace': 'static-eu' }
+      })
+    ]);
+
+    /**
+     * Skip Mass mill and prospect
+     * because they are bugged
+     */
+    if (RecipeData.name && RecipeData.name.en_GB && RecipeData.name.en_GB.includes('Mass')) return
+
+
+
+    if ('alliance_crafted_item' in RecipeData) {
+      if ('id' in RecipeData.alliance_crafted_item) {
+        writeConcerns.push({
+          faction: 'Alliance',
+          recipe_id: args.recipe_id, //TODO rethink?
+          item_id: RecipeData.alliance_crafted_item.id,
+          reagents: RecipeData.reagents,
+          expansion: args.expansion,
+          item_quantity: 0
+        })
+      }
+    }
+
+    if ('horde_crafted_item' in RecipeData) {
+      if ('id' in RecipeData.horde_crafted_item) {
+        writeConcerns.push({
+          faction: 'Horde',
+          recipe_id: args.recipe_id,
+          item_id: RecipeData.horde_crafted_item.id,
+          reagents: RecipeData.reagents,
+          expansion: args.expansion,
+          item_quantity: 0
+        })
+      }
+    }
+
+    if ('crafted_item' in RecipeData) {
+      if ('id' in RecipeData.crafted_item) {
+        writeConcerns.push({
+          recipe_id: args.recipe_id,
+          item_id: RecipeData.crafted_item.id,
+          reagents: RecipeData.reagents,
+          expansion: args.expansion,
+          item_quantity: 0
+        })
+      }
+    }
+
+
+    for (const concern of writeConcerns) {
+      let pricing_method = await PricingModel.findOne({ 'derivatives._id': concern.item_id, 'recipe_id': concern.recipe_id });
+
+      if (!pricing_method) {
+        pricing_method = new PricingModel({
+          recipe_id: concern.recipe_id,
+          create_by: 'DMA-API'
+        })
+      }
+
+      Object.assign(pricing_method, concern);
+
+      /**
+       * Only SkillLineDB stores recipes by it's ID
+       * so we need that spell_id later
+       */
+      const recipe_spell = await SkillLineModel.findById(pricing_method.recipe_id);
+      if (!recipe_spell) {
+        console.error(`Consensus not found for ${pricing_method.id}`)
+        continue
+      }
+
+      if (professionsTicker.has(args.profession)) {
+        pricing_method.profession = professionsTicker.get(args.profession)
+      } else if (professionsTicker.has(recipe_spell.skill_line)) {
+        pricing_method.profession = professionsTicker.get(recipe_spell.skill_line)
+      }
+
+      pricing_method.spell_id = recipe_spell.spell_id;
+
+      const pricing_spell = await SpellEffectModel.findOne({ spell_id: pricing_method.spell_id });
+
+      if (RecipeData.modified_crafting_slots && Array.isArray(RecipeData.modified_crafting_slots)) {
+        RecipeData.modified_crafting_slots = RecipeData.modified_crafting_slots.map((mrs: any) => ({
+          _id: mrs.slot_type.id,
+          name: mrs.slot_type.name,
+          display_order: mrs.display_order
+        }))
+      }
+
+      /**
+       * If we don't have quantity from API,
+       * then use locale source
+       */
+      if ('crafted_quantity' in RecipeData) {
+        if ('value' in RecipeData.crafted_quantity) {
+          concern.item_quantity = RecipeData.crafted_quantity.value;
+        } else if ('minimum' in RecipeData.crafted_quantity) {
+          concern.item_quantity = RecipeData.crafted_quantity.minimum;
+        } else if (pricing_spell && pricing_spell.item_quantity && concern.item_quantity === 0) {
+          concern.item_quantity = pricing_spell.item_quantity;
+        }
+      } else if (pricing_spell && pricing_spell.item_quantity) {
+        concern.item_quantity = pricing_spell.item_quantity;
+      }
+
+      /**
+       * Build reagent items
+       * Rebuild reagents local if necessary
+       */
+      if (RecipeData.reagents && RecipeData.reagents.length) {
+        pricing_method.reagents = RecipeData.reagents.map((item: any) => ({
+          _id: parseInt(item.reagent.id),
+          quantity: parseInt(item.quantity),
+        }))
+      } else {
+        const reagents = await SpellReagentsModel.findOne({ spell_id: pricing_method.spell_id });
+        if (reagents) pricing_method.reagents = reagents.reagents;
+      }
+
+      /**
+       * Derivatives from write concern
+       */
+      pricing_method.derivatives.push({ _id: concern.item_id, quantity: concern.item_quantity });
+
+      if (RecipeMedia) pricing_method.media = RecipeMedia.assets[0].value;
+
+      pricing_method.updated_by = 'DMA-API';
+      pricing_method.type = 'primary';
+
+      await pricing_method.save();
+
+      return pricing_method;
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 export {
   getAuctions,
   getGold,
   getItem,
-  getToken
+  getToken,
+  getPricing
 }

@@ -164,6 +164,23 @@ interface PopulationRealmProps extends ObjectProps {
   timestamps: number[]
 }
 
+enum ValuationType {
+  Vendor = "vendor",
+  Derivative = "derivative",
+  Reagent = "reagent",
+  Market = "market",
+  Premium = "premium",
+  Otc = "otc",
+  Wowtoken = "wowtoken",
+}
+
+enum FlagType {
+  B = "BUY",
+  S = "SELL",
+  FIX = "PAY FIX",
+  FLOAT = "PAY FLOAT",
+}
+
 enum AliasKey {
   Discord = "discord",
   Bnet = "battle.tag",
@@ -318,6 +335,8 @@ export {
   GuildMemberProps,
   ConnectedRealmProps,
   PopulationRealmProps,
+  ValuationType,
+  FlagType,
   AliasKey,
   ItemProps,
   PricingType,

@@ -5,17 +5,25 @@ import {FlagType, ValuationType} from "../../../interface/constant";
 
 class Details {
   @prop()
-  public wi?: number
+  public wi?: number;
   @prop()
-  public quotation?: string
+  public quotation?: string;
   @prop()
-  public lot_size?: number
+  public lot_size?: number;
   @prop()
-  public minimal_settlement_amount?: number
+  public minimal_settlement_amount?: number;
   @prop()
-  public description?: string
+  public description?: string;
   @prop()
-  public swap_type?: string
+  public swap_type?: string;
+  @prop()
+  public min_price?: number;
+  @prop()
+  public quantity?: number;
+  @prop()
+  public open_interest?: number;
+  @prop()
+  public orders?: number[];
 }
 
 export class Valuations {

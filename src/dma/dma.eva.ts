@@ -1,4 +1,4 @@
-import {GoldModel, RealmModel, TokenModel, ValuationsModel} from "../db/mongo/mongo.model";
+import {AuctionsModel, GoldModel, RealmModel, TokenModel, ValuationsModel} from "../db/mongo/mongo.model";
 import {FlagType, ValuationType} from "../interface/constant";
 import {round2} from "../db/mongo/refs";
 
@@ -9,7 +9,17 @@ interface ItemValuationProps {
   last_modified: number,
   iteration: number,
   purchase_price?: number,
-  sell_price?: number
+  sell_price?: number,
+  stackable?: number
+}
+
+interface MarketData {
+  _id: number,
+  quantity: number,
+  open_interest: number,
+  value: number,
+  min: number,
+  orders: number[]
 }
 
 const getCVA = async <T extends ItemValuationProps> (args: T): Promise<void> => {
@@ -225,7 +235,7 @@ const getVVA = async <T extends ItemValuationProps> (args : T) => {
         flag: FlagType.B,
         item_id: args._id,
         connected_realm_id: args.connected_realm_id,
-        type: 'VENDOR',
+        type: ValuationType.Vendor,
         last_modified: args.last_modified,
         value: args.purchase_price,
       });
@@ -245,10 +255,79 @@ const getVVA = async <T extends ItemValuationProps> (args : T) => {
         flag: FlagType.S,
         item_id: args._id,
         connected_realm_id: args.connected_realm_id,
-        type: 'VENDOR',
+        type: ValuationType.Vendor,
         last_modified: args.last_modified,
         value: args.sell_price,
       });
+    }
+  }
+}
+
+const getAVA = async <T extends ItemValuationProps> (args: T) => {
+  const ava = await ValuationsModel.findOne({
+    item_id: args._id,
+    last_modified: args.last_modified,
+    connected_realm_id: args.connected_realm_id,
+    type: ValuationType.Market,
+  });
+  if (!ava) {
+    /** Request for Quotes */
+    const [market_data]: MarketData[] = await AuctionsModel.aggregate([
+      {
+        $match: {
+          'last_modified': args.last_modified,
+          'item_id': args._id,
+          'connected_realm_id': args.connected_realm_id,
+        },
+      },
+      {
+        $project: {
+          _id: '$last_modified',
+          id: '$id',
+          quantity: '$quantity',
+          price: {
+            $ifNull: ['$buyout', { $ifNull: ['$bid', '$price'] }],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          quantity: { $sum: '$quantity' },
+          open_interest: {
+            $sum: { $multiply: ['$price', '$quantity'] },
+          },
+          value: {
+            $min: {
+              $cond: [
+                { $gte: ['$quantity', (args.stackable || 1)] }, '$price', { $min: '$price' },
+              ],
+            },
+          },
+          min: { $min: '$price' },
+          orders: { $addToSet: '$id' },
+        },
+      },
+    ]).exec()
+    if (!market_data) return
+    /** Initiate constants */
+    const flags = ['BUY', 'SELL'];
+    for (let flag of flags) {
+      await ValuationsModel.create({
+        name: `AUCTION ${flag}`,
+        flag: flag,
+        item_id: args._id,
+        connected_realm_id: args.connected_realm_id,
+        type: ValuationType.Market,
+        last_modified: args.last_modified,
+        value: flag === FlagType.S ? round2(market_data.value * 0.95) : round2(market_data.value),
+        details: {
+          min_price: flag === FlagType.S ? round2(market_data.min * 0.95) : round2(market_data.min),
+          quantity: market_data.quantity,
+          open_interest: Math.round(market_data.open_interest),
+          orders: market_data.orders
+        }
+      })
     }
   }
 }
@@ -270,7 +349,7 @@ const getEvaluation = async <T extends ItemValuationProps> (args: T) => {
     await getCVA(args);
     await getTVA(args);
     await getVVA(args);
-
+    await getAVA(args);
 
     console.log(args)
   } catch (e) {

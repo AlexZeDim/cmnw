@@ -11,8 +11,10 @@ import { Item } from "./schemas/items.schema";
 import { Token } from "./schemas/token.schema";
 import { Pricing } from "./schemas/pricing.schema";
 import { SkillLine } from "./schemas/skill.line.schema";
+import { Valuations } from "./schemas/valuations.schema";
 import { SpellEffect } from "./schemas/spell.effect.schema";
 import { SpellReagents } from "./schemas/spell.reagents.schema";
+
 
 const RealmModel = getModelForClass(Realm);
 const AccountModel = getModelForClass(Account);
@@ -26,6 +28,7 @@ const ItemModel = getModelForClass(Item);
 const TokenModel = getModelForClass(Token);
 const PricingModel = getModelForClass(Pricing);
 const SkillLineModel = getModelForClass(SkillLine);
+const ValuationsModel = getModelForClass(Valuations);
 const SpellEffectModel = getModelForClass(SpellEffect);
 const SpellReagentsModel = getModelForClass(SpellReagents);
 
@@ -42,6 +45,7 @@ export {
   TokenModel,
   PricingModel,
   SkillLineModel,
+  ValuationsModel,
   SpellEffectModel,
   SpellReagentsModel
 }

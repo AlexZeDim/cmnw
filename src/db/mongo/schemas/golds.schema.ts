@@ -7,8 +7,8 @@ import {prop, modelOptions, index} from '@typegoose/typegoose';
 export class Gold {
   @prop({ required: true })
   connected_realm_id!: number;
-  @prop()
-  faction?: string;
+  @prop({ required: true })
+  faction!: string;
   @prop()
   owner?: string;
   @prop()

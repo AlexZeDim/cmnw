@@ -1,6 +1,6 @@
 import { getModelForClass } from '@typegoose/typegoose';
-import { Account } from "./schemas/accounts.schema";
 import { Realm } from "./schemas/realms.schema";
+import { Account } from "./schemas/accounts.schema";
 import { Auction } from "./schemas/auctions.schema";
 import { Character } from "./schemas/characters.schema";
 import { Guild } from "./schemas/guilds.schema";
@@ -11,9 +11,11 @@ import { Item } from "./schemas/items.schema";
 import { Token } from "./schemas/token.schema";
 import { Pricing } from "./schemas/pricing.schema";
 import { SkillLine } from "./schemas/skill.line.schema";
+import { SpellEffect } from "./schemas/spell.effect.schema";
+import { SpellReagents } from "./schemas/spell.reagents.schema";
 
-const AccountModel = getModelForClass(Account);
 const RealmModel = getModelForClass(Realm);
+const AccountModel = getModelForClass(Account);
 const AuctionsModel = getModelForClass(Auction);
 const CharacterModel = getModelForClass(Character);
 const GuildModel = getModelForClass(Guild);
@@ -24,10 +26,12 @@ const ItemModel = getModelForClass(Item);
 const TokenModel = getModelForClass(Token);
 const PricingModel = getModelForClass(Pricing);
 const SkillLineModel = getModelForClass(SkillLine);
+const SpellEffectModel = getModelForClass(SpellEffect);
+const SpellReagentsModel = getModelForClass(SpellReagents);
 
 export {
-  AccountModel,
   RealmModel,
+  AccountModel,
   AuctionsModel,
   CharacterModel,
   GuildModel,
@@ -37,5 +41,7 @@ export {
   ItemModel,
   TokenModel,
   PricingModel,
-  SkillLineModel
+  SkillLineModel,
+  SpellEffectModel,
+  SpellReagentsModel
 }

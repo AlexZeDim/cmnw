@@ -15,6 +15,7 @@ import {prop, modelOptions} from '@typegoose/typegoose';
  * TrivialSkillLineRankLow - yellowCraftQ
  * SkillUpSkillLineID represent subCategory in professions, for expansionTicker
  */
+
 @modelOptions({ schemaOptions: { timestamps: false, collection: 'skill_line' }, options: { customName: 'skill_line' } })
 
 export class SkillLine {

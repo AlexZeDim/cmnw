@@ -24,7 +24,7 @@ export class Auction {
   @prop()
   public buyout?: number;
   @prop()
-  public unit_price?: number;
+  public price?: number;
   @prop()
   public time_left?: string;
 }

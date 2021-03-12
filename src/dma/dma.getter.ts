@@ -48,7 +48,7 @@ const getAuctions = async <T extends { connected_realm_id: number, auctions: num
       }
       if (order.bid) order.bid = round2(order.bid / 10000);
       if (order.buyout) order.buyout = round2(order.buyout / 10000);
-      if (order.unit_price) order.unit_price = round2(order.unit_price / 10000);
+      if (order.unit_price) order.price = round2(order.unit_price / 10000);
       order.connected_realm_id = args.connected_realm_id;
       order.last_modified = ts;
       return order

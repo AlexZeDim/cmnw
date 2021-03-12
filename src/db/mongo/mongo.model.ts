@@ -10,6 +10,7 @@ import { Gold } from "./schemas/golds.schema";
 import { Item } from "./schemas/items.schema";
 import { Token } from "./schemas/token.schema";
 import { Pricing } from "./schemas/pricing.schema";
+import { SkillLine } from "./schemas/skill.line.schema";
 
 const AccountModel = getModelForClass(Account);
 const RealmModel = getModelForClass(Realm);
@@ -22,6 +23,7 @@ const GoldModel = getModelForClass(Gold);
 const ItemModel = getModelForClass(Item);
 const TokenModel = getModelForClass(Token);
 const PricingModel = getModelForClass(Pricing);
+const SkillLineModel = getModelForClass(SkillLine);
 
 export {
   AccountModel,
@@ -34,5 +36,6 @@ export {
   GoldModel,
   ItemModel,
   TokenModel,
-  PricingModel
+  PricingModel,
+  SkillLineModel
 }

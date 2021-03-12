@@ -1,4 +1,4 @@
-import {prop, modelOptions} from '@typegoose/typegoose';
+import {prop, modelOptions, mongoose} from '@typegoose/typegoose';
 
 /**
  *  TODO description
@@ -10,7 +10,7 @@ import {prop, modelOptions} from '@typegoose/typegoose';
 
 @modelOptions({ schemaOptions: { timestamps: false, collection: 'spell_reagents' }, options: { customName: 'spell_reagents' } })
 
-class Reagent {
+class Item {
   @prop({ required: true })
   public _id!: number;
   @prop({ required: true })
@@ -22,6 +22,6 @@ export class SpellReagents {
   public _id!: number;
   @prop({ required: true, index: true })
   public spell_id!: number;
-  @prop({ required: true, type: () => Reagent, default: [] })
-  public reagents!: Reagent[]
+  @prop({ required: true, default: [] })
+  public reagents!: mongoose.Types.Array<Item>;
 }

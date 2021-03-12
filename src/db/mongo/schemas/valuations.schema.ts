@@ -14,6 +14,8 @@ class Details {
   public minimal_settlement_amount?: number
   @prop()
   public description?: string
+  @prop()
+  public swap_type?: string
 }
 
 export class Valuations {
@@ -34,3 +36,5 @@ export class Valuations {
   @prop()
   public details?: Details;
 }
+
+//TODO to lowercase or uppercase asset classes, flag and types

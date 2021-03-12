@@ -24,6 +24,8 @@ export class Pricing {
   @prop({ _id: false, timestamp: false })
   public description?: object;
   @prop()
+  public faction?: string;
+  @prop()
   public media?: string;
   /**
    * API or LOCAL

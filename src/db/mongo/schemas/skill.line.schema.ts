@@ -37,6 +37,4 @@ export class SkillLine {
   public yellow_craft!: number;
   @prop({ required: true })
   public skill_up_skill_line_id!: number;
-  @prop({ required: true })
-  public version!: number;
 }

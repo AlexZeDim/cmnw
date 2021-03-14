@@ -37,7 +37,7 @@ export class Pricing {
    * for massive proportion evaluation
    * {id: Number, Quantity: Number}
    */
-  @prop({ required: true })
+  @prop({ required: true, default: [] })
   public derivatives!: mongoose.Types.Array<Item>;
   @prop({ required: true, default: [] })
   public reagents!: mongoose.Types.Array<Item>;

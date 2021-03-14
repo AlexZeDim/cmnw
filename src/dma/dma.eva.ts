@@ -420,7 +420,8 @@ const getDVA = async <T extends ItemValuationProps> (args: T) => {
         quantity: reagent.quantity,
         last_modified: args.last_modified,
         connected_realm_id: args.connected_realm_id,
-        iteration: 0
+        iteration: 0,
+        value: 0
       }};
 
       /**
@@ -466,14 +467,31 @@ const getDVA = async <T extends ItemValuationProps> (args: T) => {
           const underlying_reagent_items = ctd.details.reagent_items;
           for (const underlying_item of underlying_reagent_items) {
             /** Queue_quantity x Underlying_item.quantity */
+            underlying_item.value = round2(underlying_item.value * reagent_item.quantity);
+            underlying_item.quantity = underlying_item.quantity * reagent_item.quantity;
+            /** if this item is already in reagent_items, then + quantity */
+            if (method_evaluations.reagent_items.some(ri => ri._id === underlying_item._id)) {
+              /** take in focus by arrayIndex and edit properties */
+              const reagent_itemsIndex = method_evaluations.reagent_items.findIndex(item => item._id === underlying_item._id);
+              if (reagent_itemsIndex !== -1) {
+                method_evaluations.reagent_items[reagent_itemsIndex].value += underlying_item.value;
+                method_evaluations.reagent_items[reagent_itemsIndex].quantity += underlying_item.quantity;
+              }
+            } else {
+              method_evaluations.reagent_items.push(underlying_item);
+            }
           }
+        } else {
+          reagent_item.value = round2(ctd.value * reagent_item.quantity);
+          method_evaluations.reagent_items.push(reagent_item);
         }
-
+        /** We add value to queue_cost */
+        method_evaluations.queue_cost += round2(ctd.value * reagent_item.quantity);
       }
-
     }
+    /** End of loop for every reagent_item */
+    //TODO PRVA
   }
-
 }
 
 const getEvaluation = async <T extends ItemValuationProps> (args: T) => {

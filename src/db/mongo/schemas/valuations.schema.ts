@@ -4,6 +4,13 @@ import {Item} from "./items.schema";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'valuations' }, options: { customName: 'valuations' } })
 
+class ItemValuations extends Item {
+  @prop({ required: true })
+  public value!: number;
+  @prop({ required: true })
+  public quantity!: number;
+}
+
 class Details {
   @prop()
   public wi?: number;
@@ -26,7 +33,7 @@ class Details {
   @prop()
   public orders?: number[];
   @prop({ default: [] })
-  public reagent_items?: mongoose.Types.Array<Item>;
+  public reagent_items?: mongoose.Types.Array<ItemValuations>;
 }
 
 export class Valuations {

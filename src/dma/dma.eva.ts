@@ -1,4 +1,12 @@
-import {AuctionsModel, GoldModel, RealmModel, TokenModel, ValuationsModel} from "../db/mongo/mongo.model";
+import {
+  AuctionsModel,
+  GoldModel,
+  ItemModel,
+  PricingModel,
+  RealmModel,
+  TokenModel,
+  ValuationsModel
+} from "../db/mongo/mongo.model";
 import {FlagType, ValuationType} from "../interface/constant";
 import {round2} from "../db/mongo/refs";
 
@@ -20,6 +28,23 @@ interface MarketData {
   value: number,
   min: number,
   orders: number[]
+}
+
+interface MethodEvaluation {
+  queue_cost: number,
+  derivatives_cost: number,
+  premium: number,
+  nominal_value: number,
+  nominal_value_draft: number,
+  q_reagents_sum: number,
+  q_derivatives_sum: number,
+  premium_items: any[],
+  reagent_items: any[],
+  unsorted_items: any[],
+  single_derivative: boolean,
+  single_reagent: boolean,
+  single_premium: boolean,
+  premium_clearance: boolean
 }
 
 const getCVA = async <T extends ItemValuationProps> (args: T): Promise<void> => {
@@ -264,6 +289,8 @@ const getVVA = async <T extends ItemValuationProps> (args : T) => {
 }
 
 const getAVA = async <T extends ItemValuationProps> (args: T) => {
+  if (!args.asset_class.includes('MARKET')) return
+
   const ava = await ValuationsModel.findOne({
     item_id: args._id,
     last_modified: args.last_modified,
@@ -330,6 +357,123 @@ const getAVA = async <T extends ItemValuationProps> (args: T) => {
       })
     }
   }
+}
+
+const getDVA = async <T extends ItemValuationProps> (args: T) => {
+  if (!args.asset_class.includes('DERIVATIVE')) return
+
+  const primary_methods = await PricingModel.find({ 'derivatives._id': args._id, type: { $ne: 'u/r' } }).lean();
+  if (!primary_methods.length) return
+  /**
+   * Iterating every pricing method
+   * if reagents exists
+   * if derivatives exist
+   * and iterate them one-by-one
+   */
+  for (const price_method of primary_methods) {
+
+    if (!price_method.reagents.length || !price_method.derivatives.length) continue
+
+    /**
+     * Check DVA on current timestamp
+     * and if newDVA create constructor
+     */
+    const dva = await ValuationsModel.findOne({
+      item_id: args._id,
+      last_modified: args.last_modified,
+      connected_realm_id: args.connected_realm_id,
+      name: `${price_method.ticker}`,
+      type: ValuationType.Derivative,
+    });
+
+    if (dva) continue
+
+    const method_evaluations: MethodEvaluation = {
+      queue_cost: 0,
+      derivatives_cost: 0,
+      premium: 0,
+      nominal_value: 0,
+      nominal_value_draft: 0,
+      q_reagents_sum: price_method.reagents.reduce((accum, reagent ) => accum + reagent.quantity, 0),
+      q_derivatives_sum: price_method.derivatives.reduce((accum, derivative ) => accum + derivative.quantity, 0),
+      premium_items: [],
+      reagent_items: [],
+      unsorted_items: [],
+      single_derivative: true,
+      single_reagent: false,
+      single_premium: false,
+      premium_clearance: true
+    }
+
+    if (price_method.derivatives.length > 1) method_evaluations.single_derivative = false;
+    if (price_method.reagents.length === 1) method_evaluations.single_reagent = true;
+
+    /**
+     * Evaluate every reagent
+     * in pricing one by one
+     */
+    for (const reagent of price_method.reagents) {
+      const item = await ItemModel.findById(reagent._id).lean()
+      if (!item) continue;
+
+      const reagent_item = { ...item, ...{
+        quantity: reagent.quantity,
+        last_modified: args.last_modified,
+        connected_realm_id: args.connected_realm_id,
+        iteration: 0
+      }};
+
+      /**
+       * Add to PREMIUM for later analysis
+       *
+       * If premium item is also derivative, like EXPL
+       * place them as start of premium_items[]
+       * it allow us evaluate more then one premiums
+       * in one pricing method
+       */
+      if (reagent_item.asset_class.includes('PREMIUM')) {
+        if (reagent_item.asset_class.includes('DERIVATIVE')) {
+          method_evaluations.premium_items.unshift(reagent_item);
+        } else {
+          method_evaluations.premium_items.push(reagent_item);
+        }
+        /** We add PREMIUM to reagent_items */
+        method_evaluations.reagent_items.push(reagent_item);
+      } else {
+        /** Find cheapest to delivery method for item on current timestamp */
+        const ctd = await ValuationsModel.findOne({
+          item_id: reagent_item._id,
+          last_modified: args.last_modified,
+          connected_realm_id: args.connected_realm_id,
+          flag: FlagType.B,
+        }).sort({value: 1}).lean();
+
+        /**
+         * If CTD not found..
+         * TODO probably add to Q & return
+         */
+        if (!ctd) {
+          await getEvaluation(reagent_item);
+          return
+        }
+
+        /**
+         * If CTD is derivative type,
+         * replace original reagent_item
+         * with underlying reagent_items
+         */
+        if (ctd.type === 'DERIVATIVE' && ctd.details && ctd.details.reagent_items && ctd.details.reagent_items.length) {
+          const underlying_reagent_items = ctd.details.reagent_items;
+          for (const underlying_item of underlying_reagent_items) {
+            /** Queue_quantity x Underlying_item.quantity */
+          }
+        }
+
+      }
+
+    }
+  }
+
 }
 
 const getEvaluation = async <T extends ItemValuationProps> (args: T) => {

@@ -1,5 +1,6 @@
-import {prop, modelOptions} from '@typegoose/typegoose';
+import {prop, modelOptions, mongoose} from '@typegoose/typegoose';
 import {FlagType, ValuationType} from "../../../interface/constant";
+import {Item} from "./items.schema";
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'valuations' }, options: { customName: 'valuations' } })
 
@@ -24,6 +25,8 @@ class Details {
   public open_interest?: number;
   @prop()
   public orders?: number[];
+  @prop({ default: [] })
+  public reagent_items?: mongoose.Types.Array<Item>;
 }
 
 export class Valuations {

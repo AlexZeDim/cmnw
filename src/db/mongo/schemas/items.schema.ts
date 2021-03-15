@@ -88,6 +88,6 @@ export class Item {
   public profession_class?: string;
   @prop()
   public ticker?: string;
-  @prop()
-  public tags!: string[];
+  @prop({ required: true, default: [] })
+  public tags!: mongoose.Types.Array<string>;
 }

@@ -267,6 +267,18 @@ const ExpansionTicker: Map<string, string> = new Map([
   ['Outland', 'TBC'],
 ]);
 
+const ExpansionIdTicker: Map<number, string> = new Map([
+  [8, 'SHDW'],
+  [7, 'BFA'],
+  [6, 'LGN'],
+  [5, 'WOD'],
+  [4, 'MOP'],
+  [3, 'CATA'],
+  [2, 'WOTLK'],
+  [1, 'TBC'],
+  [0, 'CLSC'],
+]);
+
 const CharactersProfessions: {name: string, id: number}[] = [
   {
     "name": "Blacksmithing",
@@ -354,6 +366,7 @@ export {
   ItemProps,
   PricingType,
   RecipeProps,
+  ExpansionIdTicker,
   ExpansionTicker,
   professionsTicker,
   RealmsTicker,

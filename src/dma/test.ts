@@ -1,10 +1,10 @@
 import '../db/mongo/mongo.connection';
-import { KeysModel, RealmModel } from "../db/mongo/mongo.model";
-import { getGold } from "./dma.getter";
+//import {KeysModel, PricingModel, RealmModel} from "../db/mongo/mongo.model";
+//import { getGold } from "./dma.getter";
 
 (async function a(): Promise<void> {
   try {
-    await getGold()
+    //await getGold()
     /*const realm = await RealmModel.findOne({ name: "Eversong" });
     const key = await KeysModel.findOne({ tags: "BlizzardAPI" });
     if (!realm || !key) return
@@ -20,5 +20,7 @@ import { getGold } from "./dma.getter";
     })*/
   } catch (e) {
     console.error(e)
+  } finally {
+    process.exit(0)
   }
 })()

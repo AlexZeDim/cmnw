@@ -484,7 +484,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
       /**
        * If guild rank true and character is exists
        * and lastModified from guild > character lastModified
-       * TODO refactor guildRank part
+       * TODO refactor guildRank part, to requested probably
        */
       if (args.guildRank) {
         if (args.guild) {
@@ -521,7 +521,6 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
        */
       Object.assign(character_original, character.toObject())
       character.status_code = 100
-      if (args.updated_by) character.updated_by = args.updated_by //FIXME why not inherit in any case?
     } else {
       character = new CharacterModel({
         _id: `${name_slug}@${realm.slug}`,
@@ -537,9 +536,13 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
        * Upload other fields from imported values
        * TODO and make sure that _id not inherit
        */
-      if (args.created_by) character.created_by = args.created_by;
-      if (args.updated_by) character.created_by = args.created_by;
     }
+    /**
+     * Inherit created_by & updated_by
+     * in any case from args, if exists
+     */
+    if (args.created_by) character.created_by = args.created_by;
+    if (args.updated_by) character.created_by = args.updated_by;
 
     /**
      * BlizzAPI
@@ -557,6 +560,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
     }).catch(status_error => {
       if (status_error.response) {
         if (status_error.response.data && status_error.response.data.code) {
+          //TODO optional returnOnError?
           character_requested.status_code = status_error.response.data.code
         }
       }
@@ -570,7 +574,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
       if (character_status.lastModified) character.last_modified = character_status.lastModified
     }
 
-    if (character_status && 'is_valid' in character_status && character_status.is_valid === true) {
+    if (character_status && character_status.is_valid && character_status.is_valid === true) {
       const [summary, pets_collection, mount_collection, professions, media] = await Promise.all([
         updateCharacterSummary(name_slug, character.realm, api),
         updateCharacterPets(name_slug, character.realm, api),
@@ -594,6 +598,8 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
     if (!character.isNew) {
       await characterDetectDiff(character_original, character_requested)
     }
+
+    //TODO character inherit requested
 
     await character.save({ w: 1, j: true, wtimeout: 10000 });
     return character;

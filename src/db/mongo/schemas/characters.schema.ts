@@ -67,7 +67,7 @@ export class Character {
   public _id!: string;
   @prop()
   public id?: number;
-  @prop({ index: true, set: (val: string) => capitalize(val), get: (val: string) => capitalize(val) })
+  @prop({ required: true, index: true, set: (val: string) => capitalize(val), get: (val: string) => capitalize(val) })
   public name!: string;
   @prop({ required: true })
   public realm_id!: number;

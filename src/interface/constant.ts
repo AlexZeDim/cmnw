@@ -24,6 +24,7 @@ interface CharacterProps extends ObjectProps {
   guild_id?: string,
   guild_guid?: number,
   guild_rank?: number,
+  status_code?: number,
   level?: number,
   character_class?: string,
   last_modified?: Date,

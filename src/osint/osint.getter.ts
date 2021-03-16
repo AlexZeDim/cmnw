@@ -630,12 +630,81 @@ const getRealmsWarcraftLogsID = async (start: number = 0, end: number = 517): Pr
   }
 }
 
+
+
+
 /**
  * TODO refactor
  * get Guild
  */
-const getGuild = async () => {
+const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Promise <Partial<GuildProps> | void> => {
   try {
+    const realm = await RealmModel
+      .findOne(
+        { $text: { $search: args.realm } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean()
+    if (!realm) return
+
+    const
+      name_slug: string = toSlug(args.name),
+      guild_original: GuildProps = {
+        _id: `${name_slug}@${realm.slug}`,
+        name: capitalize(args.name),
+        status_code: 100,
+        realm: realm.slug,
+        realm_id: realm._id,
+        realm_name: realm.name,
+        members: []
+      },
+      guild_requested: GuildProps = {
+        _id: `${name_slug}@${realm.slug}`,
+        name: capitalize(args.name),
+        status_code: 100,
+        realm: realm.slug,
+        realm_id: realm._id,
+        realm_name: realm.name,
+        members: []
+      };
+
+    /**
+     * BlizzAPI
+     */
+    const api = new BlizzAPI({
+      region: args.region,
+      clientId: args.clientId,
+      clientSecret: args.clientSecret,
+      accessToken: args.accessToken
+    });
+
+    let guild = await GuildModel.findById(guild_requested._id);
+    if (guild) {
+      if (args.createOnlyUnique) {
+        console.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique:${args.createOnlyUnique}`);
+        return guild
+      }
+      if (!args.forceUpdate && ((new Date().getTime() - (12 * 60 * 60 * 1000)) < guild.updatedAt.getTime())) {
+        console.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:forceUpdate:${args.forceUpdate}`);
+        return
+      }
+      Object.assign(guild_original, guild.toObject())
+      guild_original.status_code = 100;
+    } else {
+      guild = new GuildModel({
+        _id: `${name_slug}@${realm.slug}`,
+        name: capitalize(args.name),
+        status_code: 100,
+        realm: realm.slug,
+        realm_id: realm._id,
+        realm_name: realm.name,
+        created_by: 'OSINT-getGuild',
+        updated_by: 'OSINT-getGuild',
+      })
+    }
+
+    //TODO continue
 
   } catch (e) {
 

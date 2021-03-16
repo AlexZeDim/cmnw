@@ -50,24 +50,25 @@ interface GuildMemberProps {
   rank: number
 }
 
-interface GuildProps {
+interface GuildProps extends ObjectProps {
   _id: string,
-  id: number,
   name: string,
-  realm: {
-    _id: number,
-    name: string,
-    slug: string
-  },
+  realm: string,
+  realm_id?: number,
+  realm_name?: string,
+  id?: number,
+  faction?: string,
   members: GuildMemberProps[],
-  faction: string,
-  achievement_points: number,
-  member_count: number,
-  lastModified: Date,
-  created_timestamp: Date,
-  statusCode: number,
-  createdBy: string,
-  updatedBy: string
+  achievement_points?: number,
+  member_count?: number,
+  last_Modified?: Date,
+  created_timestamp?: Date,
+  status_code?: number,
+  created_by?: string,
+  updated_by?: string,
+  createOnlyUnique?: boolean,
+  forceUpdate?: boolean,
+  iteration?: number
 }
 
 interface RealmProps extends ObjectProps {

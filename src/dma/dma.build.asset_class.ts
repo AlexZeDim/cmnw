@@ -24,7 +24,7 @@ const build = async (args: string[]): Promise<void> => {
             await item.save();
           }
         }
-      })
+      }, { parallel: 2 })
     }
     /**
      * This stage add asset_classes from auction_db
@@ -125,7 +125,8 @@ const build = async (args: string[]): Promise<void> => {
               item.tags.addToSet(t)
             })
           }
-        })
+          await item.save()
+        }, { parallel: 2 })
     }
   } catch (e) {
     console.error(e)

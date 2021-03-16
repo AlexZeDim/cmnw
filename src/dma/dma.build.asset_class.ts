@@ -105,7 +105,27 @@ const build = async (args: string[]): Promise<void> => {
      * In this stage we build tags
      */
     if (args.includes('tags')) {
-      //TODO
+      await ItemModel
+        .find()
+        .cursor()
+        .eachAsync(async item => {
+          if (item.expansion) item.tags.addToSet(item.expansion.toLowerCase());
+          if (item.profession_class) item.tags.addToSet(item.profession_class.toLowerCase());
+          if (item.asset_class) item.asset_class.map(asset_class => item.tags.addToSet(asset_class.toLowerCase()));
+          if (item.item_class) item.tags.addToSet(item.item_class.toLowerCase());
+          if (item.item_subclass) item.tags.addToSet(item.item_subclass.toLowerCase());
+          if (item.quality) item.tags.addToSet(item.quality.toLowerCase());
+          if (item.ticker) {
+            item.ticker.split('.').map(ticker => {
+              const t: string = ticker.toLowerCase()
+              if (t === 'j' || t === 'petal' || t === 'nugget') {
+                item.tags.addToSet(t);
+                return
+              }
+              item.tags.addToSet(t)
+            })
+          }
+        })
     }
   } catch (e) {
     console.error(e)

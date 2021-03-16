@@ -56,9 +56,9 @@ export class Item {
   @prop()
   public icon?: string;
   @prop()
-  public icon_class?: string;
+  public item_class?: string;
   @prop()
-  public icon_subclass?: string;
+  public item_subclass?: string;
   @prop()
   public purchase_price?: number;
   @prop()

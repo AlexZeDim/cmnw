@@ -1,7 +1,6 @@
 import '../db/mongo/mongo.connection';
 import { range } from 'lodash';
-import { KeysModel } from "../db/mongo/schemas/keys.schema";
-import { RealmModel } from '../db/mongo/schemas/realms.schema';
+import {KeysModel, RealmModel} from "../db/mongo/mongo.model";
 import { queueLogs } from "./osint.queue";
 import Xray from 'x-ray';
 import path from 'path';

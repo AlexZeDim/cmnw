@@ -14,8 +14,8 @@ class Alias {
 export class Account {
   @prop({ required: true, default: 'Anonymous' })
   public cryptonym!: string;
-  @prop()
+  @prop({ type: String })
   public tags?: string[];
-  @prop({ _id: false })
+  @prop({ _id: false, type: Alias })
   public alias?: Alias[]
 }

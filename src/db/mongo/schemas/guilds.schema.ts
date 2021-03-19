@@ -27,7 +27,7 @@ export class Guild {
   public realm_name!: string;
   @prop({ required: true })
   public faction!: string;
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], type: GuildMember })
   public members!: mongoose.Types.Array<GuildMember>
   @prop()
   public achievement_points?: number;

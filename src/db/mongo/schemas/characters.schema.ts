@@ -1,4 +1,4 @@
-import {modelOptions, prop, Severity} from '@typegoose/typegoose';
+import {modelOptions, mongoose, prop, Severity} from '@typegoose/typegoose';
 import {capitalize, toSlug} from '../refs'
 
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters', allowMixed: Severity.ALLOW } })
@@ -37,6 +37,13 @@ class Profession {
   public specialization?: string;
 }
 
+class RaidProgress {
+  @prop({ required: true })
+  _id!: string
+  @prop({ required: true })
+  progress!: string
+}
+
 class LookingForGroup {
   @prop({ index: true })
   public status!: boolean;
@@ -45,15 +52,9 @@ class LookingForGroup {
   @prop()
   public battle_tag?: string;
   @prop()
-  public rio?: number;
-  @prop()
   public days_from?: number;
   @prop()
   public days_to?: number;
-  @prop()
-  public wcl_percentile?: number;
-  @prop({ type: Object })
-  public progress?: object;
   @prop()
   public role?: string;
   @prop()
@@ -130,13 +131,19 @@ export class Character {
   @prop()
   public personality?: string;
   @prop({ type: Mount })
-  public mounts?: Mount[];
+  public mounts?: mongoose.Types.Array<Mount>;
   @prop({ type: Pet })
-  public pets?: Pet[];
+  public pets?: mongoose.Types.Array<Pet>;
   @prop({ type: Profession, _id: false })
   public professions?: Profession[];
   @prop({ type: LookingForGroup })
   public lfg?: LookingForGroup;
+  @prop()
+  public rio_score?: number;
+  @prop()
+  public wcl_percentile?: number;
+  @prop({ type: RaidProgress })
+  public raid_progress?: mongoose.Types.Array<RaidProgress>;
   @prop()
   public updatedAt!: Date;
   @prop()

@@ -76,7 +76,7 @@ export class Item {
   @prop({ required: true, default: false })
   public contracts!: boolean;
   /** add via indexAssetClass - csv import */
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], type: String })
   public asset_class!: mongoose.Types.Array<string>;
   /** add via importTaxonomy_CSV('itemsparse') */
   @prop()
@@ -88,6 +88,6 @@ export class Item {
   public profession_class?: string;
   @prop()
   public ticker?: string;
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], type: String })
   public tags!: mongoose.Types.Array<string>;
 }

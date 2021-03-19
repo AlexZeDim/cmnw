@@ -41,6 +41,8 @@ interface CharacterProps extends ObjectProps {
   guildRank?: boolean,
   createOnlyUnique?: boolean,
   forceUpdate?: boolean,
+  updateRIO?: boolean,
+  updateWCL?: boolean,
   iteration?: number,
 }
 

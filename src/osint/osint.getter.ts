@@ -596,7 +596,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
     /**
      * TODO add updaters for RIO, WCL & Progress
      */
-    if (args.name) {
+    if (args.updateRIO) {
       const raider_io = await updateCharacterRaiderIO(character.name, character.realm);
       Object.assign(character_requested, raider_io);
     }

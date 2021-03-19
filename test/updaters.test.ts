@@ -2,7 +2,8 @@ import {
   updateCharacterMedia,
   updateCharacterMounts,
   updateCharacterPets,
-  updateCharacterProfessions
+  updateCharacterProfessions,
+  updateCharacterSummary
 } from "../src/osint/osint.getter";
 import { connect, connection } from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
@@ -69,7 +70,14 @@ describe('updaters', () => {
 
   test('updateCharacterMounts', async () => {
     const character_mounts = await updateCharacterMounts('инициатива', 'gordunni', api);
-    expect(character_mounts.mounts[0]).toMatchSnapshot({ _id: expect.any(Number), name: expect.any(String) });
+    expect(character_mounts).toMatchSnapshot({
+      mounts: expect.arrayContaining([
+        expect.objectContaining({
+          _id: expect.any(Number),
+          name: expect.any(String)
+        })
+      ])
+    });
   });
 
   test('updateCharacterPets', async () => {
@@ -77,21 +85,46 @@ describe('updaters', () => {
     expect(character_pets).toMatchSnapshot({
       hash_a: expect.any(String),
       hash_b: expect.any(String),
-      pets: expect.any(Array)
+      pets: expect.arrayContaining([
+        expect.objectContaining({
+          name: expect.any(String),
+          _id: expect.any(Number),
+        })
+      ])
     });
   });
 
   test('updateCharacterProfessions', async () => {
     const character_profession = await updateCharacterProfessions('инициатива', 'gordunni', api);
-    expect(character_profession.professions).toEqual(
-      expect.arrayContaining([
+    expect(character_profession).toMatchSnapshot({
+      professions: expect.arrayContaining([
         expect.objectContaining({
           name: expect.any(String),
           id: expect.any(Number),
           tier: expect.any(String)
         })
       ])
-    );
+    })
+  });
+
+  test('updateCharacterSummary', async () => {
+    const character_summary = await updateCharacterSummary('инициатива', 'gordunni', api);
+    expect(character_summary).toMatchObject({
+      gender: expect.any(String),
+      faction: expect.any(String),
+      race: expect.any(String),
+      character_class: expect.any(String),
+      active_spec: expect.any(String),
+      realm_id: expect.any(Number),
+      realm_name: expect.any(String),
+      realm: expect.any(String),
+      level: expect.any(Number),
+      achievement_points: expect.any(Number),
+      last_modified: expect.any(Number),
+      average_item_level: expect.any(Number),
+      equipped_item_level: expect.any(Number),
+      status_code: expect.any(Number),
+    })
   });
 })
 

@@ -13,7 +13,6 @@ import {
 import {
   CharacterModel,
   RealmModel,
-  KeysModel,
   LogModel,
   AccountModel,
   GuildModel
@@ -27,7 +26,6 @@ import puppeteer from 'puppeteer';
 import axios from 'axios';
 import Xray from 'x-ray';
 import {queueCharacters} from "./osint.queue";
-import {Tabletojson} from "tabletojson/dist";
 
 
 /**
@@ -1023,44 +1021,6 @@ const getLog = async <T extends { _id: string, wcl: string } & BattleNetOptions>
   }
 }
 
-/**
- * place in index Q first two wowprogress pages
- */
-
-const getLookingForGuild = async (): Promise<void> => {
-  try {
-    const key = await KeysModel.findOne({ tags: `BlizzardAPI` });
-    if (!key || !key.token) return
-
-    const [first, second] = await Promise.all([
-      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then(([tableData]) => tableData),
-      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then(([tableData]) => tableData),
-    ]);
-
-    const characters = [...first, ...second];
-
-    characters.map((c: { Character: string, Realm: string }) => {
-      if ('Character' in c && 'Realm' in c) {
-        const character = {
-          name: c.Character.trim(),
-          realm: c.Realm.split('-')[1].trim(),
-          createdBy: `OSINT-lfg`,
-          updatedBy: `OSINT-lfg`,
-          region: 'eu',
-          clientId: key._id,
-          clientSecret: key.secret,
-          accessToken: key.token,
-        }
-        if (character) {
-          //TODO add to character Q, guildRank, create onlyUnique? add flag?
-        }
-      }
-    })
-  } catch (e) {
-    console.error(e)
-  }
-}
-
 export {
   getCharacter,
   getRealmsWarcraftLogsID,
@@ -1073,6 +1033,5 @@ export {
   updateCharacterWarcraftLogs,
   updateCharacterRaiderIO,
   updateCharacterWowProgress,
-  getLog,
-  getLookingForGuild
+  getLog
 };

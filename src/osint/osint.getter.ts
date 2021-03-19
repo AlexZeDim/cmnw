@@ -343,7 +343,7 @@ const updateCharacterWarcraftLogs = async (name: string, realm_slug: string): Pr
  * @param realm_slug {string} realm slug for current character
  * @returns {Promise<{}>}
  */
-const updateWowProgress = async (name: string, realm_slug: string): Promise<ObjectProps> => {
+const updateCharacterWowProgress = async (name: string, realm_slug: string): Promise<ObjectProps> => {
   const wow_progress: ObjectProps = {};
   const x = Xray();
   try {
@@ -365,7 +365,7 @@ const updateWowProgress = async (name: string, realm_slug: string): Promise<Obje
     }))
     return wow_progress
   } catch (error) {
-    console.error(`E,${updateWowProgress.name},${name}@${realm_slug}:${error}`)
+    console.error(`E,${updateCharacterWowProgress.name},${name}@${realm_slug}:${error}`)
     return wow_progress
   }
 }
@@ -409,7 +409,7 @@ const updateCharacterRaiderIO = async (name: string, realm_slug: string): Promis
   }
 }
 
-const characterDetectDiff = async (character_o: CharacterProps, character_u: CharacterProps): Promise<void> => {
+const detectCharacterDiff = async (character_o: CharacterProps, character_u: CharacterProps): Promise<void> => {
   try {
     const
       detectiveFields: string[] = ['name', 'realm', 'race', 'gender', 'faction'],
@@ -442,7 +442,7 @@ const characterDetectDiff = async (character_o: CharacterProps, character_u: Cha
       }
     })])
   } catch (e) {
-    console.error(`E,${characterDetectDiff.name}:${e}`)
+    console.error(`E,${detectCharacterDiff.name}:${e}`)
   }
 }
 
@@ -594,11 +594,22 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
     }
 
     /**
-     * TODO add updaters for RIO, WCL & Progress
+     * update RIO, WCL & Progress
+     * by request from args
      */
     if (args.updateRIO) {
       const raider_io = await updateCharacterRaiderIO(character.name, character.realm);
       Object.assign(character_requested, raider_io);
+    }
+
+    if (args.updateWCL) {
+      const raider_io = await updateCharacterWarcraftLogs(character.name, character.realm);
+      Object.assign(character_requested, raider_io);
+    }
+
+    if (args.updateWP) {
+      const wow_progress = await updateCharacterWowProgress(character.name, character.realm);
+      Object.assign(character_requested, wow_progress);
     }
 
     /**
@@ -607,7 +618,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
      * only if original
      */
     if (!character.isNew) {
-      await characterDetectDiff(character_original, character_requested)
+      await detectCharacterDiff(character_original, character_requested)
     }
 
     //TODO character inherit requested
@@ -1061,6 +1072,7 @@ export {
   updateCharacterPets,
   updateCharacterWarcraftLogs,
   updateCharacterRaiderIO,
+  updateCharacterWowProgress,
   getLog,
   getLookingForGuild
 };

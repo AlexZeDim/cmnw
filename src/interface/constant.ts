@@ -43,6 +43,7 @@ interface CharacterProps extends ObjectProps {
   forceUpdate?: boolean,
   updateRIO?: boolean,
   updateWCL?: boolean,
+  updateWP?: boolean,
   iteration?: number,
 }
 

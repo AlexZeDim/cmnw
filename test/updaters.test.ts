@@ -4,7 +4,7 @@ import {
   updateCharacterPets,
   updateCharacterProfessions, updateCharacterRaiderIO,
   updateCharacterSummary,
-  updateCharacterWarcraftLogs, updateWowProgress,
+  updateCharacterWarcraftLogs, updateCharacterWowProgress,
 } from "../src/osint/osint.getter";
 import {connect, connection, Schema} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
@@ -148,8 +148,8 @@ describe('updaters', () => {
     })
   });
 
-  test('updateWowProgress', async () => {
-    const wow_progress = await updateWowProgress('Саске','gordunni');
+  test('updateCharacterWowProgress', async () => {
+    const wow_progress = await updateCharacterWowProgress('Саске','gordunni');
     expect(wow_progress).toMatchObject({
       battle_tag: expect.any(String),
       transfer: expect.any(Boolean),

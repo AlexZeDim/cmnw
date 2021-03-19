@@ -22,6 +22,6 @@ export class SpellReagents {
   public _id!: number;
   @prop({ required: true, index: true })
   public spell_id!: number;
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], type: Item })
   public reagents!: mongoose.Types.Array<Item>;
 }

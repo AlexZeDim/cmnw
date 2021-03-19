@@ -30,9 +30,9 @@ class Details {
   public quantity?: number;
   @prop()
   public open_interest?: number;
-  @prop()
+  @prop({ type: Number })
   public orders?: number[];
-  @prop({ default: [] })
+  @prop({ default: [], type: ItemValuations })
   public reagent_items?: mongoose.Types.Array<ItemValuations>;
 }
 

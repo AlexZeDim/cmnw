@@ -2,9 +2,9 @@ import {
   updateCharacterMedia,
   updateCharacterMounts,
   updateCharacterPets,
-  updateCharacterProfessions,
+  updateCharacterProfessions, updateCharacterRaiderIO,
   updateCharacterSummary,
-  updateCharacterWarcraftLogs
+  updateCharacterWarcraftLogs,
 } from "../src/osint/osint.getter";
 import { connect, connection } from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
@@ -12,6 +12,8 @@ import BlizzAPI from 'blizzapi';
 import dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
+
+jest.setTimeout(10000);
 
 beforeAll(async () => {
   await connect(
@@ -130,10 +132,22 @@ describe('updaters', () => {
 
   test('updateCharacterWarcraftLogs', async () => {
     const wcl_logs = await updateCharacterWarcraftLogs('Саске','gordunni');
-    jest.setTimeout(10000); //TODO
     expect(wcl_logs).toMatchObject({
       wcl_percentile: expect.any(Number)
     })
-  })
+  });
+
+  test('updateCharacterRaiderIO', async () => {
+    const raider_io = await updateCharacterRaiderIO('Саске','gordunni');
+    expect(raider_io).toMatchObject({
+      rio_score: expect.any(Number),
+      raid_progress: expect.arrayContaining([
+        expect.objectContaining({
+          _id: expect.any(String),
+          progress: expect.any(String),
+        })
+      ])
+    })
+  });
 })
 

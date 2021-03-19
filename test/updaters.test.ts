@@ -3,7 +3,8 @@ import {
   updateCharacterMounts,
   updateCharacterPets,
   updateCharacterProfessions,
-  updateCharacterSummary
+  updateCharacterSummary,
+  updateCharacterWarcraftLogs
 } from "../src/osint/osint.getter";
 import { connect, connection } from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
@@ -126,5 +127,13 @@ describe('updaters', () => {
       status_code: expect.any(Number),
     })
   });
+
+  test('updateCharacterWarcraftLogs', async () => {
+    const wcl_logs = await updateCharacterWarcraftLogs('Саске','gordunni');
+    jest.setTimeout(10000); //TODO
+    expect(wcl_logs).toMatchObject({
+      wcl_percentile: expect.any(Number)
+    })
+  })
 })
 

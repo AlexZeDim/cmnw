@@ -383,18 +383,21 @@ const updateCharacterRaiderIO = async (name: string, realm_slug: string): Promis
     if (!response || !response.data) return raider_io
     if ('raid_progression' in response.data) {
       const raid_progress: ObjectProps = response.data['raid_progression'];
-      const pve_progress: ObjectProps = {};
+      const raid_tiers: ObjectProps[] = [];
       for (const [key, value] of Object.entries(raid_progress)) {
-        pve_progress[key] = value['summary']
+        raid_tiers.push({
+          _id: key,
+          progress: value['summary']
+        })
       }
-      raider_io.progress = pve_progress;
+      raider_io.raid_progress = raid_tiers;
     }
     if ('mythic_plus_scores_by_season' in response.data) {
       const rio_score = response.data['mythic_plus_scores_by_season']
       if (rio_score && Array.isArray(rio_score) && rio_score.length) {
         for (const rio of rio_score) {
           if ('scores' in rio) {
-            raider_io.rio = rio.scores.all
+            raider_io.rio_score = rio.scores.all
           }
         }
       }
@@ -588,6 +591,14 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
       Object.assign(character_requested, mount_collection);
       Object.assign(character_requested, professions);
       Object.assign(character_requested, media);
+    }
+
+    /**
+     * TODO add updaters for RIO, WCL & Progress
+     */
+    if (args.name) {
+      const raider_io = await updateCharacterRaiderIO(character.name, character.realm);
+      Object.assign(character_requested, raider_io);
     }
 
     /**
@@ -1030,7 +1041,7 @@ const getLookingForGuild = async (): Promise<void> => {
           accessToken: key.token,
         }
         if (character) {
-          //TODO add to character Q, guildRank, create onlyUnique?
+          //TODO add to character Q, guildRank, create onlyUnique? add flag?
         }
       }
     })
@@ -1049,6 +1060,7 @@ export {
   updateCharacterProfessions,
   updateCharacterPets,
   updateCharacterWarcraftLogs,
+  updateCharacterRaiderIO,
   getLog,
   getLookingForGuild
 };

@@ -1,6 +1,6 @@
 import '../db/mongo/mongo.connection';
-import { KeysModel} from "../db/mongo/mongo.model";
-import { Tabletojson } from 'tabletojson';
+import {KeysModel} from "../db/mongo/mongo.model";
+import {Tabletojson} from 'tabletojson';
 
 /**
  * place in index Q first two wowprogress pages
@@ -31,7 +31,8 @@ const indexLookingForGroup = async (): Promise<void> => {
           accessToken: key.token,
         }
         if (character) {
-          //TODO add to character Q, guildRank, create onlyUnique? add flag?
+          //TODO add to character Q, guildRank, with special params
+
         }
       }
     })
@@ -41,3 +42,5 @@ const indexLookingForGroup = async (): Promise<void> => {
     process.exit(0)
   }
 }
+
+indexLookingForGroup().catch();

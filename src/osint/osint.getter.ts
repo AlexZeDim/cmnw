@@ -630,8 +630,14 @@ const getRealmsWarcraftLogsID = async (start: number = 0, end: number = 517): Pr
   }
 }
 
-
-
+const updateGuildSummary = async (guild_slug: string, realm_slug: string, BlizzAPI: BlizzAPI ): Promise<ObjectProps> => {
+  try {
+    return { a: 1 }
+  } catch (e) {
+    console.error(e)
+    return { a: 1 }
+  }
+}
 
 /**
  * TODO refactor

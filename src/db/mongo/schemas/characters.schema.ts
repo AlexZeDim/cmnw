@@ -49,18 +49,6 @@ class LookingForGroup {
   public status!: boolean;
   @prop()
   public new?: boolean;
-  @prop()
-  public battle_tag?: string;
-  @prop()
-  public days_from?: number;
-  @prop()
-  public days_to?: number;
-  @prop()
-  public role?: string;
-  @prop()
-  public transfer?: boolean;
-  @prop({ type: String })
-  public languages?: string[];
 }
 
 export class Character {
@@ -144,6 +132,18 @@ export class Character {
   public wcl_percentile?: number;
   @prop({ type: RaidProgress })
   public raid_progress?: mongoose.Types.Array<RaidProgress>;
+  @prop()
+  public battle_tag?: string;
+  @prop()
+  public days_from?: number;
+  @prop()
+  public days_to?: number;
+  @prop()
+  public role?: string;
+  @prop()
+  public transfer?: boolean;
+  @prop({ type: String })
+  public languages?: string[];
   @prop()
   public updatedAt!: Date;
   @prop()

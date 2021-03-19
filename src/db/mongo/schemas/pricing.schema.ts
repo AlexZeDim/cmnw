@@ -16,13 +16,40 @@ class ModifiedCraftingSlot {
   public _id!: number;
 }
 
+class Locales {
+  @prop()
+  public en_US?: string;
+  @prop()
+  public es_MX?: string;
+  @prop()
+  public pt_BR?: string;
+  @prop()
+  public de_DE?: string;
+  @prop()
+  public en_GB?: string;
+  @prop()
+  public es_ES?: string;
+  @prop()
+  public fr_FR?: string;
+  @prop()
+  public it_IT?: string;
+  @prop()
+  public ru_RU?: string;
+  @prop()
+  public ko_KR?: string;
+  @prop()
+  public zh_TW?: string;
+  @prop()
+  public zh_CN?: string;
+}
+
 export class Pricing {
   @prop()
   public ticker?: string;
-  @prop({ _id: false, timestamp: false })
-  public name?: object;
-  @prop({ _id: false, timestamp: false })
-  public description?: object;
+  @prop({ _id: false, timestamp: false, type: Locales })
+  public name?: Locales;
+  @prop({ _id: false, timestamp: false, type: Locales })
+  public description?: Locales;
   @prop()
   public faction?: string;
   @prop()

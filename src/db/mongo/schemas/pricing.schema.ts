@@ -64,15 +64,15 @@ export class Pricing {
    * for massive proportion evaluation
    * {id: Number, Quantity: Number}
    */
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], type: Item })
   public derivatives!: mongoose.Types.Array<Item>;
-  @prop({ required: true, default: [] })
+  @prop({ required: true, default: [], type: Item })
   public reagents!: mongoose.Types.Array<Item>;
   @prop({ required: true, default: [], index: true })
   public recipe_id!: number;
   @prop({ index: true })
   public spell_id?: number;
-  @prop({ default: [] })
+  @prop({ default: [], type: ModifiedCraftingSlot })
   public modified_crafting_slots?: ModifiedCraftingSlot[];
   /** if Local then Convert from SkillLine */
   @prop()

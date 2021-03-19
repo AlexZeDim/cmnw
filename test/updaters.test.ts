@@ -4,9 +4,9 @@ import {
   updateCharacterPets,
   updateCharacterProfessions, updateCharacterRaiderIO,
   updateCharacterSummary,
-  updateCharacterWarcraftLogs,
+  updateCharacterWarcraftLogs, updateWowProgress,
 } from "../src/osint/osint.getter";
-import { connect, connection } from 'mongoose';
+import {connect, connection, Schema} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
 import BlizzAPI from 'blizzapi';
 import dotenv from 'dotenv'
@@ -145,6 +145,16 @@ describe('updaters', () => {
           progress: expect.any(String),
         })
       ])
+    })
+  });
+
+  test('updateWowProgress', async () => {
+    const wow_progress = await updateWowProgress('Саске','gordunni');
+    expect(wow_progress).toMatchObject({
+      battle_tag: expect.any(String),
+      transfer: expect.any(Boolean),
+      role: expect.any(String),
+      languages: expect.arrayContaining([expect.any(String)])
     })
   });
 })

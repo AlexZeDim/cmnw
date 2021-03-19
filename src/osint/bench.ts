@@ -1,3 +1,4 @@
+import '../db/mongo/mongo.connection';
 import BlizzAPI from "blizzapi";
 import { crc32 } from '@node-rs/crc32';
 import { updateCharacterSummary, updateCharacterMedia } from "./osint.getter";

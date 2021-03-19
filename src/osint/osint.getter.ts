@@ -601,7 +601,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
 
     //TODO character inherit requested
 
-    await character.save({ w: 1, j: true, wtimeout: 10000 });
+    //await character.save({ w: 1, j: true, wtimeout: 10000 });
     return character;
   } catch (e) {
     console.error(e)
@@ -735,8 +735,7 @@ const updateLogsRoster = async (guild: GuildProps, guildLast: GuildProps) => {
  * @param args
  */
 const getRealm = async <T extends RealmProps & BattleNetOptions & { population: boolean, wcl_ids?: Map<any, any> }> (args: T): Promise<void> => {
-  const
-    summary: RealmProps = { _id: args._id, slug: args.slug };
+  const summary: RealmProps = { _id: args._id, slug: args.slug };
   try {
     let realm = await RealmModel.findById(args);
 
@@ -819,11 +818,11 @@ const getRealm = async <T extends RealmProps & BattleNetOptions & { population: 
     }
 
     if (!realm.isNew && args.population) {
-      realm.population = await countRealmPopulation(realm.toObject());
+      realm.population = await updateRealmPopulation(realm.toObject());
       realm.markModified('population')
     }
 
-    await realm.save()
+    await realm.save();
   } catch (e) {
     console.error(e)
   }
@@ -833,7 +832,7 @@ const getRealm = async <T extends RealmProps & BattleNetOptions & { population: 
  * count realm population
  * @param args
  */
-const countRealmPopulation = async <T extends RealmProps> (args: T): Promise<PopulationRealmProps> => {
+const updateRealmPopulation = async <T extends RealmProps> (args: T): Promise<PopulationRealmProps> => {
   const population: PopulationRealmProps = {
     characters_total: [],
     characters_active: [],
@@ -960,7 +959,7 @@ const countRealmPopulation = async <T extends RealmProps> (args: T): Promise<Pop
 
     return population;
   } catch (error) {
-    console.error(`E,${countRealmPopulation.name}:${error}`)
+    console.error(`E,${updateRealmPopulation.name}:${error}`)
     return population;
   }
 }
@@ -1008,52 +1007,48 @@ const getLog = async <T extends { _id: string, wcl: string } & BattleNetOptions>
 
 const getLookingForGuild = async (): Promise<void> => {
   try {
-    const key = await KeysModel.findOne({ tags: `index.lfg` });
+    const key = await KeysModel.findOne({ tags: `BlizzardAPI` });
     if (!key || !key.token) return
-    const lfg_pages = await Promise.all([
-      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then(([tableData]) => {
-        tableData.map((c: { Character: string, Realm: string }) => {
-          if ('Character' in c && 'Realm' in c) {
-            const character = {
-              name: c.Character.trim(),
-              realm: c.Realm.split('-')[1].trim(),
-              createdBy: `OSINT-lfg`,
-              updatedBy: `OSINT-lfg`,
-              region: 'eu',
-              clientId: key._id,
-              clientSecret: key.secret,
-              accessToken: key.token,
-            }
-            if (character) {
-              //TODO add to character Q, guildRank, create onlyUnique?
-            }
-          }
-        })
-      }),
-      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then(([tableData]) => {
-        tableData.map((c: { Character: string, Realm: string }) => {
-          if ('Character' in c && 'Realm' in c) {
-            const character = {
-              name: c.Character.trim(),
-              realm: c.Realm.split('-')[1].trim(),
-              createdBy: `OSINT-LFG`,
-              updatedBy: `OSINT-LFG`,
-              region: 'eu',
-              clientId: key._id,
-              clientSecret: key.secret,
-              accessToken: key.token,
-            }
-            if (character) {
-              //TODO add to character Q
-            }
-          }
-        })
-      }),
-    ])
-    console.log(lfg_pages)
+
+    const [first, second] = await Promise.all([
+      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then(([tableData]) => tableData),
+      Tabletojson.convertUrl('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then(([tableData]) => tableData),
+    ]);
+
+    const characters = [...first, ...second];
+
+    characters.map((c: { Character: string, Realm: string }) => {
+      if ('Character' in c && 'Realm' in c) {
+        const character = {
+          name: c.Character.trim(),
+          realm: c.Realm.split('-')[1].trim(),
+          createdBy: `OSINT-lfg`,
+          updatedBy: `OSINT-lfg`,
+          region: 'eu',
+          clientId: key._id,
+          clientSecret: key.secret,
+          accessToken: key.token,
+        }
+        if (character) {
+          //TODO add to character Q, guildRank, create onlyUnique?
+        }
+      }
+    })
   } catch (e) {
     console.error(e)
   }
 }
 
-export { getCharacter, getRealmsWarcraftLogsID, getRealm, updateCharacterSummary, updateCharacterMedia, getLog, getLookingForGuild };
+export {
+  getCharacter,
+  getRealmsWarcraftLogsID,
+  getRealm,
+  updateCharacterSummary,
+  updateCharacterMedia,
+  updateCharacterMounts,
+  updateCharacterProfessions,
+  updateCharacterPets,
+  updateCharacterWarcraftLogs,
+  getLog,
+  getLookingForGuild
+};

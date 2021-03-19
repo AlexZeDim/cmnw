@@ -13,8 +13,6 @@ import dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
-jest.setTimeout(10000);
-
 beforeAll(async () => {
   await connect(
     `${process.env.MONGO}`,
@@ -135,7 +133,7 @@ describe('updaters', () => {
     expect(wcl_logs).toMatchObject({
       wcl_percentile: expect.any(Number)
     })
-  });
+  }, 30000);
 
   test('updateCharacterRaiderIO', async () => {
     const raider_io = await updateCharacterRaiderIO('Саске','gordunni');

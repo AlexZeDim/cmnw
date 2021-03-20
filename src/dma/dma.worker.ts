@@ -5,7 +5,6 @@ import { getAuctions, getItem, getPricing } from "./dma.getter";
 
 /**
  * TODO job option and cron task for W and Q
- * TODO add tasks for gold & wowtoken
  */
 const schedulerAuctions = new QueueScheduler('DMA:Auctions', {connection: redisConnection});
 const schedulerItems = new QueueScheduler('DMA:Items', {connection: redisConnection});
@@ -13,6 +12,7 @@ const schedulerPricing = new QueueScheduler('DMA:Pricing', {connection: redisCon
 
 (async function (): Promise<void> {
   try {
+
     const workerAuctions = new Worker('DMA:Auctions', async (job: Job) => await getAuctions(job.data), {
       connection: redisConnection,
       concurrency: 1

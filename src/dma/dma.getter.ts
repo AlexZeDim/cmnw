@@ -1,17 +1,13 @@
 import {
   RealmModel,
   AuctionsModel,
-  GoldModel,
   ItemModel,
-  KeysModel,
-  TokenModel,
   PricingModel, SkillLineModel, SpellEffectModel, SpellReagentsModel
 } from "../db/mongo/mongo.model";
 import BlizzAPI, {BattleNetOptions} from 'blizzapi';
 import moment from "moment";
 import {ItemProps, ObjectProps, professionsTicker} from "../interface/constant";
 import {round2} from "../db/mongo/refs";
-import Xray from "x-ray";
 
 const getAuctions = async <T extends { connected_realm_id: number, auctions?: number } & BattleNetOptions> (args: T): Promise<number> => {
   try {
@@ -71,63 +67,6 @@ const getAuctions = async <T extends { connected_realm_id: number, auctions?: nu
       return e.response.status
     }
     return 500
-  }
-}
-
-const getGold = async () => {
-  try {
-    const
-      now = new Date().getTime(),
-      realms = new Set<number>(),
-      orders: { connected_realm_id: number; faction: any; quantity: number; status: string; owner: any; price: number; last_modified: number; }[] = [],
-      x = Xray();
-
-    const listing = await x('https://funpay.ru/chips/2/', '.tc-item', [
-      {
-        realm: '.tc-server', //@data-server num
-        faction: '.tc-side', //@data-side 0/1
-        status: '@data-online',
-        quantity: '.tc-amount',
-        owner: '.media-user-name',
-        price: '.tc-price div',
-      },
-    ]).then(res => res);
-
-    if (!listing || !Array.isArray(listing) || !listing.length) return
-
-    await Promise.all(listing.map(async order => {
-      const realm = await RealmModel
-        .findOne({ $text: { $search: order.realm } })
-        .select('connected_realm_id')
-        .lean();
-
-      if (realm && realm.connected_realm_id && order && order.price && order.quantity) {
-        const
-          price = parseFloat(order.price.replace(/ ₽/g, '')),
-          quantity = parseInt(order.quantity.replace(/\s/g, ''));
-
-        if (quantity < 15000000) {
-          realms.add(realm.connected_realm_id)
-          orders.push({
-            connected_realm_id: realm.connected_realm_id,
-            faction: order.faction,
-            quantity: quantity,
-            status: order.status ? 'Online' : 'Offline',
-            owner: order.owner,
-            price: price,
-            last_modified: now,
-          })
-        }
-      }
-    }))
-
-    if (!orders.length) return
-
-    await GoldModel.insertMany(orders, {rawResult: false})
-    await RealmModel.updateMany({ 'connected_realm_id': { '$in': Array.from(realms) } }, { golds: now });
-
-  } catch (e) {
-    console.error(e)
   }
 }
 
@@ -208,41 +147,6 @@ const getItem = async <T extends { _id: number } & BattleNetOptions> (args: T) =
 
     await item.save();
     return item
-  }
-}
-
-const getToken = async <T extends BattleNetOptions > (args: T) => {
-  try {
-    const key = await KeysModel.findOne({ tags: 'BlizzardAPI' });
-    if (!key) return
-
-    const api = new BlizzAPI({
-      region: args.region,
-      clientId: args.clientId,
-      clientSecret: args.clientSecret,
-      accessToken: args.accessToken
-    });
-
-    //TODO it is capable to implement if-modified-since header
-    const { last_updated_timestamp, price, lastModified } = await api.query(`/data/wow/token/index`, {
-      timeout: 10000,
-      params: { locale: 'en_GB' },
-      headers: { 'Battlenet-Namespace': 'dynamic-eu' }
-    })
-
-    const wowtoken = await TokenModel.findById(last_updated_timestamp);
-
-    if (!wowtoken) {
-      await TokenModel.create({
-        _id: last_updated_timestamp,
-        region: 'eu',
-        price: round2(price / 10000),
-        last_modified: lastModified,
-      })
-    }
-
-  } catch (e) {
-    console.error(e)
   }
 }
 
@@ -406,8 +310,6 @@ const getPricing = async <T extends { recipe_id: number, expansion: string, prof
 
 export {
   getAuctions,
-  getGold,
   getItem,
-  getToken,
   getPricing
 }

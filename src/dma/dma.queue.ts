@@ -7,15 +7,11 @@ const dmaOptions: JobsOptions = {
 };
 
 const queueAuctions = new Queue('DMA:Auctions', {connection: redisConnection});
-const queueGolds = new Queue('DMA:Golds', { connection: redisConnection });
-const queueItems = new Queue('DMA:Items', { connection: redisConnection });
-const queueToken = new Queue('DMA:Items', { connection: redisConnection });
-const queuePricing = new Queue('DMA:Pricing', { connection: redisConnection });
+const queueItems = new Queue('DMA:Items', { connection: redisConnection, defaultJobOptions: dmaOptions });
+const queuePricing = new Queue('DMA:Pricing', { connection: redisConnection, defaultJobOptions: dmaOptions });
 
 export {
   queueAuctions,
-  queueGolds,
   queueItems,
-  queueToken,
   queuePricing
 }

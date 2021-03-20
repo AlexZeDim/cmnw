@@ -50,4 +50,4 @@ const indexItems = async (min: number = 1, max: number = 20, updateForce: boolea
   }
 }
 
-indexItems(170000, 170100)
+indexItems(0, 170100, true)

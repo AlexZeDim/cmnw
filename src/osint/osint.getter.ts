@@ -9,7 +9,8 @@ import {
   ObjectProps,
   PopulationRealmProps,
   RealmProps,
-  RealmsTicker
+  RealmsTicker,
+  GuildRosterProps,
 } from "../interface/constant";
 import {
   CharacterModel,

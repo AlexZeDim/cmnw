@@ -4,7 +4,7 @@ import {
   updateCharacterPets,
   updateCharacterProfessions, updateCharacterRaiderIO,
   updateCharacterSummary,
-  updateCharacterWarcraftLogs, updateCharacterWowProgress, updateGuildSummary,
+  updateCharacterWarcraftLogs, updateCharacterWowProgress, updateGuildRoster, updateGuildSummary,
 } from "../src/osint/osint.getter";
 import {connect, connection} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
@@ -172,6 +172,27 @@ describe('updaters', () => {
       created_timestamp: expect.any(Number),
       last_modified: expect.any(Date),
       status_code: expect.any(Number)
+    })
+  })
+
+  test('updateGuildRoster', async () => {
+    const guild_roster = await updateGuildRoster( {
+      name: 'Депортация',
+      realm_name: 'Гордунни',
+      realm: 'gordunni',
+      realm_id: 1602,
+      faction: 'Alliance',
+      members: [],
+      _id: `депортация@гордунни`
+    }, api);
+    expect(guild_roster).toMatchObject({
+      members: expect.arrayContaining([
+        expect.objectContaining({
+          _id: expect.any(String),
+          id: expect.any(Number),
+          rank: expect.any(Number),
+        })
+      ])
     })
   })
 })

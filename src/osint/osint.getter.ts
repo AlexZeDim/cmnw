@@ -27,6 +27,7 @@ import {crc32} from '@node-rs/crc32';
 import puppeteer from 'puppeteer';
 import axios from 'axios';
 import Xray from 'x-ray';
+import {differenceBy, intersectionBy} from "lodash";
 import {queueCharacters} from "./osint.queue";
 
 
@@ -820,19 +821,76 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
     const summary = await updateGuildSummary(name_slug, guild.realm, api);
     Object.assign(guild_requested, summary);
 
-  } catch (e) {
+    const roster = await updateGuildRoster(guild_requested, api);
+    if (roster.members.length > 0) Object.assign(guild_requested, roster);
 
+  } catch (e) {
+    console.error(e)
   }
 }
 
-const updateLogsRoster = async (guild: GuildProps, guildLast: GuildProps) => {
+
+/**
+ * @param guild_original {GuildProps}
+ * @param guild_requested {GuildProps}
+ * TODO build block of logs for insertMany?
+ */
+const updateLogsRoster = async (guild_original: GuildProps, guild_requested: GuildProps) => {
   try {
-    const gm_new: GuildMemberProps | undefined = guild.members.find(m => m.rank === 0);
-    const gm_old: GuildMemberProps | undefined = guildLast.members.find(m => m.rank === 0);
+    const
+      gm_member_new: GuildMemberProps | undefined = guild_requested.members.find(m => m.rank === 0),
+      gm_member_old: GuildMemberProps | undefined = guild_original.members.find(m => m.rank === 0);
     /** Guild Master have been changed */
-    if (gm_old && gm_new && gm_old.id !== gm_new.id) {
+    if (gm_member_old && gm_member_new && gm_member_old.id !== gm_member_new.id) {
       /** FIXME Update both GM ^^^priority */
+      const
+        gm_character_old = await CharacterModel.findById(gm_member_old._id),
+        gm_character_new = await CharacterModel.findById(gm_member_new._id);
+
+      if (gm_character_new && gm_character_old) {
+        if (gm_character_old.hash_a && gm_character_new.hash_a) {
+          if (gm_character_old.hash_a === gm_character_new.hash_a) {
+            //TODO Transfer title
+          }
+          if (gm_character_old.hash_a !== gm_character_new.hash_a) {
+            //TODO Transfer ownership
+          }
+        }
+        if (!gm_character_old.hash_a || !gm_character_new.hash_a) {
+          //TODO Transfer ownership
+        }
+      }
     }
+
+    const
+      intersection = intersectionBy(guild_requested.members, guild_original.members, 'id'),
+      joins = differenceBy(guild_requested.members, guild_original.members, 'id'),
+      leaves = differenceBy(guild_original.members, guild_requested.members, 'id');
+
+    await Promise.all(intersection.map(async (guild_member_new: GuildMemberProps) => {
+      const guild_member_old = guild_original.members.find(({ id }) => id === guild_member_new.id);
+
+      if (guild_member_old) {
+        if (guild_member_new.rank > guild_member_old.rank) {
+          //TODO demote
+        }
+        if (guild_member_new.rank < guild_member_old.rank) {
+          //TODO promote
+        }
+      }
+    }))
+
+
+    await Promise.all(joins.map(async guild_member => {
+      //TODO join
+    }))
+
+    await Promise.all(leaves.map(async guild_member => {
+      await CharacterModel.findByIdAndUpdate(guild_member._id, { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } })
+      //TODO left
+    }))
+
+
   } catch (e) {
     console.error(e)
   }

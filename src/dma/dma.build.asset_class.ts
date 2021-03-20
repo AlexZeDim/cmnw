@@ -38,7 +38,7 @@ const build = async (args: string[]): Promise<void> => {
             data: { $first: "$$ROOT"}
           }
         },
-        //TODO only item_id project state?
+        //TODO only item_id project stage?
       ])
         .allowDiskUse(true)
         .cursor({})

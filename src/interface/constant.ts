@@ -260,6 +260,21 @@ const CharactersClasses: string[] = [
   'Warlock',      'Warrior'
 ];
 
+const PlayableClasses: Map<number, string> = new Map([
+  [1, 'Warrior'],
+  [2, 'Paladin'],
+  [3, 'Hunter'],
+  [4, 'Rogue'],
+  [5, 'Priest'],
+  [6, 'Death Knight'],
+  [7, 'Shaman'],
+  [8, 'Mage'],
+  [9, 'Warlock'],
+  [10, 'Monk'],
+  [11, 'Druid'],
+  [12, 'Demon Hunter'],
+]);
+
 const ExpansionTicker: Map<string, string> = new Map([
   ['Shadowlands', 'SHDW'],
   ['Kul', 'BFA'],
@@ -375,6 +390,7 @@ export {
   ExpansionTicker,
   professionsTicker,
   RealmsTicker,
+  PlayableClasses,
   CharactersClasses,
   CharactersProfessions
 }

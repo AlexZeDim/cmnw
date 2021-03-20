@@ -41,4 +41,4 @@ const indexAuctions = async () => {
   }
 }
 
-indexAuctions()
+indexAuctions().catch()

@@ -1,20 +1,17 @@
 import '../db/mongo/mongo.connection';
-import BlizzAPI from "blizzapi";
-import {KeysModel} from '../db/mongo/mongo.model';
+import {Job, QueueScheduler, Worker} from 'bullmq';
+import {redisConnection} from '../db/redis/redis.connection';
 
+const schedulerOsint = new QueueScheduler('OSINT:Test', {connection: redisConnection});
 
 (async function f(realm_slug: string = 'gordunni', name_slug: string = 'инициатива'): Promise<void> {
   try {
-    const key = await KeysModel.findOne({ tags: 'BlizzardAPI' }).lean();
-    if (!key) return;
-
-    const api = new BlizzAPI({
-      region: 'eu',
-      clientId: key._id,
-      clientSecret: key.secret,
-      accessToken: key.token
+    const worker = new Worker('OSINT:Test', async (job: Job) =>
+      console.log(job.data),
+      {
+      connection: redisConnection,
+      concurrency: 1
     });
-    console.log(key, api)
   } catch (e) {
     console.error(e)
   }

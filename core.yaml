@@ -1,0 +1,16 @@
+apps:
+  - script: ./dist/index.js
+    name: 'CORE:BOARD'
+    instances: 1
+    out_file: "/dev/null"
+    autorestart: true
+    max_memory_restart: '200M'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
+  - script: ./dist/core/keys.js
+    name: 'CORE:KEYS'
+    instances: 1
+    out_file: "/dev/null"
+    autorestart: false
+    cron: '*/1 * * * *'
+    max_memory_restart: '100M'
+    log_date_format: 'DD/MM HH:mm:ss.SSS'

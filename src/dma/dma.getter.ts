@@ -13,10 +13,18 @@ import {ItemProps, ObjectProps, professionsTicker} from "../interface/constant";
 import {round2} from "../db/mongo/refs";
 import Xray from "x-ray";
 
-const getAuctions = async <T extends { connected_realm_id: number, auctions: number } & BattleNetOptions> (args: T) => {
+const getAuctions = async <T extends { connected_realm_id: number } & BattleNetOptions> (args: T): Promise<number> => {
   try {
 
-    const if_modified_since: string = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+    let
+      auctions = 0,
+      realm = await RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
+
+    if (realm) {
+      auctions = realm.auctions
+    }
+
+    const if_modified_since: string = `${moment(auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
 
     const api = new BlizzAPI({
       region: args.region,
@@ -34,13 +42,12 @@ const getAuctions = async <T extends { connected_realm_id: number, auctions: num
       }
     })
 
-    if (!response || !Array.isArray(response.auctions) || !response.auctions.length) return
+    if (!response || !Array.isArray(response.auctions) || !response.auctions.length) return 504
 
     const ts: number = parseInt(moment(response.lastModified).format('x'))
 
     const orders = await Promise.all(response.auctions.map(async order => {
       if (order.item && order.item.id) {
-        //console.log(order.item)
         order.item_id = order.item.id
         if (order.item.id === 82800) {
           //TODO pet fix
@@ -56,8 +63,13 @@ const getAuctions = async <T extends { connected_realm_id: number, auctions: num
 
     await AuctionsModel.insertMany(orders, { rawResult: false });
     await RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
+    return 200
   } catch (e) {
     console.error(e)
+    if (e.response && e.response.status) {
+      return e.response.status
+    }
+    return 500
   }
 }
 

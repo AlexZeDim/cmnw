@@ -20,15 +20,19 @@ const indexAuctions = async () => {
       ])
       .cursor({ batchSize: 5 })
       .exec()
-      .eachAsync((realm: any) => {
-        queueAuctions.add(realm.name, {
+      .eachAsync(async (realm: any) => {
+        await queueAuctions.add(`${realm.name}`, {
           connected_realm_id: realm._id.connected_realm_id,
-          auctions: realm._id.auctions,
           region: 'eu',
           clientId: key._id,
           clientSecret: key.secret,
           accessToken: key.token
-        }, { jobId: realm._id.connected_realm_id })
+        }, {
+          jobId: `${realm._id.connected_realm_id}`,
+          repeat: {
+            every: 900000
+          }
+        })
       })
   } catch (e) {
     console.error(e)

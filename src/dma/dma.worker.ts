@@ -15,7 +15,7 @@ const schedulerPricing = new QueueScheduler('DMA:Pricing', {connection: redisCon
   try {
     const workerAuctions = new Worker('DMA:Auctions', async (job: Job) => await getAuctions(job.data), {
       connection: redisConnection,
-      concurrency: 2
+      concurrency: 1
     });
     const workerItems = new Worker('DMA:Items', async (job: Job) => await getItem(job.data), {
       connection: redisConnection,

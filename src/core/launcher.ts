@@ -1,7 +1,7 @@
 import pm2, { StartOptions } from "pm2";
 import path from "path";
 
-export const launcher = async <T extends StartOptions> (args: T) => {
+export const launcher = async (args: StartOptions) => {
   try {
 
     if (args.script) args.script = path.join(__dirname, args.script)

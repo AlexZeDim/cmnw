@@ -2,6 +2,7 @@ import {
   CharacterProps,
   CharactersClasses,
   CharactersProfessions,
+  PlayableClasses,
   ConnectedRealmProps,
   GuildMemberProps,
   GuildProps,

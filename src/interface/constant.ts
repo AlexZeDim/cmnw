@@ -53,6 +53,20 @@ interface GuildMemberProps {
   rank: number
 }
 
+interface GuildRosterProps {
+  members: {
+    rank: number,
+    character: {
+      id: number,
+      name: string,
+      level: number,
+      playable_class: {
+        id: number
+      }
+    }
+  }[]
+}
+
 interface GuildProps extends ObjectProps {
   _id: string,
   name: string,
@@ -64,7 +78,7 @@ interface GuildProps extends ObjectProps {
   members: GuildMemberProps[],
   achievement_points?: number,
   member_count?: number,
-  last_Modified?: Date,
+  last_modified?: Date,
   created_timestamp?: Date,
   status_code?: number,
   created_by?: string,
@@ -376,6 +390,7 @@ export {
   RealmProps,
   GuildProps,
   GuildMemberProps,
+  GuildRosterProps,
   ConnectedRealmProps,
   PopulationRealmProps,
   ValuationType,

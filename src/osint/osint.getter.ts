@@ -226,8 +226,8 @@ const updateCharacterSummary = async (name_slug: string, realm_slug: string, Bli
       headers: { 'Battlenet-Namespace': 'profile-eu' }
     })
     if (!response || typeof response !== 'object') return summary
-    const keys_named = ['gender', 'faction', 'race', 'character_class', 'active_spec'];
-    const keys = ['level', 'achievement_points'];
+    const keys_named: string[] = ['gender', 'faction', 'race', 'character_class', 'active_spec'];
+    const keys: string[] = ['level', 'achievement_points'];
     await Promise.all(Object.entries(response).map(([key, value]) => {
       if (keys_named.includes(key) && value !== null && value.name) summary[key] = value.name
       if (keys.includes(key) && value !== null) summary[key] = value
@@ -511,7 +511,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
         console.warn(`E:${(args.teration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique:${args.createOnlyUnique}`);
         return character
       }
-
+      //TODO what if force update is time param?
       if (!args.forceUpdate && new Date().getTime() - (48 * 60 * 60 * 1000) < character.updatedAt.getTime()) {
         console.warn(`E:${(args.iterations) ? (args.iterations + ':') : ('')}${character._id},forceUpdate:${args.forceUpdate}`);
         return character
@@ -651,12 +651,40 @@ const getRealmsWarcraftLogsID = async (start: number = 0, end: number = 517): Pr
   }
 }
 
-const updateGuildSummary = async (guild_slug: string, realm_slug: string, BlizzAPI: BlizzAPI ): Promise<ObjectProps> => {
+const updateGuildSummary = async (guild_slug: string, realm_slug: string, BlizzAPI: BlizzAPI): Promise<ObjectProps> => {
+  const summary: ObjectProps = {};
   try {
-    return { a: 1 }
+    const response: object = await BlizzAPI.query(`/data/wow/guild/${realm_slug}/${guild_slug}`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'profile-eu' }
+    });
+    if (!response || typeof response !== 'object') return summary
+    const keys: string[] = ['id', 'name', 'achievement_points', 'member_count', 'created_timestamp'];
+    await Promise.all(Object.entries(response).map(([key, value]) => {
+      if (keys.includes(key) && value !== null) summary[key] = value;
+      if (key === 'faction' && typeof value === 'object' && value !== null) {
+        if (value.type && value.name === null) {
+          if (value.type.toString().startsWith('A')) summary.faction = 'Alliance'
+          if (value.type.toString().startsWith('H')) summary.faction = 'Horde'
+        } else {
+          summary.faction = value.name
+        }
+      }
+      if (key === 'realm' && typeof value === 'object' && value !== null) {
+        if (value.id && value.name && value.slug) {
+          summary.realm_id = value.id
+          summary.realm_name = value.name
+          summary.realm = value.slug
+        }
+      }
+      if (key === 'lastModified') summary.last_modified = new Date(value);
+    }))
+    summary.status_code = 200;
+    return summary
   } catch (e) {
     console.error(e)
-    return { a: 1 }
+    return summary
   }
 }
 
@@ -731,7 +759,8 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
       })
     }
 
-    //TODO continue
+    const summary = await updateGuildSummary(name_slug, guild.realm, api);
+    Object.assign(guild_requested, summary);
 
   } catch (e) {
 
@@ -1034,5 +1063,6 @@ export {
   updateCharacterWarcraftLogs,
   updateCharacterRaiderIO,
   updateCharacterWowProgress,
+  updateGuildSummary,
   getLog
 };

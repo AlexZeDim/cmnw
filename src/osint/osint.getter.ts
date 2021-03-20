@@ -689,8 +689,65 @@ const updateGuildSummary = async (guild_slug: string, realm_slug: string, BlizzA
   }
 }
 
+const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
+  const roster: { members: GuildMemberProps[] } = { members: [] }
+  try {
+    const guild_slug = toSlug(guild.name);
+    const { members }: GuildRosterProps = await api.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
+      timeout: 10000,
+      params: { locale: 'en_GB' },
+      headers: { 'Battlenet-Namespace': 'profile-eu' }
+    });
+    let iteration: number = 0;
+    for (const member of members) {
+      if ('character' in member && 'rank' in member) {
+        iteration++
+        //TODO push to characterQueue
+        /*await queueCharacters.add(
+          toSlug(`${member.character.name}@${guild.realm}`),
+          {
+            id: member.character.id,
+            name: member.character.name,
+            realm: guild.realm,
+            realm_id: guild.realm_id,
+            realm_name: guild.realm_name,
+            guild_id: `${guild_slug}@${guild.realm}`,
+            guild: guild.name,
+            guild_guild: guild.id,
+            character_class: PlayableClasses.has(member.character.playable_class.id) ? PlayableClasses.get(member.character.playable_class.id) : undefined,
+            faction: guild.faction,
+            level: member.character.level ? member.character.level : undefined,
+            last_modified: guild.last_modified,
+            updated_by: guild.updated_by,
+            region: api.region,
+            clientId: api.clientId,
+            clientSecret: api.clientSecret,
+            accessToken: api.accessToken,
+            iteration: iteration,
+            guildRank: true,
+            createOnlyUnique: true
+          },
+          {
+            jobId: toSlug(`${member.character.name}@${guild.realm}`)
+          }
+        )*/
+
+        roster.members.push({
+          _id: toSlug(`${member.character.name}@${guild.realm}`),
+          id: member.character.id,
+          rank: member.rank,
+        })
+      }
+    }
+    return roster;
+  } catch (e) {
+    console.error(e);
+    return roster;
+  }
+}
+
 /**
- * TODO refactor
+ * TODO in-progress
  * get Guild
  */
 const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Promise <Partial<GuildProps> | void> => {
@@ -1065,5 +1122,6 @@ export {
   updateCharacterRaiderIO,
   updateCharacterWowProgress,
   updateGuildSummary,
+  updateGuildRoster,
   getLog
 };

@@ -13,18 +13,19 @@ import {ItemProps, ObjectProps, professionsTicker} from "../interface/constant";
 import {round2} from "../db/mongo/refs";
 import Xray from "x-ray";
 
-const getAuctions = async <T extends { connected_realm_id: number } & BattleNetOptions> (args: T): Promise<number> => {
+const getAuctions = async <T extends { connected_realm_id: number, auctions?: number } & BattleNetOptions> (args: T): Promise<number> => {
   try {
 
-    let
-      auctions = 0,
-      realm = await RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
-
-    if (realm) {
-      auctions = realm.auctions
+    if (!args.auctions || args.auctions === 0) {
+      const realm = await RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
+      if (realm) {
+        args.auctions = realm.auctions;
+      } else {
+        args.auctions = 0;
+      }
     }
 
-    const if_modified_since: string = `${moment(auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+    const if_modified_since: string = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
 
     const api = new BlizzAPI({
       region: args.region,

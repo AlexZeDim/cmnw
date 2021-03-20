@@ -4,14 +4,14 @@ import {
   updateCharacterPets,
   updateCharacterProfessions, updateCharacterRaiderIO,
   updateCharacterSummary,
-  updateCharacterWarcraftLogs, updateCharacterWowProgress,
+  updateCharacterWarcraftLogs, updateCharacterWowProgress, updateGuildSummary,
 } from "../src/osint/osint.getter";
-import {connect, connection, Schema} from 'mongoose';
+import {connect, connection} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
 import BlizzAPI from 'blizzapi';
-import dotenv from 'dotenv'
-import path from 'path'
-dotenv.config({ path: path.join(__dirname, '..', '.env') })
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 beforeAll(async () => {
   await connect(
@@ -61,7 +61,7 @@ describe('updaters', () => {
 
   test('updateCharacterMedia', async () => {
     const character_media = await updateCharacterMedia('инициатива', 'gordunni', api);
-    expect(character_media).toMatchSnapshot({
+    expect(character_media).toMatchObject({
       id: expect.any(Number),
       avatar: expect.any(String),
       inset: expect.any(String),
@@ -71,7 +71,7 @@ describe('updaters', () => {
 
   test('updateCharacterMounts', async () => {
     const character_mounts = await updateCharacterMounts('инициатива', 'gordunni', api);
-    expect(character_mounts).toMatchSnapshot({
+    expect(character_mounts).toMatchObject({
       mounts: expect.arrayContaining([
         expect.objectContaining({
           _id: expect.any(Number),
@@ -83,7 +83,7 @@ describe('updaters', () => {
 
   test('updateCharacterPets', async () => {
     const character_pets = await updateCharacterPets('инициатива', 'gordunni', api);
-    expect(character_pets).toMatchSnapshot({
+    expect(character_pets).toMatchObject({
       hash_a: expect.any(String),
       hash_b: expect.any(String),
       pets: expect.arrayContaining([
@@ -97,7 +97,7 @@ describe('updaters', () => {
 
   test('updateCharacterProfessions', async () => {
     const character_profession = await updateCharacterProfessions('инициатива', 'gordunni', api);
-    expect(character_profession).toMatchSnapshot({
+    expect(character_profession).toMatchObject({
       professions: expect.arrayContaining([
         expect.objectContaining({
           name: expect.any(String),
@@ -157,5 +157,22 @@ describe('updaters', () => {
       languages: expect.arrayContaining([expect.any(String)])
     })
   });
+
+  test('updateGuildSummary', async () => {
+    const guild_summary = await updateGuildSummary('депортация','gordunni', api);
+    expect(guild_summary).toMatchObject({
+      id: expect.any(Number),
+      name: expect.any(String),
+      faction: expect.any(String),
+      achievement_points: expect.any(Number),
+      member_count: expect.any(Number),
+      realm_id: expect.any(Number),
+      realm_name: expect.any(String),
+      realm: expect.any(String),
+      created_timestamp: expect.any(Number),
+      last_modified: expect.any(Date),
+      status_code: expect.any(Number)
+    })
+  })
 })
 

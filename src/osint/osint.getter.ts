@@ -410,6 +410,43 @@ const updateCharacterRaiderIO = async (name: string, realm_slug: string): Promis
   }
 }
 
+const detectGuildDiff = async (guild_o: GuildProps, guild_u: GuildProps ) => {
+  try {
+    const
+      detectiveFields: string[] = ['name', 'faction'],
+      t0: Date = guild_o.last_modified || guild_o.updatedAt || new Date(),
+      t1: Date = guild_u.last_modified || guild_u.updatedAt || new Date();
+
+    await Promise.all(detectiveFields.map(async (check: string) => {
+      if (check in guild_u && check in guild_u && guild_u[check] !== guild_o[check]) {
+        if (check === 'name') {
+          await LogModel.updateMany(
+            {
+              root_id: guild_u._id,
+            },
+            {
+              root_id: guild_u._id,
+              $push: { root_history: guild_u._id },
+            },
+          );
+        }
+        await LogModel.create({
+          root_id: guild_u._id,
+          root_history: [guild_u._id],
+          action: check,
+          event: 'character',
+          original: guild_o[check],
+          updated: guild_u[check],
+          t0: t0,
+          t1: t1,
+        })
+      }
+    }))
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 const detectCharacterDiff = async (character_o: CharacterProps, character_u: CharacterProps): Promise<void> => {
   try {
     const

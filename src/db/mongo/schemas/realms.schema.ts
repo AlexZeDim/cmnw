@@ -1,6 +1,13 @@
 import {prop, modelOptions, index} from '@typegoose/typegoose';
 import {toSlug} from "../refs";
 
+class CharactersPopulation {
+  @prop()
+  public _id!: string;
+  @prop({ type: () => [Number] })
+  public value!: number[];
+}
+
 @modelOptions({ schemaOptions: { timestamps: true, collection: 'realms' }, options: { customName: 'realms' } })
 @index({ connected_realm_id: 1 }, { name: 'CR' })
 @index(
@@ -13,27 +20,20 @@ import {toSlug} from "../refs";
     region: 'text',
     locale: 'text'
   },
-{
-  weights:
-    {
-      'slug': 10,
-      'name': 1,
-      'slug_locale': 1,
-      'name_locale': 1,
-      'ticker': 3,
-      'region': 1,
-      'locale': 1
-    },
-  name: 'SQ'
+  {
+    weights:
+      {
+        'slug': 10,
+        'name': 1,
+        'slug_locale': 1,
+        'name_locale': 1,
+        'ticker': 3,
+        'region': 1,
+        'locale': 1
+      },
+    name: 'SQ'
   }
 )
-
-class CharactersPopulation {
-  @prop()
-  public _id!: string;
-  @prop({ type: () => [Number] })
-  public value!: number[];
-}
 
 class RealmPopulation {
   @prop({ type: () => [Number] })

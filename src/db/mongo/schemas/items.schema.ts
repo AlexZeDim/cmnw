@@ -1,26 +1,5 @@
 import {index, modelOptions, mongoose, prop} from "@typegoose/typegoose";
 
-@modelOptions({ schemaOptions: { timestamps: true, collection: 'items' }, options: { customName: 'items' } })
-@index({ 'expansion': 1 }, { name: 'C' })
-@index(
-  {
-    'ticker': 'text',
-    'name.en_GB': 'text',
-    'name.ru_RU': 'text',
-    'tags': 'text'
-  },
-  {
-    weights:
-      {
-        'ticker': 2,
-        'name.en_GB': 2,
-        'name.ru_RU': 2,
-        'tags': 1
-      },
-    name: 'SQ',
-  }
-)
-
 class ItemNames {
   @prop({ required: true })
   public en_US!: string;
@@ -41,6 +20,27 @@ class ItemNames {
   @prop({ required: true })
   public ru_RU!: string;
 }
+
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'items' }, options: { customName: 'items' } })
+@index({ 'expansion': 1 }, { name: 'C' })
+@index(
+  {
+    'ticker': 'text',
+    'name.en_GB': 'text',
+    'name.ru_RU': 'text',
+    'tags': 'text'
+  },
+  {
+    weights:
+      {
+        'ticker': 2,
+        'name.en_GB': 2,
+        'name.ru_RU': 2,
+        'tags': 1
+      },
+    name: 'SQ',
+  }
+)
 
 export class Item {
   @prop({ required: true })

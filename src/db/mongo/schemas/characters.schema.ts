@@ -1,8 +1,6 @@
 import {modelOptions, mongoose, prop, Severity} from '@typegoose/typegoose';
 import {capitalize, toSlug} from '../refs'
 
-@modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters', allowMixed: Severity.ALLOW } })
-
 /**
  * _id and id field represents Blizzard GUID name@realm-id
  * https://wow.gamepedia.com/GUID
@@ -50,6 +48,8 @@ class LookingForGroup {
   @prop()
   public new?: boolean;
 }
+
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'characters'}, options: { customName: 'characters', allowMixed: Severity.ALLOW } })
 
 export class Character {
   @prop({ required: true, lowercase: true })

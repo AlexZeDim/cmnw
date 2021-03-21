@@ -1,9 +1,6 @@
 import {prop, modelOptions, index, mongoose, Severity} from '@typegoose/typegoose';
 import { PricingType } from "../../../interface/constant";
 
-@modelOptions({ schemaOptions: { timestamps: true, collection: 'pricing_methods' }, options: { customName: 'pricing_methods', allowMixed: Severity.ALLOW } })
-@index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' })
-
 class Item {
   @prop({ required: true })
   _id!: number;
@@ -42,6 +39,9 @@ class Locales {
   @prop()
   public zh_CN?: string;
 }
+
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'pricing_methods' }, options: { customName: 'pricing_methods', allowMixed: Severity.ALLOW } })
+@index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' })
 
 export class Pricing {
   @prop()

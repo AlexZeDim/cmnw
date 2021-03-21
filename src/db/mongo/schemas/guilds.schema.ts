@@ -1,8 +1,6 @@
 import {prop, modelOptions, mongoose} from '@typegoose/typegoose';
 import {toSlug} from "../refs";
 
-@modelOptions({ schemaOptions: { timestamps: true, collection: 'guilds' }, options: { customName: 'guilds' } })
-
 class GuildMember {
   @prop({ required: true, lowercase: true, set: (val: string) => toSlug(val), get: (val: string) => toSlug(val) })
   public _id!: string;
@@ -11,6 +9,8 @@ class GuildMember {
   @prop({ required: true })
   public rank!: number;
 }
+
+@modelOptions({ schemaOptions: { timestamps: true, collection: 'guilds' }, options: { customName: 'guilds' } })
 
 export class Guild {
   @prop({ required: true, lowercase: true })
@@ -43,8 +43,4 @@ export class Guild {
   public created_by?: string;
   @prop()
   public updatedBy?: string;
-  @prop()
-  public updatedAt!: Date;
-  @prop()
-  public createdAt!: Date;
 }

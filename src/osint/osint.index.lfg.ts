@@ -1,11 +1,14 @@
 import '../db/mongo/mongo.connection';
 import {KeysModel} from "../db/mongo/mongo.model";
 import {Tabletojson} from 'tabletojson';
+import {CharacterProps} from '../interface/constant';
+import {BattleNetOptions} from 'blizzapi';
+import {toSlug} from '../db/mongo/refs';
+import {queueCharacters} from './osint.queue';
 
 /**
  * place in index Q first two wowprogress pages
  */
-
 const indexLookingForGroup = async (): Promise<void> => {
   try {
     const key = await KeysModel.findOne({ tags: `BlizzardAPI` });
@@ -18,24 +21,47 @@ const indexLookingForGroup = async (): Promise<void> => {
 
     const characters = [...first, ...second];
 
-    characters.map((c: { Character: string, Realm: string }) => {
+    await Promise.all(characters.map(async (c: { Character: string, Realm: string }) => {
       if ('Character' in c && 'Realm' in c) {
-        const character = {
-          name: c.Character.trim(),
-          realm: c.Realm.split('-')[1].trim(),
-          createdBy: `OSINT-lfg`,
-          updatedBy: `OSINT-lfg`,
-          region: 'eu',
-          clientId: key._id,
-          clientSecret: key.secret,
-          accessToken: key.token,
-        }
-        if (character) {
-          //TODO add to character Q, guildRank, with special params
 
+        const
+          name: string = c.Character.trim(),
+          realm: string = c.Realm.split('-')[1].trim();
+
+        if (name && realm) {
+          /**
+           * Add each character to Q,
+           * with highest priority
+           * and update WCL & RIO & WP
+           */
+          const character: CharacterProps & BattleNetOptions = {
+            _id: toSlug(`${c.Character.trim()}@${c.Realm.split('-')[1].trim()}`),
+            name: name,
+            realm: realm,
+            createdBy: `OSINT-lfg`,
+            updatedBy: `OSINT-lfg`,
+            updateRIO: true,
+            updateWCL: true,
+            updateWP: true,
+            region: 'eu',
+            createOnlyUnique: false,
+            clientId: key._id,
+            clientSecret: key.secret,
+            accessToken: key.token,
+          }
+
+          await queueCharacters.add(
+            character._id,
+            character,
+            {
+              jobId: character._id,
+              lifo: true,
+              priority: 1
+            }
+          );
         }
       }
-    })
+    }));
   } catch (e) {
     console.error(e)
   } finally {

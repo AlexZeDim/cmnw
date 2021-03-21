@@ -2,7 +2,7 @@ import {prop, modelOptions, mongoose} from '@typegoose/typegoose';
 import {toSlug} from "../refs";
 
 class GuildMember {
-  @prop({ required: true, lowercase: true, set: (val: string) => toSlug(val), get: (val: string) => toSlug(val) })
+  @prop({ required: true, lowercase: true })
   public _id!: string;
   @prop({ required: true })
   public id!: number;
@@ -42,7 +42,7 @@ export class Guild {
   @prop()
   public created_by?: string;
   @prop()
-  public updatedBy?: string;
+  public updated_by?: string;
   @prop()
   public updatedAt!: Date;
   @prop()

@@ -43,4 +43,8 @@ export class Guild {
   public created_by?: string;
   @prop()
   public updatedBy?: string;
+  @prop()
+  public updatedAt!: Date;
+  @prop()
+  public createdAt!: Date;
 }

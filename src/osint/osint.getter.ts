@@ -460,7 +460,7 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
         { score: { $meta: 'textScore' } },
       )
       .sort({ score: { $meta: 'textScore' } })
-      .lean()
+      .lean();
     if (!realm) return
 
     const

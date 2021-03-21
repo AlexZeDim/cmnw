@@ -33,7 +33,6 @@ import {queueCharacters} from "./osint.queue";
 
 
 /**
- *
  * @param name_slug {string} character name_slug
  * @param realm_slug {string} character realm_slug
  * @param BlizzAPI {Object} Blizzard API
@@ -62,7 +61,6 @@ const updateCharacterMedia = async (name_slug: string, realm_slug: string, Blizz
 }
 
 /**
- *
  * @param name_slug {string} character name_slug
  * @param realm_slug {string} character realm_slug
  * @param BlizzAPI {Object} Blizzard API
@@ -94,7 +92,6 @@ const updateCharacterMounts = async (name_slug: string, realm_slug: string, Bliz
 }
 
 /**
- *
  * @param name_slug {string} character name_slug
  * @param realm_slug {string} character realm_slug
  * @param BlizzAPI {Object} Blizzard API
@@ -135,7 +132,6 @@ const updateCharacterPets = async (name_slug: string, realm_slug: string, BlizzA
 }
 
 /**
- *
  * @param name_slug {string} character name_slug
  * @param realm_slug {string} character realm_slug
  * @param BlizzAPI {Object} Blizzard API
@@ -215,7 +211,6 @@ const updateCharacterProfessions = async (name_slug: string, realm_slug: string,
 }
 
 /**
- *
  * @param name_slug {string} character name_slug
  * @param realm_slug {string} character realm_slug
  * @param BlizzAPI {Object} Blizzard API
@@ -346,8 +341,10 @@ const updateCharacterWarcraftLogs = async (name: string, realm_slug: string): Pr
  * @returns {Promise<{}>}
  */
 const updateCharacterWowProgress = async (name: string, realm_slug: string): Promise<ObjectProps> => {
-  const wow_progress: ObjectProps = {};
-  const x = Xray();
+  const
+    wow_progress: ObjectProps = {},
+    x = Xray();
+
   try {
     const wowprogress: any = await x(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`), '.registeredTo', ['.language']);
     if (!Array.isArray(wowprogress) || !wowprogress || !wowprogress.length) return wow_progress
@@ -411,10 +408,11 @@ const updateCharacterRaiderIO = async (name: string, realm_slug: string): Promis
   }
 }
 
-const detectGuildDiff = async (guild_o: GuildProps, guild_u: GuildProps ) => {
+const detectGuildDiff = async (guild_o: GuildProps, guild_u: GuildProps): Promise<void> => {
   try {
     const
       detectiveFields: string[] = ['name', 'faction'],
+      block: LogProps[] = [],
       t0: Date = guild_o.last_modified || guild_o.updatedAt || new Date(),
       t1: Date = guild_u.last_modified || guild_u.updatedAt || new Date();
 
@@ -431,7 +429,7 @@ const detectGuildDiff = async (guild_o: GuildProps, guild_u: GuildProps ) => {
             },
           );
         }
-        await LogModel.create({
+        block.push({
           root_id: guild_u._id,
           root_history: [guild_u._id],
           action: check,
@@ -440,9 +438,11 @@ const detectGuildDiff = async (guild_o: GuildProps, guild_u: GuildProps ) => {
           updated: guild_u[check],
           t0: t0,
           t1: t1,
-        })
+        });
       }
     }))
+
+    if (block.length > 1) await LogModel.insertMany(block, { rawResult: false });
   } catch (e) {
     console.error(e);
   }
@@ -452,6 +452,7 @@ const detectCharacterDiff = async (character_o: CharacterProps, character_u: Cha
   try {
     const
       detectiveFields: string[] = ['name', 'realm_name', 'race', 'gender', 'faction'],
+      block: LogProps[] = [],
       t0: Date = character_o.last_modified || character_o.updatedAt || new Date(),
       t1: Date = character_u.last_modified || character_u.updatedAt || new Date();
 
@@ -468,7 +469,7 @@ const detectCharacterDiff = async (character_o: CharacterProps, character_u: Cha
             },
           );
         }
-        await LogModel.create({
+        block.push({
           root_id: character_u._id,
           root_history: [character_u._id],
           action: check,
@@ -477,9 +478,11 @@ const detectCharacterDiff = async (character_o: CharacterProps, character_u: Cha
           updated: `${capitalize(check)}: ${capitalize(character_u[check])}`,
           t0: t0,
           t1: t1,
-        })
+        });
       }
-    }))
+    }));
+
+    if (block.length > 1) await LogModel.insertMany(block, { rawResult: false });
   } catch (e) {
     console.error(`E,${detectCharacterDiff.name}:${e}`)
   }
@@ -523,22 +526,28 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
     let character = await CharacterModel.findById(character_original._id);
 
     if (character) {
-      /**
-       * If guild rank true and character is exists
-       * and lastModified from guild > character lastModified
-       * TODO refactor guildRank part, to requested probably
-       */
+      //if character exists & guildRank true
       if (args.guildRank) {
         if (args.guild) {
+          //inherit rank from args, if guild is the same
           if (character.guild === args.guild) {
             character.guild_rank = args.guild_rank
           }
-          if (!character.guild && character.last_modified && args.last_modified) {
-            if (args.last_modified.getTime() > character.last_modified.getTime()) {
-              character.guild = args.guild
+          //if args has guild data, but character doesn't
+          if (!character.guild || character.guild !== args.guild) {
+            //and last_modified has args & character
+            if (character.last_modified && args.last_modified) {
+              //if timestamp from args > then character
+              if (args.last_modified.getTime() > character.last_modified.getTime()) {
+                //inherit guild data
+                character.guild = args.guild
+                if (args.guild_guid) character.guild_guid = args.guild_guid;
+                if (args.guild_id) character.guild_id = args.guild_id;
+                if (args.guild_rank) character.guild_rank = args.guild_rank;
+              }
             }
           }
-          console.info(`G:${(args.iterations) ? (args.iteration + ':') : ('')}${character._id},guildRank:${args.guildRank}`)
+          console.info(`G:${(args.iterations) ? (args.iteration + ':') : ('')}${character._id},guildRank:${args.guildRank}`);
           await character.save()
         }
       }
@@ -575,15 +584,25 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
         updated_by: 'OSINT-getCharacter',
       })
       /**
-       * Upload other fields from imported values
-       * TODO and make sure that _id not inherit
+       * Assign values from args only
+       * on character creation
        */
+      if (args.guild) character.guild = args.guild;
+      if (args.guild_guid) character.guild_guid = args.guild_guid;
+      if (args.guild_id) character.guild_id = args.guild_id;
       if (args.created_by) character.created_by = args.created_by;
     }
     /**
-     * Inherit created_by & updated_by
-     * in any case from args, if exists
+     * Inherit safe values
+     * from args in any case
+     * summary overwrite later
      */
+    if (args.race) character.race = args.race;
+    if (args.level) character.level = args.level;
+    if (args.gender) character.gender = args.gender;
+    if (args.faction) character.faction = args.faction;
+    if (args.character_class) character.character_class = args.character_class;
+    if (args.last_modified) character.last_modified = args.last_modified;
     if (args.updated_by) character.updated_by = args.updated_by;
 
     /**
@@ -675,8 +694,10 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
  * @returns {Promise<Map<any, any>>}
  */
 const getRealmsWarcraftLogsID = async (start: number = 0, end: number = 517): Promise<Map<any, any>>  => {
-  const wcl_map: Map<any, any> = new Map();
-  const x = Xray();
+  const
+    wcl_map: Map<any, any> = new Map(),
+    x = Xray();
+
   try {
     const wcl_ids: number[] = range(start, end, 1);
     for (const wcl_id of wcl_ids) {
@@ -727,8 +748,8 @@ const updateGuildSummary = async (guild_slug: string, realm_slug: string, BlizzA
   }
 }
 
-const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
-  const roster: { members: GuildMemberProps[] } = { members: [] }
+const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI): Promise<{members: GuildMemberProps[]}> => {
+  const roster: { members: GuildMemberProps[] } = { members: [] };
   try {
     const guild_slug = toSlug(guild.name);
     const { members }: GuildRosterProps = await api.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
@@ -741,8 +762,9 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
       if ('character' in member && 'rank' in member) {
         iteration++
 
+        const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
         await queueCharacters.add(
-          toSlug(`${member.character.name}@${guild.realm}`),
+          _id,
           {
             id: member.character.id,
             name: member.character.name,
@@ -751,7 +773,7 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
             realm_name: guild.realm_name,
             guild_id: `${guild_slug}@${guild.realm}`,
             guild: guild.name,
-            guild_guild: guild.id,
+            guild_guid: guild.id,
             character_class: PlayableClasses.has(member.character.playable_class.id) ? PlayableClasses.get(member.character.playable_class.id) : undefined,
             faction: guild.faction,
             level: member.character.level ? member.character.level : undefined,
@@ -766,7 +788,7 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
             createOnlyUnique: true
           },
           {
-            jobId: toSlug(`${member.character.name}@${guild.realm}`)
+            jobId: _id
           }
         )
 
@@ -852,6 +874,7 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
       if (args.created_by) guild.created_by = args.created_by;
     }
 
+    //TODO inherit args
     if (args.updated_by) guild.updated_by = args.updated_by;
 
     const summary = await updateGuildSummary(name_slug, guild.realm, api);
@@ -1168,7 +1191,7 @@ const updateLogsRoster = async (guild_original: GuildProps, guild_requested: Gui
  * Realm getter
  * @param args
  */
-const getRealm = async <T extends RealmProps & BattleNetOptions & { population: boolean, wcl_ids?: Map<any, any> }> (args: T): Promise<void> => {
+const getRealm = async <T extends RealmProps & BattleNetOptions & { population: boolean, wcl_ids?: Map<any, any> }> (args: T) => {
   const summary: RealmProps = { _id: args._id, slug: args.slug };
   try {
     let realm = await RealmModel.findById(args);
@@ -1256,7 +1279,7 @@ const getRealm = async <T extends RealmProps & BattleNetOptions & { population: 
       realm.markModified('population')
     }
 
-    await realm.save();
+    return await realm.save();
   } catch (e) {
     console.error(e)
   }
@@ -1410,22 +1433,25 @@ const getLog = async <T extends { _id: string, wcl: string } & BattleNetOptions>
       const charactersLog : {name: string, server: string}[] = wcl_log.exportedCharacters;
       for (const character of charactersLog) {
         if (character.name && character.server) {
-          //TODO priority
+          const _id: string = toSlug(`${character.name}@${character.server}`);
           await queueCharacters.add(
-            `${character.name}@${character.server}`,
+              _id,
             {
-              _id: `${character.name}@${character.server}`,
+              _id: _id,
               name: character.name,
               realm: character.server,
-              createdBy: `OSINT-logs`,
-              updatedBy: `OSINT-logs`,
+              created_by: `OSINT-logs`,
+              updated_by: `OSINT-logs`,
               guildRank: false,
               createOnlyUnique: true,
               region: 'eu',
               clientId: args.clientId,
               clientSecret: args.clientSecret,
               accessToken: args.accessToken,
-            }, { jobId: `${character.name}@${character.server}` }
+            }, {
+              jobId: _id,
+              priority: 2
+            }
           );
         }
       }

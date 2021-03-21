@@ -85,7 +85,9 @@ interface GuildProps extends ObjectProps {
   updated_by?: string,
   createOnlyUnique?: boolean,
   forceUpdate?: boolean,
-  iteration?: number
+  iteration?: number,
+  updatedAt?: Date,
+  createdAt?: Date,
 }
 
 interface RealmProps extends ObjectProps {

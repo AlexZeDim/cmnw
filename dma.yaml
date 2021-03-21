@@ -14,6 +14,11 @@ apps:
     instances: 1
     autorestart: false
     log_date_format: 'DD/MM HH:mm:ss.SSS'
+  - script: ./dist/dma/dma.index.pricing.js
+    name: 'DMA-PRICING'
+    instances: 1
+    autorestart: false
+    log_date_format: 'DD/MM HH:mm:ss.SSS'
   - script: ./dist/dma/dma.index.golds.js
     name: 'DMA-GOLD'
     instances: 1

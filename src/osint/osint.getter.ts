@@ -11,6 +11,7 @@ import {
   RealmProps,
   RealmsTicker,
   GuildRosterProps,
+  LogProps,
 } from "../interface/constant";
 import {
   CharacterModel,
@@ -891,7 +892,9 @@ const updateLogsRoster = async (guild_original: GuildProps, guild_requested: Gui
   try {
     const
       gm_member_new: GuildMemberProps | undefined = guild_requested.members.find(m => m.rank === 0),
-      gm_member_old: GuildMemberProps | undefined = guild_original.members.find(m => m.rank === 0);
+      gm_member_old: GuildMemberProps | undefined = guild_original.members.find(m => m.rank === 0),
+      block: LogProps[] = [];
+
     /** Guild Master have been changed */
     if (gm_member_old && gm_member_new && gm_member_old.id !== gm_member_new.id) {
       /** FIXME Update both GM ^^^priority */
@@ -902,15 +905,145 @@ const updateLogsRoster = async (guild_original: GuildProps, guild_requested: Gui
       if (gm_character_new && gm_character_old) {
         if (gm_character_old.hash_a && gm_character_new.hash_a) {
           if (gm_character_old.hash_a === gm_character_new.hash_a) {
-            //TODO Transfer title
+            //Inherit title
+            block.push(
+              {
+                root_id: guild_requested._id,
+                root_history: [guild_requested._id],
+                original: `${gm_member_old._id}:${gm_member_old.id}`, //GM Title transferred from
+                updated: `${gm_member_new._id}:${gm_member_new.id}`, //GM Title transferred to
+                event: 'guild',
+                action: 'inherit',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              },
+              {
+                root_id: gm_member_new._id,
+                root_history: [gm_member_new._id],
+                original: '',
+                updated: `${guild_requested._id}:${guild_requested.id}//${gm_member_old._id}:${gm_member_old.id}`, //GM Title received from
+                event: 'character',
+                action: 'inherit',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              },
+              {
+                root_id: gm_member_old._id,
+                root_history: [gm_member_old._id],
+                original: `${guild_requested._id}:${guild_requested.id}//${gm_member_new._id}:${gm_member_new.id}`, ////GM Title transferred to
+                updated: '',
+                event: 'character',
+                action: 'inherit',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              }
+            );
           }
           if (gm_character_old.hash_a !== gm_character_new.hash_a) {
-            //TODO Transfer ownership
+            //Transfer ownership
+            block.push(
+              {
+                root_id: guild_requested._id,
+                root_history: [guild_requested._id],
+                original: `${gm_member_old._id}:${gm_member_old.id}`, //GM ownership withdraw from
+                updated: `${gm_member_new._id}:${gm_member_old.id}`, //GM ownership claimed by
+                event: 'guild',
+                action: 'ownership',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              },
+              {
+                root_id: gm_member_new._id,
+                root_history: [gm_member_new._id],
+                original: '',
+                updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//${gm_member_old._id}:${gm_member_old.id}`, //GM ownership withdraw from
+                event: 'character',
+                action: 'ownership',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              },
+              {
+                root_id: gm_member_old._id,
+                root_history: [gm_member_old._id],
+                original: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//${gm_member_new._id}:${gm_member_new.id}`, ////GM ownership claimed by
+                updated: '',
+                event: 'character',
+                action: 'ownership',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              }
+            );
           }
         }
         if (!gm_character_old.hash_a || !gm_character_new.hash_a) {
-          //TODO Transfer ownership
+          //Transfer title
+          block.push(
+            {
+              root_id: guild_requested._id,
+              root_history: [guild_requested._id],
+              original: `${gm_member_old._id}:${gm_member_old.id}`, //GM title withdraw from
+              updated: `${gm_member_new._id}:${gm_member_old.id}`, //GM title claimed by
+              event: 'guild',
+              action: 'title',
+              t0: guild_original.last_modified || new Date(),
+              t1: guild_requested.last_modified || new Date(),
+            },
+            {
+              root_id: gm_member_new._id,
+              root_history: [gm_member_new._id],
+              original: '',
+              updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//${gm_member_old._id}:${gm_member_old.id}`, //GM title withdraw from
+              event: 'character',
+              action: 'title',
+              t0: guild_original.last_modified || new Date(),
+              t1: guild_requested.last_modified || new Date(),
+            },
+            {
+              root_id: gm_member_old._id,
+              root_history: [gm_member_old._id],
+              original: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//${gm_member_new._id}:${gm_member_new.id}`, ////GM title claimed by
+              updated: '',
+              event: 'character',
+              action: 'title',
+              t0: guild_original.last_modified || new Date(),
+              t1: guild_requested.last_modified || new Date(),
+            }
+          );
         }
+      } else {
+        //Transfer title
+        block.push(
+          {
+            root_id: guild_requested._id,
+            root_history: [guild_requested._id],
+            original: `${gm_member_old._id}:${gm_member_old.id}`, //GM title withdraw from
+            updated: `${gm_member_new._id}:${gm_member_old.id}`, //GM title claimed by
+            event: 'guild',
+            action: 'title',
+            t0: guild_original.last_modified || new Date(),
+            t1: guild_requested.last_modified || new Date(),
+          },
+          {
+            root_id: gm_member_new._id,
+            root_history: [gm_member_new._id],
+            original: '',
+            updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//${gm_member_old._id}:${gm_member_old.id}`, //GM title withdraw from
+            event: 'character',
+            action: 'title',
+            t0: guild_original.last_modified || new Date(),
+            t1: guild_requested.last_modified || new Date(),
+          },
+          {
+            root_id: gm_member_old._id,
+            root_history: [gm_member_old._id],
+            original: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//${gm_member_new._id}:${gm_member_new.id}`, ////GM title claimed by
+            updated: '',
+            event: 'character',
+            action: 'title',
+            t0: guild_original.last_modified || new Date(),
+            t1: guild_requested.last_modified || new Date(),
+          }
+        );
       }
     }
 
@@ -923,24 +1056,115 @@ const updateLogsRoster = async (guild_original: GuildProps, guild_requested: Gui
       const guild_member_old = guild_original.members.find(({ id }) => id === guild_member_new.id);
 
       if (guild_member_old) {
-        if (guild_member_new.rank > guild_member_old.rank) {
-          //TODO demote
-        }
-        if (guild_member_new.rank < guild_member_old.rank) {
-          //TODO promote
+        if (guild_member_old.rank !== 0 || guild_member_old.rank !== 0) {
+          if (guild_member_new.rank > guild_member_old.rank) {
+            //demote
+            block.push(
+              {
+                root_id: guild_requested._id,
+                root_history: [guild_requested._id],
+                original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
+                updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
+                event: 'guild',
+                action: 'demote',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              },
+              {
+                root_id: guild_member_new._id,
+                root_history: [guild_member_new._id],
+                original: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//Rank:${guild_member_old.rank}`,
+                updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//Rank:${guild_member_new.rank}`,
+                event: 'character',
+                action: 'demote',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              }
+            )
+          }
+          if (guild_member_new.rank < guild_member_old.rank) {
+            //promote
+            block.push(
+              {
+                root_id: guild_requested._id,
+                root_history: [guild_requested._id],
+                original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
+                updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
+                event: 'guild',
+                action: 'promote',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              },
+              {
+                root_id: guild_member_new._id,
+                root_history: [guild_member_new._id],
+                original: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//Rank:${guild_member_old.rank}`,
+                updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//Rank:${guild_member_new.rank}`,
+                event: 'character',
+                action: 'promote',
+                t0: guild_original.last_modified || new Date(),
+                t1: guild_requested.last_modified || new Date(),
+              }
+            )
+          }
         }
       }
     }))
 
     await Promise.all(joins.map(async guild_member => {
-      //TODO join
+      //join
+      block.push(
+        {
+          root_id: guild_requested._id,
+          root_history: [guild_requested._id],
+          original: ``,
+          updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
+          event: 'guild',
+          action: 'join',
+          t0: guild_original.last_modified || new Date(),
+          t1: guild_requested.last_modified || new Date(),
+        },
+        {
+          root_id: guild_member._id,
+          root_history: [guild_member._id],
+          original: ``,
+          updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//Rank:${guild_member.rank}`,
+          event: 'character',
+          action: 'join',
+          t0: guild_original.last_modified || new Date(),
+          t1: guild_requested.last_modified || new Date(),
+        }
+      )
     }))
 
     await Promise.all(leaves.map(async guild_member => {
       await CharacterModel.findByIdAndUpdate(guild_member._id, { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } })
-      //TODO left
+      //left
+      block.push(
+        {
+          root_id: guild_requested._id,
+          root_history: [guild_requested._id],
+          original: ``,
+          updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
+          event: 'guild',
+          action: 'left',
+          t0: guild_original.last_modified || new Date(),
+          t1: guild_requested.last_modified || new Date(),
+        },
+        {
+          root_id: guild_member._id,
+          root_history: [guild_member._id],
+          original: ``,
+          updated: `${guild_requested.name}@${guild_requested.realm_name}:${guild_requested.id}//Rank:${guild_member.rank}`,
+          event: 'character',
+          action: 'left',
+          t0: guild_original.last_modified || new Date(),
+          t1: guild_requested.last_modified || new Date(),
+        }
+      )
     }))
 
+    await LogModel.insertMany(block, { rawResult: false });
   } catch (e) {
     console.error(e)
   }

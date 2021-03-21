@@ -24,7 +24,7 @@ const indexRealms = async () => {
       await getRealmsWarcraftLogsID(247, 517)
     ])
 
-    if (realm_list && realm_list.status === 'fulfilled') {
+    if (realm_list && realm_list.status === 'fulfilled' && wcl_ids && wcl_ids.value) {
       if (!realm_list.value.realms || !Array.isArray(realm_list.value.realms)) return
         for (const { id, name, slug } of realm_list.value.realms) {
           await queueRealms.add(slug, {
@@ -36,7 +36,7 @@ const indexRealms = async () => {
             clientSecret: key.secret,
             accessToken: key.token,
             population: true,
-            wcl_ids: wcl_ids.value //FIXME value can be undefined
+            wcl_ids: wcl_ids.value
           });
         }
     }
@@ -47,4 +47,4 @@ const indexRealms = async () => {
   }
 }
 
-indexRealms();
+indexRealms().catch();

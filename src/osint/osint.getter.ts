@@ -451,13 +451,13 @@ const detectGuildDiff = async (guild_o: GuildProps, guild_u: GuildProps ) => {
 const detectCharacterDiff = async (character_o: CharacterProps, character_u: CharacterProps): Promise<void> => {
   try {
     const
-      detectiveFields: string[] = ['name', 'realm', 'race', 'gender', 'faction'],
+      detectiveFields: string[] = ['name', 'realm_name', 'race', 'gender', 'faction'],
       t0: Date = character_o.last_modified || character_o.updatedAt || new Date(),
       t1: Date = character_u.last_modified || character_u.updatedAt || new Date();
 
     await Promise.all(detectiveFields.map(async (check: string) => {
       if (check in character_o && check in character_u && character_o[check] !== character_u[check]) {
-        if (check === 'name' || check === 'realm') {
+        if (check === 'name' || check === 'realm_name') {
           await LogModel.updateMany(
             {
               root_id: character_o._id,
@@ -473,8 +473,8 @@ const detectCharacterDiff = async (character_o: CharacterProps, character_u: Cha
           root_history: [character_u._id],
           action: check,
           event: 'character',
-          original: character_o[check],
-          updated: character_u[check],
+          original: `${capitalize(check)}: ${capitalize(character_o[check])}`,
+          updated: `${capitalize(check)}: ${capitalize(character_u[check])}`,
           t0: t0,
           t1: t1,
         })
@@ -660,10 +660,9 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
       await detectCharacterDiff(character_original, character_requested)
     }
 
-    //TODO character inherit requested
+    Object.assign(character, character_requested);
 
-    //await character.save({ w: 1, j: true, wtimeout: 10000 });
-    return character;
+    return await character.save();
   } catch (e) {
     console.error(e)
   }
@@ -741,8 +740,8 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
     for (const member of members) {
       if ('character' in member && 'rank' in member) {
         iteration++
-        //TODO push to characterQueue
-        /*await queueCharacters.add(
+
+        await queueCharacters.add(
           toSlug(`${member.character.name}@${guild.realm}`),
           {
             id: member.character.id,
@@ -769,7 +768,7 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
           {
             jobId: toSlug(`${member.character.name}@${guild.realm}`)
           }
-        )*/
+        )
 
         roster.members.push({
           _id: toSlug(`${member.character.name}@${guild.realm}`),
@@ -786,7 +785,6 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI) => {
 }
 
 /**
- * TODO in-progress
  * get Guild
  */
 const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Promise <Partial<GuildProps> | void> => {
@@ -821,9 +819,6 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
         members: []
       };
 
-    /**
-     * BlizzAPI
-     */
     const api = new BlizzAPI({
       region: args.region,
       clientId: args.clientId,
@@ -886,7 +881,6 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
 /**
  * @param guild_original {GuildProps}
  * @param guild_requested {GuildProps}
- * TODO build block of logs for insertMany?
  */
 const updateLogsRoster = async (guild_original: GuildProps, guild_requested: GuildProps) => {
   try {

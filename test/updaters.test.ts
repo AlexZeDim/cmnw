@@ -2,9 +2,13 @@ import {
   updateCharacterMedia,
   updateCharacterMounts,
   updateCharacterPets,
-  updateCharacterProfessions, updateCharacterRaiderIO,
+  updateCharacterProfessions,
+  updateCharacterRaiderIO,
   updateCharacterSummary,
-  updateCharacterWarcraftLogs, updateCharacterWowProgress, updateGuildRoster, updateGuildSummary,
+  updateCharacterWarcraftLogs,
+  updateCharacterWowProgress,
+  updateGuildRoster,
+  updateGuildSummary,
 } from "../src/osint/osint.getter";
 import {connect, connection} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";

@@ -108,6 +108,17 @@ interface RealmProps extends ObjectProps {
   status?: string
 }
 
+interface LogProps {
+  root_id: string,
+  root_history: string[],
+  original: string,
+  updated: string,
+  event: string,
+  action: string,
+  t0: Date,
+  t1: Date
+}
+
 interface Locales {
   en_US: string,
   es_MX: string,
@@ -400,6 +411,7 @@ export {
   FixFloat,
   BuySell,
   AliasKey,
+  LogProps,
   ItemProps,
   PricingType,
   RecipeProps,

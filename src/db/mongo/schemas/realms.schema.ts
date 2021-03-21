@@ -8,6 +8,7 @@ import {toSlug} from "../refs";
     slug: 'text',
     name: 'text',
     name_locale: 'text',
+    slug_locale: 'text',
     ticker: 'text',
     region: 'text',
     locale: 'text'
@@ -17,6 +18,7 @@ import {toSlug} from "../refs";
     {
       'slug': 10,
       'name': 1,
+      'slug_locale': 1,
       'name_locale': 1,
       'ticker': 3,
       'region': 1,

@@ -122,8 +122,8 @@ const updateCharacterPets = async (name_slug: string, realm_slug: string, BlizzA
       if ('name' in pet) hash_b.push(pet.name);
       hash_b.push(pet.species.name, pet.level.toString());
     }))
-    if (hash_b.length) pets_collection.hash_a = crc32(hash_b.toString()).toString(16);
-    if (hash_a.length) pets_collection.hash_b = crc32(hash_a.toString()).toString(16);
+    if (hash_b.length) pets_collection.hash_b = crc32(hash_b.toString()).toString(16);
+    if (hash_a.length) pets_collection.hash_a = crc32(hash_a.toString()).toString(16);
     return pets_collection
   } catch (error) {
     console.error(`E,${updateCharacterPets.name},${name_slug}@${realm_slug}:${error}`)
@@ -604,6 +604,8 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
     if (args.character_class) character.character_class = args.character_class;
     if (args.last_modified) character.last_modified = args.last_modified;
     if (args.updated_by) character.updated_by = args.updated_by;
+    if (args.character_class) character.character_class = args.character_class;
+    if (args.active_spec) character.active_spec = args.active_spec;
 
     /**
      * BlizzAPI

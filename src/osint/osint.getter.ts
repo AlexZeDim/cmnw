@@ -454,7 +454,7 @@ const detectCharacterDiff = async (character_o: CharacterProps, character_u: Cha
       t0: Date = character_o.last_modified || character_o.updatedAt || new Date(),
       t1: Date = character_u.last_modified || character_u.updatedAt || new Date();
 
-    await Promise.all([detectiveFields.map(async check => {
+    await Promise.all(detectiveFields.map(async (check: string) => {
       if (check in character_o && check in character_u && character_o[check] !== character_u[check]) {
         if (check === 'name' || check === 'realm') {
           await LogModel.updateMany(
@@ -478,7 +478,7 @@ const detectCharacterDiff = async (character_o: CharacterProps, character_u: Cha
           t1: t1,
         })
       }
-    })])
+    }))
   } catch (e) {
     console.error(`E,${detectCharacterDiff.name}:${e}`)
   }
@@ -577,13 +577,13 @@ const getCharacter = async <T extends CharacterProps & BattleNetOptions>(args: T
        * Upload other fields from imported values
        * TODO and make sure that _id not inherit
        */
+      if (args.created_by) character.created_by = args.created_by;
     }
     /**
      * Inherit created_by & updated_by
      * in any case from args, if exists
      */
-    if (args.created_by) character.created_by = args.created_by;
-    if (args.updated_by) character.created_by = args.updated_by;
+    if (args.updated_by) character.updated_by = args.updated_by;
 
     /**
      * BlizzAPI
@@ -853,7 +853,10 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
         created_by: 'OSINT-getGuild',
         updated_by: 'OSINT-getGuild',
       })
+      if (args.created_by) guild.created_by = args.created_by;
     }
+
+    if (args.updated_by) guild.updated_by = args.updated_by;
 
     const summary = await updateGuildSummary(name_slug, guild.realm, api);
     Object.assign(guild_requested, summary);
@@ -861,6 +864,18 @@ const getGuild = async <T extends GuildProps & BattleNetOptions> (args: T): Prom
     const roster = await updateGuildRoster(guild_requested, api);
     if (roster.members.length > 0) Object.assign(guild_requested, roster);
 
+    if (guild.isNew) {
+      /** Check was guild renamed */
+      const guild_renamed = await GuildModel.findOne({ id: guild.id, realm: guild.realm}).lean();
+      if (guild_renamed) await detectGuildDiff(guild_renamed, guild_requested);
+    } else {
+      await updateLogsRoster(guild_original, guild_requested);
+      await detectGuildDiff(guild_original, guild_requested);
+    }
+
+    Object.assign(guild, guild_requested)
+
+    return await guild.save();
   } catch (e) {
     console.error(e)
   }
@@ -917,7 +932,6 @@ const updateLogsRoster = async (guild_original: GuildProps, guild_requested: Gui
       }
     }))
 
-
     await Promise.all(joins.map(async guild_member => {
       //TODO join
     }))
@@ -926,7 +940,6 @@ const updateLogsRoster = async (guild_original: GuildProps, guild_requested: Gui
       await CharacterModel.findByIdAndUpdate(guild_member._id, { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } })
       //TODO left
     }))
-
 
   } catch (e) {
     console.error(e)
@@ -1208,6 +1221,7 @@ export {
   getCharacter,
   getRealmsWarcraftLogsID,
   getRealm,
+  getGuild,
   updateCharacterSummary,
   updateCharacterMedia,
   updateCharacterMounts,

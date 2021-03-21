@@ -780,7 +780,7 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI): Promise<{mem
             faction: guild.faction,
             level: member.character.level ? member.character.level : undefined,
             last_modified: guild.last_modified,
-            updated_by: guild.updated_by,
+            updated_by: 'OSINT-roster',
             region: api.region,
             clientId: api.clientId,
             clientSecret: api.clientSecret,
@@ -790,7 +790,8 @@ const updateGuildRoster = async (guild: GuildProps, api: BlizzAPI): Promise<{mem
             createOnlyUnique: true
           },
           {
-            jobId: _id
+            jobId: _id,
+            priority: 3
           }
         )
 

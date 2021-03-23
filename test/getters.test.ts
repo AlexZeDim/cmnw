@@ -1,6 +1,6 @@
 import {
   getGuild,
-  getCharacter,
+  getCharacter, getRealm,
 } from "../src/osint/osint.getter";
 import {connect, connection} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
@@ -8,6 +8,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { DocumentType } from "@typegoose/typegoose";
 import { Key } from "../src/db/mongo/schemas/keys.schema";
+import {CharacterProps, GuildProps, RealmProps} from '../src/interface/constant';
+import {BattleNetOptions} from 'blizzapi';
 
 dotenv.config({path: path.join(__dirname, '..', '.env')});
 
@@ -41,7 +43,7 @@ describe('getters', () => {
   test('getGuild', async () => {
     if (!key) return
 
-    const guild_params = {
+    const guild_params: GuildProps & BattleNetOptions = {
       _id: 'депортация@gordunni',
       name: 'Депортация',
       realm: 'gordunni',
@@ -75,7 +77,7 @@ describe('getters', () => {
   test('getCharacter: инициатива@gordunni', async () => {
     if (!key) return
 
-    const character_params = {
+    const character_params: CharacterProps & BattleNetOptions = {
       _id: 'инициатива@gordunni',
       name: 'Инициатива',
       realm: 'gordunni',
@@ -143,7 +145,7 @@ describe('getters', () => {
   test('getCharacter: саске@gordunni', async () => {
     if (!key) return
 
-    const character_params = {
+    const character_params: CharacterProps & BattleNetOptions = {
       _id: 'саске@gordunni',
       name: 'Саске',
       realm: 'gordunni',
@@ -220,4 +222,24 @@ describe('getters', () => {
       ]),
     })
   }, 30000)
+
+  test('getCharacter: саске@gordunni', async () => {
+    if (!key) return
+
+    const realm_params: RealmProps & BattleNetOptions & { population: boolean, wcl_ids: Map<any, any> } = {
+      _id: 1602,
+      slug: 'gordunni',
+      region: 'eu',
+      population: false,
+      wcl_ids: new Map([
+        [488, 'Gordunni']
+      ]),
+      clientId: key._id,
+      clientSecret: key.secret,
+      accessToken: key.token
+    }
+
+    const realm = await getRealm(realm_params);
+    console.log(realm);
+  })
 })

@@ -9,12 +9,15 @@ import {
   updateCharacterWowProgress,
   updateGuildRoster,
   updateGuildSummary,
+  updateRealmPopulation,
 } from "../src/osint/osint.getter";
 import {connect, connection} from 'mongoose';
 import {KeysModel} from "../src/db/mongo/mongo.model";
 import BlizzAPI from 'blizzapi';
 import dotenv from 'dotenv';
 import path from 'path';
+import {RealmProps} from '../src/interface/constant';
+
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 beforeAll(async () => {
@@ -197,6 +200,48 @@ describe('updaters', () => {
           rank: expect.any(Number),
         })
       ])
+    })
+  }, 30000)
+
+  test('updateRealmPopulation', async () => {
+    const params: RealmProps = {
+      _id: 1602,
+      slug: 'gordunni'
+    };
+
+    const population = await updateRealmPopulation(params);
+    expect(population).toMatchObject({
+      characters_total: expect.arrayContaining([expect.any(Number)]),
+      characters_active: expect.arrayContaining([expect.any(Number)]),
+      characters_active_alliance: expect.arrayContaining([expect.any(Number)]),
+      characters_active_horde: expect.arrayContaining([expect.any(Number)]),
+      characters_active_max_level: expect.arrayContaining([expect.any(Number)]),
+      characters_guild_members: expect.arrayContaining([expect.any(Number)]),
+      characters_guildless: expect.arrayContaining([expect.any(Number)]),
+      players_unique: expect.arrayContaining([expect.any(Number)]),
+      players_active_unique: expect.arrayContaining([expect.any(Number)]),
+      guilds_total: expect.arrayContaining([expect.any(Number)]),
+      guilds_alliance: expect.arrayContaining([expect.any(Number)]),
+      guilds_horde: expect.arrayContaining([expect.any(Number)]),
+      characters_classes: expect.arrayContaining([
+        expect.objectContaining({
+          _id: expect.any(String),
+          value: expect.arrayContaining([expect.any(Number)])
+        })
+      ]),
+      characters_professions: expect.arrayContaining([
+        expect.objectContaining({
+          _id: expect.any(String),
+          value: expect.arrayContaining([expect.any(Number)])
+        })
+      ]),
+      characters_covenants: expect.arrayContaining([
+        expect.objectContaining({
+          _id: expect.any(String),
+          value: expect.arrayContaining([expect.any(Number)])
+        })
+      ]),
+      timestamps: expect.arrayContaining([expect.any(Number)]),
     })
   })
 })

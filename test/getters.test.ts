@@ -223,7 +223,7 @@ describe('getters', () => {
     })
   }, 30000)
 
-  test('getCharacter: саске@gordunni', async () => {
+  test('getRealm', async () => {
     if (!key) return
 
     const realm_params: RealmProps & BattleNetOptions & { population: boolean, wcl_ids: Map<any, any> } = {
@@ -240,6 +240,26 @@ describe('getters', () => {
     }
 
     const realm = await getRealm(realm_params);
-    console.log(realm);
+    expect(realm).toMatchObject({
+      connected_realm: expect.any(Array),
+      auctions: expect.any(Number),
+      valuations: expect.any(Number),
+      golds: expect.any(Number),
+      _id: expect.any(Number),
+      region: expect.any(String),
+      name: expect.any(String),
+      ticker: expect.any(String),
+      category: expect.any(String),
+      locale: expect.any(String),
+      timezone: expect.any(String),
+      type: expect.any(String),
+      slug: expect.any(String),
+      name_locale: expect.any(String),
+      slug_locale: expect.any(String),
+      connected_realm_id: expect.any(Number),
+      status: expect.any(String),
+      population_status: expect.any(String),
+      wcl_id: expect.any(Number),
+    });
   })
 })

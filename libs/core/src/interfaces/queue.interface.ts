@@ -1,6 +1,6 @@
-import { JobsOptions } from 'bullmq';
+import { QueueOptions } from 'bullmq';
 
 export interface QueueInterface {
   readonly name: string,
-  readonly options: JobsOptions
+  readonly options: QueueOptions
 }

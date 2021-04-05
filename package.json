@@ -83,7 +83,9 @@
     ],
     "moduleNameMapper": {
       "@app/configuration/(.*)": "<rootDir>/libs/configuration/src/$1",
-      "@app/configuration": "<rootDir>/libs/configuration/src"
+      "@app/configuration": "<rootDir>/libs/configuration/src",
+      "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
+      "@app/core": "<rootDir>/libs/core/src"
     }
   }
 }

@@ -1,0 +1,39 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/conglomerat/src",
+  "monorepo": true,
+  "root": "apps/conglomerat",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+  },
+  "projects": {
+    "conglomerat": {
+      "type": "application",
+      "root": "apps/conglomerat",
+      "entryFile": "main",
+      "sourceRoot": "apps/conglomerat/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+      }
+    },
+    "osint": {
+      "type": "application",
+      "root": "apps/osint",
+      "entryFile": "main",
+      "sourceRoot": "apps/osint/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/osint/tsconfig.app.json"
+      }
+    },
+    "configuration": {
+      "type": "library",
+      "root": "libs/configuration",
+      "entryFile": "index",
+      "sourceRoot": "libs/configuration/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/configuration/tsconfig.lib.json"
+      }
+    }
+  }
+}

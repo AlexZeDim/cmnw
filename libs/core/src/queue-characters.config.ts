@@ -7,5 +7,8 @@ const queueOptions: JobsOptions = {
 };
 
 export const queueCharacters: QueueInterface = {
-  name: 'OSINT:Characters', options: queueOptions
+  name: 'OSINT:Characters',
+  options: {
+    defaultJobOptions: queueOptions
+  }
 }

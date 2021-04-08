@@ -85,7 +85,9 @@
       "@app/configuration/(.*)": "<rootDir>/libs/configuration/src/$1",
       "@app/configuration": "<rootDir>/libs/configuration/src",
       "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
-      "@app/core": "<rootDir>/libs/core/src"
+      "@app/core": "<rootDir>/libs/core/src",
+      "@app/character-queue-osint/(.*)": "<rootDir>/libs/character-queue-osint/src/$1",
+      "@app/character-queue-osint": "<rootDir>/libs/character-queue-osint/src"
     }
   }
 }

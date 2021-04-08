@@ -23,6 +23,12 @@
       ],
       "@app/core/*": [
         "libs/core/src/*"
+      ],
+      "@app/character-queue-osint": [
+        "libs/character-queue-osint/src"
+      ],
+      "@app/character-queue-osint/*": [
+        "libs/character-queue-osint/src/*"
       ]
     }
   }

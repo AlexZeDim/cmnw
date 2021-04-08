@@ -43,6 +43,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/core/tsconfig.lib.json"
       }
+    },
+    "character-queue-osint": {
+      "type": "library",
+      "root": "libs/character-queue-osint",
+      "entryFile": "index",
+      "sourceRoot": "libs/character-queue-osint/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/character-queue-osint/tsconfig.lib.json"
+      }
     }
   }
 }

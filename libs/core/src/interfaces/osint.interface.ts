@@ -125,7 +125,7 @@ export interface CharactersPopulationRealm {
   value: number[]
 }
 
-interface PopulationRealmProps {
+export interface PopulationRealmProps {
   characters_total: number[],
   characters_active: number[],
   characters_active_alliance: number[],

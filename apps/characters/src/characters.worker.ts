@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { MediaInterface, MountsInterface, PetsInterface, queueCharacters } from '@app/core';
+import { MediaInterface, MountsInterface, PetsInterface, ProfessionsInterface, queueCharacters } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -38,7 +38,7 @@ export class CharactersWorker {
 
       const [name_slug, realm_slug] = args._id.split('@');
 
-      await this.pets(name_slug, realm_slug, this.BNet)
+      await this.professions(name_slug, realm_slug, this.BNet)
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }
@@ -121,6 +121,83 @@ export class CharactersWorker {
     } catch (error) {
       this.logger.error(`pets: ${name_slug}@${realm_slug}:${error}`)
       return pets_collection
+    }
+  }
+
+  private async professions(name_slug: string, realm_slug: string, BNet: BlizzAPI): Promise<Partial<ProfessionsInterface>> {
+    const professions: Partial<ProfessionsInterface> = {};
+    try {
+      const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/professions`, {
+        params: { locale: 'en_GB' },
+        headers: { 'Battlenet-Namespace': 'profile-eu' }
+      })
+      if (!response) return professions
+      professions.professions = [];
+      if ('primaries' in response) {
+        const { primaries } = response
+        if (Array.isArray(primaries) && primaries.length) {
+          await Promise.all(primaries.map(async primary => {
+            if (primary.profession && primary.profession.name && primary.profession.id) {
+              const skill_tier: Partial<{ name: string, id: number, tier: string, specialization: string }> = {
+                name: primary.profession.name,
+                id: primary.profession.id,
+                tier: 'Primary',
+              }
+              if (primary.specialization && primary.specialization.name) skill_tier.specialization = primary.specialization.name
+              professions.professions.push(skill_tier)
+            }
+            if ('tiers' in primary && Array.isArray(primary.tiers) && primary.tiers.length) {
+              await Promise.all(primary.tiers.map(async (tier: { tier: { id: number; name: string; }; skill_points: number; max_skill_points: number; }) => {
+                if ('tier' in tier) {
+                  professions.professions.push({
+                    id: tier.tier.id,
+                    name: tier.tier.name,
+                    skill_points: tier.skill_points,
+                    max_skill_points: tier.max_skill_points,
+                    tier: 'Primary Tier'
+                  })
+                }
+              }))
+            }
+          }))
+        }
+      }
+
+      if ('secondaries' in response) {
+        const { secondaries } = response
+        if (Array.isArray(secondaries) && secondaries.length) {
+          await Promise.all(
+            secondaries.map(async secondary => {
+              if (secondary.profession && secondary.profession.name && secondary.profession.id) {
+                professions.professions.push({
+                  name: secondary.profession.name,
+                  id: secondary.profession.id,
+                  tier: 'Secondary'
+                })
+              }
+              if ('tiers' in secondary && Array.isArray(secondary.tiers) && secondary.tiers.length) {
+                await Promise.all(
+                  secondary.tiers.map((tier: { tier: { id: number; name: string; }; skill_points: number; max_skill_points: number; }) => {
+                    if ('tier' in tier) {
+                      professions.professions.push({
+                        id: tier.tier.id,
+                        name: tier.tier.name,
+                        skill_points: tier.skill_points,
+                        max_skill_points: tier.max_skill_points,
+                        tier: 'Secondary Tier'
+                      })
+                    }
+                  })
+                )
+              }
+            })
+          )
+        }
+      }
+      return professions
+    } catch (error) {
+      this.logger.error(`professions: ${name_slug}@${realm_slug}:${error}`)
+      return professions
     }
   }
 }

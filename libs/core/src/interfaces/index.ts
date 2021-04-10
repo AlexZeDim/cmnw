@@ -13,4 +13,6 @@ export {
   PopulationIdValueInterface,
   PetsInterface,
   IdNameInterface,
+  ProfessionInterface,
+  ProfessionsInterface
 } from './osint.interface';

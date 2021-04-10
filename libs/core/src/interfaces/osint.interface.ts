@@ -182,3 +182,15 @@ export interface PetsInterface {
   hash_b: string,
   hash_a: string
 }
+
+export interface ProfessionInterface {
+  name: string,
+  id: number,
+  tier: string,
+  skill_points: number,
+  max_skill_points: number,
+}
+
+export interface ProfessionsInterface {
+  professions: Partial<ProfessionInterface>[]
+}

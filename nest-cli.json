@@ -52,6 +52,60 @@
       "compilerOptions": {
         "tsConfigPath": "libs/character-queue-osint/tsconfig.lib.json"
       }
+    },
+    "realm-queue-osint": {
+      "type": "library",
+      "root": "libs/realm-queue-osint",
+      "entryFile": "index",
+      "sourceRoot": "libs/realm-queue-osint/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/realm-queue-osint/tsconfig.lib.json"
+      }
+    },
+    "item-queue": {
+      "type": "library",
+      "root": "libs/item-queue",
+      "entryFile": "index",
+      "sourceRoot": "libs/item-queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/item-queue/tsconfig.lib.json"
+      }
+    },
+    "osint-realms-worker": {
+      "type": "application",
+      "root": "apps/osint-realms-worker",
+      "entryFile": "main",
+      "sourceRoot": "apps/osint-realms-worker/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/osint-realms-worker/tsconfig.app.json"
+      }
+    },
+    "realms": {
+      "type": "application",
+      "root": "apps/realms",
+      "entryFile": "main",
+      "sourceRoot": "apps/realms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/realms/tsconfig.app.json"
+      }
+    },
+    "mongo": {
+      "type": "library",
+      "root": "libs/mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/mongo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mongo/tsconfig.lib.json"
+      }
+    },
+    "keys": {
+      "type": "application",
+      "root": "apps/keys",
+      "entryFile": "main",
+      "sourceRoot": "apps/keys/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/keys/tsconfig.app.json"
+      }
     }
   }
 }

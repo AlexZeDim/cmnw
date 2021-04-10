@@ -29,6 +29,24 @@
       ],
       "@app/character-queue-osint/*": [
         "libs/character-queue-osint/src/*"
+      ],
+      "@app/realm-queue-osint": [
+        "libs/realm-queue-osint/src"
+      ],
+      "@app/realm-queue-osint/*": [
+        "libs/realm-queue-osint/src/*"
+      ],
+      "dma/item-queue": [
+        "libs/item-queue/src"
+      ],
+      "dma/item-queue/*": [
+        "libs/item-queue/src/*"
+      ],
+      "@app/mongo": [
+        "libs/mongo/src"
+      ],
+      "@app/mongo/*": [
+        "libs/mongo/src/*"
       ]
     }
   }

@@ -1,9 +1,8 @@
 import { Document } from "mongoose";
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export type KeyDocument = Key & Document;
-
-export class Key {
+@Schema()
+export class Key extends Document {
   @Prop()
   _id: string;
 

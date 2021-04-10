@@ -130,7 +130,7 @@ export class RealmsWorker {
       }
 
       if (!realm.isNew && args.population) {
-        // TODO probably place in somewhere else
+        // TODO probably place in OTHER DB
         realm.population = await this.population(realm.toObject());
         realm.markModified('population')
         await job.updateProgress(90);
@@ -144,7 +144,7 @@ export class RealmsWorker {
     }
   }
 
-  async population (args: LeanDocument<Realm>): Promise<PopulationRealmInterface> {
+  private async population (args: LeanDocument<Realm>): Promise<PopulationRealmInterface> {
     const population: PopulationRealmInterface = {
       characters_total: [],
       characters_active: [],

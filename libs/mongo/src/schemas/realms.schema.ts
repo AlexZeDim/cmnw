@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type RealmDocument = Realm & Document;
-
+@Schema()
 class CharactersPopulation {
   @Prop()
   _id: string;
@@ -11,6 +10,7 @@ class CharactersPopulation {
   value: number[];
 }
 
+@Schema()
 class RealmPopulation {
   @Prop()
   characters_total: number[]
@@ -45,13 +45,13 @@ class RealmPopulation {
   @Prop()
   guilds_horde: number[]
 
-  @Prop({ ref: CharactersPopulation })
+  @Prop({ ref: () => CharactersPopulation })
   characters_classes: CharactersPopulation[]
 
-  @Prop({ ref: CharactersPopulation })
+  @Prop({ ref: () => CharactersPopulation })
   characters_professions: CharactersPopulation[]
 
-  @Prop({ ref: CharactersPopulation })
+  @Prop({ ref: () => CharactersPopulation })
   characters_covenants: CharactersPopulation[]
 
   @Prop()
@@ -59,7 +59,7 @@ class RealmPopulation {
 }
 
 @Schema()
-export class Realm {
+export class Realm extends Document {
   @Prop()
   _id: number;
 
@@ -120,7 +120,7 @@ export class Realm {
   @Prop({ default: 0 })
   golds: number;
 
-  @Prop({ ref: RealmPopulation, _id: false })
+  @Prop({ _id: false }) //FIXME
   population: RealmPopulation;
 }
 

@@ -70,6 +70,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/discord/tsconfig.app.json"
       }
+    },
+    "characters": {
+      "type": "application",
+      "root": "apps/characters",
+      "entryFile": "main",
+      "sourceRoot": "apps/characters/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/characters/tsconfig.app.json"
+      }
     }
   }
 }

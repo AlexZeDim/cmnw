@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 /**
  *  TODO description
@@ -9,19 +9,20 @@ import { Prop, SchemaFactory } from '@nestjs/mongoose';
  *  spellID - spell_id
  */
 
-export class SpellEffect {
+@Schema()
+export class SpellEffect extends Document {
   @Prop({ required: true })
   _idProp: number;
-  
+
   @Prop({ required: true })
   effectProp: number;
-  
+
   @Prop({ required: true, index: true })
   item_idProp: number;
-  
+
   @Prop({ required: true })
   item_quantityProp: number;
-  
+
   @Prop({ required: true, index: true })
   spell_idProp: number;
 }

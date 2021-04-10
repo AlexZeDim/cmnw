@@ -1,21 +1,24 @@
 import { Document } from "mongoose";
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { AliasKey } from '@app/core';
 
+@Schema()
 class Alias {
-  @Prop() //AliasKey
+  @Prop()
   key: AliasKey;
 
   @Prop()
   value: string;
 }
 
-export class Account {
+@Schema()
+export class Account extends Document {
   @Prop({ required: true, default: 'Anonymous' })
   cryptonym: string;
 
   @Prop({ type: String })
   tags: string[];
-  
+
   @Prop({ _id: false })
   alias: Alias[]
 }

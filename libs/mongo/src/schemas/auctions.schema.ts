@@ -1,8 +1,8 @@
 import { Document } from "mongoose";
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-
-export class Auction {
+@Schema()
+export class Auction extends Document {
   @Prop({ required: true })
   id: number;
 
@@ -17,19 +17,19 @@ export class Auction {
 
   @Prop({ required: true })
   last_modified: number;
-  
+
   @Prop()
   quantity: number;
-  
+
   @Prop()
   bid: number;
-  
+
   @Prop()
   buyout: number;
-  
+
   @Prop()
   price: number;
-  
+
   @Prop()
   time_left: string;
 }

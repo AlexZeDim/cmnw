@@ -1,25 +1,26 @@
 import { Document } from "mongoose";
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export class Gold {
+@Schema()
+export class Gold extends Document {
   @Prop({ required: true })
   connected_realm_id: number;
-  
+
   @Prop({ required: true })
   faction: string;
-  
+
   @Prop()
   owner: string;
-  
+
   @Prop()
   status: string;
-  
+
   @Prop({ required: true })
   quantity: number;
-  
+
   @Prop({ required: true })
   price: number;
-  
+
   @Prop({ required: true })
   last_modified: number;
 }

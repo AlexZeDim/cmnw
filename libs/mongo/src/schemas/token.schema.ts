@@ -1,16 +1,17 @@
 import { Document } from "mongoose";
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export class Token {
+@Schema()
+export class Token extends Document {
   @Prop({ required: true })
   _id: number;
-  
+
   @Prop({ required: true })
   region: string;
-  
+
   @Prop({ required: true })
   price: number;
-  
+
   @Prop({ required: true })
   last_modified: number;
 }

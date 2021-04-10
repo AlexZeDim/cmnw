@@ -122,7 +122,7 @@ export interface Locales {
   zh_CN: string
 }
 
-export interface CharactersPopulationRealm {
+export interface PopulationIdValueInterface {
   _id: string,
   value: number[]
 }
@@ -140,9 +140,9 @@ export interface PopulationRealmInterface {
   guilds_total: number[],
   guilds_alliance: number[],
   guilds_horde: number[],
-  characters_classes: CharactersPopulationRealm[],
-  characters_professions: CharactersPopulationRealm[],
-  characters_covenants: CharactersPopulationRealm[],
+  characters_classes: PopulationIdValueInterface[],
+  characters_professions: PopulationIdValueInterface[],
+  characters_covenants: PopulationIdValueInterface[],
   timestamps: number[]
 }
 
@@ -158,4 +158,27 @@ export interface ConnectedRealmInterface {
   realms: [{
     slug: string
   }]
+}
+
+export interface MediaInterface {
+  id: number,
+  avatar: string,
+  inset: string,
+  main: string,
+  'main-raw': string
+}
+
+export interface IdNameInterface {
+  _id: number,
+  name: string
+}
+
+export interface MountsInterface {
+  mounts: IdNameInterface[]
+}
+
+export interface PetsInterface {
+  pets: IdNameInterface[],
+  hash_b: string,
+  hash_a: string
 }

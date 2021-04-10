@@ -5,6 +5,7 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2017",
     "sourceMap": true,
@@ -23,24 +24,6 @@
       ],
       "@app/core/*": [
         "libs/core/src/*"
-      ],
-      "@app/character-queue-osint": [
-        "libs/character-queue-osint/src"
-      ],
-      "@app/character-queue-osint/*": [
-        "libs/character-queue-osint/src/*"
-      ],
-      "@app/realm-queue-osint": [
-        "libs/realm-queue-osint/src"
-      ],
-      "@app/realm-queue-osint/*": [
-        "libs/realm-queue-osint/src/*"
-      ],
-      "dma/item-queue": [
-        "libs/item-queue/src"
-      ],
-      "dma/item-queue/*": [
-        "libs/item-queue/src/*"
       ],
       "@app/mongo": [
         "libs/mongo/src"

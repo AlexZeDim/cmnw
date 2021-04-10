@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
-import { AppService } from './app.service';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { CharacterQueueOsintService } from '@app/character-queue-osint';
-import { CharacterQueueOsintModule } from '@app/character-queue-osint';
+
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -13,13 +12,12 @@ import { CharacterQueueOsintModule } from '@app/character-queue-osint';
       options: {
         connection: {
           host: redisConfig.host,
-          port: redisConfig.port
+          port: redisConfig.port,
         },
       },
-    }),
-    CharacterQueueOsintModule
+    })
   ],
   controllers: [],
-  providers: [AppService, CharacterQueueOsintService],
+  providers: [AppService],
 })
 export class AppModule {}

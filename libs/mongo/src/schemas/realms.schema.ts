@@ -13,49 +13,49 @@ class CharactersPopulation {
 @Schema()
 class RealmPopulation {
   @Prop()
-  characters_total: number[]
+  characters_total: number[];
 
   @Prop()
-  characters_active: number[]
+  characters_active: number[];
 
   @Prop()
-  characters_active_alliance: number[]
+  characters_active_alliance: number[];
 
   @Prop()
-  characters_active_horde: number[]
+  characters_active_horde: number[];
 
   @Prop()
-  characters_guild_members: number[]
+  characters_guild_members: number[];
 
   @Prop()
-  characters_guildless: number[]
+  characters_guildless: number[];
 
   @Prop()
-  players_unique: number[]
+  players_unique: number[];
 
   @Prop()
-  players_active_unique: number[]
+  players_active_unique: number[];
 
   @Prop()
-  guilds_total: number[]
+  guilds_total: number[];
 
   @Prop()
-  guilds_alliance: number[]
+  guilds_alliance: number[];
 
   @Prop()
-  guilds_horde: number[]
+  guilds_horde: number[];
 
   @Prop({ ref: () => CharactersPopulation })
-  characters_classes: CharactersPopulation[]
+  characters_classes: CharactersPopulation[];
 
   @Prop({ ref: () => CharactersPopulation })
-  characters_professions: CharactersPopulation[]
+  characters_professions: CharactersPopulation[];
 
   @Prop({ ref: () => CharactersPopulation })
-  characters_covenants: CharactersPopulation[]
+  characters_covenants: CharactersPopulation[];
 
   @Prop()
-  timestamps: number[]
+  timestamps: number[];
 }
 
 @Schema()
@@ -82,6 +82,9 @@ export class Realm extends Document {
   ticker: string;
 
   @Prop()
+  status: string;
+
+  @Prop()
   category: string;
 
   @Prop()
@@ -100,13 +103,15 @@ export class Realm extends Document {
   connected_realm_id: [string];
 
   @Prop()
-  connected_realm: [string];
+  connected_realms: [string];
+
   /**
    * Kihra's WarcraftLogs realm ids
    * for parsing logs via fromLogs
    */
   @Prop()
-  wcl_id: string;
+  wcl_id: number;
+
   /**
    * String lastModified timestamp for auctions, gold and valuations
    * Required for valuations, getAuctionData, getGold
@@ -120,12 +125,12 @@ export class Realm extends Document {
   @Prop({ default: 0 })
   golds: number;
 
-  @Prop({ _id: false }) //FIXME
+  @Prop({ _id: false }) // FIXME
   population: RealmPopulation;
 }
 
-export const RealmSchema = SchemaFactory.createForClass(Realm);
-RealmSchema.index(
+export const RealmsSchema = SchemaFactory.createForClass(Realm);
+RealmsSchema.index(
   {
     slug: 'text',
     name: 'text',
@@ -133,20 +138,20 @@ RealmSchema.index(
     slug_locale: 'text',
     ticker: 'text',
     region: 'text',
-    locale: 'text'
+    locale: 'text',
   },
   {
     weights:
       {
-        'slug': 10,
-        'name': 1,
-        'slug_locale': 1,
-        'name_locale': 1,
-        'ticker': 3,
-        'region': 1,
-        'locale': 1
+        slug: 10,
+        name: 1,
+        slug_locale: 1,
+        name_locale: 1,
+        ticker: 3,
+        region: 1,
+        locale: 1,
       },
-    name: 'SQ'
-  }
-)
-RealmSchema.index({ connected_realm_id: 1 }, { name: 'CR' })
+    name: 'SQ',
+  },
+);
+RealmsSchema.index({ connected_realm_id: 1 }, { name: 'CR' });

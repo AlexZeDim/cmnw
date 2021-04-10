@@ -27,12 +27,17 @@
     "@nestjs/mongoose": "^7.2.4",
     "@nestjs/platform-express": "^7.6.15",
     "@nestjs/schedule": "^0.4.3",
+    "@types/cheerio": "^0.22.28",
+    "blizzapi": "^1.3.3",
     "bullmq": "^1.15.1",
+    "cheerio": "^1.0.0-rc.6",
     "config": "^3.3.6",
+    "discord.js": "^12.5.3",
     "mongoose": "^5.12.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.6.6"
+    "rxjs": "^6.6.6",
+    "x-ray": "^2.3.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.6.0",
@@ -88,12 +93,6 @@
       "@app/configuration": "<rootDir>/libs/configuration/src",
       "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
       "@app/core": "<rootDir>/libs/core/src",
-      "@app/character-queue-osint/(.*)": "<rootDir>/libs/character-queue-osint/src/$1",
-      "@app/character-queue-osint": "<rootDir>/libs/character-queue-osint/src",
-      "@app/realm-queue-osint/(.*)": "<rootDir>/libs/realm-queue-osint/src/$1",
-      "@app/realm-queue-osint": "<rootDir>/libs/realm-queue-osint/src",
-      "dma/item-queue/(.*)": "<rootDir>/libs/item-queue/src/$1",
-      "dma/item-queue": "<rootDir>/libs/item-queue/src",
       "@app/mongo/(.*)": "<rootDir>/libs/mongo/src/$1",
       "@app/mongo": "<rootDir>/libs/mongo/src"
     }

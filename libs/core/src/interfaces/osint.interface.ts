@@ -1,5 +1,4 @@
-
-export interface CharacterProps {
+export interface CharacterInterface {
   _id: string,
   name: string,
   realm: string,
@@ -33,13 +32,13 @@ export interface CharacterProps {
   iteration?: number,
 }
 
-export interface GuildMemberProps {
+export interface GuildMemberInterface {
   _id: string,
   id: number,
   rank: number
 }
 
-export interface GuildRosterProps {
+export interface GuildRosterInterface {
   members: {
     rank: number,
     character: {
@@ -53,7 +52,7 @@ export interface GuildRosterProps {
   }[]
 }
 
-export interface GuildProps {
+export interface GuildInterface {
   _id: string,
   name: string,
   realm: string,
@@ -61,7 +60,7 @@ export interface GuildProps {
   realm_name?: string,
   id?: number,
   faction?: string,
-  members: GuildMemberProps[],
+  members: GuildMemberInterface[],
   achievement_points?: number,
   member_count?: number,
   last_modified?: Date,
@@ -76,7 +75,7 @@ export interface GuildProps {
   createdAt?: Date,
 }
 
-export interface RealmProps {
+export interface RealmInterface {
   _id: number,
   slug: string,
   name?: string,
@@ -91,10 +90,13 @@ export interface RealmProps {
   wcl_id?: number,
   connected_realm_id?: number,
   population_status?: string,
-  status?: string
+  population?: boolean,
+  status?: string,
+  connected_realms?: string[],
+  wcl_ids?: { name: string, id: number }[]
 }
 
-export interface LogProps {
+export interface LogInterface {
   root_id: string,
   root_history: string[],
   original: string,
@@ -125,7 +127,7 @@ export interface CharactersPopulationRealm {
   value: number[]
 }
 
-export interface PopulationRealmProps {
+export interface PopulationRealmInterface {
   characters_total: number[],
   characters_active: number[],
   characters_active_alliance: number[],
@@ -142,4 +144,18 @@ export interface PopulationRealmProps {
   characters_professions: CharactersPopulationRealm[],
   characters_covenants: CharactersPopulationRealm[],
   timestamps: number[]
+}
+
+export interface ConnectedRealmInterface {
+  id: string,
+  has_queue: boolean,
+  status: {
+    name: string
+  },
+  population: {
+    name: string
+  },
+  realms: [{
+    slug: string
+  }]
 }

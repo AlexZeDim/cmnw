@@ -33,6 +33,7 @@
     "cheerio": "^1.0.0-rc.6",
     "config": "^3.3.6",
     "discord.js": "^12.5.3",
+    "farmhash": "^3.2.1",
     "mongoose": "^5.12.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

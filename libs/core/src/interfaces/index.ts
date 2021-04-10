@@ -1,4 +1,16 @@
 export { QueueInterface } from './queue.interface';
 export {
-  ConnectedRealmInterface, CharacterInterface, CharactersPopulationRealm, RealmInterface, GuildInterface, LogInterface, GuildMemberInterface, Locales, GuildRosterInterface, PopulationRealmInterface,
+  MountsInterface,
+  MediaInterface,
+  ConnectedRealmInterface,
+  CharacterInterface,
+  RealmInterface,
+  GuildInterface,
+  LogInterface,
+  GuildMemberInterface,
+  Locales, GuildRosterInterface,
+  PopulationRealmInterface,
+  PopulationIdValueInterface,
+  PetsInterface,
+  IdNameInterface,
 } from './osint.interface';

@@ -17,15 +17,6 @@
         "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
       }
     },
-    "osint": {
-      "type": "application",
-      "root": "apps/osint",
-      "entryFile": "main",
-      "sourceRoot": "apps/osint/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/osint/tsconfig.app.json"
-      }
-    },
     "configuration": {
       "type": "library",
       "root": "libs/configuration",
@@ -42,42 +33,6 @@
       "sourceRoot": "libs/core/src",
       "compilerOptions": {
         "tsConfigPath": "libs/core/tsconfig.lib.json"
-      }
-    },
-    "character-queue-osint": {
-      "type": "library",
-      "root": "libs/character-queue-osint",
-      "entryFile": "index",
-      "sourceRoot": "libs/character-queue-osint/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/character-queue-osint/tsconfig.lib.json"
-      }
-    },
-    "realm-queue-osint": {
-      "type": "library",
-      "root": "libs/realm-queue-osint",
-      "entryFile": "index",
-      "sourceRoot": "libs/realm-queue-osint/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/realm-queue-osint/tsconfig.lib.json"
-      }
-    },
-    "item-queue": {
-      "type": "library",
-      "root": "libs/item-queue",
-      "entryFile": "index",
-      "sourceRoot": "libs/item-queue/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/item-queue/tsconfig.lib.json"
-      }
-    },
-    "osint-realms-worker": {
-      "type": "application",
-      "root": "apps/osint-realms-worker",
-      "entryFile": "main",
-      "sourceRoot": "apps/osint-realms-worker/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/osint-realms-worker/tsconfig.app.json"
       }
     },
     "realms": {
@@ -105,6 +60,15 @@
       "sourceRoot": "apps/keys/src",
       "compilerOptions": {
         "tsConfigPath": "apps/keys/tsconfig.app.json"
+      }
+    },
+    "discord": {
+      "type": "application",
+      "root": "apps/discord",
+      "entryFile": "main",
+      "sourceRoot": "apps/discord/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/discord/tsconfig.app.json"
       }
     }
   }

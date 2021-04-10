@@ -1,4 +1,4 @@
-import { JobsOptions } from "bullmq";
+import { JobsOptions } from 'bullmq';
 import { QueueInterface } from '@app/core/interfaces';
 
 const queueOptions: JobsOptions = {
@@ -9,6 +9,6 @@ const queueOptions: JobsOptions = {
 export const queueCharacters: QueueInterface = {
   name: 'OSINT:Characters',
   options: {
-    defaultJobOptions: queueOptions
-  }
-}
+    defaultJobOptions: queueOptions,
+  },
+};

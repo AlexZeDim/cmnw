@@ -1,7 +1,10 @@
 # compiled output
 /dist
 /node_modules
+
+# Config
 /config
+/config/keys.json
 
 # Logs
 logs

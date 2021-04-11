@@ -1,36 +1,37 @@
-import { Document } from "mongoose";
+import { Document, Mixed } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class Auction extends Document {
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   id: number;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   item_id: number;
 
   @Prop()
-  item: any; //TODO
+  item: Mixed;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   connected_realm_id: number;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   last_modified: number;
 
-  @Prop()
+  @Prop({ type: Number })
   quantity: number;
 
-  @Prop()
+  @Prop({ type: Number })
   bid: number;
 
-  @Prop()
+  @Prop({ type: Number })
   buyout: number;
 
-  @Prop()
+  @Prop({ type: Number })
   price: number;
 
-  @Prop()
+  // TODO enum?
+  @Prop({ type: String })
   time_left: string;
 }
 

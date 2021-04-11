@@ -4,16 +4,16 @@ import { AliasKey } from '@app/core';
 
 @Schema()
 class Alias {
-  @Prop()
-  key: AliasKey;
+  @Prop({ type: String, enum: AliasKey })
+  key: string;
 
-  @Prop()
+  @Prop({ type: String })
   value: string;
 }
 
 @Schema()
 export class Account extends Document {
-  @Prop({ required: true, default: 'Anonymous' })
+  @Prop({ type: String, required: true, default: 'Anonymous' })
   cryptonym: string;
 
   @Prop({ type: String })

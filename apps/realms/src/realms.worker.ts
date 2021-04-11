@@ -6,11 +6,11 @@ import {
   REALM_TICKER,
   ConnectedRealmInterface,
   PopulationRealmInterface,
-  MAX_LEVEL, CHARACTER_CLASS, FACTION,
+  MAX_LEVEL, CHARACTER_CLASS, FACTION, COVENANTS,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, Guild, Realm } from '@app/mongo';
+import { Character, Guild, Realm, RealmPopulation } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 
@@ -25,6 +25,8 @@ export class RealmsWorker {
   constructor(
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
+    @InjectModel(RealmPopulation.name)
+    private readonly RealmPopulationModel: Model<RealmPopulation>,
     @InjectModel(Guild.name)
     private readonly GuildModel: Model<Guild>,
     @InjectModel(Character.name)
@@ -139,8 +141,7 @@ export class RealmsWorker {
 
       if (!realm.isNew && args.population) {
         // TODO probably place in OTHER DB
-        realm.population = await this.population(realm.toObject());
-        realm.markModified('population')
+        // await this.population(realm.toObject());
         await job.updateProgress(90);
       }
 
@@ -152,118 +153,53 @@ export class RealmsWorker {
     }
   }
 
-  private async population (args: LeanDocument<Realm>): Promise<PopulationRealmInterface> {
-    const population: PopulationRealmInterface = {
-      characters_total: [],
-      characters_active: [],
-      characters_active_alliance: [],
-      characters_active_horde: [],
-      characters_active_max_level: [],
-      characters_guild_members: [],
-      characters_guildless: [],
-      players_unique: [],
-      players_active_unique: [],
-      guilds_total: [],
-      guilds_alliance: [],
-      guilds_horde: [],
-      characters_classes: [],
-      characters_professions: [],
-      characters_covenants: [],
-      timestamps: []
-    };
+  private async population (args: LeanDocument<Realm>): Promise<void> {
     try {
-      const
-        now: number = new Date().getTime(),
-        keys: string[] = [
-          'characters_total',
-          'characters_active',
-          'characters_active_alliance',
-          'characters_active_horde',
-          'characters_active_max_level',
-          'characters_guild_members',
-          'characters_guildless',
-          'players_unique',
-          'players_active_unique',
-          'guilds_total',
-          'guilds_alliance',
-          'guilds_horde',
-          'characters_classes',
-          'characters_professions',
-          'characters_covenants',
-          'timestamps'
-        ];
+      const realm = await this.RealmModel.findById(args._id);
+      if (!realm) return;
 
-      /**
-       * @description Import old population files
-       */
-      if (args.population) {
-        Object.entries(args.population).map(async ([key, value]) => {
-          if (keys.includes(key) && value && Array.isArray(value)) {
-            population[key] = population[key].concat(args.population[key])
-          }
-        })
-      }
+      const population: Partial<PopulationRealmInterface> = {};
+
       /**
        * Characters Statistics
        */
-      population.characters_total.push(await this.CharacterModel.countDocuments({ realm: args.slug }));
-      population.characters_active.push(await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200 }));
-      population.characters_active_alliance.push(await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, faction: FACTION.A }));
-      population.characters_active_horde.push(await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, faction: FACTION.H }));
-      population.characters_active_max_level.push(await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, level: MAX_LEVEL }));
-      population.characters_guild_members.push(await this.CharacterModel.countDocuments({ realm: args.slug, guild: { "$ne": undefined } }));
-      population.characters_guildless.push(await this.CharacterModel.countDocuments({ realm: args.slug, guild: { $exists: false } })); //FIXME $exists: false?
+      population.characters_total = await this.CharacterModel.countDocuments({ realm: args.slug });
+      population.characters_active = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200 });
+      population.characters_active_alliance = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, faction: FACTION.A });
+      population.characters_active_horde = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, faction: FACTION.H });
+      population.characters_active_max_level = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, level: MAX_LEVEL });
+      population.characters_guild_members = await this.CharacterModel.countDocuments({ realm: args.slug, guild: { "$ne": undefined } });
+      population.characters_guildless = await this.CharacterModel.countDocuments({ realm: args.slug, guild: undefined })
       const players_unique = await this.CharacterModel.find({ realm: args.slug }).distinct('personality');
-      population.players_unique.push(players_unique.length);
+      population.players_unique = players_unique.length;
       const players_active_unique = await this.CharacterModel.find({ realm: args.slug, status_code: 200 }).distinct('personality');
-      population.players_active_unique.push(players_active_unique.length);
+      population.players_active_unique = players_active_unique.length;
       /**
        * Guild number
        * and their faction balance
        * TODO make sure that guild data always actual
        */
-      population.guilds_total.push(await this.GuildModel.countDocuments({ realm: args.slug }));
-      population.guilds_alliance.push(await this.GuildModel.countDocuments({ realm: args.slug, faction: FACTION.A }));
-      population.guilds_horde.push(await this.GuildModel.countDocuments({ realm: args.slug, faction: FACTION.H }));
+      population.guilds_total = await this.GuildModel.countDocuments({ realm: args.slug });
+      population.guilds_alliance = await this.GuildModel.countDocuments({ realm: args.slug, faction: FACTION.A });
+      population.guilds_horde = await this.GuildModel.countDocuments({ realm: args.slug, faction: FACTION.H });
       /**
        * Class popularity among
        * every active character
        */
       for (const character_class of CHARACTER_CLASS) {
-
-        const characters_classes = population.characters_classes.find( k => k._id === character_class);
-        if (characters_classes) {
-          characters_classes.value.push(await this.CharacterModel.countDocuments({ realm: args.slug, statusCode: 200, character_class: character_class }))
-        } else {
-          population.characters_classes.push({
-            _id: character_class,
-            value: [ await this.CharacterModel.countDocuments({ realm: args.slug, statusCode: 200, character_class: character_class }) ]
-          })
-        }
+        population.characters_classes[character_class] = await this.CharacterModel.countDocuments({ realm: args.slug, statusCode: 200, character_class: character_class });
       }
       /**
        * Count covenant stats
        * for every active character
        */
-      for (const covenant of ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord']) {
-
-        const characters_covenants = population.characters_classes.find( k => k._id === covenant);
-        if (characters_covenants) {
-          characters_covenants.value.push(await this.CharacterModel.countDocuments({ 'realm.slug': args.slug, statusCode: 200, 'chosen_covenant': covenant }))
-        } else {
-          population.characters_covenants.push({
-            _id: covenant,
-            value: [ await this.CharacterModel.countDocuments({ 'realm.slug': args.slug, statusCode: 200, 'chosen_covenant': covenant }) ]
-          })
-        }
+      for (const covenant of COVENANTS) {
+        population.characters_covenants[covenant] = await this.CharacterModel.countDocuments({ 'realm.slug': args.slug, statusCode: 200, 'chosen_covenant': covenant });
       }
 
-      population.timestamps.push(now)
-
-      return population;
+      await this.RealmPopulationModel.create(population);
     } catch (e) {
       this.logger.error(`population: ${e}`)
-      return population
     }
   }
 }

@@ -4,8 +4,8 @@ import { mongoConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
 import { MongooseModule } from '@nestjs/mongoose';
+import { queueRealms } from '@app/core';
 import {
-  Auction, AuctionsShema,
   Character,
   CharactersSchema,
   Guild,
@@ -14,14 +14,17 @@ import {
   KeysSchema,
   Realm,
   RealmsSchema,
+  RealmPopulation,
+  RealmsPopulationSchema,
 } from '@app/mongo';
-import { queueRealms } from '@app/core';
+
 
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
     MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
     MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
+    MongooseModule.forFeature([{ name: RealmPopulation.name, schema: RealmsPopulationSchema }]),
     MongooseModule.forFeature([{ name: Guild.name, schema: GuildsSchema }]),
     MongooseModule.forFeature([{ name: Character.name, schema: CharactersSchema }]),
     BullModule.forRoot({

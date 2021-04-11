@@ -79,6 +79,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/characters/tsconfig.app.json"
       }
+    },
+    "auctions": {
+      "type": "application",
+      "root": "apps/auctions",
+      "entryFile": "main",
+      "sourceRoot": "apps/auctions/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auctions/tsconfig.app.json"
+      }
     }
   }
 }

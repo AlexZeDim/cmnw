@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 /**
  * _id and id field represents Blizzard GUID name@realm-id
@@ -6,7 +6,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
  */
 
 @Schema()
-class Mount {
+class Mount extends Document  {
   @Prop()
   _id: number;
 
@@ -14,8 +14,10 @@ class Mount {
   name: string;
 }
 
+export const MountsSchema = SchemaFactory.createForClass(Mount);
+
 @Schema()
-class Pet {
+class Pet extends Document  {
   @Prop()
   _id: number;
 
@@ -23,13 +25,16 @@ class Pet {
   name: string;
 }
 
+export const PetsSchema = SchemaFactory.createForClass(Pet);
+
 @Schema()
-class Profession {
+class Profession extends Document {
   @Prop()
   name: string;
 
   @Prop()
   tier: string;
+
   @Prop()
   id: number;
 
@@ -43,8 +48,10 @@ class Profession {
   specialization: string;
 }
 
+export const ProfessionSchema = SchemaFactory.createForClass(Profession);
+
 @Schema()
-class RaidProgress {
+class RaidProgress extends Document {
   @Prop({ required: true })
   _id: string
 
@@ -52,7 +59,8 @@ class RaidProgress {
   progress: string
 }
 
-@Schema()
+export const RaidProgressSchema = SchemaFactory.createForClass(RaidProgress);
+
 class LookingForGroup {
   @Prop({ index: true })
   status: boolean;
@@ -162,14 +170,14 @@ export class Character extends Document {
   @Prop()
   personality: string;
 
-  @Prop()
-  mounts: Types.Array<Mount>;
+  @Prop({ type: [MountsSchema] })
+  mounts: MongooseSchema.Types.Array;
 
-  @Prop()
-  pets: Types.Array<Pet>;
+  @Prop({ type: [PetsSchema] })
+  pets:  MongooseSchema.Types.Array;
 
-  @Prop({ _id: false })
-  professions: Types.Array<Profession>;
+  @Prop({ _id: false, type: [ProfessionSchema] })
+  professions: MongooseSchema.Types.Array;
 
   @Prop()
   lfg: LookingForGroup;
@@ -180,8 +188,8 @@ export class Character extends Document {
   @Prop()
   wcl_percentile: number;
 
-  @Prop()
-  raid_progress: Types.Array<RaidProgress>;
+  @Prop({ type: [RaidProgressSchema] })
+  raid_progress: MongooseSchema.Types.Array;
 
   @Prop()
   battle_tag: string;
@@ -198,8 +206,8 @@ export class Character extends Document {
   @Prop()
   transfer: boolean;
 
-  @Prop()
-  languages: string[];
+  @Prop({ type: [String] })
+  languages: MongooseSchema.Types.Array;
 
   @Prop()
   updatedAt: Date;

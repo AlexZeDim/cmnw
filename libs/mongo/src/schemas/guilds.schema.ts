@@ -1,9 +1,9 @@
-import { Document, Types } from "mongoose";
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 class GuildMember {
-  @Prop({ required: true, lowercase: true })
+  @Prop({ type: String, required: true, lowercase: true })
   _id: string;
 
   @Prop({ required: true })
@@ -13,9 +13,11 @@ class GuildMember {
   rank: number;
 }
 
-@Schema()
+export const GuildMembersSchema = SchemaFactory.createForClass(GuildMember);
+
+@Schema({ timestamps: true })
 export class Guild extends Document {
-  @Prop({ required: true, lowercase: true })
+  @Prop({ type: String, required: true, lowercase: true })
   _id: string;
 
   @Prop()
@@ -36,8 +38,8 @@ export class Guild extends Document {
   @Prop({ required: true })
   faction: string;
 
-  @Prop({ required: true, default: [] })
-  members: Types.Array<GuildMember>
+  @Prop({ type: [GuildMembersSchema] })
+  members: MongooseSchema.Types.Array
 
   @Prop()
   achievement_points: number;
@@ -45,10 +47,10 @@ export class Guild extends Document {
   @Prop()
   member_count: number;
 
-  @Prop({ default: Date.now() })
+  @Prop({ type: Date, default: Date.now() })
   last_modified: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   created_timestamp: Date;
 
   @Prop()
@@ -59,12 +61,6 @@ export class Guild extends Document {
 
   @Prop()
   updated_by: string;
-
-  @Prop()
-  updatedAt: Date;
-
-  @Prop()
-  createdAt: Date;
 }
 
 export const GuildsSchema = SchemaFactory.createForClass(Guild);

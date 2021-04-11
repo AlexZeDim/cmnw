@@ -2,63 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
-class CharactersPopulation {
-  @Prop()
-  _id: string;
-
-  @Prop()
-  value: number[];
-}
-
-@Schema()
-class RealmPopulation {
-  @Prop()
-  characters_total: number[];
-
-  @Prop()
-  characters_active: number[];
-
-  @Prop()
-  characters_active_alliance: number[];
-
-  @Prop()
-  characters_active_horde: number[];
-
-  @Prop()
-  characters_guild_members: number[];
-
-  @Prop()
-  characters_guildless: number[];
-
-  @Prop()
-  players_unique: number[];
-
-  @Prop()
-  players_active_unique: number[];
-
-  @Prop()
-  guilds_total: number[];
-
-  @Prop()
-  guilds_alliance: number[];
-
-  @Prop()
-  guilds_horde: number[];
-
-  @Prop({ ref: () => CharactersPopulation })
-  characters_classes: CharactersPopulation[];
-
-  @Prop({ ref: () => CharactersPopulation })
-  characters_professions: CharactersPopulation[];
-
-  @Prop({ ref: () => CharactersPopulation })
-  characters_covenants: CharactersPopulation[];
-
-  @Prop()
-  timestamps: number[];
-}
-
-@Schema()
 export class Realm extends Document {
   @Prop()
   _id: number;
@@ -99,8 +42,8 @@ export class Realm extends Document {
   @Prop()
   population_status: string;
 
-  @Prop()
-  connected_realm_id: [string];
+  @Prop({ type: Number })
+  connected_realm_id: number;
 
   @Prop()
   connected_realms: [string];
@@ -124,9 +67,6 @@ export class Realm extends Document {
 
   @Prop({ default: 0 })
   golds: number;
-
-  @Prop({ _id: false }) // FIXME
-  population: RealmPopulation;
 }
 
 export const RealmsSchema = SchemaFactory.createForClass(Realm);

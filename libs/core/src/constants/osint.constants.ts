@@ -20,3 +20,18 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Goldrinn', 'GLDRNN'],
   ['Blackscar', 'BLKSCR'],
 ]);
+
+export const CHARACTER_CLASS: string[] = [
+  'Death Knight', 'Demon Hunter',
+  'Druid',        'Hunter',
+  'Mage',         'Monk',
+  'Paladin',      'Priest',
+  'Rogue',        'Shaman',
+  'Warlock',      'Warrior'
+]
+
+export enum FACTION {
+  A = "Alliance",
+  H = "Horde",
+  N = "Neutral"
+}

@@ -61,7 +61,7 @@ class LookingForGroup {
   new: boolean;
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Character extends Document {
   @Prop({ required: true, lowercase: true })
   _id: string;
@@ -169,7 +169,7 @@ export class Character extends Document {
   pets: Types.Array<Pet>;
 
   @Prop({ _id: false })
-  professions: Profession[];
+  professions: Types.Array<Profession>;
 
   @Prop()
   lfg: LookingForGroup;

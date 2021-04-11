@@ -1,5 +1,12 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { MediaInterface, MountsInterface, PetsInterface, ProfessionsInterface, queueCharacters } from '@app/core';
+import {
+  MediaInterface,
+  MountsInterface,
+  PetsInterface,
+  ProfessionsInterface,
+  queueCharacters,
+  toSlug,
+} from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -38,7 +45,7 @@ export class CharactersWorker {
 
       const [name_slug, realm_slug] = args._id.split('@');
 
-      await this.professions(name_slug, realm_slug, this.BNet)
+      await this.summary(name_slug, realm_slug, this.BNet)
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }
@@ -198,6 +205,64 @@ export class CharactersWorker {
     } catch (error) {
       this.logger.error(`professions: ${name_slug}@${realm_slug}:${error}`)
       return professions
+    }
+  }
+
+  private async summary(name_slug: string, realm_slug: string, BNet: BlizzAPI) {
+    const summary: any = {}
+    try {
+      const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}`, {
+        params: { locale: 'en_GB' },
+        headers: { 'Battlenet-Namespace': 'profile-eu' }
+      })
+      if (!response || typeof response !== 'object') return summary
+      const keys_named: string[] = ['gender', 'faction', 'race', 'character_class', 'active_spec'];
+      const keys: string[] = ['level', 'achievement_points'];
+      await Promise.all(
+        Object.entries(response).map(([key, value]) => {
+          if (keys_named.includes(key) && value !== null && value.name) summary[key] = value.name
+          if (keys.includes(key) && value !== null) summary[key] = value
+          if (key === 'last_login_timestamp') summary.last_modified = value
+          if (key === 'average_item_level') summary.average_item_level = value
+          if (key === 'equipped_item_level') summary.equipped_item_level = value
+          if (key === 'covenant_progress' && typeof value === 'object' && value !== null) {
+            if (value.chosen_covenant && value.chosen_covenant.name) summary.chosen_covenant = value.chosen_covenant.name;
+            if (value.renown_level) summary.renown_level = value.renown_level;
+          }
+          if (key === 'guild' && typeof value === 'object' && value !== null) {
+            if (value.id && value.name) {
+              summary.guild_id = toSlug(`${value.name}@${realm_slug}`);
+              summary.guild = value.name;
+              summary.guild_guid = value.id;
+            }
+          }
+          if (key === 'realm' && typeof value === 'object' && value !== null) {
+            if (value.id && value.name && value.slug) {
+              summary.realm_id = value.id;
+              summary.realm_name = value.name;
+              summary.realm = value.slug;
+            }
+          }
+          if (key === 'active_title' && typeof value === 'object' && value !== null) {
+            if ('active_title' in value) {
+              const { active_title } = value
+              if (active_title.id) summary.hash_t = parseInt(active_title.id, 16)
+            }
+          }
+        })
+      )
+      if (!summary.guild) {
+        summary.guild_id = undefined;
+        summary.guild = undefined;
+        summary.guild_guid = undefined;
+        summary.guild_rank = undefined;
+      }
+      summary.status_code = 200;
+      console.log(summary);
+      return summary
+    } catch (error) {
+      console.error(`summary: ${name_slug}@${realm_slug}:${error}`)
+      return summary
     }
   }
 }

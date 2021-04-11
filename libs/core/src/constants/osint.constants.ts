@@ -28,7 +28,9 @@ export const CHARACTER_CLASS: string[] = [
   'Paladin',      'Priest',
   'Rogue',        'Shaman',
   'Warlock',      'Warrior'
-]
+];
+
+export const COVENANTS: string[] = ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord'];
 
 export enum FACTION {
   A = "Alliance",

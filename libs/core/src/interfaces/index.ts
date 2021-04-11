@@ -10,7 +10,6 @@ export {
   GuildMemberInterface,
   Locales, GuildRosterInterface,
   PopulationRealmInterface,
-  PopulationIdValueInterface,
   PetsInterface,
   IdNameInterface,
   ProfessionInterface,

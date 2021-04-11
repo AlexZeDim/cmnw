@@ -122,28 +122,43 @@ export interface Locales {
   zh_CN: string
 }
 
-export interface PopulationIdValueInterface {
-  _id: string,
-  value: number[]
+export interface PopulationByClassInterface {
+  death_knight: number,
+  demon_hunter: number,
+  druid: number,
+  hunter: number,
+  mage: number,
+  monk: number,
+  paladin: number,
+  priest: number,
+  rogue: number,
+  shaman: number,
+  warlock: number,
+  warrior: number
+}
+
+export interface PopulationByCovenantsInterface {
+  kyrian: number,
+  venthyr: number,
+  night_fae: number,
+  necrolord: number
 }
 
 export interface PopulationRealmInterface {
-  characters_total: number[],
-  characters_active: number[],
-  characters_active_alliance: number[],
-  characters_active_horde: number[],
-  characters_active_max_level: number[],
-  characters_guild_members: number[],
-  characters_guildless: number[],
-  players_unique: number[],
-  players_active_unique: number[],
-  guilds_total: number[],
-  guilds_alliance: number[],
-  guilds_horde: number[],
-  characters_classes: PopulationIdValueInterface[],
-  characters_professions: PopulationIdValueInterface[],
-  characters_covenants: PopulationIdValueInterface[],
-  timestamps: number[]
+  characters_total: number,
+  characters_active: number,
+  characters_active_alliance: number,
+  characters_active_horde: number,
+  characters_active_max_level: number,
+  characters_guild_members: number,
+  characters_guildless: number,
+  players_unique: number,
+  players_active_unique: number,
+  guilds_total: number,
+  guilds_alliance: number,
+  guilds_horde: number,
+  characters_classes: PopulationByClassInterface,
+  characters_covenants: PopulationByCovenantsInterface,
 }
 
 export interface ConnectedRealmInterface {

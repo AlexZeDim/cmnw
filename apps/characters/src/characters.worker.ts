@@ -1,5 +1,6 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import {
+  CharacterSummaryInterface,
   MediaInterface,
   MountsInterface,
   PetsInterface,
@@ -208,8 +209,8 @@ export class CharactersWorker {
     }
   }
 
-  private async summary(name_slug: string, realm_slug: string, BNet: BlizzAPI) {
-    const summary: any = {}
+  private async summary(name_slug: string, realm_slug: string, BNet: BlizzAPI): Promise<Partial<CharacterSummaryInterface>> {
+    const summary: Partial<CharacterSummaryInterface> = {};
     try {
       const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}`, {
         params: { locale: 'en_GB' },
@@ -246,7 +247,7 @@ export class CharactersWorker {
           if (key === 'active_title' && typeof value === 'object' && value !== null) {
             if ('active_title' in value) {
               const { active_title } = value
-              if (active_title.id) summary.hash_t = parseInt(active_title.id, 16)
+              if (active_title.id) summary.hash_t = active_title.id.toString(16);
             }
           }
         })

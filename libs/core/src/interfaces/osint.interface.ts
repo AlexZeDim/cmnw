@@ -194,3 +194,27 @@ export interface ProfessionInterface {
 export interface ProfessionsInterface {
   professions: Partial<ProfessionInterface>[]
 }
+
+export interface CharacterSummaryInterface {
+  gender: string,
+  faction: string,
+  race: string,
+  character_class: string,
+  active_spec: string,
+  realm_id: number,
+  realm_name: string,
+  realm: string,
+  guild_id: string,
+  guild: string,
+  guild_guid: number,
+  guild_rank: number,
+  level: number,
+  achievement_points: number,
+  last_modified: number,
+  average_item_level: number,
+  equipped_item_level: number,
+  chosen_covenant: string,
+  renown_level: number,
+  status_code: number,
+  hash_t: string
+}

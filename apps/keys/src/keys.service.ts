@@ -16,7 +16,8 @@ export class KeysService {
   );
 
   constructor(
-    @InjectModel(Key.name) private readonly KeysModel: Model<Key>,
+    @InjectModel(Key.name)
+    private readonly KeysModel: Model<Key>,
   ) {
     this.initKeys();
     this.indexKeys();

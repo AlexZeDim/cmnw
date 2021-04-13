@@ -82,8 +82,11 @@ export class RealmsService {
       if (start < 1) start = 1;
       const wcl_ids: number[] = range(start, end + 1, 1);
       for (const wcl_id of wcl_ids) {
-        const realm_name: any = await x(`https://www.warcraftlogs.com/server/id/${wcl_id}`, '.server-name').then(res => res);
-        if (realm_name) wcl.push({ name: realm_name, id: wcl_id });
+        const realm_name: string = await x(`https://www.warcraftlogs.com/server/id/${wcl_id}`, '.server-name').then(res => res);
+        if (realm_name) {
+          this.logger.debug(`${wcl_id}:${realm_name}`)
+          wcl.push({ name: realm_name, id: wcl_id });
+        }
       }
       return wcl
     } catch (e) {

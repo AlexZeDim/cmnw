@@ -16,3 +16,4 @@ export {
   ProfessionsInterface,
   CharacterSummaryInterface
 } from './osint.interface';
+export { ItemInterface } from './dma.interface';

@@ -6,6 +6,14 @@
 # Docker data
 /volumes
 
+# Package Managers
+.package-lock.json
+.yarn.lock
+.init-mongo.js
+
+# Files
+/files
+
 # Config
 /config
 /config/keys.json

@@ -6,11 +6,6 @@
 # Docker data
 /volumes
 
-# Package Managers
-.package-lock.json
-.yarn.lock
-.init-mongo.js
-
 # Files
 /files
 
@@ -48,3 +43,8 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Package Managers
+.package-lock.json
+.yarn.lock
+.init-mongo.js

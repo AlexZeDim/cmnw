@@ -97,6 +97,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/items/tsconfig.app.json"
       }
+    },
+    "wowtoken": {
+      "type": "application",
+      "root": "apps/wowtoken",
+      "entryFile": "main",
+      "sourceRoot": "apps/wowtoken/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/wowtoken/tsconfig.app.json"
+      }
     }
   }
 }

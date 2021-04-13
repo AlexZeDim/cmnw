@@ -3,6 +3,9 @@
 /node_modules
 /apps/discord/
 
+# Docker data
+/volumes
+
 # Config
 /config
 /config/keys.json

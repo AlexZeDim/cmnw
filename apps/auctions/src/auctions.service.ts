@@ -60,7 +60,6 @@ export class AuctionsService {
             }*/
           })
         })
-
     } catch (e) {
       this.logger.error(`indexAuctions: ${e}`)
     }

@@ -32,7 +32,7 @@ export class CharactersWorker {
   @BullWorkerProcess()
   public async process(job: Job): Promise<void> {
     try {
-      // FIXME
+      // FIXME getCharacter here
       await job.updateProgress(10);
 
       const args: BattleNetOptions & { _id: string } = { ...job.data };

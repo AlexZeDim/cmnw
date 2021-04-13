@@ -7,7 +7,7 @@
 /volumes
 
 # Files
-/files
+/files/*
 
 # Config
 /config
@@ -45,6 +45,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # Package Managers
-.package-lock.json
-.yarn.lock
-.init-mongo.js
+!/init-mongo.js
+!/package-lock.json
+!/files/

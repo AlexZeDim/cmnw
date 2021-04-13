@@ -25,7 +25,7 @@ export class ItemsService {
 
   async indexItems(clearance: string, min: number = 1, max: number = 20, updateForce: boolean = true): Promise<void> {
     try {
-      const key = await this.KeyModel.findOne({ tags: 'BlizzardAPI' });
+      const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key) return
 
       if (updateForce) {

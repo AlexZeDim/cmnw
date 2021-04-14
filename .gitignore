@@ -3,6 +3,9 @@
 /node_modules
 /apps/discord/
 
+# DotEnv
+!/.env
+
 # Docker data
 /volumes
 

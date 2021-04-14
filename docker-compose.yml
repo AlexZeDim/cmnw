@@ -1,14 +1,53 @@
-version: '3'
+version: '3.8'
 services:
-  database:
-    image: "mongo"
-    container_name: "mongo"
-    environment:
-      - MONGO_INITDB_DATABASE=conglomerat
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
     volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./volumes/mongo:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_ROOT_DATABASE}
     ports:
-    - "27017-27019:27017-27019"
+      - "27017-27019:27017-27019"
+    networks:
+      - conglomerat-network
+
+  redis:
+    image: redis:6-alpine
+    restart: always
+    container_name: redis
+    volumes:
+      - ./volumes/redis:/data:rw,z
+    expose:
+      - 6379
+    ports:
+      - '6379:6379'
+    networks:
+      - conglomerat-network
+
+  keys:
+    build: ./
+    image: conglomerat
+    container_name: keys
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/keys/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+
+#Docker Networks
+networks:
+  # All container connect in a network
+  conglomerat-network:
+    driver: bridge
+

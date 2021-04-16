@@ -210,6 +210,11 @@ export interface ProfessionsInterface {
   professions: Partial<ProfessionInterface>[]
 }
 
+export interface RaiderIoInterface {
+  raid_progress: { _id: string, progress: string }[],
+  rio_score: number
+}
+
 export interface CharacterSummaryInterface {
   gender: string,
   faction: string,

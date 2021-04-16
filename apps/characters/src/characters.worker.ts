@@ -1,11 +1,12 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import {
+  capitalize,
   CharacterSummaryInterface,
   MediaInterface,
   MountsInterface,
   PetsInterface,
   ProfessionsInterface,
-  queueCharacters,
+  queueCharacters, RaiderIoInterface,
   toSlug,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { Realm } from '@app/mongo';
 import { Model } from "mongoose";
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
+import axios from 'axios';
 
 @BullWorker({ queueName: queueCharacters.name })
 export class CharactersWorker {
@@ -35,6 +37,7 @@ export class CharactersWorker {
       // FIXME getCharacter here
       await job.updateProgress(10);
 
+      // TODO args interface
       const args: BattleNetOptions & { _id: string } = { ...job.data };
 
       this.BNet = new BlizzAPI({
@@ -46,7 +49,8 @@ export class CharactersWorker {
 
       const [name_slug, realm_slug] = args._id.split('@');
 
-      await this.summary(name_slug, realm_slug, this.BNet)
+      //TODO implement other methods
+      await this.raider_io(capitalize(name_slug), realm_slug)
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }
@@ -259,11 +263,43 @@ export class CharactersWorker {
         summary.guild_rank = undefined;
       }
       summary.status_code = 200;
-      console.log(summary);
       return summary
     } catch (error) {
-      console.error(`summary: ${name_slug}@${realm_slug}:${error}`)
+      this.logger.error(`summary: ${name_slug}@${realm_slug}:${error}`)
       return summary
+    }
+  }
+
+  private async raider_io(name: string, realm_slug: string): Promise<Partial<RaiderIoInterface>> {
+    const raider_io: Partial<RaiderIoInterface> = {};
+    try {
+      const response: Record<string, any> = await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`));
+      if (!response || !response.data) return raider_io
+      if ('raid_progression' in response.data) {
+        const raid_progress: Record<string, any> = response.data['raid_progression'];
+        const raid_tiers: { _id: string, progress: string }[] = [];
+        for (const [key, value] of Object.entries(raid_progress)) {
+          raid_tiers.push({
+            _id: key,
+            progress: value['summary']
+          })
+        }
+        raider_io.raid_progress = raid_tiers;
+      }
+      if ('mythic_plus_scores_by_season' in response.data) {
+        const rio_score = response.data['mythic_plus_scores_by_season']
+        if (rio_score && Array.isArray(rio_score) && rio_score.length) {
+          for (const rio of rio_score) {
+            if ('scores' in rio) {
+              raider_io.rio_score = rio.scores.all
+            }
+          }
+        }
+      }
+      return raider_io;
+    } catch (e) {
+      this.logger.error(`raider_io: ${e}`);
+      return raider_io;
     }
   }
 }

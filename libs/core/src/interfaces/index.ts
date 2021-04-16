@@ -14,6 +14,7 @@ export {
   IdNameInterface,
   ProfessionInterface,
   ProfessionsInterface,
-  CharacterSummaryInterface
+  CharacterSummaryInterface,
+  RaiderIoInterface,
 } from './osint.interface';
 export { ItemInterface } from './dma.interface';

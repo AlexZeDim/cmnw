@@ -247,3 +247,7 @@ export interface WowProgressInterface {
   role: string,
   languages: string[]
 }
+
+export interface WarcraftLogsInterface {
+  wcl_percentile: number
+}

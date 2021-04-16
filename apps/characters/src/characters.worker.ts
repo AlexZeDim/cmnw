@@ -1,6 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import {
-  capitalize,
   CharacterSummaryInterface,
   MediaInterface,
   MountsInterface,
@@ -8,8 +7,9 @@ import {
   ProfessionsInterface,
   RaiderIoInterface,
   WowProgressInterface,
+  WarcraftLogsInterface,
   queueCharacters,
-  toSlug,
+  toSlug, capitalize,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
@@ -20,6 +20,7 @@ import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
 import axios from 'axios';
 import Xray from 'x-ray';
+import puppeteer from 'puppeteer';
 
 @BullWorker({ queueName: queueCharacters.name })
 export class CharactersWorker {
@@ -53,7 +54,7 @@ export class CharactersWorker {
       const [name_slug, realm_slug] = args._id.split('@');
 
       //TODO implement other methods
-      await this.wowprogress(name_slug, realm_slug)
+      await this.warcraftlogs(capitalize(name_slug), realm_slug)
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }
@@ -273,7 +274,7 @@ export class CharactersWorker {
     }
   }
 
-  private async raider_io(name: string, realm_slug: string): Promise<Partial<RaiderIoInterface>> {
+  private async raiderio(name: string, realm_slug: string): Promise<Partial<RaiderIoInterface>> {
     const raider_io: Partial<RaiderIoInterface> = {};
     try {
       const response: Record<string, any> = await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`));
@@ -301,7 +302,7 @@ export class CharactersWorker {
       }
       return raider_io;
     } catch (e) {
-      this.logger.error(`raider_io: ${e}`);
+      this.logger.error(`raiderio: ${e}`);
       return raider_io;
     }
   }
@@ -330,11 +331,31 @@ export class CharactersWorker {
           if (key === 'Languages') wowprogress.languages = value.split(',').map((s: string) => s.toLowerCase().trim())
         })
       )
-
       return wowprogress
     } catch (e) {
       this.logger.error(`wowprogress: ${e}`);
       return wowprogress
+    }
+  }
+
+  private async warcraftlogs(name: string, realm_slug: string): Promise<Partial<WarcraftLogsInterface>> {
+    const warcraft_logs: Partial<WarcraftLogsInterface> = {};
+    try {
+      const browser = await puppeteer.launch({ args: [ '--no-sandbox', '--disable-setuid-sandbox' ] });
+      const page = await browser.newPage();
+      await page.goto(`https://www.warcraftlogs.com/character/eu/${realm_slug}/${name}#difficulty=5`);
+      const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
+      if (getXpath) {
+        const bestPrefAvg = await page.evaluate(name => name['innerText'], getXpath);
+        if (bestPrefAvg && bestPrefAvg !== '-') {
+          warcraft_logs.wcl_percentile = parseFloat(bestPrefAvg)
+        }
+      }
+      await browser.close();
+      return warcraft_logs;
+    } catch (e) {
+      this.logger.error(`warcraftlogs: ${e}`);
+      return warcraft_logs;
     }
   }
 }

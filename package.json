@@ -36,6 +36,7 @@
     "discord.js": "^12.5.3",
     "farmhash": "^3.2.1",
     "mongoose": "^5.12.3",
+    "puppeteer": "^8.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",

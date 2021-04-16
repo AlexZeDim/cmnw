@@ -238,3 +238,12 @@ export interface CharacterSummaryInterface {
   status_code: number,
   hash_t: string
 }
+
+export interface WowProgressInterface {
+  battle_tag: string,
+  transfer: boolean,
+  days_from: number,
+  days_to: number,
+  role: string,
+  languages: string[]
+}

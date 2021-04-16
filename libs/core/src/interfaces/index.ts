@@ -16,5 +16,6 @@ export {
   ProfessionsInterface,
   CharacterSummaryInterface,
   RaiderIoInterface,
+  WowProgressInterface,
 } from './osint.interface';
 export { ItemInterface } from './dma.interface';

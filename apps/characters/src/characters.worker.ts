@@ -6,7 +6,9 @@ import {
   MountsInterface,
   PetsInterface,
   ProfessionsInterface,
-  queueCharacters, RaiderIoInterface,
+  RaiderIoInterface,
+  WowProgressInterface,
+  queueCharacters,
   toSlug,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
@@ -17,6 +19,7 @@ import { Model } from "mongoose";
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
 import axios from 'axios';
+import Xray from 'x-ray';
 
 @BullWorker({ queueName: queueCharacters.name })
 export class CharactersWorker {
@@ -50,7 +53,7 @@ export class CharactersWorker {
       const [name_slug, realm_slug] = args._id.split('@');
 
       //TODO implement other methods
-      await this.raider_io(capitalize(name_slug), realm_slug)
+      await this.wowprogress(name_slug, realm_slug)
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }
@@ -300,6 +303,38 @@ export class CharactersWorker {
     } catch (e) {
       this.logger.error(`raider_io: ${e}`);
       return raider_io;
+    }
+  }
+
+  private async wowprogress(name: string, realm_slug: string): Promise<Partial<WowProgressInterface>> {
+    const
+      wowprogress: Partial<WowProgressInterface> = {},
+      x = Xray();
+
+    try {
+      const wp: Record<string, any> = await x(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`), '.registeredTo', ['.language']);
+      if (!Array.isArray(wp) || !wp || !wp.length) return wowprogress
+      await Promise.all(
+        wp.map(line => {
+          const [key, value] = line.split(':')
+          if (key === 'Battletag') wowprogress.battle_tag = value.trim();
+          if (key === 'Looking for guild') wowprogress.transfer = value.includes('ready to transfer');
+          if (key === 'Raids per week') {
+            if (value.includes(' - ')) {
+              const [from, to] = value.split(' - ');
+              wowprogress.days_from = parseInt(from);
+              wowprogress.days_to = parseInt(to)
+            }
+          }
+          if (key === 'Specs playing') wowprogress.role = value.trim()
+          if (key === 'Languages') wowprogress.languages = value.split(',').map((s: string) => s.toLowerCase().trim())
+        })
+      )
+
+      return wowprogress
+    } catch (e) {
+      this.logger.error(`wowprogress: ${e}`);
+      return wowprogress
     }
   }
 }

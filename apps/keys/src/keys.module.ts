@@ -8,7 +8,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, { mongoOptionsConfig }),
+    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
   ],
   controllers: [],

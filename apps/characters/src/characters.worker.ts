@@ -77,6 +77,7 @@ export class CharactersWorker {
       await job.updateProgress(5);
 
       let character = await this.CharacterModel.findById(args._id);
+      await job.updateProgress(10);
 
       if (character) {
         // if character exists & guildRank true
@@ -228,6 +229,10 @@ export class CharactersWorker {
         await this.diffs(original, updated)
       }
 
+      Object.assign(character, updated);
+
+      await job.updateProgress(100);
+      return await character.save();
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }

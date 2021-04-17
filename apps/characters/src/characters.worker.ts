@@ -14,8 +14,8 @@ import {
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
-import { Realm } from '@app/mongo';
-import { Model } from "mongoose";
+import { Character, Log, Realm } from '@app/mongo';
+import { LeanDocument, Model } from 'mongoose';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
 import axios from 'axios';
@@ -33,6 +33,10 @@ export class CharactersWorker {
   constructor(
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
+    @InjectModel(Character.name)
+    private readonly CharacterModel: Model<Character>,
+    @InjectModel(Log.name)
+    private readonly LogModel: Model<Log>
   ) {}
 
   @BullWorkerProcess()
@@ -52,6 +56,8 @@ export class CharactersWorker {
       })
 
       const [name_slug, realm_slug] = args._id.split('@');
+
+      let character = await this.CharacterModel.findById(args._id);
 
       //TODO implement other methods
       await this.warcraftlogs(capitalize(name_slug), realm_slug)
@@ -356,6 +362,47 @@ export class CharactersWorker {
     } catch (e) {
       this.logger.error(`warcraftlogs: ${e}`);
       return warcraft_logs;
+    }
+  }
+
+  private async diffs(original: LeanDocument<Character>, updated: LeanDocument<Character>): Promise<void> {
+    try {
+      const
+        detectiveFields: string[] = ['name', 'realm_name', 'race', 'gender', 'faction'],
+        block: LeanDocument<Log>[] = [],
+        t0: Date = ((original.last_modified || original.updatedAt) || new Date()),
+        t1: Date = ((updated.last_modified || updated.updatedAt) || new Date());
+
+      await Promise.all(
+        detectiveFields.map(async (check: string) => {
+          if (check in original && check in updated && original[check] !== updated[check]) {
+            if (check === 'name' || check === 'realm_name') {
+              await this.LogModel.updateMany(
+                {
+                  root_id: original._id,
+                },
+                {
+                  root_id: updated._id,
+                  $push: { root_history: updated._id },
+                },
+              );
+            }
+            block.push({
+              root_id: updated._id,
+              root_history: [updated._id],
+              action: check,
+              event: 'character',
+              original: `${capitalize(check)}: ${capitalize(original[check])}`,
+              updated: `${capitalize(check)}: ${capitalize(updated[check])}`,
+              t0: t0,
+              t1: t1,
+            });
+          }
+        })
+      );
+      if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });
+    } catch (e) {
+      this.logger.error(`diffs: ${e}`);
     }
   }
 }

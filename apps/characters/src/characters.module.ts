@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
-import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
+import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { queueCharacters } from '@app/core';
 import { CharactersWorker } from './characters.worker';
@@ -10,8 +10,10 @@ import { CharactersWorker } from './characters.worker';
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forFeature([{ name: Log.name, schema: LogsSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
     MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
+    MongooseModule.forFeature([{ name: Character.name, schema: CharactersSchema }]),
     BullModule.forRoot({
       options: {
         connection: {

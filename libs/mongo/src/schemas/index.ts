@@ -12,6 +12,7 @@ export { TokenSchema, Token } from './token.schema';
 export { PricingSchema, Pricing } from './pricing.schema';
 export { SkillLineSchema, SkillLine } from './skill-line.schema';
 export { SpellEffectSchema, SpellEffect } from './spell-effect.schema';
+export { WarcraftLogsSchema, WarcraftLogs } from './warcraft-logs.schema';
 export { SpellReagentsSchema, SpellReagents } from './spell-reagents.schema';
 export { RealmsPopulationSchema, RealmPopulation } from './realms-population.schema';
 

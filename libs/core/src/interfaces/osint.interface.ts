@@ -252,3 +252,11 @@ export interface WowProgressInterface {
 export interface WarcraftLogsInterface {
   wcl_percentile: number
 }
+
+export interface WarcraftLogsConfigInterface {
+  readonly raid_tier: number
+  readonly pages_from: number,
+  readonly pages_to: number,
+  readonly page: number,
+  readonly log: number,
+}

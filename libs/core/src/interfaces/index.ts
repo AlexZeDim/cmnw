@@ -18,5 +18,6 @@ export {
   RaiderIoInterface,
   WowProgressInterface,
   WarcraftLogsInterface,
+  WarcraftLogsConfigInterface,
 } from './osint.interface';
 export { ItemInterface } from './dma.interface';

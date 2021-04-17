@@ -115,6 +115,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/guilds/tsconfig.app.json"
       }
+    },
+    "warcraftlogs": {
+      "type": "application",
+      "root": "apps/warcraftlogs",
+      "entryFile": "main",
+      "sourceRoot": "apps/warcraftlogs/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/warcraftlogs/tsconfig.app.json"
+      }
     }
   }
 }

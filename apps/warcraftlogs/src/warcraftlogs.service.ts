@@ -13,7 +13,7 @@ import {
 import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { Job, Queue } from 'bullmq';
+import { Queue } from 'bullmq';
 import { BattleNetOptions } from 'blizzapi';
 
 @Injectable()

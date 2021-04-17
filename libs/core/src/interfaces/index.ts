@@ -19,5 +19,6 @@ export {
   WowProgressInterface,
   WarcraftLogsInterface,
   WarcraftLogsConfigInterface,
+  ExportedCharactersInterface,
 } from './osint.interface';
 export { ItemInterface } from './dma.interface';

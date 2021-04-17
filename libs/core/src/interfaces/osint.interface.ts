@@ -258,5 +258,10 @@ export interface WarcraftLogsConfigInterface {
   readonly pages_from: number,
   readonly pages_to: number,
   readonly page: number,
-  readonly log: number,
+  readonly logs: number,
+}
+
+export interface ExportedCharactersInterface {
+  readonly name: string,
+  readonly server: string
 }

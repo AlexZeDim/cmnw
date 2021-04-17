@@ -9,7 +9,7 @@ import {
   WowProgressInterface,
   WarcraftLogsInterface,
   queueCharacters,
-  toSlug, capitalize,
+  toSlug, capitalize, CharacterInterface,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
@@ -40,13 +40,124 @@ export class CharactersWorker {
   ) {}
 
   @BullWorkerProcess()
-  public async process(job: Job): Promise<void> {
+  public async process(job: Job): Promise<Character | void> {
     try {
-      // FIXME getCharacter here
-      await job.updateProgress(10);
+      const args: BattleNetOptions & CharacterInterface = { ...job.data };
 
-      // TODO args interface
-      const args: BattleNetOptions & { _id: string } = { ...job.data };
+      const realm = await this.RealmModel
+        .findOne(
+          { $text: { $search: args.realm } },
+          { score: { $meta: 'textScore' } },
+        )
+        .sort({ score: { $meta: 'textScore' } })
+        .lean();
+      if (!realm) return
+
+      const
+        name_slug: string = toSlug(args.name),
+        now: number = new Date().getTime() - (48 * 60 * 60 * 1000),
+        original: CharacterInterface = {
+          _id: `${name_slug}@${realm.slug}`,
+          name: capitalize(args.name),
+          status_code: 100,
+          realm: realm.slug,
+          realm_id: realm._id,
+          realm_name: realm.name
+        },
+        updated: CharacterInterface = {
+          _id: `${name_slug}@${realm.slug}`,
+          name: capitalize(args.name),
+          status_code: 100,
+          realm: realm.slug,
+          realm_id: realm._id,
+          realm_name: realm.name
+        };
+
+      // TODO update progress
+      await job.updateProgress(5);
+
+      let character = await this.CharacterModel.findById(args._id);
+
+      if (character) {
+        // if character exists & guildRank true
+        if (args.guildRank) {
+          if (args.guild) {
+            // inherit rank from args, if guild is the same
+            if (character.guild === args.guild) {
+              character.guild_rank = args.guild_rank
+            }
+            // if args has guild data, but character doesn't
+            if (!character.guild || character.guild !== args.guild) {
+              // and last_modified has args & character
+              if (character.last_modified && args.last_modified) {
+                // if timestamp from args > then character
+                if (args.last_modified.getTime() > character.last_modified.getTime()) {
+                  // inherit guild data
+                  character.guild = args.guild
+                  if (args.guild_guid) character.guild_guid = args.guild_guid;
+                  if (args.guild_id) character.guild_id = args.guild_id;
+                  if (args.guild_rank) character.guild_rank = args.guild_rank;
+                }
+              }
+            }
+            this.logger.log(`G:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},guildRank:${args.guildRank}`);
+            await character.save()
+          }
+        }
+        /**
+         * If character exists and createOnlyUnique initiated,
+         * or updated recently return
+         */
+        if (args.createOnlyUnique) {
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique:${args.createOnlyUnique}`);
+          return character
+        }
+        //TODO what if force update is time param?
+        if (!args.forceUpdate && now < character.updatedAt.getTime()) {
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate:${args.forceUpdate}`);
+          return character
+        }
+        /**
+         * We create copy of character to compare it
+         * with previous timestamp
+         */
+        Object.assign(original, character.toObject())
+        character.status_code = 100
+      } else {
+        character = new this.CharacterModel({
+          _id: `${name_slug}@${realm.slug}`,
+          name: capitalize(args.name),
+          status_code: 100,
+          realm: realm.slug,
+          realm_id: realm._id,
+          realm_name: realm.name,
+          created_by: 'OSINT-getCharacter',
+          updated_by: 'OSINT-getCharacter',
+        })
+        /**
+         * Assign values from args only
+         * on character creation
+         */
+        if (args.guild) character.guild = args.guild;
+        if (args.guild_guid) character.guild_guid = args.guild_guid;
+        if (args.guild_id) character.guild_id = args.guild_id;
+        if (args.created_by) character.created_by = args.created_by;
+      }
+      /**
+       * Inherit safe values
+       * from args in any case
+       * summary overwrite later
+       */
+      if (args.race) character.race = args.race;
+      if (args.level) character.level = args.level;
+      if (args.gender) character.gender = args.gender;
+      if (args.faction) character.faction = args.faction;
+      if (args.character_class) character.character_class = args.character_class;
+      if (args.last_modified) character.last_modified = args.last_modified;
+      if (args.updated_by) character.updated_by = args.updated_by;
+      if (args.character_class) character.character_class = args.character_class;
+      if (args.active_spec) character.active_spec = args.active_spec;
+
 
       this.BNet = new BlizzAPI({
         region: 'eu',
@@ -55,12 +166,68 @@ export class CharactersWorker {
         accessToken: args.accessToken
       })
 
-      const [name_slug, realm_slug] = args._id.split('@');
+      const character_status: Record<string, any> = await this.BNet.query(`/profile/wow/character/${character.realm}/${name_slug}/status`, {
+        params: { locale: 'en_GB' },
+        headers: { 'Battlenet-Namespace': 'profile-eu' }
+      }).catch(status_error => {
+        if (status_error.response) {
+          if (status_error.response.data && status_error.response.data.code) {
+            //TODO optional returnOnError?
+            updated.status_code = status_error.response.data.code
+          }
+        }
+      })
+      /**
+       * Define character id for sure
+       */
+      if (character_status && character_status.id) {
+        character.id = character_status.id
+        if (character_status.lastModified) character.last_modified = character_status.lastModified
+      }
 
-      let character = await this.CharacterModel.findById(args._id);
+      if (character_status && character_status.is_valid && character_status.is_valid === true) {
+        const [summary, pets_collection, mount_collection, professions, media] = await Promise.all([
+          this.summary(name_slug, character.realm, this.BNet),
+          this.pets(name_slug, character.realm, this.BNet),
+          this.mounts(name_slug, character.realm, this.BNet),
+          this.professions(name_slug, character.realm, this.BNet),
+          this.media(name_slug, character.realm, this.BNet)
+        ]);
 
-      //TODO implement other methods
-      await this.warcraftlogs(capitalize(name_slug), realm_slug)
+        Object.assign(updated, summary);
+        Object.assign(updated, pets_collection);
+        Object.assign(updated, mount_collection);
+        Object.assign(updated, professions);
+        Object.assign(updated, media);
+      }
+      /**
+       * update RIO, WCL & Progress
+       * by request from args
+       */
+      if (args.updateRIO) {
+        const raider_io = await this.raiderio(character.name, character.realm);
+        Object.assign(updated, raider_io);
+      }
+
+      if (args.updateWCL) {
+        const raider_io = await this.warcraftlogs(character.name, character.realm);
+        Object.assign(updated, raider_io);
+      }
+
+      if (args.updateWP) {
+        const wow_progress = await this.wowprogress(character.name, character.realm);
+        Object.assign(updated, wow_progress);
+      }
+
+      /**
+       * TODO detective after transfer / rename
+       * Check differences between req & original
+       * only if original
+       */
+      if (!character.isNew) {
+        await this.diffs(original, updated)
+      }
+
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }
@@ -365,7 +532,7 @@ export class CharactersWorker {
     }
   }
 
-  private async diffs(original: LeanDocument<Character>, updated: LeanDocument<Character>): Promise<void> {
+  private async diffs(original: CharacterInterface, updated: CharacterInterface): Promise<void> {
     try {
       const
         detectiveFields: string[] = ['name', 'realm_name', 'race', 'gender', 'faction'],

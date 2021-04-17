@@ -15,6 +15,7 @@ export interface CharacterInterface {
   last_modified?: Date,
   created_by?: string,
   updated_by?: string,
+  active_spec?: string,
   race?: string,
   gender?: string,
   faction?: string,

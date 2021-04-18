@@ -32,6 +32,7 @@ services:
     build: ./
     image: conglomerat
     container_name: keys
+    restart: always
     links:
       - mongo
       - redis
@@ -47,6 +48,7 @@ services:
   realms:
     build: ./
     image: conglomerat
+    restart: always
     container_name: realms
     links:
       - mongo

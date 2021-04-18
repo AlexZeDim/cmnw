@@ -8,6 +8,7 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import { KeyInterface } from '@app/configuration/interfaces/key.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { GLOBAL_BLIZZARD_KEY } from '@app/core';
 
 @Injectable()
 export class KeysService {
@@ -40,7 +41,7 @@ export class KeysService {
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async indexKeys(): Promise<void> {
     await this.KeysModel
-      .find()
+      .find({ tags: GLOBAL_BLIZZARD_KEY })
       .cursor()
       .eachAsync(async (key: Key): Promise<void> => {
         if (key.secret) {

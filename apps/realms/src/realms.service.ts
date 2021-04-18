@@ -8,6 +8,7 @@ import { GLOBAL_KEY, realmsQueue } from '@app/core';
 import BlizzAPI from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class RealmsService {
@@ -28,9 +29,9 @@ export class RealmsService {
     this.indexRealms(GLOBAL_KEY);
   }
 
+  @Cron(CronExpression.EVERY_WEEK)
   async indexRealms(clearance: string): Promise<void> {
     try {
-
       const idsWCL = await this.getRealmsWarcraftLogsID(247, 517);
 
       const key = await this.KeyModel.findOne({ tags: clearance });

@@ -20,5 +20,6 @@ export {
   WarcraftLogsInterface,
   WarcraftLogsConfigInterface,
   ExportedCharactersInterface,
+  GuildSummaryInterface,
 } from './osint.interface';
 export { ItemInterface } from './dma.interface';

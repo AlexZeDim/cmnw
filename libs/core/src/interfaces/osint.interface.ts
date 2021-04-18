@@ -265,3 +265,17 @@ export interface ExportedCharactersInterface {
   readonly name: string,
   readonly server: string
 }
+
+export interface GuildSummaryInterface {
+  id: number
+  name: string,
+  faction: string,
+  achievement_points: number,
+  member_count: number,
+  realm_id: number,
+  realm: string,
+  realm_name: string,
+  created_timestamp: number,
+  status_code: number,
+  last_modified: Date,
+}

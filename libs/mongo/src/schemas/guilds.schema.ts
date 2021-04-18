@@ -61,6 +61,12 @@ export class Guild extends Document {
 
   @Prop()
   updated_by: string;
+
+  @Prop()
+  updatedAt: Date;
+
+  @Prop()
+  createdAt: Date;
 }
 
 export const GuildsSchema = SchemaFactory.createForClass(Guild);

@@ -44,6 +44,22 @@ services:
     networks:
       - conglomerat-network
 
+  realms:
+    build: ./
+    image: conglomerat
+    container_name: realms
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/realms/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
 
 #Docker Networks
 networks:

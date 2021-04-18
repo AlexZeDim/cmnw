@@ -63,7 +63,7 @@ services:
       - conglomerat-network
 
 
-#Docker Networks
+# Docker Networks
 networks:
   # All container connect in a network
   conglomerat-network:

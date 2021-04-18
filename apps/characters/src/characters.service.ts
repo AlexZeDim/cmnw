@@ -23,6 +23,7 @@ export class CharactersService {
     this.indexCharacters(GLOBAL_KEY);
   }
 
+  // TODO cron-task
   async indexCharacters(clearance: string): Promise<string> {
     const keys = await this.KeyModel.find({ tags: clearance });
     if (!keys.length) return

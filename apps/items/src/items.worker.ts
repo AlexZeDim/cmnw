@@ -47,7 +47,7 @@ export class ItemsWorker {
           timeout: 10000,
           headers: { 'Battlenet-Namespace': 'static-eu' }
         }),
-        this.BNet.query(`/data/wow/media/item/${args._id} `, {
+        this.BNet.query(`/data/wow/media/item/${args._id}`, {
           timeout: 10000,
           headers: { 'Battlenet-Namespace': 'static-eu' }
         })

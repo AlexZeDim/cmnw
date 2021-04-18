@@ -7,7 +7,7 @@ import Xray from 'x-ray';
 import {
   ExportedCharactersInterface,
   GLOBAL_WCL_KEY,
-  queueCharacters,
+  charactersQueue,
   WarcraftLogsConfigInterface,
 } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -31,7 +31,7 @@ export class WarcraftlogsService {
     private readonly WarcraftLogsModel: Model<WarcraftLogs>,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
-    @BullQueueInject(queueCharacters.name)
+    @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
   ) {
     this.indexWarcraftLogs({ raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 400 });

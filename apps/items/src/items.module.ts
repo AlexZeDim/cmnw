@@ -3,7 +3,7 @@ import { ItemsService } from './items.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { queueItems } from '@app/core';
+import { itemsQueue } from '@app/core';
 import { Item, ItemsSchema, Key, KeysSchema } from '@app/mongo';
 import { ItemsWorker } from './items.worker';
 
@@ -20,7 +20,7 @@ import { ItemsWorker } from './items.worker';
         },
       },
     }),
-    BullModule.registerQueue(queueItems.name),
+    BullModule.registerQueue(itemsQueue.name),
   ],
   controllers: [],
   providers: [ItemsService, ItemsWorker],

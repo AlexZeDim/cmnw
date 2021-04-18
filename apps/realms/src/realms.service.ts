@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import Xray from 'x-ray';
-import { GLOBAL_KEY, queueRealms } from '@app/core';
+import { GLOBAL_KEY, realmsQueue } from '@app/core';
 import BlizzAPI from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
@@ -22,7 +22,7 @@ export class RealmsService {
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
-    @BullQueueInject(queueRealms.name)
+    @BullQueueInject(realmsQueue.name)
     private readonly queue: Queue,
   ) {
     this.indexRealms(GLOBAL_KEY);

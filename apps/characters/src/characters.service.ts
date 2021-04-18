@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key } from '@app/mongo';
+import { Character, Key } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { GLOBAL_KEY, queueCharacters } from '@app/core';
+import { GLOBAL_KEY, charactersQueue } from '@app/core';
 import { Queue } from 'bullmq';
 
 @Injectable()
@@ -15,7 +15,9 @@ export class CharactersService {
   constructor(
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
-    @BullQueueInject(queueCharacters.name)
+    @InjectModel(Character.name)
+    private readonly CharacterModel: Model<Character>,
+    @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
   ) {
     this.indexCharacters(GLOBAL_KEY);
@@ -24,7 +26,7 @@ export class CharactersService {
   async indexCharacters(clearance: string): Promise<string> {
     const keys = await this.KeyModel.find({ tags: clearance });
     if (!keys.length) return
-
+    //TODO index characters
     const characters = [
       'инициатива@gordunni',
       'блюрателла@gordunni',

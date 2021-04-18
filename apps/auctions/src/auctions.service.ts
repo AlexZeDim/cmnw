@@ -5,7 +5,7 @@ import { Key, Realm } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { GLOBAL_DMA_KEY, queueAuctions } from '@app/core';
+import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
 
 @Injectable()
 export class AuctionsService {
@@ -20,7 +20,7 @@ export class AuctionsService {
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
-    @BullQueueInject(queueAuctions.name)
+    @BullQueueInject(auctionsQueue.name)
     private readonly queue: Queue,
   ) {
     this.indexAuctions(GLOBAL_DMA_KEY)

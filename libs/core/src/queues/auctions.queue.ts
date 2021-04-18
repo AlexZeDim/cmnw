@@ -6,8 +6,8 @@ const queueOptions: JobsOptions = {
   removeOnFail: false,
 };
 
-export const queueItems: QueueInterface = {
-  name: 'OSINT:Items',
+export const auctionsQueue: QueueInterface = {
+  name: 'OSINT:Auctions',
   options: {
     defaultJobOptions: queueOptions,
   },

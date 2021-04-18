@@ -4,7 +4,7 @@ import { mongoConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
 import { MongooseModule } from '@nestjs/mongoose';
-import { queueRealms } from '@app/core';
+import { realmsQueue } from '@app/core';
 import {
   Character,
   CharactersSchema,
@@ -35,7 +35,7 @@ import {
         },
       },
     }),
-    BullModule.registerQueue(queueRealms.name),
+    BullModule.registerQueue(realmsQueue.name),
   ],
   controllers: [],
   providers: [RealmsService, RealmsWorker],

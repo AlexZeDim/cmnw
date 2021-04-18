@@ -6,7 +6,7 @@ const queueOptions: JobsOptions = {
   removeOnFail: false,
 };
 
-export const queueCharacters: QueueInterface = {
+export const charactersQueue: QueueInterface = {
   name: 'OSINT:Characters',
   options: {
     defaultJobOptions: queueOptions,

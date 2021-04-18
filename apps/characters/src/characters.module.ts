@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
 import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { queueCharacters } from '@app/core';
+import { charactersQueue } from '@app/core';
 import { CharactersWorker } from './characters.worker';
 
 @Module({
@@ -22,7 +22,7 @@ import { CharactersWorker } from './characters.worker';
         },
       },
     }),
-    BullModule.registerQueue(queueCharacters.name),
+    BullModule.registerQueue(charactersQueue.name),
   ],
   controllers: [],
   providers: [CharactersService, CharactersWorker],

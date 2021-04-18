@@ -8,7 +8,7 @@ import {
   RaiderIoInterface,
   WowProgressInterface,
   WarcraftLogsInterface,
-  queueCharacters,
+  charactersQueue,
   toSlug, capitalize, CharacterInterface,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
@@ -22,7 +22,7 @@ import axios from 'axios';
 import Xray from 'x-ray';
 import puppeteer from 'puppeteer';
 
-@BullWorker({ queueName: queueCharacters.name })
+@BullWorker({ queueName: charactersQueue.name })
 export class CharactersWorker {
   private readonly logger = new Logger(
     CharactersWorker.name, true,
@@ -76,7 +76,7 @@ export class CharactersWorker {
       // TODO update progress
       await job.updateProgress(5);
 
-      let character = await this.CharacterModel.findById(args._id);
+      let character = await this.CharacterModel.findById(original._id);
       await job.updateProgress(10);
 
       if (character) {
@@ -255,7 +255,7 @@ export class CharactersWorker {
       }))
       return media
     } catch (e) {
-      this.logger.error(`media:${e}`)
+      this.logger.error(`media: ${e}`)
     }
   }
 

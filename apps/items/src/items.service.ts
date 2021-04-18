@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Item, Key } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { GLOBAL_KEY, queueItems } from '@app/core';
+import { GLOBAL_KEY, itemsQueue } from '@app/core';
 import { Queue } from 'bullmq';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class ItemsService {
     private readonly KeyModel: Model<Key>,
     @InjectModel(Item.name)
     private readonly ItemModel: Model<Item>,
-    @BullQueueInject(queueItems.name)
+    @BullQueueInject(itemsQueue.name)
     private readonly queue: Queue,
   ) {
     this.indexItems(GLOBAL_KEY, 0, 170100, true);

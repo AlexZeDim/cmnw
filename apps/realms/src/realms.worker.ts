@@ -1,7 +1,7 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { Job } from 'bullmq';
 import {
-  queueRealms,
+  realmsQueue,
   RealmInterface,
   REALM_TICKER,
   ConnectedRealmInterface,
@@ -14,7 +14,7 @@ import { Character, Guild, Realm, RealmPopulation } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 
-@BullWorker({ queueName: queueRealms.name })
+@BullWorker({ queueName: realmsQueue.name })
 export class RealmsWorker {
   private readonly logger = new Logger(
     RealmsWorker.name, true,

@@ -5,7 +5,7 @@ import { mongoConfig, redisConfig } from '@app/configuration';
 import { Auction, AuctionsShema, Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
 import { AuctionsWorker } from './auctions.worker';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { queueAuctions } from '@app/core';
+import { auctionsQueue } from '@app/core';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { queueAuctions } from '@app/core';
         },
       },
     }),
-    BullModule.registerQueue(queueAuctions.name),
+    BullModule.registerQueue(auctionsQueue.name),
   ],
   controllers: [],
   providers: [AuctionsService, AuctionsWorker],

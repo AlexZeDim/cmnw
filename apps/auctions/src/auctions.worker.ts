@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { queueAuctions, round2 } from '@app/core';
+import { auctionsQueue, round2 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,7 +8,7 @@ import { Model } from 'mongoose';
 import { Job } from 'bullmq';
 import moment from "moment";
 
-@BullWorker({ queueName: queueAuctions.name })
+@BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
   private readonly logger = new Logger(
     AuctionsWorker.name, true,

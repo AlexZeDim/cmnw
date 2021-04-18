@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
 import { Key, KeysSchema, Realm, RealmsSchema, WarcraftLogs, WarcraftLogsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { queueCharacters } from '@app/core';
+import { charactersQueue } from '@app/core';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { queueCharacters } from '@app/core';
         },
       },
     }),
-    BullModule.registerQueue(queueCharacters.name),
+    BullModule.registerQueue(charactersQueue.name),
   ],
   controllers: [],
   providers: [WarcraftlogsService],

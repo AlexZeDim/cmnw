@@ -6,9 +6,11 @@ import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, R
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { CharactersWorker } from './characters.worker';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string),
     MongooseModule.forFeature([{ name: Log.name, schema: LogsSchema }]),
     MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),

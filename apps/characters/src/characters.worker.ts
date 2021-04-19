@@ -39,9 +39,10 @@ export class CharactersWorker {
     private readonly LogModel: Model<Log>
   ) {}
 
-  @BullWorkerProcess()
+  @BullWorkerProcess({ concurrency: charactersQueue.concurrency })
   public async process(job: Job): Promise<Character | void> {
     try {
+
       const args: BattleNetOptions & CharacterInterface = { ...job.data };
 
       const realm = await this.RealmModel
@@ -110,12 +111,12 @@ export class CharactersWorker {
          * or updated recently return
          */
         if (args.createOnlyUnique) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique:${args.createOnlyUnique}`);
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
           return character
         }
         //TODO what if force update is time param?
         if (!args.forceUpdate && now < character.updatedAt.getTime()) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate:${args.forceUpdate}`);
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: false`);
           return character
         }
         /**

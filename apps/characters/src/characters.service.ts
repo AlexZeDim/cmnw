@@ -5,9 +5,11 @@ import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { GLOBAL_KEY, charactersQueue } from '@app/core';
 import { Queue } from 'bullmq';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class CharactersService {
+  // TODO cover with logger
   private readonly logger = new Logger(
     CharactersService.name, true,
   );
@@ -23,39 +25,55 @@ export class CharactersService {
     this.indexCharacters(GLOBAL_KEY);
   }
 
-  // TODO cron-task
-  async indexCharacters(clearance: string): Promise<string> {
-    const keys = await this.KeyModel.find({ tags: clearance });
-    if (!keys.length) return
-    //TODO index characters
-    const characters = [
-      'инициатива@gordunni',
-      'блюрателла@gordunni',
-      'исмори@gordunni',
-      'вандерплз@gordunni',
-      'омниум@gordunni',
-      'саске@gordunni',
-      'акашагодх@gordunni',
-      'нивей@gordunni',
-    ]
-
-    let i = 0;
-
-    for (const character of characters) {
-      console.log(`${i}:${character}`)
-      await this.queue.add(character, {
-        _id: character,
-        region: 'eu',
-        clientId: keys[i]._id,
-        clientSecret: keys[i].secret,
-        accessToken: keys[i].token,
-      })
-      i++
-      if (i >= keys.length) {
-        i = 0;
+  @Cron(CronExpression.EVERY_HOUR)
+  private async indexCharacters(clearance: string): Promise<void> {
+    try {
+      const jobs: number = await this.queue.count();
+      if (jobs > 1000) {
+        this.logger.error(`indexCharacters: ${jobs} jobs found`);
+        return
       }
-    }
 
-    return 'Hello World!';
+      const keys = await this.KeyModel.find({ tags: clearance });
+      if (!keys.length) {
+        this.logger.error(`indexCharacters: ${keys.length} keys found`);
+        return
+      }
+
+      let i: number = 0;
+      let iteration: number = 0;
+
+      await this.CharacterModel
+        .find()
+        .cursor()
+        .eachAsync(async (character: Character) => {
+          const [name, realm] = character._id.split('@');
+          await this.queue.add(
+            character._id,
+            {
+              _id: character,
+              name: name,
+              realm: realm,
+              region: 'eu',
+              clientId: keys[i]._id,
+              clientSecret: keys[i].secret,
+              accessToken: keys[i].token,
+              updatedBy: 'OSINT-indexCharacters',
+              guildRank: false,
+              createOnlyUnique: false,
+              forceUpdate: true,
+              iterations: iteration,
+            },
+            {
+              jobId: character._id
+            }
+          );
+          i++;
+          iteration++;
+          if (i >= keys.length) i = 0;
+        })
+    } catch (e) {
+      this.logger.error(`indexCharacters: ${e}`)
+    }
   }
 }

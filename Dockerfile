@@ -9,6 +9,7 @@ RUN npm install
 COPY . .
 
 RUN nest build keys \
-  && nest build realms
+  && nest build realms \
+  && nest build characters \
 
 CMD wait && ["node"]

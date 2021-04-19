@@ -6,9 +6,11 @@ import { Auction, AuctionsShema, Key, KeysSchema, Realm, RealmsSchema } from '@a
 import { AuctionsWorker } from './auctions.worker';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue } from '@app/core';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string),
     MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
     MongooseModule.forFeature([{ name: Auction.name, schema: AuctionsShema }]),

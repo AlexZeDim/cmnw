@@ -1,19 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
-import BlizzAPI from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AuctionsService {
   private readonly logger = new Logger(
     AuctionsService.name, true,
   );
-
-  private BNet: BlizzAPI
 
   constructor(
     @InjectModel(Realm.name)
@@ -26,7 +24,7 @@ export class AuctionsService {
     this.indexAuctions(GLOBAL_DMA_KEY)
   }
 
-  // TODO cron task
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });

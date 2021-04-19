@@ -79,6 +79,23 @@ services:
     networks:
       - conglomerat-network
 
+  auctions:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: auctions
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/auctions/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
 
 # Docker Networks
 networks:

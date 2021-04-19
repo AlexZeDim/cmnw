@@ -11,5 +11,6 @@ COPY . .
 RUN nest build keys \
   && nest build realms \
   && nest build characters \
+  && nest build auctions \
 
 CMD wait && ["node"]

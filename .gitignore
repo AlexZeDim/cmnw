@@ -51,3 +51,5 @@ lerna-debug.log*
 !/init-mongo.js
 !/package-lock.json
 !/files/
+
+.env

@@ -19,8 +19,6 @@ export class RealmsService {
   private BNet: BlizzAPI
 
   constructor(
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
     @BullQueueInject(realmsQueue.name)
@@ -51,7 +49,7 @@ export class RealmsService {
       });
 
       for (const { id, name, slug } of realmList) {
-        this.logger.log(`${id}:${name}`)
+        this.logger.log(`${id}:${name}`);
         await this.queue.add(slug, {
           _id: id,
           name: name,
@@ -62,7 +60,7 @@ export class RealmsService {
           accessToken: key.token,
           population: true,
           wcl_ids: idsWCL
-        })
+        });
       }
     } catch (e) {
       this.logger.error(`indexRealms: ${e}`)

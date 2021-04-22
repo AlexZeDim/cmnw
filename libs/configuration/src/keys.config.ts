@@ -1,5 +1,5 @@
 import { get } from 'config';
-import { KeysInterface } from '@app/configuration/interfaces/keys.interface';
+import { KeysInterface } from '@app/configuration/interfaces';
 
 const Keys_Config = get<KeysInterface>('keys');
 

@@ -1,4 +1,4 @@
-import { MongooseModuleOptions } from '@nestjs/mongoose/dist/interfaces/mongoose-options.interface';
+import { MongooseModuleOptions } from '@nestjs/mongoose';
 
 export const mongoOptionsConfig: MongooseModuleOptions = {
   useNewUrlParser: true,

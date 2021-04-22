@@ -1,5 +1,5 @@
 import { get } from 'config';
-import { MongoInterface } from '@app/configuration/interfaces/mongo.interface';
+import { MongoInterface } from '@app/configuration/interfaces';
 
 const DB_Config = get<MongoInterface>('mongo');
 

@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { OsintModule } from './osint/osint.module';
+import { OsintController } from './osint.controller';
+import { OsintService } from './osint.service';
 
 @Module({
   imports: [
@@ -14,10 +15,9 @@ import { OsintModule } from './osint/osint.module';
           port: redisConfig.port,
         },
       },
-    }),
-    OsintModule,
+    })
   ],
-  controllers: [],
-  providers: [],
+  controllers: [OsintController],
+  providers: [OsintService],
 })
-export class AppModule {}
+export class OsintModule {}

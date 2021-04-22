@@ -10,8 +10,10 @@ import { ItemsWorker } from './items.worker';
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
-    MongooseModule.forFeature([{ name: Item.name, schema: ItemsSchema }]),
+    MongooseModule.forFeature([
+      { name: Key.name, schema: KeysSchema },
+      { name: Item.name, schema: ItemsSchema }
+    ]),
     BullModule.forRoot({
       options: {
         connection: {

@@ -9,9 +9,11 @@ import { charactersQueue } from '@app/core';
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
-    MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
-    MongooseModule.forFeature([{ name: WarcraftLogs.name, schema: WarcraftLogsSchema }]),
+    MongooseModule.forFeature([
+      { name: Key.name, schema: KeysSchema },
+      { name: Realm.name, schema: RealmsSchema },
+      { name: WarcraftLogs.name, schema: WarcraftLogsSchema },
+    ]),
     BullModule.forRoot({
       options: {
         connection: {

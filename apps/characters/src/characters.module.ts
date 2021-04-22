@@ -12,10 +12,12 @@ import { ScheduleModule } from '@nestjs/schedule';
   imports: [
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([{ name: Log.name, schema: LogsSchema }]),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
-    MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
-    MongooseModule.forFeature([{ name: Character.name, schema: CharactersSchema }]),
+    MongooseModule.forFeature([
+      { name: Log.name, schema: LogsSchema },
+      { name: Key.name, schema: KeysSchema },
+      { name: Realm.name, schema: RealmsSchema },
+      { name: Character.name, schema: CharactersSchema }
+    ]),
     BullModule.forRoot({
       options: {
         connection: {

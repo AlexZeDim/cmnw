@@ -9,8 +9,10 @@ import { guildsQueue } from '@app/core';
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
-    MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
+    MongooseModule.forFeature([
+      { name: Key.name, schema: KeysSchema },
+      { name: Realm.name, schema: RealmsSchema }
+    ]),
     BullModule.forRoot({
       options: {
         connection: {

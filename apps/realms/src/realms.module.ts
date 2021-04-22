@@ -22,11 +22,13 @@ import {
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
-    MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
-    MongooseModule.forFeature([{ name: RealmPopulation.name, schema: RealmsPopulationSchema }]),
-    MongooseModule.forFeature([{ name: Guild.name, schema: GuildsSchema }]),
-    MongooseModule.forFeature([{ name: Character.name, schema: CharactersSchema }]),
+    MongooseModule.forFeature([
+      { name: Key.name, schema: KeysSchema },
+      { name: Realm.name, schema: RealmsSchema },
+      { name: RealmPopulation.name, schema: RealmsPopulationSchema },
+      { name: Guild.name, schema: GuildsSchema },
+      { name: Character.name, schema: CharactersSchema }
+    ]),
     BullModule.forRoot({
       options: {
         connection: {

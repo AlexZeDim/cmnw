@@ -17,9 +17,11 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import { GuildsWorker } from './guilds.worker';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },

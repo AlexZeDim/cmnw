@@ -143,23 +143,24 @@ export class RealmsWorker {
       }
 
       if (!realm.isNew && args.population) {
-        // TODO check availability for separate queue
-        // await this.population(realm.toObject());
+        await this.population(realm.toObject());
         await job.updateProgress(90);
       }
 
       await job.updateProgress(100);
       return await realm.save();
     } catch (e) {
-      // TODO logger
       this.logger.error(`${RealmsWorker.name}: ${e}`)
     }
   }
 
-  private async population (args: LeanDocument<Realm>): Promise<void> {
+  private async population(args: LeanDocument<Realm>): Promise<void> {
     try {
       const realm = await this.RealmModel.findById(args._id);
-      if (!realm) return;
+      if (!realm) {
+        this.logger.error(`population: ${args._id} not found!`)
+        return;
+      }
 
       const population: Partial<PopulationRealmInterface> = {};
 
@@ -202,7 +203,7 @@ export class RealmsWorker {
 
       await this.RealmPopulationModel.create(population);
     } catch (e) {
-      this.logger.error(`population: ${e}`)
+      this.logger.error(`population: ${args._id}:${e}`)
     }
   }
 }

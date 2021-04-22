@@ -72,7 +72,7 @@ export class RealmsService {
    * @param start
    * @param end
    */
-  async getRealmsWarcraftLogsID(start: number = 1, end: number = 517): Promise<{ name: string, id: number }[]> {
+  private async getRealmsWarcraftLogsID(start: number = 1, end: number = 517): Promise<{ name: string, id: number }[]> {
     const
       wcl: { name: string, id: number }[] = [],
       x = Xray();

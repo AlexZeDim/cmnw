@@ -82,7 +82,7 @@ export class GuildsWorker {
       })
 
       let guild = await this.GuildModel.findById(updated._id);
-      console.log(guild)
+
       if (guild) {
         if (args.createOnlyUnique) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique:${args.createOnlyUnique}`);
@@ -111,7 +111,7 @@ export class GuildsWorker {
       //TODO inherit args
       if (args.updated_by) guild.updated_by = args.updated_by;
 
-      const summary = await this.summary(updated._id, updated.realm, this.BNet);
+      const summary = await this.summary(name_slug, updated.realm, this.BNet);
       Object.assign(updated, summary);
 
       const roster = await this.roster(updated, this.BNet);
@@ -132,7 +132,9 @@ export class GuildsWorker {
         await this.diffs(original, updated);
       }
 
-      return;
+      Object.assign(guild, updated)
+
+      return await guild.save();
     } catch (e) {
       this.logger.error(`${GuildsWorker.name}, ${e}`);
     }
@@ -174,7 +176,7 @@ export class GuildsWorker {
       summary.status_code = 200;
       return summary
     } catch (e) {
-      this.logger.error(`summary: ${e}`);
+      this.logger.error(`summary: ${guild_slug}@${realm_slug}:${e}`);
       return summary
     }
   }
@@ -234,7 +236,7 @@ export class GuildsWorker {
       }
       return roster
     } catch (e) {
-      this.logger.error(`roster: ${e}`);
+      this.logger.error(`roster: ${guild._id}:${e}`);
       return roster
     }
   }
@@ -376,11 +378,11 @@ export class GuildsWorker {
       await this.LogModel.insertMany(block, { rawResult: false });
       this.logger.log(`logs: ${updated._id} updated`);
     } catch (e) {
-      this.logger.error(`logs: ${e}`)
+      this.logger.error(`logs: ${updated._id}:${e}`)
     }
   }
 
-  async gm(member_new: GuildMemberInterface, member_old: GuildMemberInterface, original: GuildInterface, requested: GuildInterface): Promise<LeanDocument<Log>[]> {
+  async gm(member_new: GuildMemberInterface, member_old: GuildMemberInterface, original: GuildInterface, updated: GuildInterface): Promise<LeanDocument<Log>[]> {
     const block: LeanDocument<Log>[] = [];
     try {
       /** FIXME Update both GM hash ^^^priority */
@@ -391,34 +393,34 @@ export class GuildsWorker {
       if (!gm_character_new || !gm_character_old) {
         block.push(
           {
-            root_id: requested._id,
-            root_history: [requested._id],
+            root_id: updated._id,
+            root_history: [updated._id],
             original: `${member_old._id}:${member_old.id}`, //GM title withdraw from
             updated: `${member_new._id}:${member_old.id}`, //GM title claimed by
             event: 'guild',
             action: 'title',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_new._id,
             root_history: [member_new._id],
             original: '',
-            updated: `${requested.name}@${requested.realm_name}:${requested.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
+            updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
             event: 'character',
             action: 'title',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_old._id,
             root_history: [member_old._id],
-            original: `${requested.name}@${requested.realm_name}:${requested.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
+            original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
             updated: '',
             event: 'character',
             action: 'title',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           }
         );
         return block;
@@ -428,34 +430,34 @@ export class GuildsWorker {
         // Transfer title
         block.push(
           {
-            root_id: requested._id,
-            root_history: [requested._id],
+            root_id: updated._id,
+            root_history: [updated._id],
             original: `${member_old._id}:${member_old.id}`, //GM title withdraw from
             updated: `${member_new._id}:${member_old.id}`, //GM title claimed by
             event: 'guild',
             action: 'title',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_new._id,
             root_history: [member_new._id],
             original: '',
-            updated: `${requested.name}@${requested.realm_name}:${requested.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
+            updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
             event: 'character',
             action: 'title',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_old._id,
             root_history: [member_old._id],
-            original: `${requested.name}@${requested.realm_name}:${requested.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
+            original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
             updated: '',
             event: 'character',
             action: 'title',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           }
         );
         return block;
@@ -465,34 +467,34 @@ export class GuildsWorker {
         // Inherit title
         block.push(
           {
-            root_id: requested._id,
-            root_history: [requested._id],
+            root_id: updated._id,
+            root_history: [updated._id],
             original: `${member_old._id}:${member_old.id}`, //GM Title transferred from
             updated: `${member_new._id}:${member_new.id}`, //GM Title transferred to
             event: 'guild',
             action: 'inherit',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_new._id,
             root_history: [member_new._id],
             original: '',
-            updated: `${requested._id}:${requested.id}//${member_old._id}:${member_old.id}`, //GM Title received from
+            updated: `${updated._id}:${updated.id}//${member_old._id}:${member_old.id}`, //GM Title received from
             event: 'character',
             action: 'inherit',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_old._id,
             root_history: [member_old._id],
-            original: `${requested._id}:${requested.id}//${member_new._id}:${member_new.id}`, ////GM Title transferred to
+            original: `${updated._id}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM Title transferred to
             updated: '',
             event: 'character',
             action: 'inherit',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           }
         );
       }
@@ -501,40 +503,40 @@ export class GuildsWorker {
         // Transfer ownership
         block.push(
           {
-            root_id: requested._id,
-            root_history: [requested._id],
+            root_id: updated._id,
+            root_history: [updated._id],
             original: `${member_old._id}:${member_old.id}`, //GM ownership withdraw from
             updated: `${member_new._id}:${member_old.id}`, //GM ownership claimed by
             event: 'guild',
             action: 'ownership',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_new._id,
             root_history: [member_new._id],
             original: '',
-            updated: `${requested.name}@${requested.realm_name}:${requested.id}//${member_old._id}:${member_old.id}`, //GM ownership withdraw from
+            updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM ownership withdraw from
             event: 'character',
             action: 'ownership',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           },
           {
             root_id: member_old._id,
             root_history: [member_old._id],
-            original: `${requested.name}@${requested.realm_name}:${requested.id}//${member_new._id}:${member_new.id}`, ////GM ownership claimed by
+            original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM ownership claimed by
             updated: '',
             event: 'character',
             action: 'ownership',
             t0: original.last_modified || new Date(),
-            t1: requested.last_modified || new Date(),
+            t1: updated.last_modified || new Date(),
           }
         );
       }
       return block;
     } catch (e) {
-      this.logger.error(`gm: ${e}`);
+      this.logger.error(`gm: ${updated._id}:${e}`);
       return block;
     }
   }
@@ -577,7 +579,7 @@ export class GuildsWorker {
       if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });
       this.logger.log(`diffs: ${updated._id}, blocks: ${block.length}`)
     } catch (e) {
-      this.logger.error(`diffs: ${e}`)
+      this.logger.error(`diffs: ${updated._id}:${e}`)
     }
   }
 }

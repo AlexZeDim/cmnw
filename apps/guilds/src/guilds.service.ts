@@ -5,7 +5,7 @@ import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { GLOBAL_KEY } from '@app/core';
+import { GLOBAL_OSINT_KEY } from '@app/core';
 
 @Injectable()
 export class GuildsService {
@@ -19,13 +19,16 @@ export class GuildsService {
     @BullQueueInject(guildsQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexGuilds(GLOBAL_KEY)
+    this.indexGuilds(GLOBAL_OSINT_KEY)
   }
 
   async indexGuilds(clearance: string) {
     try {
       const keys = await this.KeyModel.find({ tags: clearance });
-      if (!keys.length) return
+      if (!keys.length) {
+        this.logger.error(`indexGuilds: ${keys.length} keys found`);
+        return
+      }
       await this.queue.add('депортация@gordunni', {
         _id: 'депортация@gordunni',
         name: 'Депортация',
@@ -36,7 +39,7 @@ export class GuildsService {
         clientSecret: keys[0].secret,
         accessToken: keys[0].token,
       }, {
-        jobId: 'депортация@gordunni'
+        jobId: 'депортация@gordunni6'
       })
     } catch (e) {
       this.logger.error(`${GuildsService.name}, ${e}`)

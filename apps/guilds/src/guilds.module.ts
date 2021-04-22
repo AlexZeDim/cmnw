@@ -2,7 +2,17 @@ import { Module } from '@nestjs/common';
 import { GuildsService } from './guilds.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, redisConfig } from '@app/configuration';
-import { Guild, GuildsSchema, Key, KeysSchema } from '@app/mongo';
+import {
+  Character,
+  CharactersSchema,
+  Guild,
+  GuildsSchema,
+  Key,
+  KeysSchema, Log,
+  LogsSchema,
+  Realm,
+  RealmsSchema,
+} from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
@@ -11,8 +21,13 @@ import { GuildsWorker } from './guilds.worker';
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
-    MongooseModule.forFeature([{ name: Guild.name, schema: GuildsSchema }]),
+    MongooseModule.forFeature([
+      { name: Log.name, schema: LogsSchema },
+      { name: Key.name, schema: KeysSchema },
+      { name: Guild.name, schema: GuildsSchema },
+      { name: Realm.name, schema: RealmsSchema },
+      { name: Character.name, schema: CharactersSchema },
+    ]),
     BullModule.forRoot({
       options: {
         connection: {
@@ -21,8 +36,7 @@ import { GuildsWorker } from './guilds.worker';
         },
       },
     }),
-    BullModule.registerQueue(charactersQueue.name),
-    BullModule.registerQueue(guildsQueue.name),
+    BullModule.registerQueue(charactersQueue.name, guildsQueue.name),
   ],
   controllers: [],
   providers: [GuildsService, GuildsWorker],

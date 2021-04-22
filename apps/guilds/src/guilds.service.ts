@@ -31,6 +31,12 @@ export class GuildsService {
         name: 'Депортация',
         realm: 'Gordunni',
         members: [],
+        region: 'eu',
+        clientId: keys[0]._id,
+        clientSecret: keys[0].secret,
+        accessToken: keys[0].token,
+      }, {
+        jobId: 'депортация@gordunni'
       })
     } catch (e) {
       this.logger.error(`${GuildsService.name}, ${e}`)

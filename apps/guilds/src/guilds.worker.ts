@@ -3,12 +3,21 @@ import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { BullQueueInject, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { Job, Queue } from 'bullmq';
-import { capitalize, charactersQueue, GuildInterface, GuildSummaryInterface, PLAYABLE_CLASS, toSlug } from '@app/core';
+import {
+  capitalize,
+  charactersQueue,
+  GuildInterface,
+  guildsQueue,
+  GuildSummaryInterface,
+  PLAYABLE_CLASS,
+  toSlug,
+} from '@app/core';
 import { GuildMemberInterface } from '@app/core/interfaces/osint.interface';
 import { differenceBy, intersectionBy } from "lodash";
 
+@BullWorker({ queueName: guildsQueue.name })
 export class GuildsWorker {
   private readonly logger = new Logger(
     GuildsWorker.name, true,
@@ -29,11 +38,11 @@ export class GuildsWorker {
     private readonly queue: Queue,
   ) { }
 
-  @BullWorkerProcess()
+  @BullWorkerProcess({ concurrency: guildsQueue.concurrency })
   public async process(job: Job): Promise<Guild | void> {
     try {
       const args: GuildInterface & BattleNetOptions = { ...job.data };
-
+      console.log(args)
       const realm = await this.RealmModel
         .findOne(
           { $text: { $search: args.realm } },
@@ -73,6 +82,7 @@ export class GuildsWorker {
       })
 
       let guild = await this.GuildModel.findById(updated._id);
+      console.log(guild)
       if (guild) {
         if (args.createOnlyUnique) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique:${args.createOnlyUnique}`);

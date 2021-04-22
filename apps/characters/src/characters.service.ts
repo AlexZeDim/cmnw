@@ -29,7 +29,7 @@ export class CharactersService {
   private async indexCharacters(clearance: string): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
-      if (jobs > 1000) {
+      if (jobs > 50000) {
         this.logger.error(`indexCharacters: ${jobs} jobs found`);
         return
       }
@@ -51,7 +51,7 @@ export class CharactersService {
           await this.queue.add(
             character._id,
             {
-              _id: character,
+              _id: character._id,
               name: name,
               realm: realm,
               region: 'eu',
@@ -62,7 +62,7 @@ export class CharactersService {
               guildRank: false,
               createOnlyUnique: false,
               forceUpdate: true,
-              iterations: iteration,
+              iteration: iteration,
             },
             {
               jobId: character._id

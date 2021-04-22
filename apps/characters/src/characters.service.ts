@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { GLOBAL_KEY, charactersQueue } from '@app/core';
+import { charactersQueue, GLOBAL_OSINT_KEY } from '@app/core';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
@@ -22,7 +22,7 @@ export class CharactersService {
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexCharacters(GLOBAL_KEY);
+    this.indexCharacters(GLOBAL_OSINT_KEY);
   }
 
   @Cron(CronExpression.EVERY_HOUR)

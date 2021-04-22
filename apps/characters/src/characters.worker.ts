@@ -256,7 +256,7 @@ export class CharactersWorker {
       }))
       return media
     } catch (e) {
-      this.logger.error(`media: ${e}`)
+      this.logger.error(`media: ${name_slug}@${realm_slug}:${e}`)
     }
   }
 
@@ -481,7 +481,7 @@ export class CharactersWorker {
       }
       return raider_io;
     } catch (e) {
-      this.logger.error(`raiderio: ${e}`);
+      this.logger.error(`raiderio: ${name}@${realm_slug}:${e}`);
       return raider_io;
     }
   }
@@ -512,7 +512,7 @@ export class CharactersWorker {
       )
       return wowprogress
     } catch (e) {
-      this.logger.error(`wowprogress: ${e}`);
+      this.logger.error(`wowprogress: ${name}@${realm_slug}:${e}`);
       return wowprogress
     }
   }
@@ -533,7 +533,7 @@ export class CharactersWorker {
       await browser.close();
       return warcraft_logs;
     } catch (e) {
-      this.logger.error(`warcraftlogs: ${e}`);
+      this.logger.error(`warcraftlogs: ${name}@${realm_slug}:${e}`);
       return warcraft_logs;
     }
   }
@@ -575,7 +575,7 @@ export class CharactersWorker {
       );
       if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });
     } catch (e) {
-      this.logger.error(`diffs: ${e}`);
+      this.logger.error(`diffs: ${original._id}:${e}`);
     }
   }
 }

@@ -1,0 +1,43 @@
+import { Module } from '@nestjs/common';
+import { BullModule } from '@anchan828/nest-bullmq';
+import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { RealmsService } from './realms.service';
+import { RealmsWorker } from './realms.worker';
+import { MongooseModule } from '@nestjs/mongoose';
+import { realmsQueue } from '@app/core';
+import {
+  Character,
+  CharactersSchema,
+  Guild,
+  GuildsSchema,
+  Key,
+  KeysSchema,
+  Realm,
+  RealmsSchema,
+  RealmPopulation,
+  RealmsPopulationSchema,
+} from '@app/mongo';
+
+
+@Module({
+  imports: [
+    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
+    MongooseModule.forFeature([{ name: Realm.name, schema: RealmsSchema }]),
+    MongooseModule.forFeature([{ name: RealmPopulation.name, schema: RealmsPopulationSchema }]),
+    MongooseModule.forFeature([{ name: Guild.name, schema: GuildsSchema }]),
+    MongooseModule.forFeature([{ name: Character.name, schema: CharactersSchema }]),
+    BullModule.forRoot({
+      options: {
+        connection: {
+          host: redisConfig.host,
+          port: redisConfig.port,
+        },
+      },
+    }),
+    BullModule.registerQueue(realmsQueue.name),
+  ],
+  controllers: [],
+  providers: [RealmsService, RealmsWorker],
+})
+export class RealmsModule {}

@@ -1,0 +1,138 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/conglomerat/src",
+  "monorepo": true,
+  "root": "apps/conglomerat",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+  },
+  "projects": {
+    "conglomerat": {
+      "type": "application",
+      "root": "apps/conglomerat",
+      "entryFile": "main",
+      "sourceRoot": "apps/conglomerat/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+      }
+    },
+    "configuration": {
+      "type": "library",
+      "root": "libs/configuration",
+      "entryFile": "index",
+      "sourceRoot": "libs/configuration/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/configuration/tsconfig.lib.json"
+      }
+    },
+    "core": {
+      "type": "library",
+      "root": "libs/core",
+      "entryFile": "index",
+      "sourceRoot": "libs/core/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/core/tsconfig.lib.json"
+      }
+    },
+    "realms": {
+      "type": "application",
+      "root": "apps/realms",
+      "entryFile": "main",
+      "sourceRoot": "apps/realms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/realms/tsconfig.app.json"
+      }
+    },
+    "mongo": {
+      "type": "library",
+      "root": "libs/mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/mongo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mongo/tsconfig.lib.json"
+      }
+    },
+    "keys": {
+      "type": "application",
+      "root": "apps/keys",
+      "entryFile": "main",
+      "sourceRoot": "apps/keys/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/keys/tsconfig.app.json"
+      }
+    },
+    "discord": {
+      "type": "application",
+      "root": "apps/discord",
+      "entryFile": "main",
+      "sourceRoot": "apps/discord/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/discord/tsconfig.app.json"
+      }
+    },
+    "characters": {
+      "type": "application",
+      "root": "apps/characters",
+      "entryFile": "main",
+      "sourceRoot": "apps/characters/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/characters/tsconfig.app.json"
+      }
+    },
+    "auctions": {
+      "type": "application",
+      "root": "apps/auctions",
+      "entryFile": "main",
+      "sourceRoot": "apps/auctions/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auctions/tsconfig.app.json"
+      }
+    },
+    "items": {
+      "type": "application",
+      "root": "apps/items",
+      "entryFile": "main",
+      "sourceRoot": "apps/items/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/items/tsconfig.app.json"
+      }
+    },
+    "wowtoken": {
+      "type": "application",
+      "root": "apps/wowtoken",
+      "entryFile": "main",
+      "sourceRoot": "apps/wowtoken/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/wowtoken/tsconfig.app.json"
+      }
+    },
+    "guilds": {
+      "type": "application",
+      "root": "apps/guilds",
+      "entryFile": "main",
+      "sourceRoot": "apps/guilds/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/guilds/tsconfig.app.json"
+      }
+    },
+    "warcraftlogs": {
+      "type": "application",
+      "root": "apps/warcraftlogs",
+      "entryFile": "main",
+      "sourceRoot": "apps/warcraftlogs/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/warcraftlogs/tsconfig.app.json"
+      }
+    },
+    "wowprogress": {
+      "type": "application",
+      "root": "apps/wowprogress",
+      "entryFile": "main",
+      "sourceRoot": "apps/wowprogress/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/wowprogress/tsconfig.app.json"
+      }
+    }
+  }
+}

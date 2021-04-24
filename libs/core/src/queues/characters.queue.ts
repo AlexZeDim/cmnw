@@ -8,7 +8,7 @@ const queueOptions: JobsOptions = {
 
 export const charactersQueue: QueueInterface = {
   name: 'OSINT:Characters',
-  concurrency: 20,
+  concurrency: 40,
   options: {
     defaultJobOptions: queueOptions,
   },

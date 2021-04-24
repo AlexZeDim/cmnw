@@ -8,7 +8,7 @@ const queueOptions: JobsOptions = {
 
 export const auctionsQueue: QueueInterface = {
   name: 'OSINT:Auctions',
-  concurrency: 3,
+  concurrency: 5,
   options: {
     defaultJobOptions: queueOptions,
   },

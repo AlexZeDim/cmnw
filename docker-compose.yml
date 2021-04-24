@@ -98,6 +98,23 @@ services:
     networks:
       - conglomerat-network
 
+  guilds:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: guilds
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/guilds/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   auctions:
     build: ./
     image: conglomerat

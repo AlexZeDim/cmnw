@@ -12,6 +12,7 @@ RUN nest build keys \
   && nest build realms \
   && nest build auctions \
   && nest build characters \
-  && nest build conglomerat
+  && nest build conglomerat \
+  && nest build wowprogress
 
 CMD wait && ["node"]

@@ -115,6 +115,23 @@ services:
     networks:
       - conglomerat-network
 
+  wowprogress:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: wowprogress
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/wowprogress/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
 
 # Docker Networks
 networks:

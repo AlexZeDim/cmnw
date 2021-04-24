@@ -11,6 +11,7 @@ COPY . .
 RUN nest build keys \
   && nest build realms \
   && nest build auctions \
-  && nest build characters
+  && nest build characters \
+  && nest build conglomerat \
 
 CMD wait && ["node"]

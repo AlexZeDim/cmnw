@@ -28,6 +28,25 @@ services:
     networks:
       - conglomerat-network
 
+  commonwealth:
+    build: ./
+    image: conglomerat
+    container_name: commonwealth
+    restart: always
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/conglomerat/main.js' ]
+    ports:
+      - '80:8000'
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   keys:
     build: ./
     image: conglomerat

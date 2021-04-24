@@ -14,7 +14,6 @@ import {
   RealmsSchema,
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { charactersQueue } from '@app/core';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import { GuildsWorker } from './guilds.worker';
 import { ScheduleModule } from '@nestjs/schedule';

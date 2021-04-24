@@ -3,11 +3,11 @@ import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Job, Queue } from 'bullmq';
+import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Job } from 'bullmq';
 import {
   capitalize,
-  charactersQueue,
+  FACTION,
   GuildInterface,
   guildsQueue,
   GuildSummaryInterface,
@@ -155,8 +155,8 @@ export class GuildsWorker {
           if (keys.includes(key) && value !== null) summary[key] = value;
           if (key === 'faction' && typeof value === 'object' && value !== null) {
             if (value.type && value.name === null) {
-              if (value.type.toString().startsWith('A')) summary.faction = 'Alliance'
-              if (value.type.toString().startsWith('H')) summary.faction = 'Horde'
+              if (value.type.toString().startsWith('A')) summary.faction = FACTION.A
+              if (value.type.toString().startsWith('H')) summary.faction = FACTION.H
             } else {
               summary.faction = value.name
             }

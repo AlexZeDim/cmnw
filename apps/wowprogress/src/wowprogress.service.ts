@@ -117,6 +117,7 @@ export class WowprogressService {
                   name: guild.name,
                   realm: realm.slug,
                   members: [],
+                  forceUpdate: false,
                   region: 'eu',
                   clientId: key._id,
                   clientSecret: key.secret,

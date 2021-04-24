@@ -35,7 +35,7 @@ export class Guild extends Document {
   @Prop({ required: true })
   realm_name: string;
 
-  @Prop({ required: true })
+  @Prop()
   faction: string;
 
   @Prop({ type: [GuildMembersSchema] })

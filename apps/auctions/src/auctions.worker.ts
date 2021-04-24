@@ -76,7 +76,7 @@ export class AuctionsWorker {
         })
       )
 
-      await this.AuctionModel.insertMany(orders, { rawResult: false });
+      await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
       return 200
     } catch (e) {

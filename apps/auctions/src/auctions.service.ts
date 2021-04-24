@@ -5,7 +5,6 @@ import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AuctionsService {
@@ -24,7 +23,6 @@ export class AuctionsService {
     this.indexAuctions(GLOBAL_DMA_KEY)
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
@@ -53,9 +51,9 @@ export class AuctionsService {
             accessToken: key.token
           }, {
             jobId: `${realm._id.connected_realm_id}`,
-            /*repeat: { TODO cron
+            repeat: {
               every: 900000
-            }*/
+            }
           })
         })
     } catch (e) {

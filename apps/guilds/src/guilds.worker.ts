@@ -40,7 +40,7 @@ export class GuildsWorker {
   public async process(job: Job): Promise<Guild | void> {
     try {
       const args: GuildInterface & BattleNetOptions = { ...job.data };
-      console.log(args)
+
       const realm = await this.RealmModel
         .findOne(
           { $text: { $search: args.realm } },

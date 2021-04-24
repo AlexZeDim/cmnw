@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
+import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { OsintModule } from './osint/osint.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     BullModule.forRoot({
       options: {
         connection: {

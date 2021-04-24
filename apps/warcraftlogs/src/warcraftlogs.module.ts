@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { WarcraftlogsService } from './warcraftlogs.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
+import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { Key, KeysSchema, Realm, RealmsSchema, WarcraftLogs, WarcraftLogsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
       { name: Realm.name, schema: RealmsSchema },

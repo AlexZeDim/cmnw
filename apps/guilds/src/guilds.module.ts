@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GuildsService } from './guilds.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
+import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import {
   Character,
   CharactersSchema,
@@ -22,7 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },
       { name: Key.name, schema: KeysSchema },

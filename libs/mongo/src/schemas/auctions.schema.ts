@@ -1,7 +1,7 @@
 import { Document, Mixed } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema()
+@Schema({ timestamps: true })
 export class Auction extends Document {
   @Prop({ type: Number, required: true })
   id: number;
@@ -33,6 +33,12 @@ export class Auction extends Document {
   // TODO enum?
   @Prop({ type: String })
   time_left: string;
+
+  @Prop()
+  updatedAt: Date;
+
+  @Prop()
+  createdAt: Date;
 }
 
 export const AuctionsShema = SchemaFactory.createForClass(Auction);

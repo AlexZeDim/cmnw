@@ -25,7 +25,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         },
       },
     }),
-    BullModule.registerQueue(auctionsQueue.name),
+    BullModule.registerQueue({ queueName: auctionsQueue.name, options: auctionsQueue.options }),
   ],
   controllers: [],
   providers: [AuctionsService, AuctionsWorker],

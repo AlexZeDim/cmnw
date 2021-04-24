@@ -81,6 +81,7 @@ export class AuctionsWorker {
       return 200
     } catch (e) {
       this.logger.error(`${AuctionsWorker.name}: ${e}`)
+      return 500
     }
   }
 }

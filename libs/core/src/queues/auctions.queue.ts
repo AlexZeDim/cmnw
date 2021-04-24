@@ -3,7 +3,7 @@ import { QueueInterface } from '@app/core/interfaces';
 
 const queueOptions: JobsOptions = {
   removeOnComplete: true,
-  removeOnFail: false,
+  removeOnFail: true,
 };
 
 export const auctionsQueue: QueueInterface = {

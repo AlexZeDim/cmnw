@@ -11,7 +11,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGO_ROOT_DATABASE}
     ports:
-      - "27017-27019:27017-27019"
+      - '27017-27019:27017-27019'
     networks:
       - conglomerat-network
 

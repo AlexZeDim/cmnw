@@ -38,7 +38,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/conglomerat/main.js' ]
     ports:
-      - '8000:8000'
+      - '5000:8000'
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:

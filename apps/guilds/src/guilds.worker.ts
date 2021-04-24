@@ -34,8 +34,6 @@ export class GuildsWorker {
     private readonly CharacterModel: Model<Character>,
     @InjectModel(Log.name)
     private readonly LogModel: Model<Log>,
-    @BullQueueInject(charactersQueue.name)
-    private readonly queue: Queue,
   ) { }
 
   @BullWorkerProcess({ concurrency: guildsQueue.concurrency })
@@ -183,6 +181,7 @@ export class GuildsWorker {
 
   async roster(guild: GuildInterface, BNet: BlizzAPI) {
     const roster: { members: GuildMemberInterface[] } = { members: [] };
+    const characters: Character[] = [];
     try {
       const guild_slug = toSlug(guild.name);
       const { members }: Record<string, any> = await BNet.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
@@ -195,37 +194,29 @@ export class GuildsWorker {
         if ('character' in member && 'rank' in member) {
           iteration += 1;
           const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
-          const playable_class = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
-          // TODO optimize via bulk?
-          await this.queue.add(
+          const character_class = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
+
+          const character = new this.CharacterModel({
             _id,
-            {
-              id: member.character.id,
-              name: member.character.name,
-              realm: guild.realm,
-              realm_id: guild.realm_id,
-              realm_name: guild.realm_name,
-              guild_id: `${guild_slug}@${guild.realm}`,
-              guild: guild.name,
-              guild_guid: guild.id,
-              character_class: playable_class,
-              faction: guild.faction,
-              level: member.character.level ? member.character.level : undefined,
-              last_modified: guild.last_modified,
-              updated_by: 'OSINT-roster',
-              region: BNet.region,
-              clientId: BNet.clientId,
-              clientSecret: BNet.clientSecret,
-              accessToken: BNet.accessToken,
-              iteration: iteration,
-              guildRank: true,
-              createOnlyUnique: true
-            },
-            {
-              jobId: _id,
-              priority: 3
-            }
-          );
+            id: member.character.id,
+            name: member.character.name,
+            realm: guild.realm,
+            realm_id: guild.realm_id,
+            realm_name: guild.realm_name,
+            guild_id: `${guild_slug}@${guild.realm}`,
+            guild: guild.name,
+            guild_rank: member.rank,
+            guild_guid: guild.id,
+            character_class,
+            faction: guild.faction,
+            level: member.character.level ? member.character.level : undefined,
+            last_modified: guild.last_modified,
+            updated_by: 'OSINT-roster',
+            created_by: 'OSINT-roster',
+          })
+
+          characters.push(character)
+
           // TODO logger?
           roster.members.push({
             _id: _id,
@@ -234,6 +225,9 @@ export class GuildsWorker {
           });
         }
       }
+
+      await this.CharacterModel.insertMany(characters, { ordered: false })
+
       return roster
     } catch (e) {
       this.logger.error(`roster: ${guild._id}:${e}`);

@@ -8,7 +8,7 @@ const queueOptions: JobsOptions = {
 
 export const guildsQueue: QueueInterface = {
   name: 'OSINT:Guilds',
-  concurrency: 1,
+  concurrency: 5,
   options: {
     defaultJobOptions: queueOptions,
   },

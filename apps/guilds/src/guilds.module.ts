@@ -38,7 +38,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         },
       },
     }),
-    BullModule.registerQueue(charactersQueue.name, guildsQueue.name),
+    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
   ],
   controllers: [],
   providers: [GuildsService, GuildsWorker],

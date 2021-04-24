@@ -209,7 +209,7 @@ export class Character extends Document {
   @Prop({ type: [String] })
   languages: MongooseSchema.Types.Array;
 
-  @Prop()
+  @Prop({ index: true })
   updatedAt: Date;
 
   @Prop()

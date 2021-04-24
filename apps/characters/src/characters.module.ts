@@ -26,7 +26,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         },
       },
     }),
-    BullModule.registerQueue(charactersQueue.name),
+    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
   ],
   controllers: [],
   providers: [CharactersService, CharactersWorker],

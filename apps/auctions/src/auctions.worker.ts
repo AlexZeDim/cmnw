@@ -23,7 +23,7 @@ export class AuctionsWorker {
     private readonly RealmModel: Model<Realm>,
   ) {}
 
-  @BullWorkerProcess({ concurrency: auctionsQueue.concurrency })
+  @BullWorkerProcess(auctionsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
       const args: { connected_realm_id: number, auctions?: number } & BattleNetOptions = { ...job.data };

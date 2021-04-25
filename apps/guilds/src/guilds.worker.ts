@@ -36,7 +36,7 @@ export class GuildsWorker {
     private readonly LogModel: Model<Log>,
   ) { }
 
-  @BullWorkerProcess({ concurrency: guildsQueue.concurrency })
+  @BullWorkerProcess(guildsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
       const args: GuildInterface & BattleNetOptions = { ...job.data };

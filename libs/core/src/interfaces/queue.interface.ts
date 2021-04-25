@@ -1,7 +1,7 @@
-import { QueueOptions } from 'bullmq';
+import { QueueOptions, WorkerOptions } from 'bullmq';
 
 export interface QueueInterface {
   readonly name: string,
-  readonly concurrency?: number,
+  readonly workerOptions: WorkerOptions,
   readonly options: QueueOptions
 }

@@ -66,7 +66,8 @@ export class AuctionsService {
               accessToken: key.token
             },
             {
-              repeat: { every: 90000 }
+              jobId: `${realm._id.connected_realm_id}`,
+              repeat: { every: 900000 },
             }
           )
         })

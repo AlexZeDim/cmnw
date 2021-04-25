@@ -33,7 +33,7 @@ export class RealmsWorker {
     private readonly CharacterModel: Model<Character>,
   ) {}
 
-  @BullWorkerProcess()
+  @BullWorkerProcess(realmsQueue.workerOptions)
   public async process(job: Job): Promise<void> {
     try {
       const args: RealmInterface & BattleNetOptions = { ...job.data };

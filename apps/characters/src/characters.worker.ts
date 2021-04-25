@@ -39,7 +39,7 @@ export class CharactersWorker {
     private readonly LogModel: Model<Log>
   ) {}
 
-  @BullWorkerProcess({ concurrency: charactersQueue.concurrency })
+  @BullWorkerProcess(charactersQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
 

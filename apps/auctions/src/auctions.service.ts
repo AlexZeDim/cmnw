@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Key, Realm } from '@app/mongo';
-import { Model } from "mongoose";
+import { Connection, Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
+import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
 
 @Injectable()
 export class AuctionsService {
@@ -15,6 +16,8 @@ export class AuctionsService {
   );
 
   constructor(
+    @InjectConnection('commonwealth')
+    private connection: Connection,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)
@@ -32,7 +35,9 @@ export class AuctionsService {
   @Cron(CronExpression.EVERY_30_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
+      await this.connection.openUri(mongoConfig.connection_string, mongoOptionsConfig);
       await this.sleep(60);
+
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexAuctions: clearance: ${GLOBAL_DMA_KEY} key not found`);
@@ -72,7 +77,9 @@ export class AuctionsService {
               accessToken: key.token
             }
           )
-        })
+        });
+
+      await this.connection.close();
     } catch (e) {
       this.logger.error(`indexAuctions: ${e}`)
     }

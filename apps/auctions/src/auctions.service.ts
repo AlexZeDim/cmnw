@@ -1,21 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm } from '@app/mongo';
-import { Connection, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
 import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
+import mongoose from "mongoose";
 
 @Injectable()
 export class AuctionsService {
   private readonly logger = new Logger(
     AuctionsService.name, true,
   );
-
-  private connection: Connection;
 
   constructor(
     @InjectModel(Realm.name)
@@ -35,7 +34,7 @@ export class AuctionsService {
   @Cron(CronExpression.EVERY_30_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
-      await this.connection.openUri(mongoConfig.connection_string, mongoOptionsConfig);
+      await mongoose.connect(mongoConfig.connection_string, mongoOptionsConfig);
       await this.sleep(60);
 
       const key = await this.KeyModel.findOne({ tags: clearance });
@@ -78,7 +77,7 @@ export class AuctionsService {
             }
           )
         });
-      await this.connection.close();
+      await mongoose.connection.close()
     } catch (e) {
       this.logger.error(`indexAuctions: ${e}`)
     }

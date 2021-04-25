@@ -6,7 +6,7 @@ import {
   REALM_TICKER,
   ConnectedRealmInterface,
   PopulationRealmInterface,
-  MAX_LEVEL, CHARACTER_CLASS, FACTION, COVENANTS,
+  MAX_LEVEL, CHARACTER_CLASS, FACTION, COVENANTS, toKey,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -34,7 +34,7 @@ export class RealmsWorker {
   ) {}
 
   @BullWorkerProcess()
-  public async process(job: Job): Promise<Realm> {
+  public async process(job: Job): Promise<void> {
     try {
       const args: RealmInterface & BattleNetOptions = { ...job.data };
       const summary: RealmInterface = { _id: args._id, slug: args.slug };
@@ -147,8 +147,8 @@ export class RealmsWorker {
         await job.updateProgress(90);
       }
 
+      await realm.save();
       await job.updateProgress(100);
-      return await realm.save();
     } catch (e) {
       this.logger.error(`${RealmsWorker.name}: ${e}`)
     }
@@ -191,14 +191,16 @@ export class RealmsWorker {
        * every active character
        */
       for (const character_class of CHARACTER_CLASS) {
-        population.characters_classes[character_class] = await this.CharacterModel.countDocuments({ realm: args.slug, statusCode: 200, character_class: character_class });
+        const key: string = toKey(character_class);
+        population.characters_classes[key] = await this.CharacterModel.countDocuments({ realm: args.slug, statusCode: 200, character_class: character_class });
       }
       /**
        * Count covenant stats
        * for every active character
        */
       for (const covenant of COVENANTS) {
-        population.characters_covenants[covenant] = await this.CharacterModel.countDocuments({ 'realm.slug': args.slug, statusCode: 200, 'chosen_covenant': covenant });
+        const key: string = toKey(covenant);
+        population.characters_covenants[key] = await this.CharacterModel.countDocuments({ 'realm.slug': args.slug, statusCode: 200, 'chosen_covenant': covenant });
       }
 
       await this.RealmPopulationModel.create(population);

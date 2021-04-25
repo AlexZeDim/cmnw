@@ -37,3 +37,15 @@ export const toSlug = (s: string): string => {
     .toLowerCase();
 }
 
+
+/**
+ * @description Return force lowercased with underscore format string
+ * @param s {string}
+ * @return {string}
+ */
+export const toKey = (s: string): string => {
+  return s
+    .replace(/\s+/g, '_')
+    .replace(/'+/g, '')
+    .toLowerCase();
+}

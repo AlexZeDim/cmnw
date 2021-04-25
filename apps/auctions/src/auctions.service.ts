@@ -36,13 +36,13 @@ export class AuctionsService {
 
       await this.queue.drain(true)
 
-      const t20: number = parseInt(moment().subtract(30, 'minutes').format('x'));
+      const offsetTime: number = parseInt(moment().subtract(30, 'minutes').format('x'));
 
       await this.RealmModel
         .aggregate([
           {
             $match: {
-              auctions: { $lt: t20 }
+              auctions: { $lt: offsetTime }
             }
           },
           {

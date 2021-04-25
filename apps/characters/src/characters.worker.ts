@@ -40,10 +40,11 @@ export class CharactersWorker {
   ) {}
 
   @BullWorkerProcess({ concurrency: charactersQueue.concurrency })
-  public async process(job: Job): Promise<Character | void> {
+  public async process(job: Job): Promise<number> {
     try {
 
       const args: BattleNetOptions & CharacterInterface = { ...job.data };
+      await job.updateProgress(1);
 
       const realm = await this.RealmModel
         .findOne(
@@ -74,7 +75,6 @@ export class CharactersWorker {
           realm_name: realm.name
         };
 
-      // TODO update progress
       await job.updateProgress(5);
 
       let character = await this.CharacterModel.findById(original._id);
@@ -104,6 +104,7 @@ export class CharactersWorker {
             }
             this.logger.log(`G:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},guildRank:${args.guildRank}`);
             await character.save()
+            await job.updateProgress(12);
           }
         }
         /**
@@ -112,12 +113,12 @@ export class CharactersWorker {
          */
         if (args.createOnlyUnique) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
-          return character
+          return 302
         }
         //TODO what if force update is time param?
         if (!args.forceUpdate && now < character.updatedAt.getTime()) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: false`);
-          return character
+          return 304
         }
         /**
          * We create copy of character to compare it
@@ -125,6 +126,7 @@ export class CharactersWorker {
          */
         Object.assign(original, character.toObject())
         character.status_code = 100
+        await job.updateProgress(15);
       } else {
         character = new this.CharacterModel({
           _id: `${name_slug}@${realm.slug}`,
@@ -144,6 +146,7 @@ export class CharactersWorker {
         if (args.guild_guid) character.guild_guid = args.guild_guid;
         if (args.guild_id) character.guild_id = args.guild_id;
         if (args.created_by) character.created_by = args.created_by;
+        await job.updateProgress(17);
       }
       /**
        * Inherit safe values
@@ -159,6 +162,7 @@ export class CharactersWorker {
       if (args.updated_by) character.updated_by = args.updated_by;
       if (args.character_class) character.character_class = args.character_class;
       if (args.active_spec) character.active_spec = args.active_spec;
+      await job.updateProgress(20);
 
 
       this.BNet = new BlizzAPI({
@@ -187,6 +191,7 @@ export class CharactersWorker {
         if (character_status.lastModified) character.last_modified = character_status.lastModified
       }
 
+      await job.updateProgress(25);
       if (character_status && character_status.is_valid && character_status.is_valid === true) {
         const [summary, pets_collection, mount_collection, professions, media] = await Promise.all([
           this.summary(name_slug, character.realm, this.BNet),
@@ -202,6 +207,7 @@ export class CharactersWorker {
         Object.assign(updated, professions);
         Object.assign(updated, media);
       }
+      await job.updateProgress(50);
       /**
        * update RIO, WCL & Progress
        * by request from args
@@ -209,16 +215,19 @@ export class CharactersWorker {
       if (args.updateRIO) {
         const raider_io = await this.raiderio(character.name, character.realm);
         Object.assign(updated, raider_io);
+        await job.updateProgress(60);
       }
 
       if (args.updateWCL) {
         const raider_io = await this.warcraftlogs(character.name, character.realm);
         Object.assign(updated, raider_io);
+        await job.updateProgress(70);
       }
 
       if (args.updateWP) {
         const wow_progress = await this.wowprogress(character.name, character.realm);
         Object.assign(updated, wow_progress);
+        await job.updateProgress(80);
       }
 
       /**
@@ -227,13 +236,15 @@ export class CharactersWorker {
        * only if original
        */
       if (!character.isNew) {
-        await this.diffs(original, updated)
+        await this.diffs(original, updated);
+        await job.updateProgress(90);
       }
 
       Object.assign(character, updated);
 
+      await character.save();
       await job.updateProgress(100);
-      return await character.save();
+      return character.status_code;
     } catch (e) {
       this.logger.error(`${CharactersWorker.name}: ${e}`)
     }

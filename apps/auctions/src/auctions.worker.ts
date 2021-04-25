@@ -66,22 +66,8 @@ export class AuctionsWorker {
 
       const ts: number = parseInt(moment(response.lastModified).format('x'));
 
-      const orders: any = await Promise.all(
-        response.auctions.map(async order => {
-          if (order.item && order.item.id) {
-            order.item_id = order.item.id
-            if (order.item.id === 82800) {
-              //TODO pet fix
-            }
-          }
-          if (order.bid) order.bid = round2(order.bid / 10000);
-          if (order.buyout) order.buyout = round2(order.buyout / 10000);
-          if (order.unit_price) order.price = round2(order.unit_price / 10000);
-          order.connected_realm_id = args.connected_realm_id;
-          order.last_modified = ts;
-          return order
-        })
-      )
+      const orders = this.transformOrders(response.auctions, args.connected_realm_id, ts);
+      this.logger.debug(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders.length}`)
 
       await job.updateProgress(90);
       await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
@@ -93,5 +79,22 @@ export class AuctionsWorker {
       this.logger.error(`${AuctionsWorker.name}: ${e}`)
       return 500
     }
+  }
+
+  private transformOrders(orders: any[], connected_realm_id: number, last_modified: number): Auction[] {
+    return orders.map(order => {
+      if (order.item && order.item.id) {
+        order.item_id = order.item.id
+        if (order.item.id === 82800) {
+          //TODO pet fix
+        }
+      }
+      if (order.bid) order.bid = round2(order.bid / 10000);
+      if (order.buyout) order.buyout = round2(order.buyout / 10000);
+      if (order.unit_price) order.price = round2(order.unit_price / 10000);
+      order.connected_realm_id = connected_realm_id;
+      order.last_modified = last_modified;
+      return new this.AuctionModel(order)
+    })
   }
 }

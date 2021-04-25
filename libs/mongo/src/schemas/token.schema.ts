@@ -13,7 +13,7 @@ export class Token extends Document {
   price: number;
 
   @Prop({ required: true })
-  last_modified: number;
+  last_modified: Date;
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);

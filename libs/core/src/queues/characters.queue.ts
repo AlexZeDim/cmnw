@@ -2,8 +2,8 @@ import { JobsOptions } from 'bullmq';
 import { QueueInterface } from '@app/core/interfaces';
 
 const queueOptions: JobsOptions = {
-  removeOnComplete: true,
-  removeOnFail: false,
+  removeOnComplete: 1000,
+  removeOnFail: 1000,
 };
 
 export const charactersQueue: QueueInterface = {

@@ -2,8 +2,8 @@ import { JobsOptions } from 'bullmq';
 import { QueueInterface } from '@app/core/interfaces';
 
 const queueOptions: JobsOptions = {
-  removeOnComplete: true,
-  removeOnFail: true,
+  removeOnComplete: 100,
+  removeOnFail: 100,
 };
 
 export const auctionsQueue: QueueInterface = {

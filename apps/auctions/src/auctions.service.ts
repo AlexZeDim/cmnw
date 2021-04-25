@@ -62,8 +62,6 @@ export class AuctionsService {
             clientId: key._id,
             clientSecret: key.secret,
             accessToken: key.token
-          }, {
-            jobId: `${realm._id.connected_realm_id}`
           })
         })
     } catch (e) {

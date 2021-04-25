@@ -69,6 +69,7 @@ export class AuctionsWorker {
 
       await job.updateProgress(90);
       await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
+      await job.updateProgress(95);
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
       await mongoose.connection.close()
       await job.updateProgress(100);

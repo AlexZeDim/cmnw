@@ -27,6 +27,7 @@ export class AuctionsWorker {
   public async process(job: Job): Promise<number> {
     try {
       const args: { connected_realm_id: number, auctions?: number } & BattleNetOptions = { ...job.data };
+      await job.updateProgress(5);
 
       if (!args.auctions || args.auctions === 0) {
         const realm = await this.RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
@@ -35,6 +36,7 @@ export class AuctionsWorker {
         } else {
           args.auctions = 0;
         }
+        await job.updateProgress(10);
       }
 
       const if_modified_since: string = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
@@ -55,6 +57,7 @@ export class AuctionsWorker {
         }
       });
 
+      await job.updateProgress(15);
       if (!response || !Array.isArray(response.auctions) || !response.auctions.length) return 504
 
       const ts: number = parseInt(moment(response.lastModified).format('x'));
@@ -76,8 +79,10 @@ export class AuctionsWorker {
         })
       )
 
+      await job.updateProgress(90);
       await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
+      await job.updateProgress(100);
       return 200
     } catch (e) {
       this.logger.error(`${AuctionsWorker.name}: ${e}`)

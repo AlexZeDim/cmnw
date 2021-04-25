@@ -1,7 +1,6 @@
 import { MongooseModuleOptions } from '@nestjs/mongoose';
 
 export const mongoOptionsConfig: MongooseModuleOptions = {
-  connectionName: 'commonwealth',
   useNewUrlParser: true,
   useFindAndModify: false,
   useCreateIndex: true,

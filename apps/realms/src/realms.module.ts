@@ -37,7 +37,7 @@ import {
         },
       },
     }),
-    BullModule.registerQueue(realmsQueue.name),
+    BullModule.registerQueue({ queueName: realmsQueue.name, options: realmsQueue.options }),
   ],
   controllers: [],
   providers: [RealmsService, RealmsWorker],

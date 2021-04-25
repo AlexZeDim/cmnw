@@ -25,7 +25,7 @@ export class AuctionsService {
     this.indexAuctions(GLOBAL_DMA_KEY)
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
@@ -34,7 +34,9 @@ export class AuctionsService {
         return
       }
 
-      const t20: number = parseInt(moment().subtract(20, 'minutes').format('x'));
+      await this.queue.drain(true)
+
+      const t20: number = parseInt(moment().subtract(30, 'minutes').format('x'));
 
       await this.RealmModel
         .aggregate([
@@ -64,10 +66,6 @@ export class AuctionsService {
               clientId: key._id,
               clientSecret: key.secret,
               accessToken: key.token
-            },
-            {
-              jobId: `${realm._id.connected_realm_id}`,
-              repeat: { every: 1500000 },
             }
           )
         })

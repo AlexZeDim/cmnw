@@ -67,7 +67,7 @@ export class AuctionsService {
             },
             {
               jobId: `${realm._id.connected_realm_id}`,
-              repeat: { every: 900000 },
+              repeat: { every: 1500000 },
             }
           )
         })

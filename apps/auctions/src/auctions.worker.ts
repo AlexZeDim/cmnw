@@ -4,11 +4,10 @@ import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Realm } from '@app/mongo';
-import { Model } from 'mongoose';
 import { Job } from 'bullmq';
 import moment from "moment";
 import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
-import * as mongoose from 'mongoose';
+import mongoose, { Model } from "mongoose";
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import BlizzAPI from 'blizzapi';
-import { GLOBAL_KEY, round2 } from '@app/core';
+import { GLOBAL_DMA_KEY, GLOBAL_KEY, round2 } from '@app/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Token } from '@app/mongo';
 import { Model } from "mongoose";
@@ -20,7 +20,7 @@ export class WowtokenService {
     @InjectModel(Key.name)
     private readonly KeysModel: Model<Key>,
   ) {
-    this.indexTokens(GLOBAL_KEY);
+    this.indexTokens(GLOBAL_DMA_KEY);
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)

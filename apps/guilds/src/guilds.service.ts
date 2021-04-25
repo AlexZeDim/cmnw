@@ -56,7 +56,7 @@ export class GuildsService {
               faction: guild.faction,
               members: [],
               region: 'eu',
-              forceUpdate: false,
+              forceUpdate: true,
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,
               accessToken: keys[i].token,

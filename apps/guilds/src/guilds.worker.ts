@@ -37,9 +37,10 @@ export class GuildsWorker {
   ) { }
 
   @BullWorkerProcess({ concurrency: guildsQueue.concurrency })
-  public async process(job: Job): Promise<Guild | void> {
+  public async process(job: Job): Promise<number> {
     try {
       const args: GuildInterface & BattleNetOptions = { ...job.data };
+      await job.updateProgress(5);
 
       const realm = await this.RealmModel
         .findOne(
@@ -79,19 +80,23 @@ export class GuildsWorker {
         accessToken: args.accessToken
       })
 
+      await job.updateProgress(10);
       let guild = await this.GuildModel.findById(updated._id);
 
       if (guild) {
         if (args.createOnlyUnique) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique:${args.createOnlyUnique}`);
-          return guild
+          await job.updateProgress(11);
+          return 302;
         }
         if (!args.forceUpdate && (t < guild.updatedAt.getTime())) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:forceUpdate:${args.forceUpdate}`);
-          return
+          await job.updateProgress(13);
+          return 304;
         }
         Object.assign(original, guild.toObject())
         original.status_code = 100;
+        await job.updateProgress(20);
       } else {
         guild = new this.GuildModel({
           _id: `${name_slug}@${realm.slug}`,
@@ -104,18 +109,22 @@ export class GuildsWorker {
           updated_by: 'OSINT-getGuild',
         })
         if (args.created_by) guild.created_by = args.created_by;
+        await job.updateProgress(25);
       }
 
       //TODO inherit args
       if (args.updated_by) guild.updated_by = args.updated_by;
 
+      await job.updateProgress(30);
       const summary = await this.summary(name_slug, updated.realm, this.BNet);
       Object.assign(updated, summary);
 
+      await job.updateProgress(40);
       const roster = await this.roster(updated, this.BNet);
       if (roster.members.length > 0) Object.assign(updated, roster);
 
       if (guild.isNew) {
+        await job.updateProgress(50);
         /** Check was guild renamed */
         const rename = await this.GuildModel.findOne({ id: guild.id, realm: guild.realm });
         if (rename) {
@@ -126,13 +135,17 @@ export class GuildsWorker {
           */
         }
       } else {
+        await job.updateProgress(60);
         await this.logs(original, updated);
         await this.diffs(original, updated);
       }
 
-      Object.assign(guild, updated)
+      Object.assign(guild, updated);
+      await job.updateProgress(90);
 
-      return await guild.save();
+      await guild.save();
+      await job.updateProgress(100);
+      return guild.status_code;
     } catch (e) {
       this.logger.error(`${GuildsWorker.name}, ${e}`);
     }

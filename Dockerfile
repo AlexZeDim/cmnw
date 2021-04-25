@@ -12,6 +12,7 @@ RUN nest build keys \
   && nest build guilds \
   && nest build realms \
   && nest build auctions \
+  && nest build wowtoken \
   && nest build characters \
   && nest build conglomerat \
   && nest build wowprogress

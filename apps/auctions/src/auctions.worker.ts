@@ -2,7 +2,7 @@ import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { auctionsQueue, round2 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Realm } from '@app/mongo';
 import { Connection, Model } from 'mongoose';
 import { Job } from 'bullmq';
@@ -18,6 +18,7 @@ export class AuctionsWorker {
   private BNet: BlizzAPI
 
   constructor(
+    private readonly connection: Connection,
     @InjectModel(Auction.name)
     private readonly AuctionModel: Model<Auction>,
     @InjectModel(Realm.name)
@@ -27,6 +28,7 @@ export class AuctionsWorker {
   @BullWorkerProcess(auctionsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
+      await this.connection.openUri(mongoConfig.connection_string, mongoOptionsConfig);
       const args: { connected_realm_id: number, auctions?: number } & BattleNetOptions = { ...job.data };
       await job.updateProgress(5);
 
@@ -69,6 +71,7 @@ export class AuctionsWorker {
       await job.updateProgress(90);
       await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
+      await this.connection.close();
       await job.updateProgress(100);
       return 200
     } catch (e) {

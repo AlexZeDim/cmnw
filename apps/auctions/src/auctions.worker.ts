@@ -15,10 +15,11 @@ export class AuctionsWorker {
     AuctionsWorker.name, true,
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
+
+  private connection: Connection;
 
   constructor(
-    private readonly connection: Connection,
     @InjectModel(Auction.name)
     private readonly AuctionModel: Model<Auction>,
     @InjectModel(Realm.name)

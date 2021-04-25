@@ -15,8 +15,9 @@ export class AuctionsService {
     AuctionsService.name, true,
   );
 
+  private connection: Connection;
+
   constructor(
-    private readonly connection: Connection,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)

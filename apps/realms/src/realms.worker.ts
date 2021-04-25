@@ -162,7 +162,28 @@ export class RealmsWorker {
         return;
       }
 
-      const population: Partial<PopulationRealmInterface> = {};
+      const population: Partial<PopulationRealmInterface> = {
+        characters_classes: {
+          death_knight: 0,
+          demon_hunter: 0,
+          druid: 0,
+          hunter: 0,
+          mage: 0,
+          monk: 0,
+          paladin: 0,
+          priest: 0,
+          rogue: 0,
+          shaman: 0,
+          warlock: 0,
+          warrior: 0
+        },
+        characters_covenants: {
+          kyrian: 0,
+          venthyr: 0,
+          night_fae: 0,
+          necrolord: 0
+        }
+      };
 
       /**
        * Characters Statistics

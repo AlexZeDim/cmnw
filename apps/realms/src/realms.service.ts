@@ -35,6 +35,8 @@ export class RealmsService {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) return
 
+      await this.queue.drain(true)
+
       this.BNet = new BlizzAPI({
         region: 'eu',
         clientId: key._id,
@@ -50,17 +52,22 @@ export class RealmsService {
 
       for (const { id, name, slug } of realmList) {
         this.logger.log(`${id}:${name}`);
-        await this.queue.add(slug, {
-          _id: id,
-          name: name,
-          slug: slug,
-          region: 'eu',
-          clientId: key._id,
-          clientSecret: key.secret,
-          accessToken: key.token,
-          population: true,
-          wcl_ids: idsWCL
-        });
+        await this.queue.add(
+          slug,
+          {
+            _id: id,
+            name: name,
+            slug: slug,
+            region: 'eu',
+            clientId: key._id,
+            clientSecret: key.secret,
+            accessToken: key.token,
+            population: true,
+            wcl_ids: idsWCL
+          }, {
+            jobId: slug
+          }
+        );
       }
     } catch (e) {
       this.logger.error(`indexRealms: ${e}`)

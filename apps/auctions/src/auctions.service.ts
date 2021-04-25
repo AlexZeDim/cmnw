@@ -56,13 +56,19 @@ export class AuctionsService {
         .cursor({ batchSize: 5 })
         .exec()
         .eachAsync(async (realm: { _id: { connected_realm_id: number, auctions: number }, name: string }) => {
-          await this.queue.add(`${realm.name}`, {
-            connected_realm_id: realm._id.connected_realm_id,
-            region: 'eu',
-            clientId: key._id,
-            clientSecret: key.secret,
-            accessToken: key.token
-          })
+          await this.queue.add(
+            `${realm.name}`,
+            {
+              connected_realm_id: realm._id.connected_realm_id,
+              region: 'eu',
+              clientId: key._id,
+              clientSecret: key.secret,
+              accessToken: key.token
+            },
+            {
+              repeat: { every: 90000 }
+            }
+          )
         })
     } catch (e) {
       this.logger.error(`indexAuctions: ${e}`)

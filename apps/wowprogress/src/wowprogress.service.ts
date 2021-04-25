@@ -119,6 +119,8 @@ export class WowprogressService {
                   members: [],
                   forceUpdate: false,
                   region: 'eu',
+                  created_by: 'OSINT-wowprogress',
+                  updated_by: 'OSINT-wowprogress',
                   clientId: key._id,
                   clientSecret: key.secret,
                   accessToken: key.token

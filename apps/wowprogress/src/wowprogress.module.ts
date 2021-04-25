@@ -21,7 +21,7 @@ import { guildsQueue } from '@app/core';
         },
       },
     }),
-    BullModule.registerQueue(guildsQueue.name),
+    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
   ],
   controllers: [],
   providers: [WowprogressService],

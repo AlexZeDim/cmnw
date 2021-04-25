@@ -29,7 +29,10 @@ export class AuctionsService {
   async indexAuctions(clearance: string): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key || !key.token) return
+      if (!key || !key.token) {
+        this.logger.error(`indexAuctions: clearance: ${GLOBAL_DMA_KEY} key not found`);
+        return
+      }
 
       const t20: number = parseInt(moment().subtract(20, 'minutes').format('x'));
 

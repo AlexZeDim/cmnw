@@ -6,6 +6,7 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import moment from 'moment';
 
 @Injectable()
 export class AuctionsService {
@@ -30,8 +31,15 @@ export class AuctionsService {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) return
 
+      const t20: number = parseInt(moment().subtract(20, 'minutes').format('x'));
+
       await this.RealmModel
         .aggregate([
+          {
+            $match: {
+              auctions: { $lt: t20 }
+            }
+          },
           {
             $group: {
               _id: {

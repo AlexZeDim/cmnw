@@ -34,8 +34,7 @@ export class AuctionsService {
         return
       }
 
-      await this.queue.drain(true)
-
+      await this.queue.drain(true);
       const offsetTime: number = parseInt(moment().subtract(30, 'minutes').format('x'));
 
       await this.RealmModel

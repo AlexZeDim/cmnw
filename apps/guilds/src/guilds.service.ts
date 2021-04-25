@@ -56,6 +56,7 @@ export class GuildsService {
               faction: guild.faction,
               members: [],
               region: 'eu',
+              updated_by: 'OSINT-indexGuilds',
               forceUpdate: true,
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,

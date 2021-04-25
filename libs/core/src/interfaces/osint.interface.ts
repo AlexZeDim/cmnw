@@ -146,6 +146,7 @@ export interface PopulationByCovenantsInterface {
 }
 
 export interface PopulationRealmInterface {
+  realm_id: number,
   characters_total: number,
   characters_active: number,
   characters_active_alliance: number,

@@ -163,6 +163,7 @@ export class RealmsWorker {
       }
 
       const population: Partial<PopulationRealmInterface> = {
+        realm_id: realm._id,
         characters_classes: {
           death_knight: 0,
           demon_hunter: 0,

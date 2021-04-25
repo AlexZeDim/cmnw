@@ -6,6 +6,6 @@ export const mongoOptionsConfig: MongooseModuleOptions = {
   useCreateIndex: true,
   useUnifiedTopology: true,
   poolSize: 10,
-  serverSelectionTimeoutMS: 10,
-  socketTimeoutMS: 0
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 1000 * 60 * 60 * 6
 }

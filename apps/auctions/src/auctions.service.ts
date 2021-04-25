@@ -25,9 +25,14 @@ export class AuctionsService {
     this.indexAuctions(GLOBAL_DMA_KEY)
   }
 
+  private async sleep(seconds: number): Promise<void> {
+    return new Promise((resolve) => { setTimeout(resolve, seconds * 1000); });
+  }
+
   @Cron(CronExpression.EVERY_30_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
+      await this.sleep(60);
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexAuctions: clearance: ${GLOBAL_DMA_KEY} key not found`);

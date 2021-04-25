@@ -16,8 +16,6 @@ export class AuctionsService {
   );
 
   constructor(
-    @InjectConnection('commonwealth')
-    private connection: Connection,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)
@@ -35,7 +33,6 @@ export class AuctionsService {
   @Cron(CronExpression.EVERY_30_MINUTES)
   async indexAuctions(clearance: string): Promise<void> {
     try {
-      await this.connection.openUri(mongoConfig.connection_string, mongoOptionsConfig);
       await this.sleep(60);
 
       const key = await this.KeyModel.findOne({ tags: clearance });
@@ -78,8 +75,6 @@ export class AuctionsService {
             }
           )
         });
-
-      await this.connection.close();
     } catch (e) {
       this.logger.error(`indexAuctions: ${e}`)
     }

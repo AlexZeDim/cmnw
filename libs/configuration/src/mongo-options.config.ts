@@ -3,6 +3,6 @@ import { MongooseModuleOptions } from '@nestjs/mongoose';
 export const mongoOptionsConfig: MongooseModuleOptions = {
   useNewUrlParser: true,
   useFindAndModify: false,
-  useUnifiedTopology: true,
   useCreateIndex: true,
+  socketTimeoutMS: (1000 * 60 * 60 * 24)
 }

@@ -32,14 +32,14 @@ export class AuctionsService {
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
-  async indexAuctions(clearance: string): Promise<void> {
+  async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await mongoose.connect(mongoConfig.connection_string, mongoOptionsConfig);
       await this.sleep(60);
 
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
-        this.logger.error(`indexAuctions: clearance: ${GLOBAL_DMA_KEY} key not found`);
+        this.logger.error(`indexAuctions: clearance: ${clearance} key not found`);
         return
       }
 

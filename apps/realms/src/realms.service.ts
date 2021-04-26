@@ -28,12 +28,15 @@ export class RealmsService {
   }
 
   @Cron(CronExpression.EVERY_WEEK)
-  async indexRealms(clearance: string): Promise<void> {
+  async indexRealms(clearance: string = GLOBAL_KEY): Promise<void> {
     try {
       const idsWCL = await this.getRealmsWarcraftLogsID(247, 517);
 
       const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key || !key.token) return
+      if (!key || !key.token) {
+        this.logger.error(`indexRealms: clearance: ${clearance} key not found`);
+        return
+      }
 
       await this.queue.drain(true)
 

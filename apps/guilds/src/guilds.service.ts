@@ -26,7 +26,7 @@ export class GuildsService {
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  async indexGuilds(clearance: string): Promise<void> {
+  async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 10000) {

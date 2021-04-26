@@ -27,7 +27,7 @@ export class CharactersService {
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  private async indexCharacters(clearance: string): Promise<void> {
+  private async indexCharacters(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 500000) {

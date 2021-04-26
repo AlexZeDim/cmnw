@@ -23,11 +23,13 @@ export class ItemsService {
     this.indexItems(GLOBAL_KEY, 0, 170100, true);
   }
 
-  async indexItems(clearance: string, min: number = 1, max: number = 20, updateForce: boolean = true): Promise<void> {
+  async indexItems(clearance: string = GLOBAL_KEY, min: number = 1, max: number = 20, updateForce: boolean = true): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key) return
-
+      if (!key || !key.token) {
+        this.logger.error(`indexItems: clearance: ${clearance} key not found`);
+        return
+      }
       if (updateForce) {
         for (let i = min; i <= max; i++) {
           await this.queue.add(

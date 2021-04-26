@@ -24,10 +24,13 @@ export class WowtokenService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  async indexTokens(clearance: string): Promise<void> {
+  async indexTokens(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       const key = await this.KeysModel.findOne({ tags: clearance });
-      if (!key) return
+      if (!key || !key.token) {
+        this.logger.error(`indexTokens: clearance: ${clearance} key not found`);
+        return
+      }
 
       this.BNet = new BlizzAPI({
         region: 'eu',

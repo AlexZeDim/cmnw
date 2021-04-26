@@ -39,7 +39,7 @@ export class WarcraftlogsService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  async indexWarcraftLogs(config: WarcraftLogsConfigInterface): Promise<void> {
+  async indexWarcraftLogs(config: WarcraftLogsConfigInterface = { raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 400 }): Promise<void> {
     try {
       await this.RealmModel
         .find({ wcl_id: { $ne: null } })
@@ -117,10 +117,13 @@ export class WarcraftlogsService {
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)
-  async indexLogs(clearance: string): Promise<void> {
+  async indexLogs(clearance: string = GLOBAL_WCL_KEY): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key) return;
+      if (!key || !key.token) {
+        this.logger.error(`indexLogs: clearance: ${clearance} key not found`);
+        return
+      }
       await this.WarcraftLogsModel
         .find({ status: false })
         .cursor({ batchSize: 1 })

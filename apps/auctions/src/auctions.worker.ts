@@ -6,8 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Realm } from '@app/mongo';
 import { Job } from 'bullmq';
 import moment from "moment";
-import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
-import mongoose, { Model } from "mongoose";
+import { Model } from "mongoose";
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
@@ -27,7 +26,6 @@ export class AuctionsWorker {
   @BullWorkerProcess(auctionsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
-      await mongoose.connect(mongoConfig.connection_string, mongoOptionsConfig);
       const args: { connected_realm_id: number, auctions?: number } & BattleNetOptions = { ...job.data };
       await job.updateProgress(5);
 
@@ -71,7 +69,6 @@ export class AuctionsWorker {
       await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
       await job.updateProgress(95);
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
-      await mongoose.connection.close()
       await job.updateProgress(100);
       return 200
     } catch (e) {

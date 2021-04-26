@@ -3,12 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { delay } from '@app/core/utils/converters';
 import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
-import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
-import mongoose from "mongoose";
 
 @Injectable()
 export class AuctionsService {
@@ -27,15 +26,10 @@ export class AuctionsService {
     this.indexAuctions(GLOBAL_DMA_KEY)
   }
 
-  private async sleep(seconds: number): Promise<void> {
-    return new Promise((resolve) => { setTimeout(resolve, seconds * 1000); });
-  }
-
   @Cron(CronExpression.EVERY_30_MINUTES)
-  async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
+  private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
-      await mongoose.connect(mongoConfig.connection_string, mongoOptionsConfig);
-      await this.sleep(60);
+      await delay(60);
 
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
@@ -77,7 +71,6 @@ export class AuctionsService {
             }
           )
         });
-      await mongoose.connection.close()
     } catch (e) {
       this.logger.error(`indexAuctions: ${e}`)
     }

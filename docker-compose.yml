@@ -36,7 +36,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/conglomerat/main.js' ]
+    command: [ 'node','dist/apps/conglomerat/main.js' ]
     ports:
       - '5000:8000'
     environment:
@@ -123,7 +123,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/auctions/main.js' ]
+    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/auctions/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:

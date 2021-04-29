@@ -41,3 +41,15 @@ export enum PricingType {
   Derivative = 'derivative',
   Review = 'review',
 }
+
+export const ExpansionTicker: Map<string, string> = new Map([
+  ['Shadowlands', 'SHDW'],
+  ['Kul', 'BFA'],
+  ['Zandalari', 'BFA'],
+  ['Legion', 'LGN'],
+  ['Draenor', 'WOD'],
+  ['Pandaria', 'MOP'],
+  ['Cataclysm', 'CATA'],
+  ['Northrend', 'WOTLK'],
+  ['Outland', 'TBC'],
+]);

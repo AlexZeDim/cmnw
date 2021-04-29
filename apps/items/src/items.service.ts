@@ -20,7 +20,7 @@ export class ItemsService {
     @BullQueueInject(itemsQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexItems(GLOBAL_KEY, 0, 170100, true);
+    this.indexItems(GLOBAL_KEY, 0, 200000, true);
   }
 
   async indexItems(clearance: string = GLOBAL_KEY, min: number = 1, max: number = 20, updateForce: boolean = true): Promise<void> {

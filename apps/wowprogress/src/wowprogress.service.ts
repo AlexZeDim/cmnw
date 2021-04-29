@@ -27,22 +27,32 @@ export class WowprogressService {
     @BullQueueInject(guildsQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexWowProgress(GLOBAL_KEY);
+    this.indexWowProgress(GLOBAL_KEY, false);
   }
 
   /**
    * TODO probably split in to 2 separate functions
    * @param clearance
+   * @param init
    */
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
-  async indexWowProgress(clearance: string): Promise<void> {
+  async indexWowProgress(clearance: string = GLOBAL_KEY, init: boolean = false): Promise<void> {
     try {
+
+      if (!init) {
+        this.logger.log(`indexWowProgress: init: ${init}`);
+        return;
+      }
+
       const
         x = Xray(),
         urls = await x(`https://www.wowprogress.com/export/ranks/`, 'pre', ['a@href',]).then(res => res),
         key = await this.KeyModel.findOne({ tags: clearance });
 
-      if (!key) return;
+      if (!key || !key.token) {
+        this.logger.error(`indexWowProgress: clearance: ${clearance} key not found`);
+        return
+      }
 
       const dir: string = path.join(__dirname, '..', '..', 'files', 'wowprogress');
       await fs.ensureDir(dir);

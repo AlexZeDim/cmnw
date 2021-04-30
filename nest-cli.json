@@ -142,6 +142,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/pricing/tsconfig.app.json"
       }
+    },
+    "valuations": {
+      "type": "application",
+      "root": "apps/valuations",
+      "entryFile": "main",
+      "sourceRoot": "apps/valuations/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/valuations/tsconfig.app.json"
+      }
     }
   }
 }

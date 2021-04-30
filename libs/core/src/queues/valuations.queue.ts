@@ -6,7 +6,7 @@ const queueOptions: JobsOptions = {
   removeOnFail: 5000,
 };
 
-export const valuationsOptions: QueueInterface = {
+export const valuationsQueue: QueueInterface = {
   name: 'OSINT:Valuations',
   workerOptions: { concurrency: 10 },
   options: {

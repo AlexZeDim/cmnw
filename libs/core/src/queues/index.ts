@@ -4,4 +4,4 @@ export { auctionsQueue } from './auctions.queue';
 export { itemsQueue } from './items.queue';
 export { guildsQueue } from './guilds.queue';
 export { pricingQueue } from './pricing.queue';
-export { valuationsOptions } from './valuations.queue';
+export { valuationsQueue } from './valuations.queue';

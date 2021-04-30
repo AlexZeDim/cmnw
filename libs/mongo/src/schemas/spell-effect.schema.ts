@@ -12,19 +12,19 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema()
 export class SpellEffect extends Document {
   @Prop({ required: true })
-  _idProp: number;
+  _id: number;
 
   @Prop({ required: true })
-  effectProp: number;
+  effect: number;
 
   @Prop({ required: true, index: true })
-  item_idProp: number;
+  item_id: number;
 
   @Prop({ required: true })
-  item_quantityProp: number;
+  item_quantity: number;
 
   @Prop({ required: true, index: true })
-  spell_idProp: number;
+  spell_id: number;
 }
 
 export const SpellEffectSchema = SchemaFactory.createForClass(SpellEffect);

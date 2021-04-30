@@ -82,13 +82,13 @@ export class Pricing extends Document {
    * {id: Number, Quantity: Number}
    */
 
-  @Prop({ required: true, default: [] })
+  @Prop({ default: [] })
   derivatives: Types.Array<Item>;
 
-  @Prop({ required: true, default: [] })
+  @Prop({ default: [] })
   reagents: Types.Array<Item>;
 
-  @Prop({ required: true, default: [], index: true })
+  @Prop({ required: true, index: true })
   recipe_id: number;
 
   @Prop({ index: true })

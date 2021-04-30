@@ -133,6 +133,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/wowprogress/tsconfig.app.json"
       }
+    },
+    "pricing": {
+      "type": "application",
+      "root": "apps/pricing",
+      "entryFile": "main",
+      "sourceRoot": "apps/pricing/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/pricing/tsconfig.app.json"
+      }
     }
   }
 }

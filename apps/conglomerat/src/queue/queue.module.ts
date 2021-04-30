@@ -1,7 +1,15 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { redisConfig } from '@app/configuration';
 import { BullModule, BullQueueInject } from '@anchan828/nest-bullmq';
-import { auctionsQueue, charactersQueue, guildsQueue, realmsQueue } from '@app/core';
+import {
+  auctionsQueue,
+  charactersQueue,
+  guildsQueue,
+  itemsQueue,
+  pricingQueue,
+  realmsQueue,
+  valuationsQueue,
+} from '@app/core';
 import { BullMQAdapter, router, setQueues } from 'bull-board';
 import { Queue } from 'bullmq';
 
@@ -19,6 +27,9 @@ import { Queue } from 'bullmq';
     BullModule.registerQueue(charactersQueue.name),
     BullModule.registerQueue(guildsQueue.name),
     BullModule.registerQueue(realmsQueue.name),
+    BullModule.registerQueue(itemsQueue.name),
+    BullModule.registerQueue(pricingQueue.name),
+    BullModule.registerQueue(valuationsQueue.name),
   ],
   controllers: [],
   providers: [],
@@ -34,12 +45,22 @@ export class QueueModule {
     private readonly guilds: Queue,
     @BullQueueInject(realmsQueue.name)
     private readonly realms: Queue,
+    @BullQueueInject(itemsQueue.name)
+    private readonly items: Queue,
+    @BullQueueInject(pricingQueue.name)
+    private readonly pricing: Queue,
+    @BullQueueInject(valuationsQueue.name)
+    private readonly valuations: Queue,
+
   ) {
     setQueues([
       new BullMQAdapter(this.auctions, { readOnlyMode: false }),
       new BullMQAdapter(this.characters, { readOnlyMode: false }),
       new BullMQAdapter(this.guilds, { readOnlyMode: false }),
       new BullMQAdapter(this.realms, { readOnlyMode: false }),
+      new BullMQAdapter(this.items, { readOnlyMode: false }),
+      new BullMQAdapter(this.pricing, { readOnlyMode: false }),
+      new BullMQAdapter(this.valuations, { readOnlyMode: false }),
     ])
   }
 

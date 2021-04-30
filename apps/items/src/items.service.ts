@@ -77,7 +77,7 @@ export class ItemsService {
 
   async buildItems() {
     try {
-      const dir = path.join(__dirname, '..', '..', 'files');
+      const dir = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dir);
       const files = await fs.readdir(dir);
       for (const file of files) {

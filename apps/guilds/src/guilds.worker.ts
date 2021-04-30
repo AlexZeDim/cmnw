@@ -209,28 +209,31 @@ export class GuildsWorker {
           const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
           const character_class = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
 
-          const character = new this.CharacterModel({
-            _id,
-            id: member.character.id,
-            name: member.character.name,
-            realm: guild.realm,
-            realm_id: guild.realm_id,
-            realm_name: guild.realm_name,
-            guild_id: `${guild_slug}@${guild.realm}`,
-            guild: guild.name,
-            guild_rank: member.rank,
-            guild_guid: guild.id,
-            character_class,
-            faction: guild.faction,
-            level: member.character.level ? member.character.level : undefined,
-            last_modified: guild.last_modified,
-            updated_by: 'OSINT-roster',
-            created_by: 'OSINT-roster',
-          })
+          const character_exist = await this.CharacterModel.findById(_id);
 
-          characters.push(character)
+          if (!character_exist) {
+            const character = new this.CharacterModel({
+              _id,
+              id: member.character.id,
+              name: member.character.name,
+              realm: guild.realm,
+              realm_id: guild.realm_id,
+              realm_name: guild.realm_name,
+              guild_id: `${guild_slug}@${guild.realm}`,
+              guild: guild.name,
+              guild_rank: member.rank,
+              guild_guid: guild.id,
+              character_class,
+              faction: guild.faction,
+              level: member.character.level ? member.character.level : undefined,
+              last_modified: guild.last_modified,
+              updated_by: 'OSINT-roster',
+              created_by: 'OSINT-roster',
+            })
 
-          // TODO logger?
+            characters.push(character)
+          }
+
           roster.members.push({
             _id: _id,
             id: member.character.id,
@@ -239,7 +242,7 @@ export class GuildsWorker {
         }
       }
 
-      await this.CharacterModel.insertMany(characters, { ordered: false })
+      await this.CharacterModel.insertMany(characters, { rawResult: false })
 
       return roster
     } catch (e) {

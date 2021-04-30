@@ -19,7 +19,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class SkillLine extends Document {
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   _id: number;
 
   @Prop({ required: true })

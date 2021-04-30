@@ -10,11 +10,15 @@ class Item {
   quantity: number;
 }
 
+const ItemSchema = SchemaFactory.createForClass(Item);
+
 @Schema()
 class ModifiedCraftingSlot {
   @Prop({ required: true })
   _id: number;
 }
+
+const ModifiedCraftingSlotSchema = SchemaFactory.createForClass(ModifiedCraftingSlot);
 
 @Schema()
 class Locales {
@@ -82,10 +86,10 @@ export class Pricing extends Document {
    * {id: Number, Quantity: Number}
    */
 
-  @Prop({ default: [] })
+  @Prop({ default: [], type: [ItemSchema] })
   derivatives: Types.Array<Item>;
 
-  @Prop({ default: [] })
+  @Prop({ default: [], type: [ItemSchema] })
   reagents: Types.Array<Item>;
 
   @Prop({ required: true, index: true })
@@ -94,8 +98,8 @@ export class Pricing extends Document {
   @Prop({ index: true })
   spell_id: number;
 
-  @Prop({ default: [] })
-  modified_crafting_slots: ModifiedCraftingSlot[];
+  @Prop({ default: [], type: [ModifiedCraftingSlotSchema] })
+  modified_crafting_slots:  Types.Array<ModifiedCraftingSlot>;
   /** if Local then Convert from SkillLine */
 
   @Prop()

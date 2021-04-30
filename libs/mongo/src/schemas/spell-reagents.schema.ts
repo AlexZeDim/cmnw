@@ -11,21 +11,24 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 class Item {
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   _id: number;
 
   @Prop({ required: true })
   quantity: number;
 }
 
+const ItemSchema = SchemaFactory.createForClass(Item);
+
+@Schema()
 export class SpellReagents extends Document {
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   _id: number;
 
   @Prop({ required: true, index: true })
   spell_id: number;
 
-  @Prop({ required: true, default: [] })
+  @Prop({ default: [], type: [ItemSchema] })
   reagents: Types.Array<Item>;
 }
 

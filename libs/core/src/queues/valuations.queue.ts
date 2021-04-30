@@ -1,0 +1,15 @@
+import { JobsOptions } from 'bullmq';
+import { QueueInterface } from '@app/core/interfaces';
+
+const queueOptions: JobsOptions = {
+  removeOnComplete: 5000,
+  removeOnFail: 5000,
+};
+
+export const valuationsOptions: QueueInterface = {
+  name: 'OSINT:Valuations',
+  workerOptions: { concurrency: 10 },
+  options: {
+    defaultJobOptions: queueOptions,
+  },
+}

@@ -24,6 +24,7 @@ export class ItemsService {
     private readonly queue: Queue,
   ) {
     this.indexItems(GLOBAL_KEY, 0, 200000, true);
+    // TODO buildItems(false)
   }
 
   async indexItems(clearance: string = GLOBAL_KEY, min: number = 1, max: number = 20, updateForce: boolean = true): Promise<void> {

@@ -42,7 +42,6 @@ export class CharactersWorker {
   @BullWorkerProcess(charactersQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
-
       const args: BattleNetOptions & CharacterInterface = { ...job.data };
       await job.updateProgress(1);
 
@@ -167,7 +166,7 @@ export class CharactersWorker {
 
       this.BNet = new BlizzAPI({
         region: 'eu',
-        clientId: args._id,
+        clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken
       })

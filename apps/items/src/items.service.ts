@@ -122,7 +122,7 @@ export class ItemsService {
               break;
             case 'itemsparse.csv':
               for (const row of rows) {
-                await this.ItemModel.findById(row.ID, { stackable: row.Stackable, expansion: ExpansionTicker.get(row.ExpansionID) })
+                await this.ItemModel.findByIdAndUpdate(row.ID, { stackable: row.Stackable, expansion: ExpansionTicker.get(row.ExpansionID) })
               }
               break;
           }

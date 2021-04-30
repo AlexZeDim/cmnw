@@ -82,8 +82,8 @@ export class Item extends Document {
   contracts: boolean;
   /** add via indexAssetClass - csv import */
 
-  @Prop({ required: true, default: [] })
-  asset_class: Types.Array<string>;
+  @Prop({ default: [], type: [String] })
+  asset_class: Types.Array<String>;
   /** add via importTaxonomy_CSV('itemsparse') */
 
   @Prop()
@@ -99,8 +99,8 @@ export class Item extends Document {
   @Prop()
   ticker: string;
 
-  @Prop({ required: true, default: [], })
-  tags: Types.Array<string>;
+  @Prop({ default: [], type: [String] })
+  tags: Types.Array<String>;
 }
 
 export const ItemsSchema = SchemaFactory.createForClass(Item);

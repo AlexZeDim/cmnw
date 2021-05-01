@@ -1,4 +1,8 @@
-export enum ValuationType {
+export enum DMA_SOURCE {
+  API = 'DMA-API'
+}
+
+export enum VALUATION_TYPE {
   Vendor = 'vendor',
   Derivative = 'derivative',
   Reagent = 'reagent',
@@ -9,24 +13,19 @@ export enum ValuationType {
   Wowtoken = 'wowtoken',
 }
 
-export enum FlagType {
+export enum FLAG_TYPE {
   B = 'BUY',
   S = 'SELL',
   FIX = 'PAY FIX',
   FLOAT = 'PAY FLOAT',
 }
 
-export enum FixFloat {
+export enum FIX_FLOAT {
   FIX = 'PAY FIX',
   FLOAT = 'PAY FLOAT',
 }
 
-export enum BuySell {
-  B = 'BUY',
-  S = 'SELL',
-}
-
-export enum AliasKey {
+export enum ALIAS_KEY {
   Discord = 'discord',
   Bnet = 'battle.tag',
   Twitter = 'twitter',
@@ -36,13 +35,13 @@ export enum AliasKey {
   Codename = 'codename',
 }
 
-export enum PricingType {
+export enum PRICING_TYPE {
   Primary = 'primary',
   Derivative = 'derivative',
   Review = 'review',
 }
 
-export const ExpansionTicker: Map<string, string> = new Map([
+export const EXPANSION_TICKER: Map<string, string> = new Map([
   ['Shadowlands', 'SHDW'],
   ['Kul', 'BFA'],
   ['Zandalari', 'BFA'],
@@ -54,7 +53,7 @@ export const ExpansionTicker: Map<string, string> = new Map([
   ['Outland', 'TBC'],
 ]);
 
-export const ProfessionsTicker: Map<number, string> = new Map([
+export const PROFESSION_TICKER: Map<number, string> = new Map([
   [164, 'BSMT'],
   [165, 'LTHR'],
   [171, 'ALCH'],

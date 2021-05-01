@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FlagType, ValuationType } from '@app/core';
+import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
 
 @Schema()
 class ItemValuations {
@@ -64,10 +64,10 @@ export class Valuations extends Document {
   @Prop()
   name: string;
 
-  @Prop({ enum: FlagType })
+  @Prop({ enum: FLAG_TYPE })
   flag: string;
 
-  @Prop({ enum: ValuationType })
+  @Prop({ enum: VALUATION_TYPE })
   type: string;
 
   @Prop()

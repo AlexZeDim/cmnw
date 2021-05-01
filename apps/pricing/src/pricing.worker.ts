@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { pricingQueue } from '@app/core';
+import { DMA_SOURCE, OSINT_SOURCE, pricingQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,7 +7,7 @@ import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
 import { Job } from 'bullmq';
 import { PricingInterface, PricingMethods } from '@app/core/interfaces/dma.interface';
-import { ProfessionsTicker } from '@app/core/constants/dma.constants';
+import { PROFESSION_TICKER } from '@app/core/constants/dma.constants';
 
 @BullWorker({ queueName: pricingQueue.name })
 export class PricingWorker {
@@ -116,10 +116,10 @@ export class PricingWorker {
           continue
         }
 
-        if (ProfessionsTicker.has(args.profession)) {
-          pricing_method.profession = ProfessionsTicker.get(args.profession)
-        } else if (ProfessionsTicker.has(recipe_spell.skill_line)) {
-          pricing_method.profession = ProfessionsTicker.get(recipe_spell.skill_line)
+        if (PROFESSION_TICKER.has(args.profession)) {
+          pricing_method.profession = PROFESSION_TICKER.get(args.profession)
+        } else if (PROFESSION_TICKER.has(recipe_spell.skill_line)) {
+          pricing_method.profession = PROFESSION_TICKER.get(recipe_spell.skill_line)
         }
 
         pricing_method.spell_id = recipe_spell.spell_id;
@@ -158,9 +158,9 @@ export class PricingWorker {
         await job.updateProgress(60);
         if (recipe_data.reagents && recipe_data.reagents.length) {
           pricing_method.reagents = recipe_data.reagents.map((item: any) => ({
-            _id: parseInt(item.reagent.id),
-            quantity: parseInt(item.quantity),
-          }))
+            _id: parseInt(item.reagent.id, 10),
+            quantity: parseInt(item.quantity, 10),
+          }));
         } else {
           const reagents = await this.SpellReagentsModel.findOne({ spell_id: pricing_method.spell_id });
           if (reagents) pricing_method.reagents = reagents.reagents;
@@ -173,7 +173,7 @@ export class PricingWorker {
 
         if (recipe_media) pricing_method.media = recipe_media.assets[0].value;
 
-        pricing_method.updated_by = 'DMA-API';
+        pricing_method.updated_by = DMA_SOURCE.API;
         pricing_method.type = 'primary';
 
         await job.updateProgress(90);

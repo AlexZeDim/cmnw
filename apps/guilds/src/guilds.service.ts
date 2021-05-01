@@ -5,7 +5,7 @@ import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { GLOBAL_OSINT_KEY } from '@app/core';
+import { GLOBAL_OSINT_KEY, OSINT_SOURCE } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class GuildsService {
               faction: guild.faction,
               members: [],
               region: 'eu',
-              updated_by: 'OSINT-indexGuilds',
+              updated_by: OSINT_SOURCE.INDEXGUILD,
               forceUpdate: true,
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,

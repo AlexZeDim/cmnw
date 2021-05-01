@@ -1,4 +1,18 @@
 export {
-  ValuationType, FlagType, AliasKey, BuySell, FixFloat, PricingType, ExpansionTicker,
+  VALUATION_TYPE,
+  FLAG_TYPE,
+  ALIAS_KEY,
+  FIX_FLOAT,
+  PRICING_TYPE,
+  DMA_SOURCE,
+  EXPANSION_TICKER,
 } from './dma.constants';
-export { REALM_TICKER, MAX_LEVEL, CHARACTER_CLASS, FACTION, COVENANTS, PLAYABLE_CLASS } from './osint.constants';
+export {
+  REALM_TICKER,
+  MAX_LEVEL,
+  CHARACTER_CLASS,
+  FACTION,
+  COVENANTS,
+  PLAYABLE_CLASS,
+  OSINT_SOURCE,
+} from './osint.constants';

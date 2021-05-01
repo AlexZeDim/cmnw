@@ -52,3 +52,13 @@ export enum FACTION {
   H = "Horde",
   N = "Neutral"
 }
+
+export enum OSINT_SOURCE {
+  GETGUILD = 'OSINT-getGuild',
+  GETCHARACTER = 'OSINT-getCharacter',
+  INDEXGUILD = 'OSINT-indexGuilds',
+  ROSTERGUILD = 'OSINT-rosterGuild',
+  INDEXCHARACTER = 'OSINT-indexCharacters',
+  WOWPROGRESS = 'OSINT-wowprogress',
+  WARCRAFTLOGS = 'OSINT-warcraftlogs',
+}

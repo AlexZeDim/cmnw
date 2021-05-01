@@ -1,10 +1,10 @@
 import { Document } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { AliasKey } from '@app/core';
+import { ALIAS_KEY } from '@app/core';
 
 @Schema()
 class Alias {
-  @Prop({ type: String, enum: AliasKey })
+  @Prop({ type: String, enum: ALIAS_KEY })
   key: string;
 
   @Prop({ type: String })

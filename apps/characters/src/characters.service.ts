@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { charactersQueue, GLOBAL_OSINT_KEY } from '@app/core';
+import { charactersQueue, GLOBAL_OSINT_KEY, OSINT_SOURCE } from '@app/core';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
@@ -61,7 +61,7 @@ export class CharactersService {
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,
               accessToken: keys[i].token,
-              updatedBy: 'OSINT-indexCharacters',
+              updatedBy: OSINT_SOURCE.INDEXCHARACTER,
               guildRank: false,
               createOnlyUnique: false,
               forceUpdate: true,

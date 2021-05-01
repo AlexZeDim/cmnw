@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Item, Key } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { ExpansionTicker, GLOBAL_KEY, itemsQueue } from '@app/core';
+import { EXPANSION_TICKER, GLOBAL_KEY, itemsQueue } from '@app/core';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
@@ -122,7 +122,7 @@ export class ItemsService {
               break;
             case 'itemsparse.csv':
               for (const row of rows) {
-                await this.ItemModel.findByIdAndUpdate(row.ID, { stackable: row.Stackable, expansion: ExpansionTicker.get(row.ExpansionID) })
+                await this.ItemModel.findByIdAndUpdate(row.ID, { stackable: row.Stackable, expansion: EXPANSION_TICKER.get(row.ExpansionID) })
               }
               break;
           }

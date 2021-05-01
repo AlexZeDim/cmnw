@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Key, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { ExpansionTicker, GLOBAL_DMA_KEY, pricingQueue } from '@app/core';
+import { EXPANSION_TICKER, GLOBAL_DMA_KEY, pricingQueue } from '@app/core';
 import BlizzAPI from 'blizzapi';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
@@ -63,7 +63,7 @@ export class PricingService {
         if (!skill_tiers) continue;
         for (let tier of skill_tiers) {
           let expansion: string = 'CLSC';
-          Array.from(ExpansionTicker.entries()).some(([k, v]) => {
+          Array.from(EXPANSION_TICKER.entries()).some(([k, v]) => {
             tier.name.en_GB.includes(k) ? (expansion = v) : '';
           });
           const { categories } = await this.BNet.query(`/data/wow/profession/${profession.id}/skill-tier/${tier.id}`, {

@@ -10,7 +10,7 @@ import {
   FACTION,
   GuildInterface,
   guildsQueue,
-  GuildSummaryInterface,
+  GuildSummaryInterface, OSINT_SOURCE,
   PLAYABLE_CLASS,
   toSlug,
 } from '@app/core';
@@ -105,8 +105,8 @@ export class GuildsWorker {
           realm: realm.slug,
           realm_id: realm._id,
           realm_name: realm.name,
-          created_by: 'OSINT-getGuild',
-          updated_by: 'OSINT-getGuild',
+          created_by: OSINT_SOURCE.GETGUILD,
+          updated_by: OSINT_SOURCE.GETGUILD,
         })
         if (args.created_by) guild.created_by = args.created_by;
         await job.updateProgress(25);
@@ -227,8 +227,8 @@ export class GuildsWorker {
               faction: guild.faction,
               level: member.character.level ? member.character.level : undefined,
               last_modified: guild.last_modified,
-              updated_by: 'OSINT-roster',
-              created_by: 'OSINT-roster',
+              updated_by: OSINT_SOURCE.ROSTERGUILD,
+              created_by: OSINT_SOURCE.ROSTERGUILD,
             })
 
             characters.push(character)

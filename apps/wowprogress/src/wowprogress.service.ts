@@ -6,7 +6,7 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import Xray from 'x-ray';
-import { GLOBAL_KEY, toSlug } from '@app/core';
+import { GLOBAL_KEY, OSINT_SOURCE, toSlug } from '@app/core';
 import fs from 'fs-extra';
 import axios from 'axios';
 import path from "path";
@@ -129,8 +129,8 @@ export class WowprogressService {
                   members: [],
                   forceUpdate: false,
                   region: 'eu',
-                  created_by: 'OSINT-wowprogress',
-                  updated_by: 'OSINT-wowprogress',
+                  created_by: OSINT_SOURCE.WOWPROGRESS,
+                  updated_by: OSINT_SOURCE.WOWPROGRESS,
                   clientId: key._id,
                   clientSecret: key.secret,
                   accessToken: key.token

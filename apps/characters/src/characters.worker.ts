@@ -9,7 +9,7 @@ import {
   WowProgressInterface,
   WarcraftLogsInterface,
   charactersQueue,
-  toSlug, capitalize, CharacterInterface,
+  toSlug, capitalize, CharacterInterface, OSINT_SOURCE,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
@@ -134,8 +134,8 @@ export class CharactersWorker {
           realm: realm.slug,
           realm_id: realm._id,
           realm_name: realm.name,
-          created_by: 'OSINT-getCharacter',
-          updated_by: 'OSINT-getCharacter',
+          created_by: OSINT_SOURCE.GETCHARACTER,
+          updated_by: OSINT_SOURCE.GETCHARACTER,
         })
         /**
          * Assign values from args only

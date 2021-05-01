@@ -149,6 +149,23 @@ services:
     networks:
       - conglomerat-network
 
+  warcraftlogs:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: warcraftlogs
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   items:
     build: ./
     image: conglomerat

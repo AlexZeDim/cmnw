@@ -151,6 +151,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/valuations/tsconfig.app.json"
       }
+    },
+    "gold": {
+      "type": "application",
+      "root": "apps/gold",
+      "entryFile": "main",
+      "sourceRoot": "apps/gold/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/gold/tsconfig.app.json"
+      }
     }
   }
 }

@@ -132,6 +132,23 @@ services:
     networks:
       - conglomerat-network
 
+  golds:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: golds
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/golds/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   wowprogress:
     build: ./
     image: conglomerat

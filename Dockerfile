@@ -9,6 +9,7 @@ RUN npm install
 COPY . .
 
 RUN nest build keys \
+  && nest build golds \
   && nest build items \
   && nest build guilds \
   && nest build realms \

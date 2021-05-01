@@ -167,7 +167,7 @@ export class PricingWorker {
         /**
          * Derivatives from write concern
          */
-        pricing_method.derivatives.push({ _id: concern.item_id, quantity: concern.item_quantity });
+        pricing_method.derivatives.addToSet({ _id: concern.item_id, quantity: concern.item_quantity });
 
         if (recipe_media) pricing_method.media = recipe_media.assets[0].value;
 

@@ -179,7 +179,7 @@ export class WarcraftlogsService {
             createOnlyUnique: true,
             forceUpdate: false,
           },
-          options: {
+          opts: {
             jobId: _id,
             priority: 4,
           },

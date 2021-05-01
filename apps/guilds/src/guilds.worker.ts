@@ -336,7 +336,7 @@ export class GuildsWorker {
             {
               root_id: updated._id,
               root_history: [updated._id],
-              original: ``,
+              original: ' ',
               updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
               event: 'guild',
               action: 'join',
@@ -346,7 +346,7 @@ export class GuildsWorker {
             {
               root_id: guild_member._id,
               root_history: [guild_member._id],
-              original: ``,
+              original: ' ',
               updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
               event: 'character',
               action: 'join',
@@ -365,7 +365,7 @@ export class GuildsWorker {
             {
               root_id: updated._id,
               root_history: [updated._id],
-              original: ``,
+              original: ' ',
               updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
               event: 'guild',
               action: 'left',
@@ -375,7 +375,7 @@ export class GuildsWorker {
             {
               root_id: guild_member._id,
               root_history: [guild_member._id],
-              original: ``,
+              original: ' ',
               updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
               event: 'character',
               action: 'left',
@@ -415,7 +415,7 @@ export class GuildsWorker {
           {
             root_id: member_new._id,
             root_history: [member_new._id],
-            original: '',
+            original: ' ',
             updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
             event: 'character',
             action: 'title',
@@ -426,7 +426,7 @@ export class GuildsWorker {
             root_id: member_old._id,
             root_history: [member_old._id],
             original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
-            updated: '',
+            updated: ' ',
             event: 'character',
             action: 'title',
             t0: original.last_modified || new Date(),
@@ -452,7 +452,7 @@ export class GuildsWorker {
           {
             root_id: member_new._id,
             root_history: [member_new._id],
-            original: '',
+            original: ' ',
             updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
             event: 'character',
             action: 'title',
@@ -463,7 +463,7 @@ export class GuildsWorker {
             root_id: member_old._id,
             root_history: [member_old._id],
             original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
-            updated: '',
+            updated: ' ',
             event: 'character',
             action: 'title',
             t0: original.last_modified || new Date(),
@@ -489,7 +489,7 @@ export class GuildsWorker {
           {
             root_id: member_new._id,
             root_history: [member_new._id],
-            original: '',
+            original: ' ',
             updated: `${updated._id}:${updated.id}//${member_old._id}:${member_old.id}`, //GM Title received from
             event: 'character',
             action: 'inherit',
@@ -500,7 +500,7 @@ export class GuildsWorker {
             root_id: member_old._id,
             root_history: [member_old._id],
             original: `${updated._id}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM Title transferred to
-            updated: '',
+            updated: ' ',
             event: 'character',
             action: 'inherit',
             t0: original.last_modified || new Date(),
@@ -525,7 +525,7 @@ export class GuildsWorker {
           {
             root_id: member_new._id,
             root_history: [member_new._id],
-            original: '',
+            original: ' ',
             updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM ownership withdraw from
             event: 'character',
             action: 'ownership',
@@ -536,7 +536,7 @@ export class GuildsWorker {
             root_id: member_old._id,
             root_history: [member_old._id],
             original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM ownership claimed by
-            updated: '',
+            updated: ' ',
             event: 'character',
             action: 'ownership',
             t0: original.last_modified || new Date(),

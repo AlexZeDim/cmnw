@@ -50,6 +50,6 @@ export const toKey = (s: string): string => {
     .toLowerCase();
 }
 
-export const delay = (seconds: number): Promise<void> => {
+export const delay = (seconds: number = 5): Promise<void> => {
   return new Promise((resolve) => { setTimeout(resolve, seconds * 1000); });
 }

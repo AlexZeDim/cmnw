@@ -30,6 +30,7 @@ export class RealmsService {
   @Cron(CronExpression.EVERY_WEEK)
   async indexRealms(clearance: string = GLOBAL_KEY): Promise<void> {
     try {
+      //TODO separate
       const idsWCL = await this.getRealmsWarcraftLogsID(247, 517);
 
       const key = await this.KeyModel.findOne({ tags: clearance });
@@ -65,7 +66,7 @@ export class RealmsService {
             clientId: key._id,
             clientSecret: key.secret,
             accessToken: key.token,
-            population: true,
+            population: false,
             wcl_ids: idsWCL
           }, {
             jobId: slug

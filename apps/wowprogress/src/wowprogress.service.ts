@@ -136,7 +136,8 @@ export class WowprogressService {
                   accessToken: key.token
                 },
                 {
-                  jobId: _id
+                  jobId: _id,
+                  priority: 4
                 }
               )
             }

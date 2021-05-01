@@ -62,7 +62,7 @@ export class Guild extends Document {
   @Prop()
   updated_by: string;
 
-  @Prop()
+  @Prop({ index: true })
   updatedAt: Date;
 
   @Prop()

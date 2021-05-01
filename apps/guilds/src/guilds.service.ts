@@ -45,6 +45,8 @@ export class GuildsService {
 
       await this.GuildModel
         .find()
+        .sort({ updatedAt: 1 })
+        .limit(10000)
         .cursor()
         .eachAsync(async (guild: Guild) => {
           await this.queue.add(
@@ -64,6 +66,7 @@ export class GuildsService {
               iteration: iteration,
             }, {
               jobId: guild._id,
+              priority: 5,
             }
           )
           i++;

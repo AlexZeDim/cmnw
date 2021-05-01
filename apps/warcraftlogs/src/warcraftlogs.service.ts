@@ -159,7 +159,7 @@ export class WarcraftlogsService {
       const charactersToJobs = exportedCharacters.map((c, i) => {
         const _id: string = toSlug(`${c.name}@${c.server}`);
         iteration++
-        if (i > keys.length) iteration = 0;
+        if (iteration >= keys.length) iteration = 0;
         return {
           name: _id,
           data: {

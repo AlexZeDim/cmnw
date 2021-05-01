@@ -1,6 +1,7 @@
 import { Document } from 'mongoose';
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
+@Schema()
 export class WarcraftLogs extends Document {
   @Prop({ type: String })
   _id: string;

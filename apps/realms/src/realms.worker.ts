@@ -25,12 +25,6 @@ export class RealmsWorker {
   constructor(
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
-    @InjectModel(RealmPopulation.name)
-    private readonly RealmPopulationModel: Model<RealmPopulation>,
-    @InjectModel(Guild.name)
-    private readonly GuildModel: Model<Guild>,
-    @InjectModel(Character.name)
-    private readonly CharacterModel: Model<Character>,
   ) {}
 
   @BullWorkerProcess(realmsQueue.workerOptions)
@@ -65,7 +59,7 @@ export class RealmsWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'dynamic-eu' },
       });
-      // TODO review the region, for bnet
+      // TODO review the region, for Bnet
       const keys: string[] = ['name', 'category', 'race', 'timezone', 'is_tournament', 'slug'];
       const keys_named: string[] = ['region', 'type'];
 
@@ -128,106 +122,11 @@ export class RealmsWorker {
       );
 
       Object.assign(realm, summary);
-      await job.updateProgress(80);
-
-      if (args.wcl_ids && args.wcl_ids.length) {
-        args.wcl_ids.map(({ name, id }) => {
-          if (name === realm.name) {
-            realm.wcl_id = id;
-            return
-          } else if (name === realm.name_locale) {
-            realm.wcl_id = id;
-            return
-          }
-        })
-      }
-
-      if (!realm.isNew && args.population) {
-        await this.population(realm.toObject());
-        await job.updateProgress(90);
-      }
 
       await realm.save();
       await job.updateProgress(100);
     } catch (e) {
       this.logger.error(`${RealmsWorker.name}: ${e}`)
-    }
-  }
-
-  private async population(args: LeanDocument<Realm>): Promise<void> {
-    try {
-      const realm = await this.RealmModel.findById(args._id);
-      if (!realm) {
-        this.logger.error(`population: ${args._id} not found!`)
-        return;
-      }
-
-      const population: Partial<PopulationRealmInterface> = {
-        realm_id: realm._id,
-        characters_classes: {
-          death_knight: 0,
-          demon_hunter: 0,
-          druid: 0,
-          hunter: 0,
-          mage: 0,
-          monk: 0,
-          paladin: 0,
-          priest: 0,
-          rogue: 0,
-          shaman: 0,
-          warlock: 0,
-          warrior: 0
-        },
-        characters_covenants: {
-          kyrian: 0,
-          venthyr: 0,
-          night_fae: 0,
-          necrolord: 0
-        }
-      };
-
-      /**
-       * Characters Statistics
-       */
-      population.characters_total = await this.CharacterModel.countDocuments({ realm: args.slug });
-      population.characters_active = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200 });
-      population.characters_active_alliance = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, faction: FACTION.A });
-      population.characters_active_horde = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, faction: FACTION.H });
-      population.characters_active_max_level = await this.CharacterModel.countDocuments({ realm: args.slug, status_code: 200, level: MAX_LEVEL });
-      population.characters_guild_members = await this.CharacterModel.countDocuments({ realm: args.slug, guild: { "$ne": undefined } });
-      population.characters_guildless = await this.CharacterModel.countDocuments({ realm: args.slug, guild: undefined })
-      const players_unique = await this.CharacterModel.find({ realm: args.slug }).distinct('personality');
-      population.players_unique = players_unique.length;
-      const players_active_unique = await this.CharacterModel.find({ realm: args.slug, status_code: 200 }).distinct('personality');
-      population.players_active_unique = players_active_unique.length;
-      /**
-       * Guild number
-       * and their faction balance
-       * TODO make sure that guild data always actual
-       */
-      population.guilds_total = await this.GuildModel.countDocuments({ realm: args.slug });
-      population.guilds_alliance = await this.GuildModel.countDocuments({ realm: args.slug, faction: FACTION.A });
-      population.guilds_horde = await this.GuildModel.countDocuments({ realm: args.slug, faction: FACTION.H });
-      /**
-       * Class popularity among
-       * every active character
-       */
-      for (const character_class of CHARACTER_CLASS) {
-        const key: string = toKey(character_class);
-        population.characters_classes[key] = await this.CharacterModel.countDocuments({ realm: args.slug, statusCode: 200, character_class: character_class });
-      }
-      /**
-       * Count covenant stats
-       * for every active character
-       */
-      for (const covenant of COVENANTS) {
-        const key: string = toKey(covenant);
-        population.characters_covenants[key] = await this.CharacterModel.countDocuments({ 'realm.slug': args.slug, statusCode: 200, 'chosen_covenant': covenant });
-      }
-
-      await this.RealmPopulationModel.create(population);
-    } catch (e) {
-      this.logger.error(`population: ${args._id}:${e}`)
     }
   }
 }

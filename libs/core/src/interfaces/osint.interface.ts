@@ -91,10 +91,8 @@ export interface RealmInterface {
   wcl_id?: number,
   connected_realm_id?: number,
   population_status?: string,
-  population?: boolean,
   status?: string,
   connected_realms?: string[],
-  wcl_ids?: { name: string, id: number }[]
 }
 
 export interface LogInterface {

@@ -143,9 +143,11 @@ export class WarcraftlogsService {
         .eachAsync(async (log: WarcraftLogs) => {
           const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
             .then(res => res.data || { exportedCharacters: [] });
-          await this.exportedCharactersToQueue(exportedCharacters, keys);
-          log.status = true;
-          await log.save();
+          const result = await this.exportedCharactersToQueue(exportedCharacters, keys);
+          if (result) {
+            log.status = true;
+            await log.save();
+          }
           this.logger.log(`Log: ${log._id}, status: ${log.status}`);
         })
     } catch (e) {
@@ -153,7 +155,7 @@ export class WarcraftlogsService {
     }
   }
 
-  async exportedCharactersToQueue(exportedCharacters: ExportedCharactersInterface[], keys: Key[]): Promise<void> {
+  async exportedCharactersToQueue(exportedCharacters: ExportedCharactersInterface[], keys: Key[]): Promise<boolean | undefined> {
     try {
       let iteration = 0;
       const charactersToJobs = exportedCharacters.map((c, i) => {
@@ -182,6 +184,7 @@ export class WarcraftlogsService {
       });
       await this.queue.addBulk(charactersToJobs);
       this.logger.log(`addCharacterToQueue, add ${charactersToJobs.length} characters to characterQueue`);
+      return true;
     } catch (e) {
       this.logger.error(`addCharacterToQueue: ${e}`);
     }

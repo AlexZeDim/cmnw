@@ -101,10 +101,10 @@ export class Character extends Document {
   @Prop()
   guild_rank: number;
 
-  @Prop()
+  @Prop({ index: true })
   hash_a: string;
 
-  @Prop()
+  @Prop({ index: true })
   hash_b: string;
 
   @Prop()

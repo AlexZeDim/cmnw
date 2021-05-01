@@ -8,7 +8,6 @@ import { Queue } from 'bullmq';
 import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
-import { getHeapStatistics } from 'v8';
 
 @Injectable()
 export class AuctionsService {
@@ -31,8 +30,6 @@ export class AuctionsService {
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);
-
-      this.logger.log(getHeapStatistics())
 
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {

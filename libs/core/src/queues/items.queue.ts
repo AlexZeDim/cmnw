@@ -8,7 +8,7 @@ const queueOptions: JobsOptions = {
 
 export const itemsQueue: QueueInterface = {
   name: 'OSINT:Items',
-  workerOptions: { concurrency: 5 },
+  workerOptions: { concurrency: 10 },
   options: {
     defaultJobOptions: queueOptions,
   },

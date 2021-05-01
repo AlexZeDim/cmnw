@@ -12,10 +12,13 @@ RUN nest build keys \
   && nest build items \
   && nest build guilds \
   && nest build realms \
+  && nest build pricing \
   && nest build auctions \
   && nest build wowtoken \
+  && nest build valuations \
   && nest build characters \
   && nest build conglomerat \
-  && nest build wowprogress
+  && nest build wowprogress \
+  && nest build warcraftlogs \
 
 CMD wait && ["node"]

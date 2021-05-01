@@ -50,8 +50,10 @@ export class WarcraftlogsService {
         .eachAsync(async (realm: Realm) => {
           const pages = range(0, 500, 1);
           let ex_page = 0;
+          let ex_logs = 0;
 
           for (const page of pages) {
+            await delay(5);
             const index_logs = await this.x(
               `https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`,
               '.description-cell',
@@ -61,7 +63,6 @@ export class WarcraftlogsService {
                 },
               ],
             ).then(res => res);
-            let ex_logs = 0;
             /**
              * If indexing logs on page have ended
              * and page fault tolerance is more then
@@ -80,14 +81,14 @@ export class WarcraftlogsService {
             // TODO probably to separate function
             const logsBulk: WarcraftLogs[] = [];
             for (const index_log of index_logs) {
+              if (ex_logs > config.logs) {
+                this.logger.log(`BREAK, ${realm.name}, Log FT: ${ex_logs} > ${config.logs}`);
+                break
+              }
               if (!index_log.link) {
                 this.logger.log(`ERROR, ${realm.name}, Page: ${page}, Link not found`);
                 ex_logs += 1;
                 continue
-              }
-              if (ex_logs > config.logs) {
-                this.logger.log(`BREAK, ${realm.name}, Log FT: ${ex_logs} > ${config.logs}`);
-                break
               }
               const [link]: string[] = index_log.link.match(/(.{16})\s*$/g);
               if (index_log.link.includes('reports')) {

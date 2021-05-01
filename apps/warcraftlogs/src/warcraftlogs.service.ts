@@ -158,16 +158,16 @@ export class WarcraftlogsService {
   async exportedCharactersToQueue(exportedCharacters: ExportedCharactersInterface[], keys: Key[]): Promise<boolean | undefined> {
     try {
       let iteration = 0;
-      const charactersToJobs = exportedCharacters.map((c, i) => {
-        const _id: string = toSlug(`${c.name}@${c.server}`);
+      const charactersToJobs = exportedCharacters.map((character) => {
+        const _id: string = toSlug(`${character.name}@${character.server}`);
         iteration++
         if (iteration >= keys.length) iteration = 0;
         return {
           name: _id,
           data: {
             _id: _id,
-            name: c.name,
-            realm: c.server,
+            name: character.name,
+            realm: character.server,
             updatedAt: new Date(),
             created_by: OSINT_SOURCE.WARCRAFTLOGS,
             updated_by: OSINT_SOURCE.WARCRAFTLOGS,

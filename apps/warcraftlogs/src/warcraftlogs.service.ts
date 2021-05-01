@@ -126,8 +126,8 @@ export class WarcraftlogsService {
     try {
       await delay(30);
       const [ warcraft_logs_key, keys ] = await Promise.all([
-        this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY }),
-        this.KeyModel.find({ tags: clearance })
+        await this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY }),
+        await this.KeyModel.find({ tags: clearance })
       ])
       if (!warcraft_logs_key || !warcraft_logs_key.token) {
         this.logger.error(`indexLogs: clearance: WCL key not found`);
@@ -158,8 +158,8 @@ export class WarcraftlogsService {
       let iteration = 0;
       const charactersToJobs = exportedCharacters.map((c, i) => {
         const _id: string = toSlug(`${c.name}@${c.server}`);
+        iteration++
         if (i > keys.length) iteration = 0;
-        iteration += 1;
         return {
           name: _id,
           data: {

@@ -21,7 +21,7 @@ export class ItemsWorker {
   ) {}
 
   @BullWorkerProcess()
-  public async process(job: Job): Promise<Item> {
+  public async process(job: Job): Promise<number> {
     try {
       const args: { _id: number } & BattleNetOptions = { ...job.data }
 
@@ -98,10 +98,12 @@ export class ItemsWorker {
           item.icon = getItemMedia.value.assets[0].value;
         }
 
-        return await item.save();
+        await item.save();
+        return 200;
       }
     } catch (e) {
-      this.logger.error(`${ItemsWorker.name}: ${e}`)
+      this.logger.error(`${ItemsWorker.name}: ${e}`);
+      return 404;
     }
   }
 }

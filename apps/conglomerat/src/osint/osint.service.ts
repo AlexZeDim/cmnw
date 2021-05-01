@@ -1,4 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Character } from '@app/mongo';
+import { LeanDocument, Model } from 'mongoose';
 
 @Injectable()
 export class OsintService {
@@ -7,45 +10,50 @@ export class OsintService {
   );
 
   constructor(
-
+    @InjectModel(Character.name)
+    private readonly CharacterModel: Model<Character>,
   ) { }
 
-  getCharacter(_id: string): string {
-    // TODO add new dma to queue
-    return _id
+  async getCharacter(_id: string): Promise<LeanDocument<Character>> {
+    try {
+      return await this.CharacterModel.findById(_id).lean();
+    } catch (e) {
+      throw new Error('kokoko');
+    }
+
   }
 
-  getCharactersByHash(hash: string): string[] {
+  async getCharactersByHash(hash: string): Promise<string[]> {
     return [hash, hash]
   }
 
-  getCharacterLogs(_id: string): string[] {
+  async getCharacterLogs(_id: string): Promise<string[]> {
     return [_id, _id]
   }
 
-  getGuild(_id: string): string {
+  async getGuild(_id: string): Promise<string> {
     // TODO add new dma to queue
     return _id
   }
 
-  getGuildTest(hash: string): string[] {
+  async getGuildTest(hash: string): Promise<string[]> {
     return [hash, hash]
   }
 
-  getGuildLogs(_id: string): string[] {
+  async getGuildLogs(_id: string): Promise<string[]> {
     return [_id, _id]
   }
 
-  getRealm(_id: string): string {
+  async getRealm(_id: string): Promise<string> {
     // TODO add new dma to queue
     return _id
   }
 
-  getRealmPopulation(_id: string): string[] {
+  async getRealmPopulation(_id: string): Promise<string[]> {
     return [_id, _id]
   }
 
-  getRealms(_id: string): string[] {
+  async getRealms(_id: string): Promise<string[]> {
     return [_id, _id]
   }
 }

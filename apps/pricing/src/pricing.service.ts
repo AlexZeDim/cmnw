@@ -115,7 +115,10 @@ export class PricingService {
         if (file === 'spelleffect.csv') Model = this.SpellEffectModel;
         if (file === 'spellreagents.csv') Model = this.SpellReagentsModel;
 
-        if (!Model) continue;
+        if (!Model) {
+          this.logger.log(`buildPricing: this model has not been found`);
+          continue;
+        }
 
         const csvString = await fs.readFile(path.join(dir, file), 'utf-8');
 

@@ -19,6 +19,6 @@ RUN nest build keys \
   && nest build characters \
   && nest build conglomerat \
   && nest build wowprogress \
-  && nest build warcraftlogs \
+  && nest build warcraftlogs
 
 CMD wait && ["node"]

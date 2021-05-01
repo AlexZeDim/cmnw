@@ -183,7 +183,6 @@ export class PricingService {
 
           if ('ID' in row) {
             row._id = row.ID
-            console.log(row);
             const document = await Model.findByIdAndUpdate(row._id, row,
               {
                 upsert: true,

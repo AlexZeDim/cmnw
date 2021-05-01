@@ -31,7 +31,7 @@ export class PricingService {
     @BullQueueInject(pricingQueue.name)
     private readonly queue: Queue,
   ) {
-    //this.indexPricing(GLOBAL_DMA_KEY);
+    this.indexPricing(GLOBAL_DMA_KEY);
     this.buildPricing(true);
   }
 

@@ -22,7 +22,7 @@ import { ItemsWorker } from './items.worker';
         },
       },
     }),
-    BullModule.registerQueue(itemsQueue.name),
+    BullModule.registerQueue({ queueName: itemsQueue.name, options: itemsQueue.options }),
   ],
   controllers: [],
   providers: [ItemsService, ItemsWorker],

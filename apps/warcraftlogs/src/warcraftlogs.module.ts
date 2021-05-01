@@ -22,7 +22,7 @@ import { charactersQueue } from '@app/core';
         },
       },
     }),
-    BullModule.registerQueue(charactersQueue.name),
+    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
   ],
   controllers: [],
   providers: [WarcraftlogsService],

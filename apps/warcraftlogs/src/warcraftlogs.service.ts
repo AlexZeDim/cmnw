@@ -173,6 +173,9 @@ export class WarcraftlogsService {
             clientId: keys[iteration]._id,
             clientSecret: keys[iteration].secret,
             accessToken: keys[iteration].token,
+            guildRank: false,
+            createOnlyUnique: true,
+            forceUpdate: false,
           },
           options: { jobId: _id },
         }

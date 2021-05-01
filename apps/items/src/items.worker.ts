@@ -20,7 +20,7 @@ export class ItemsWorker {
     private readonly ItemModel: Model<Item>,
   ) {}
 
-  @BullWorkerProcess()
+  @BullWorkerProcess(itemsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
       const args: { _id: number } & BattleNetOptions = { ...job.data }

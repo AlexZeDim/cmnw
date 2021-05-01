@@ -38,7 +38,7 @@ import { pricingQueue } from '@app/core';
         },
       },
     }),
-    BullModule.registerQueue(pricingQueue.name),
+    BullModule.registerQueue({ queueName: pricingQueue.name, options: pricingQueue.options }),
   ],
   controllers: [],
   providers: [PricingService],

@@ -9,12 +9,15 @@ import {
   GLOBAL_WCL_KEY,
   charactersQueue,
   WarcraftLogsConfigInterface,
+  OSINT_SOURCE,
+  toSlug,
+  GLOBAL_OSINT_KEY,
 } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { BattleNetOptions } from 'blizzapi';
+import { delay } from '@app/core/utils/converters';
 
 @Injectable()
 export class WarcraftlogsService {
@@ -35,7 +38,7 @@ export class WarcraftlogsService {
     private readonly queue: Queue,
   ) {
     this.indexWarcraftLogs({ raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 400 });
-    this.indexLogs(GLOBAL_WCL_KEY);
+    this.indexLogs(GLOBAL_OSINT_KEY);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
@@ -59,12 +62,6 @@ export class WarcraftlogsService {
               ],
             ).then(res => res);
             let ex_logs = 0;
-            /** If parsed page have results */
-            if (!index_logs || !index_logs.length) {
-              this.logger.log(`ERROR, ${realm.name}, Page: ${page}, Logs not found`);
-              ex_page += 1;
-              continue
-            }
             /**
              * If indexing logs on page have ended
              * and page fault tolerance is more then
@@ -73,6 +70,12 @@ export class WarcraftlogsService {
             if (ex_page > config.page) {
               this.logger.log(`BREAK, ${realm.name}, Page: ${page}, Page FT: ${ex_page} > ${config.page}`);
               break
+            }
+            /** If parsed page have results */
+            if (!index_logs || !index_logs.length) {
+              this.logger.log(`ERROR, ${realm.name}, Page: ${page}, Logs not found`);
+              ex_page += 1;
+              continue
             }
             // TODO probably to separate function
             const logsBulk: WarcraftLogs[] = [];
@@ -97,7 +100,7 @@ export class WarcraftlogsService {
                 } else {
                   /** Else, counter -1 and create in DB */
                   if (ex_logs > 1) ex_logs -= 1;
-                  this.logger.log(`C, Log: ${log._id}, Log EX: ${ex_logs}`)
+                  this.logger.log(`C, Log: ${link}, Log EX: ${ex_logs}`)
                   log = new this.WarcraftLogsModel({ _id: link });
                   logsBulk.push(log);
                 }
@@ -117,46 +120,61 @@ export class WarcraftlogsService {
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)
-  async indexLogs(clearance: string = GLOBAL_WCL_KEY): Promise<void> {
+  async indexLogs(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
-      const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key || !key.token) {
-        this.logger.error(`indexLogs: clearance: ${clearance} key not found`);
-        return
+      await delay(30);
+      const [ warcraft_logs_key, keys ] = await Promise.all([
+        this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY }),
+        this.KeyModel.find({ tags: clearance })
+      ])
+      if (!warcraft_logs_key || !warcraft_logs_key.token) {
+        this.logger.error(`indexLogs: clearance: WCL key not found`);
+        return;
+      }
+      if (!keys.length) {
+        this.logger.error(`indexLogs: clearance ${clearance} ${keys.length} have been found`);
+        return;
       }
       await this.WarcraftLogsModel
         .find({ status: false })
         .cursor({ batchSize: 1 })
         .eachAsync(async (log: WarcraftLogs) => {
-          const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${key.token}`)
+          const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
             .then(res => res.data || { exportedCharacters: [] });
-          await this.exportedCharactersToQueue(exportedCharacters, { region: 'eu', clientId: key._id, clientSecret: key.secret, accessToken: key.token });
+          await this.exportedCharactersToQueue(exportedCharacters, keys);
           log.status = true;
           await log.save();
           this.logger.log(`Log: ${log._id}, status: ${log.status}`);
         })
     } catch (e) {
-      this.logger.error(`indexLogs:`);
+      this.logger.error(`indexLogs: ${e}`);
     }
   }
 
-  async exportedCharactersToQueue(exportedCharacters: ExportedCharactersInterface[], keys: BattleNetOptions): Promise<void> {
+  async exportedCharactersToQueue(exportedCharacters: ExportedCharactersInterface[], keys: Key[]): Promise<void> {
     try {
-      const charactersToJobs = exportedCharacters.map(c => (
-        {
-          name: `${c.name}@${c.server}`,
+      let iteration = 0;
+      const charactersToJobs = exportedCharacters.map((c, i) => {
+        const _id: string = toSlug(`${c.name}@${c.server}`);
+        if (i > keys.length) iteration = 0;
+        iteration += 1;
+        return {
+          name: _id,
           data: {
-            _id: `${c.name}@${c.server}`,
+            _id: _id,
             name: c.name,
             realm: c.server,
             updatedAt: new Date(),
-            region: keys.region,
-            clientId: keys.clientId,
-            clientSecret: keys.clientSecret,
-            accessToken: keys.accessToken,
-          }
+            created_by: OSINT_SOURCE.WARCRAFTLOGS,
+            updated_by: OSINT_SOURCE.WARCRAFTLOGS,
+            region: 'eu',
+            clientId: keys[iteration]._id,
+            clientSecret: keys[iteration].secret,
+            accessToken: keys[iteration].token,
+          },
+          options: { jobId: _id },
         }
-      ));
+      });
       await this.queue.addBulk(charactersToJobs);
       this.logger.log(`addCharacterToQueue, add ${charactersToJobs.length} characters to characterQueue`);
     } catch (e) {

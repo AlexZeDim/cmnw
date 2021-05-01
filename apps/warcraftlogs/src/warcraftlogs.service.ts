@@ -179,7 +179,10 @@ export class WarcraftlogsService {
             createOnlyUnique: true,
             forceUpdate: false,
           },
-          options: { jobId: _id },
+          options: {
+            jobId: _id,
+            priority: 4,
+          },
         }
       });
       await this.queue.addBulk(charactersToJobs);

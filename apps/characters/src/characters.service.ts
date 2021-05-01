@@ -23,14 +23,13 @@ export class CharactersService {
     private readonly queue: Queue,
   ) {
     this.indexCharacters(GLOBAL_OSINT_KEY);
-    // TODO index by unique guild
   }
 
   @Cron(CronExpression.EVERY_HOUR)
   private async indexCharacters(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
-      if (jobs > 500000) {
+      if (jobs > 100000) {
         this.logger.error(`indexCharacters: ${jobs} jobs found`);
         return
       }
@@ -47,7 +46,7 @@ export class CharactersService {
       await this.CharacterModel
         .find()
         .sort({ updatedAt: 1 })
-        .limit(500000)
+        .limit(100000)
         .cursor()
         .eachAsync(async (character: Character) => {
           const [name, realm] = character._id.split('@');
@@ -68,7 +67,8 @@ export class CharactersService {
               iteration: iteration,
             },
             {
-              jobId: character._id
+              jobId: character._id,
+              priority: 5
             }
           );
           i++;

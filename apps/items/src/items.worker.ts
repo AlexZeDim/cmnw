@@ -34,6 +34,7 @@ export class ItemsWorker {
         });
       }
 
+      // TODO add job progress
       this.BNet = new BlizzAPI({
         region: args.region,
         clientId: args.clientId,
@@ -101,9 +102,10 @@ export class ItemsWorker {
         await item.save();
         return 200;
       }
+      return 404
     } catch (e) {
       this.logger.error(`${ItemsWorker.name}: ${e}`);
-      return 404;
+      return 500;
     }
   }
 }

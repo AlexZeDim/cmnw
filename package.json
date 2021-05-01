@@ -49,6 +49,8 @@
     "bull-board": "^1.7.2",
     "bullmq": "^1.15.1",
     "cheerio": "^1.0.0-rc.6",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
     "config": "^3.3.6",
     "discord.js": "^12.5.3",
     "farmhash": "^3.2.1",
@@ -58,6 +60,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
+    "swagger-ui-express": "^4.1.6",
     "x-ray": "^2.3.4"
   },
   "devDependencies": {

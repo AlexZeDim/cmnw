@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Query } from '@nestjs/common';
 import { OsintService } from './osint.service';
 import { LeanDocument } from "mongoose";
 import { Character } from '@app/mongo';
@@ -11,6 +11,7 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { CharacterIdDto } from './dto';
 
 @Controller('osint')
 export class OsintController {
@@ -30,10 +31,9 @@ export class OsintController {
   @ApiServiceUnavailableResponse({ description: 'Gate Orders is not available at the moment' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
-  @Get('/character/:_id')
-  async getCharacter(@Param('_id') _id: string): Promise<LeanDocument<Character>> {
-    // TODO validate
-    return this.osintService.getCharacter(_id);
+  @Get('/character')
+  async getCharacter(@Query() input: CharacterIdDto): Promise<LeanDocument<Character>> {
+    return this.osintService.getCharacter(input);
   }
 
   @HttpCode(HttpStatus.OK)

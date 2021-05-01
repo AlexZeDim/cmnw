@@ -54,6 +54,7 @@ export enum FACTION {
 }
 
 export enum OSINT_SOURCE {
+  REQUESTCHARACTER = 'OSINT-requestCharacter',
   GETGUILD = 'OSINT-getGuild',
   GETCHARACTER = 'OSINT-getCharacter',
   INDEXGUILD = 'OSINT-indexGuilds',

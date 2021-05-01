@@ -5,6 +5,7 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
 import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, RealmsSchema } from '@app/mongo';
+import { charactersQueue } from '@app/core';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, R
           port: redisConfig.port,
         },
       },
-    })
+    }),
+    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
   ],
   controllers: [OsintController],
   providers: [OsintService],

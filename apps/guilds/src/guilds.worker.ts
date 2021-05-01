@@ -108,12 +108,12 @@ export class GuildsWorker {
           created_by: OSINT_SOURCE.GETGUILD,
           updated_by: OSINT_SOURCE.GETGUILD,
         })
-        if (args.created_by) guild.created_by = args.created_by;
+        if (args.created_by) updated.created_by = args.created_by;
         await job.updateProgress(25);
       }
 
       //TODO inherit args
-      if (args.updated_by) guild.updated_by = args.updated_by;
+      if (args.updated_by) updated.updated_by = args.updated_by;
 
       await job.updateProgress(30);
       const summary = await this.summary(name_slug, updated.realm, this.BNet);

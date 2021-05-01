@@ -32,7 +32,7 @@ export class PricingService {
     private readonly queue: Queue,
   ) {
     this.indexPricing(GLOBAL_DMA_KEY);
-    this.buildPricing(true);
+    this.buildPricing(false);
   }
 
   async indexPricing(clearance: string = GLOBAL_DMA_KEY): Promise<void> {

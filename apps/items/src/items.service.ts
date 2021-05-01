@@ -95,15 +95,15 @@ export class ItemsService {
                 const item = await this.ItemModel.findById(row._id);
                 if (item) {
                   if (row.ticker) item.ticker = row.ticker;
-                  if (row.profession_class ) item.profession_class  = row.profession_class;
+                  if (row.profession_class) item.profession_class = row.profession_class;
                   if (row.asset_class) {
                     if (row.asset_class.includes('.')) {
                       const asset_classes = row.asset_class.split('.');
                       for (const asset_class of asset_classes) {
-                        item.asset_class.addToSet(asset_class);
+                        item.asset_class.addToSet(asset_class.toLowerCase());
                       }
                     } else {
-                      item.asset_class.addToSet(row.asset_class);
+                      item.asset_class.addToSet(row.asset_class.toLowerCase());
                     }
                   }
                   if (row.tags) {

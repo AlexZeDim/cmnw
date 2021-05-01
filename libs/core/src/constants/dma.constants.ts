@@ -40,9 +40,9 @@ export enum ALIAS_KEY {
 }
 
 export enum PRICING_TYPE {
-  Primary = 'primary',
-  Derivative = 'derivative',
-  Review = 'review',
+  PRIMARY = 'primary',
+  DERIVATIVE = 'derivative',
+  REVIEW = 'review',
 }
 
 export const EXPANSION_TICKER: Map<string, string> = new Map([

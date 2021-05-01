@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_SOURCE, FACTION, pricingQueue } from '@app/core';
+import { DMA_SOURCE, FACTION, PRICING_TYPE, pricingQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -172,7 +172,7 @@ export class PricingWorker {
         if (recipe_media) pricing_method.media = recipe_media.assets[0].value;
 
         pricing_method.updated_by = DMA_SOURCE.API;
-        pricing_method.type = 'primary';
+        pricing_method.type = PRICING_TYPE.PRIMARY;
 
         await job.updateProgress(90);
         await pricing_method.save();

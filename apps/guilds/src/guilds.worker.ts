@@ -49,7 +49,7 @@ export class GuildsWorker {
         )
         .sort({ score: { $meta: 'textScore' } })
         .lean();
-      if (!realm) return
+      if (!realm) return;
 
       const
         name_slug: string = toSlug(args.name),
@@ -94,7 +94,7 @@ export class GuildsWorker {
           await job.updateProgress(13);
           return 304;
         }
-        Object.assign(original, guild.toObject())
+        Object.assign(original, guild.toObject());
         original.status_code = 100;
         await job.updateProgress(20);
       } else {

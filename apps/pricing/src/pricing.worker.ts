@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_SOURCE, pricingQueue } from '@app/core';
+import { DMA_SOURCE, FACTION, pricingQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -62,7 +62,7 @@ export class PricingWorker {
 
       if (recipe_data?.alliance_crafted_item?.id) {
         writeConcerns.push({
-          faction: 'Alliance',
+          faction: FACTION.A,
           recipe_id: args.recipe_id, //TODO rethink?
           item_id: recipe_data.alliance_crafted_item.id,
           reagents: recipe_data.reagents,
@@ -73,7 +73,7 @@ export class PricingWorker {
 
       if (recipe_data?.horde_crafted_item?.id) {
         writeConcerns.push({
-          faction: 'Horde',
+          faction: FACTION.H,
           recipe_id: args.recipe_id,
           item_id: recipe_data.horde_crafted_item.id,
           reagents: recipe_data.reagents,
@@ -99,7 +99,7 @@ export class PricingWorker {
         if (!pricing_method) {
           pricing_method = new this.PricingModel({
             recipe_id: concern.recipe_id,
-            create_by: 'DMA-API'
+            create_by: DMA_SOURCE.API
           })
         }
 
@@ -112,7 +112,7 @@ export class PricingWorker {
          */
         const recipe_spell = await this.SkillLineModel.findById(pricing_method.recipe_id);
         if (!recipe_spell) {
-          this.logger.error(`Consensus not found for ${pricing_method.id}`)
+          this.logger.error(`Consensus not found for ${pricing_method.recipe_id}`)
           continue
         }
 
@@ -127,11 +127,9 @@ export class PricingWorker {
 
         const pricing_spell = await this.SpellEffectModel.findOne({ spell_id: pricing_method.spell_id });
         if (recipe_data.modified_crafting_slots && Array.isArray(recipe_data.modified_crafting_slots)) {
-          recipe_data.modified_crafting_slots = recipe_data.modified_crafting_slots.map((mrs: any) => ({
-            _id: mrs.slot_type.id,
-            name: mrs.slot_type.name,
-            display_order: mrs.display_order
-          }));
+           recipe_data.modified_crafting_slots.map((mrs: { slot_type: { id: number } }) => {
+             if (mrs.slot_type?.id) pricing_method.modified_crafting_slots.addToSet({ _id: mrs.slot_type.id })
+           });
         }
 
         /**

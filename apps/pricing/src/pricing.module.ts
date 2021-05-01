@@ -18,6 +18,7 @@ import {
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { pricingQueue } from '@app/core';
+import { PricingWorker } from './pricing.worker';
 
 @Module({
   imports: [
@@ -41,6 +42,6 @@ import { pricingQueue } from '@app/core';
     BullModule.registerQueue({ queueName: pricingQueue.name, options: pricingQueue.options }),
   ],
   controllers: [],
-  providers: [PricingService],
+  providers: [PricingService, PricingWorker],
 })
 export class PricingModule {}

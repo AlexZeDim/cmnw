@@ -37,12 +37,13 @@ export class WarcraftlogsService {
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexWarcraftLogs({ raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 400 });
+    // TODO config args?
+    this.indexWarcraftLogs({ raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 500 });
     this.indexLogs(GLOBAL_OSINT_KEY);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  async indexWarcraftLogs(config: WarcraftLogsConfigInterface = { raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 400 }): Promise<void> {
+  async indexWarcraftLogs(config: WarcraftLogsConfigInterface = { raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 500 }): Promise<void> {
     try {
       await this.RealmModel
         .find({ wcl_id: { $ne: null } })

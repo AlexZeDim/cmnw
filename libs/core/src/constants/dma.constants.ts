@@ -3,14 +3,18 @@ export enum DMA_SOURCE {
 }
 
 export enum VALUATION_TYPE {
-  Vendor = 'vendor',
-  Derivative = 'derivative',
-  Reagent = 'reagent',
-  Market = 'market',
-  Premium = 'premium',
-  Funpay = 'funpay',
-  Otc = 'otc',
-  Wowtoken = 'wowtoken',
+  VSP = 'vsp',
+  VENDOR = 'vendor',
+  DERIVATIVE = 'derivative',
+  REAGENT = 'reagent',
+  MARKET = 'market',
+  PREMIUM = 'premium',
+  FUNPAY = 'funpay',
+  COMMDTY = ' commdty',
+  ITEM = 'item',
+  OTC = 'otc',
+  WOWTOKEN = 'wowtoken',
+  GOLD = 'gold',
 }
 
 export enum FLAG_TYPE {

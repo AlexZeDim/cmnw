@@ -37,6 +37,13 @@ export class OsintController {
     return this.osintService.getCharacter(input);
   }
 
+  @ApiOperation({ description: 'Returns requested character' })
+  @ApiOkResponse({ description: 'Request character with selected _id' })
+  @ApiUnauthorizedResponse({ description: '' })
+  @ApiForbiddenResponse({ description: 'You cannot access this waypoint' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Gate Orders is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/character/hash/:hash')
   async getCharactersByHash(@Param('hash') hash: string): Promise<string[]> {

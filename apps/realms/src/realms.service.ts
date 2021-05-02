@@ -41,8 +41,6 @@ export class RealmsService {
     private readonly queue: Queue,
   ) {
     this.indexRealms(GLOBAL_KEY);
-    this.getRealmsWarcraftLogsID(247, 517);
-    this.indexRealmPopulation();
   }
 
   @Cron(CronExpression.EVERY_WEEK)
@@ -115,6 +113,7 @@ export class RealmsService {
     }
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
   private async indexRealmPopulation(): Promise<void> {
     try {
       await this.RealmModel

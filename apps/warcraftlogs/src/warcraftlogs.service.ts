@@ -37,8 +37,6 @@ export class WarcraftlogsService {
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
   ) {
-    // TODO config args?
-    this.indexWarcraftLogs({ raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 500 });
     this.indexLogs(GLOBAL_OSINT_KEY);
   }
 

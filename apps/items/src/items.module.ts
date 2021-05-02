@@ -6,9 +6,11 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { itemsQueue } from '@app/core';
 import { Item, ItemsSchema, Key, KeysSchema } from '@app/mongo';
 import { ItemsWorker } from './items.worker';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },

@@ -8,6 +8,7 @@ import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ItemsService {
@@ -23,11 +24,12 @@ export class ItemsService {
     @BullQueueInject(itemsQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexItems(GLOBAL_KEY, 0, 200000, true);
-    // TODO buildItems(false)
+    this.indexItems(GLOBAL_KEY, 0, 200000, false);
+    this.buildItems(false)
   }
 
-  async indexItems(clearance: string = GLOBAL_KEY, min: number = 1, max: number = 20, updateForce: boolean = true): Promise<void> {
+  @Cron(CronExpression.EVERY_WEEK)
+  async indexItems(clearance: string = GLOBAL_KEY, min: number = 0, max: number = 200000, updateForce: boolean = true): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
@@ -75,8 +77,13 @@ export class ItemsService {
     }
   }
 
-  async buildItems() {
+  async buildItems(init: boolean): Promise<void> {
     try {
+      if (!init) {
+        this.logger.log(`buildItems: init: ${init}`);
+        return;
+      }
+
       const dir = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dir);
       const files = await fs.readdir(dir);

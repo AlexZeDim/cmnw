@@ -9,6 +9,7 @@ import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PricingService {
@@ -35,6 +36,7 @@ export class PricingService {
     this.buildPricing(false);
   }
 
+  @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM)
   async indexPricing(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
@@ -97,7 +99,8 @@ export class PricingService {
     }
   }
 
-  async buildPricing(init: boolean = false): Promise<void> {
+  @Cron(CronExpression.EVERY_WEEKEND)
+  async buildPricing(init: boolean = true): Promise<void> {
     try {
       if (!init) {
         this.logger.log(`buildPricing: init: ${init}`);

@@ -25,10 +25,7 @@ export class GuildsService {
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(guildsQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexGuilds(GLOBAL_OSINT_KEY);
-    this.indexGuildsUnique(GLOBAL_OSINT_KEY);
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
   async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {

@@ -21,9 +21,7 @@ export class CharactersService {
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexCharacters(GLOBAL_OSINT_KEY);
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
   private async indexCharacters(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {

@@ -19,9 +19,11 @@ import {
 import { BullModule } from '@anchan828/nest-bullmq';
 import { pricingQueue } from '@app/core';
 import { PricingWorker } from './pricing.worker';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },

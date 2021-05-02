@@ -5,9 +5,11 @@ import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration
 import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { guildsQueue } from '@app/core';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },

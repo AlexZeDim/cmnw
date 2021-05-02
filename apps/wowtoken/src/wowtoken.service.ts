@@ -19,9 +19,7 @@ export class WowtokenService {
     private readonly TokenModel: Model<Token>,
     @InjectModel(Key.name)
     private readonly KeysModel: Model<Key>,
-  ) {
-    this.indexTokens(GLOBAL_DMA_KEY);
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async indexTokens(clearance: string = GLOBAL_DMA_KEY): Promise<void> {

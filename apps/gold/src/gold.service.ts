@@ -16,9 +16,7 @@ export class GoldService {
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Gold.name)
     private readonly GoldModel: Model<Gold>,
-  ) {
-    this.indexGold()
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_HOUR)
   private async indexGold(): Promise<void> {

@@ -36,7 +36,7 @@ export class WowprogressService {
    * @param init
    */
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
-  async indexWowProgress(clearance: string = GLOBAL_KEY, init: boolean = false): Promise<void> {
+  async indexWowProgress(clearance: string = GLOBAL_KEY, init: boolean = true): Promise<void> {
     try {
 
       if (!init) {

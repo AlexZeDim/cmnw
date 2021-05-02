@@ -23,4 +23,19 @@ export class DmaService {
     // TODO add new dma to queue
     return `${item}@${realm}`
   }
+
+  getItemChart(item: string, realm: string): string {
+    // TODO add new dma to queue
+    return `${item}@${realm}`
+  }
+
+  getItemQuotes(item: string, realm: string): string {
+    // TODO add new dma to queue
+    return `${item}@${realm}`
+  }
+
+  getItemFeed(item: string, realm: string): string {
+    // TODO add new dma to queue
+    return `${item}@${realm}`
+  }
 }

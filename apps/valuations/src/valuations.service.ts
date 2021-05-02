@@ -24,7 +24,7 @@ export class ValuationsService {
     this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], true)
   }
 
-  async buildAssetClasses(args: string[], init: boolean = false): Promise<void> {
+  async buildAssetClasses(args: string[] = ['pricing', 'auctions', 'contracts', 'currency', 'tags'], init: boolean = true): Promise<void> {
     try {
       if (!init) {
         this.logger.log(`buildAssetClasses: init: ${init}`);

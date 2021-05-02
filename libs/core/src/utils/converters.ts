@@ -53,3 +53,7 @@ export const toKey = (s: string): string => {
 export const delay = (seconds: number = 5): Promise<void> => {
   return new Promise((resolve) => { setTimeout(resolve, seconds * 1000); });
 }
+
+export const enumKeys = <O extends object, K extends keyof O = keyof O>(obj: O): K[] => {
+  return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
+}

@@ -2,17 +2,38 @@ import { Module } from '@nestjs/common';
 import { ValuationsService } from './valuations.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Item, ItemsSchema, Key, KeysSchema, Pricing, PricingSchema } from '@app/mongo';
+import {
+  Auction,
+  AuctionsShema, Gold, GoldsSchema,
+  Item,
+  ItemsSchema,
+  Key,
+  KeysSchema,
+  Pricing,
+  PricingSchema,
+  Realm,
+  RealmsSchema, Token, TokenSchema,
+  Valuations,
+  ValuationsSchema,
+} from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { valuationsQueue } from '@app/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ValuationsWorker } from './valuations.worker';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
       { name: Item.name, schema: ItemsSchema },
-      { name: Pricing.name, schema: PricingSchema }
+      { name: Pricing.name, schema: PricingSchema },
+      { name: Realm.name, schema: RealmsSchema },
+      { name: Auction.name, schema: AuctionsShema },
+      { name: Valuations.name, schema: ValuationsSchema },
+      { name: Gold.name, schema: GoldsSchema },
+      { name: Token.name, schema: TokenSchema },
     ]),
     BullModule.forRoot({
       options: {
@@ -22,9 +43,9 @@ import { valuationsQueue } from '@app/core';
         },
       },
     }),
-    BullModule.registerQueue(valuationsQueue.name),
+    BullModule.registerQueue({ queueName: valuationsQueue.name, options: valuationsQueue.options }),
   ],
   controllers: [],
-  providers: [ValuationsService],
+  providers: [ValuationsService, ValuationsWorker],
 })
 export class ValuationsModule {}

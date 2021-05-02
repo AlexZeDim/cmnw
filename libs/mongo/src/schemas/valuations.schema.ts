@@ -11,6 +11,8 @@ class ItemValuations {
   quantity: number;
 }
 
+const ItemValuationsSchema = SchemaFactory.createForClass(ItemValuations);
+
 @Schema()
 class Details {
   @Prop()
@@ -43,7 +45,7 @@ class Details {
   @Prop()
   orders: number[];
 
-  @Prop({ default: [] })
+  @Prop({ default: [], type: [ItemValuationsSchema] })
   reagent_items: Types.Array<ItemValuations>;
 }
 
@@ -70,7 +72,7 @@ export class Valuations extends Document {
   @Prop({ enum: VALUATION_TYPE })
   type: string;
 
-  @Prop()
+  @Prop({ type: Details })
   details: Details;
 }
 

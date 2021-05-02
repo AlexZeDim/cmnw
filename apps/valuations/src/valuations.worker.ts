@@ -3,7 +3,7 @@ import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { FLAG_TYPE, round2, VALUATION_TYPE, valuationsQueue } from '@app/core';
 import { Job } from 'bullmq';
 import { InjectModel } from '@nestjs/mongoose';
-import { Gold, Realm, Token, Valuations } from '@app/mongo';
+import { Auction, Gold, Realm, Token, Valuations } from '@app/mongo';
 import { Model } from "mongoose";
 
 interface ItemValuationProps {
@@ -15,6 +15,15 @@ interface ItemValuationProps {
   purchase_price?: number,
   sell_price?: number,
   stackable?: number
+}
+
+interface MarketData {
+  _id: number,
+  quantity: number,
+  open_interest: number,
+  value: number,
+  min: number,
+  orders: number[]
 }
 
 @BullWorker({ queueName: valuationsQueue.name })
@@ -30,6 +39,8 @@ export class ValuationsWorker {
     private readonly ValuationsModel: Model<Valuations>,
     @InjectModel(Token.name)
     private readonly TokenModel: Model<Token>,
+    @InjectModel(Auction.name)
+    private readonly AuctionsModel: Model<Auction>,
     @InjectModel(Gold.name)
     private readonly GoldModel: Model<Gold>,
   ) {}
@@ -325,7 +336,81 @@ export class ValuationsWorker {
 
   private async getAVA <T extends ItemValuationProps>(args: T): Promise<void> {
     try {
-      // TODO auction valuation adjustable
+      if (!args.asset_class.includes(VALUATION_TYPE.MARKET)) {
+        this.logger.error(`getCVA: item ${args._id} asset class not ${VALUATION_TYPE.MARKET}`);
+        return;
+      }
+      const ava = await this.ValuationsModel.findOne({
+        item_id: args._id,
+        last_modified: args.last_modified,
+        connected_realm_id: args.connected_realm_id,
+        type: VALUATION_TYPE.MARKET,
+      });
+      if (!ava) {
+        /** Request for Quotes */
+        const [market_data]: MarketData[] = await this.AuctionsModel.aggregate([
+          {
+            $match: {
+              'last_modified': args.last_modified,
+              'item_id': args._id,
+              'connected_realm_id': args.connected_realm_id,
+            },
+          },
+          {
+            $project: {
+              _id: '$last_modified',
+              id: '$id',
+              quantity: '$quantity',
+              price: {
+                $ifNull: ['$buyout', { $ifNull: ['$bid', '$price'] }],
+              },
+            },
+          },
+          {
+            $group: {
+              _id: '$_id',
+              quantity: { $sum: '$quantity' },
+              open_interest: {
+                $sum: { $multiply: ['$price', '$quantity'] },
+              },
+              value: {
+                $min: {
+                  $cond: [
+                    { $gte: ['$quantity', (args.stackable || 1)] }, '$price', { $min: '$price' },
+                  ],
+                },
+              },
+              min: { $min: '$price' },
+              orders: { $addToSet: '$id' },
+            },
+          },
+        ]).exec();
+        if (!market_data) {
+          this.logger.error(`getAVA: item ${args._id}, marker data not found`)
+          return;
+        }
+        /** Initiate constants */
+        const flags = ['BUY', 'SELL'];
+        for (let flag of flags) {
+          const value: number = flag === FLAG_TYPE.S ? round2(market_data.value * 0.95) : round2(market_data.value);
+          const min_price: number = flag === FLAG_TYPE.S ? round2(market_data.min * 0.95) : round2(market_data.min);
+          await this.ValuationsModel.create({
+            name: `AUCTION ${flag}`,
+            flag: flag,
+            item_id: args._id,
+            connected_realm_id: args.connected_realm_id,
+            type: VALUATION_TYPE.MARKET,
+            last_modified: args.last_modified,
+            value: value,
+            details: {
+              min_price: min_price,
+              quantity: market_data.quantity,
+              open_interest: Math.round(market_data.open_interest),
+              orders: market_data.orders
+            }
+          });
+        }
+      }
     } catch (e) {
       this.logger.error(`getAVA: item ${args._id}, ${e}`)
     }

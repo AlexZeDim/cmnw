@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Item, Key, Pricing } from '@app/mongo';
 import { Model } from "mongoose";
-import { VALUATION_TYPE } from '@app/core';
+import { VALUATION_TYPE, valuationsQueue } from '@app/core';
+import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class ValuationsService {
@@ -19,6 +21,8 @@ export class ValuationsService {
     private readonly PricingModel: Model<Pricing>,
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
+    @BullQueueInject(valuationsQueue.name)
+    private readonly queue: Queue,
   ) {
     // TODO valuations
     this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], true)

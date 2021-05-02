@@ -4,6 +4,9 @@ import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
 
 @Schema()
 class ItemValuations {
+  @Prop({ type: Number, required: true })
+  _id: number;
+
   @Prop({ required: true })
   value: number;
 

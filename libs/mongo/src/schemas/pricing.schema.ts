@@ -2,7 +2,7 @@ import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
-class Item {
+class ItemPricing {
   @Prop({ required: true })
   _id: number;
 
@@ -10,7 +10,7 @@ class Item {
   quantity: number;
 }
 
-const ItemSchema = SchemaFactory.createForClass(Item);
+const ItemSchema = SchemaFactory.createForClass(ItemPricing);
 
 @Schema()
 class ModifiedCraftingSlot {
@@ -87,10 +87,10 @@ export class Pricing extends Document {
    */
 
   @Prop({ default: [], type: [ItemSchema] })
-  derivatives: Types.Array<Item>;
+  derivatives: Types.Array<ItemPricing>;
 
   @Prop({ default: [], type: [ItemSchema] })
-  reagents: Types.Array<Item>;
+  reagents: Types.Array<ItemPricing>;
 
   @Prop({ required: true, index: true })
   recipe_id: number;

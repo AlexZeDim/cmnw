@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { FLAG_TYPE, round2, VALUATION_TYPE, valuationsQueue } from '@app/core';
-import { Job } from 'bullmq';
+import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { FLAG_TYPE, PRICING_TYPE, round2, VALUATION_TYPE, valuationsQueue } from '@app/core';
+import { Job, Queue } from 'bullmq';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Gold, Realm, Token, Valuations } from '@app/mongo';
+import { Auction, Gold, Item, Pricing, Realm, Token, Valuations } from '@app/mongo';
 import { Model } from "mongoose";
 
 interface ItemValuationProps {
@@ -26,6 +26,23 @@ interface MarketData {
   orders: number[]
 }
 
+interface MethodEvaluation {
+  queue_cost: number,
+  derivatives_cost: number,
+  premium: number,
+  nominal_value: number,
+  nominal_value_draft: number,
+  q_reagents_sum: number,
+  q_derivatives_sum: number,
+  premium_items: any[],
+  reagent_items: any[],
+  unsorted_items: any[],
+  single_derivative: boolean,
+  single_reagent: boolean,
+  single_premium: boolean,
+  premium_clearance: boolean
+}
+
 @BullWorker({ queueName: valuationsQueue.name })
 export class ValuationsWorker {
   private readonly logger = new Logger(
@@ -41,8 +58,14 @@ export class ValuationsWorker {
     private readonly TokenModel: Model<Token>,
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
+    @InjectModel(Pricing.name)
+    private readonly PricingModel: Model<Pricing>,
     @InjectModel(Gold.name)
     private readonly GoldModel: Model<Gold>,
+    @InjectModel(Item.name)
+    private readonly ItemModel: Model<Item>,
+    @BullQueueInject(valuationsQueue.name)
+    private readonly queue: Queue,
   ) {}
 
   @BullWorkerProcess(valuationsQueue.workerOptions)
@@ -418,7 +441,214 @@ export class ValuationsWorker {
 
   private async geDVA <T extends ItemValuationProps>(args: T): Promise<void> {
     try {
-      // TODO derivative valuation adjustable
+      if (!args.asset_class.includes(VALUATION_TYPE.DERIVATIVE)) {
+        this.logger.error(`geDVA: item ${args._id} asset class not ${VALUATION_TYPE.DERIVATIVE}`);
+        return;
+      }
+      const primary_methods = await this.PricingModel.find({ 'derivatives._id': args._id, type: { $ne: PRICING_TYPE.REVIEW } })
+      if (!primary_methods.length) {
+        this.logger.warn(`geDVA: item ${args._id}, ${primary_methods.length} pricing methods found`)
+        return;
+      }
+      /**
+       * Iterating every pricing method
+       * if reagents exists
+       * if derivatives exist
+       * and iterate them one-by-one
+       */
+      for (const price_method of primary_methods) {
+        if (!price_method.reagents.length || !price_method.derivatives.length) {
+          this.logger.warn(`getDVA: item ${args._id} pricing method: ${price_method._id} reagents: ${price_method.reagents.length} derivatives: ${price_method.derivatives.length}`)
+          continue;
+        }
+        /**
+         * Check DVA on current timestamp
+         * and if newDVA create constructor
+         */
+        const dva = await this.ValuationsModel.findOne({
+          item_id: args._id,
+          last_modified: args.last_modified,
+          connected_realm_id: args.connected_realm_id,
+          name: `${price_method.ticker}`,
+          type: VALUATION_TYPE.DERIVATIVE,
+        });
+
+        if (dva) continue;
+
+        const q_reagents_sum: number = price_method.reagents.reduce((accum, reagent ) => accum + reagent.quantity, 0);
+        const q_derivatives_sum: number = price_method.derivatives.reduce((accum, derivative ) => accum + derivative.quantity, 0);
+        const single_derivative: boolean = price_method.derivatives.length <= 1;
+        const single_reagent: boolean = price_method.reagents.length === 1;
+
+        const method_evaluations: MethodEvaluation = {
+          queue_cost: 0,
+          derivatives_cost: 0,
+          premium: 0,
+          nominal_value: 0,
+          nominal_value_draft: 0,
+          q_reagents_sum,
+          q_derivatives_sum,
+          premium_items: [],
+          reagent_items: [],
+          unsorted_items: [],
+          single_derivative,
+          single_reagent,
+          single_premium: false,
+          premium_clearance: true
+        }
+        /**
+         * Evaluate every reagent
+         * in pricing one by one
+         */
+        for (const reagent of price_method.reagents) {
+          const item = await this.ItemModel.findById(reagent._id).lean();
+          if (!item) {
+            this.logger.warn(`getDVA: item ${reagent._id} (reagent) not found`);
+            // TODO add item to request to queue?
+            continue;
+          }
+          const reagent_item = { ...reagent, ...item, ...{ value: 0 } };
+          /**
+           * Add to PREMIUM for later analysis
+           *
+           * If premium item is also derivative, like EXPL
+           * place them as start of premium_items[]
+           * it allow us evaluate more then one premiums
+           * in one pricing method
+           */
+          if (reagent_item.asset_class.includes(VALUATION_TYPE.PREMIUM)) {
+            if (reagent_item.asset_class.includes(VALUATION_TYPE.DERIVATIVE)) {
+              method_evaluations.premium_items.unshift(reagent_item);
+            } else {
+              method_evaluations.premium_items.push(reagent_item);
+            }
+            /** We add PREMIUM to reagent_items */
+            method_evaluations.reagent_items.push(reagent_item);
+          } else {
+            /** Find cheapest to delivery method for item on current timestamp */
+            const ctd = await this.ValuationsModel
+              .findOne({
+                item_id: reagent_item._id,
+                last_modified: args.last_modified,
+                connected_realm_id: args.connected_realm_id,
+                flag: FLAG_TYPE.B,
+              })
+              .sort({ value: 1 })
+              .lean();
+            /**
+             * If CTD not found..
+             * TODO probably add to Q & return
+             */
+            if (!ctd) {
+              await this.queue.add();
+              // TODO re add original?
+              return;
+            }
+            /**
+             * If CTD is derivative type,
+             * replace original reagent_item
+             * with underlying reagent_items
+             */
+            if (ctd.type === VALUATION_TYPE.DERIVATIVE && ctd.details) {
+              for (const underlying_item of ctd.details.reagent_items) {
+                /** Queue_quantity x Underlying_item.quantity */
+                underlying_item.value = round2(underlying_item.value * reagent_item.quantity);
+                underlying_item.quantity = underlying_item.quantity * reagent_item.quantity;
+                /** if this item is already in reagent_items, then + quantity */
+                if (method_evaluations.reagent_items.some(ri => ri._id === underlying_item._id)) {
+                  /** take in focus by arrayIndex and edit properties */
+                  const riIndex = method_evaluations.reagent_items.findIndex(item => item._id === underlying_item._id);
+                  if (riIndex !== -1) {
+                    method_evaluations.reagent_items[riIndex].value += underlying_item.value;
+                    method_evaluations.reagent_items[riIndex].quantity += underlying_item.quantity;
+                  }
+                } else {
+                  method_evaluations.reagent_items.push(underlying_item);
+                }
+              }
+            } else {
+              reagent_item.value = round2(ctd.value * reagent_item.quantity);
+              method_evaluations.reagent_items.push(reagent_item);
+            }
+            /** We add value to queue_cost */
+            method_evaluations.queue_cost += round2(ctd.value * reagent_item.quantity);
+          }
+        }
+        /** End of loop for every reagent_item */
+        // TODO PRVA
+        /**
+         * Premium Reagent Valuation Adjustment
+         *
+         * Only for premium_items
+         * and single_derivative
+         */
+        if (method_evaluations.premium_items.length && method_evaluations.single_derivative) {
+          /** Pre-valuate nominal value w/o premium part */
+          const [firstPremiumItem] = price_method.derivatives;
+          method_evaluations.nominal_value_draft = round2(method_evaluations.queue_cost / firstPremiumItem.quantity);
+          method_evaluations.nominal_value = method_evaluations.nominal_value_draft;
+          /** Request market price from method item_id */
+          const ava = await this.ValuationsModel.findOne({
+            item_id: args._id,
+            last_modified: args.last_modified,
+            connected_realm_id: args.connected_realm_id,
+            type: VALUATION_TYPE.MARKET,
+            flag: FLAG_TYPE.S,
+          });
+          method_evaluations.single_premium = method_evaluations.premium_items.length === 1;
+          /** If ava.exists and premium_items is one */
+          if (method_evaluations.single_premium && ava) {
+            method_evaluations.single_premium = true;
+            method_evaluations.premium = round2(ava.value - method_evaluations.queue_cost);
+          }
+
+          for (const premium_item of method_evaluations.premium_items) {
+            /** Single Name Valuation */
+            if (method_evaluations.single_premium) {
+              /** Update existing method as a single name */
+              await this.PricingModel.findByIdAndUpdate(price_method._id, { single_premium: premium_item._id });
+              const prva = await this.ValuationsModel.findOne({
+                item_id: premium_item._id,
+                last_modified: args.last_modified,
+                connected_realm_id: args.connected_realm_id,
+                type: VALUATION_TYPE.PREMIUM,
+              });
+              if (!prva) {
+                await this.ValuationsModel.create({
+                  ticker: `${price_method.ticker}`,
+                  flag: FLAG_TYPE.S,
+                  item_id: premium_item._id,
+                  connected_realm_id: args.connected_realm_id,
+                  type: VALUATION_TYPE.PREMIUM,
+                  last_modified: args.last_modified,
+                  value: round2(method_evaluations.premium / premium_item.quantity),
+                  details: {
+                    wi: round2(premium_item.quantity / firstPremiumItem.quantity * ava.details.quantity,)
+                  },
+                });
+              }
+            }
+
+            if (premium_item.asset_class.includes(VALUATION_TYPE.DERIVATIVE)) {
+              /**
+               * Find cheapest to delivery
+               * for premium_item on current timestamp
+               * TODO continue PRVA
+               */
+
+            } else {
+              /**
+               * CTD FOR PREMIUM
+               *
+               * When we are first time here, the premium is still clear
+               * require additional research
+               * TODO continue PRVA
+               */
+            }
+          }
+        }
+      }
+      /** End of loop for every pricing method */
     } catch (e) {
       this.logger.error(`getDVA: item ${args._id}, ${e}`)
     }

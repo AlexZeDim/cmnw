@@ -4,8 +4,19 @@ import { mongoConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
-import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, RealmsSchema } from '@app/mongo';
-import { charactersQueue } from '@app/core';
+import {
+  Character,
+  CharactersSchema,
+  Guild,
+  GuildsSchema,
+  Key,
+  KeysSchema,
+  Log,
+  LogsSchema,
+  Realm,
+  RealmsSchema,
+} from '@app/mongo';
+import { charactersQueue, guildsQueue } from '@app/core';
 
 @Module({
   imports: [
@@ -14,7 +25,8 @@ import { charactersQueue } from '@app/core';
       { name: Log.name, schema: LogsSchema },
       { name: Key.name, schema: KeysSchema },
       { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema }
+      { name: Character.name, schema: CharactersSchema },
+      { name: Guild.name, schema: GuildsSchema },
     ]),
     BullModule.forRoot({
       options: {
@@ -25,6 +37,7 @@ import { charactersQueue } from '@app/core';
       },
     }),
     BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
   ],
   controllers: [OsintController],
   providers: [OsintService],

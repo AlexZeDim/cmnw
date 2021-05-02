@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OsintService } from './osint.service';
 import { LeanDocument } from "mongoose";
-import { Character } from '@app/mongo';
+import { Character, Guild, Log, Realm } from '@app/mongo';
 import {
   ApiOperation,
   ApiServiceUnavailableResponse,
@@ -11,7 +11,8 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CharacterHashDto, CharacterIdDto } from './dto';
+import { CharacterHashDto, CharacterIdDto, GuildIdDto } from './dto';
+import { RealmDto } from './dto/realm.dto';
 
 @Controller('osint')
 export class OsintController {
@@ -25,10 +26,10 @@ export class OsintController {
 
   @ApiOperation({ description: 'Returns requested character' })
   @ApiOkResponse({ description: 'Request character with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'Token can be wrong, blacklisted, expired or not provided' })
-  @ApiForbiddenResponse({ description: 'You cannot access this waypoint' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
   @ApiBadRequestResponse({ description: 'Invalid request body' })
-  @ApiServiceUnavailableResponse({ description: 'Gate Orders is not available at the moment' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
@@ -37,32 +38,60 @@ export class OsintController {
     return this.osintService.getCharacter(input);
   }
 
-  @UsePipes(new ValidationPipe({ transform: true }))
-  @ApiOperation({ description: 'Returns requested character' })
-  @ApiOkResponse({ description: 'Request character with selected _id' })
-  @ApiUnauthorizedResponse({ description: '' })
-  @ApiForbiddenResponse({ description: 'You cannot access this waypoint' })
+  @ApiOperation({ description: 'Returns requested account characters' })
+  @ApiOkResponse({ description: 'Request characters with selected hash' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
   @ApiBadRequestResponse({ description: 'Invalid request body' })
-  @ApiServiceUnavailableResponse({ description: 'Gate Orders is not available at the moment' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/character/hash/:hash')
+  @Get('/character/hash')
   async getCharactersByHash(@Query() input: CharacterHashDto): Promise<LeanDocument<Character[]>> {
     return this.osintService.getCharactersByHash(input);
   }
 
+  @ApiOperation({ description: 'Returns requested character logs' })
+  @ApiOkResponse({ description: 'Request logs for selected character' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/character/logs/:_id')
-  async getCharacterLogs(@Param('_id') _id: string): Promise<string[]> {
-    // TODO validate
-    return this.osintService.getCharacterLogs(_id);
+  @Get('/character/logs')
+  async getCharacterLogs(@Query() input: CharacterIdDto): Promise<LeanDocument<Log[]>> {
+    return this.osintService.getCharacterLogs(input);
   }
 
+  @ApiOperation({ description: 'Returns requested guild' })
+  @ApiOkResponse({ description: 'Request guild with requested _id' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/realm/:_id')
-  async getRealm(@Param('_id') _id: string): Promise<string> {
-    // TODO validate
-    return this.osintService.getRealm(_id);
+  @Get('/guild')
+  async getGuild(@Query() input: GuildIdDto): Promise<LeanDocument<Guild>> {
+    return this.osintService.getGuild(input);
+  }
+
+  @ApiOperation({ description: 'Returns requested guild logs' })
+  @ApiOkResponse({ description: 'Request guild logs for guild with selected _id' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  @Get('/guild/logs')
+  async getGuildLogs(@Query() input: GuildIdDto): Promise<LeanDocument<Log[]>> {
+    return this.osintService.getGuildLogs(input);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -72,31 +101,17 @@ export class OsintController {
     return this.osintService.getRealmPopulation(_id);
   }
 
+  @ApiOperation({ description: 'Returns requested realm' })
+  @ApiOkResponse({ description: 'Request realm logs by various different criteria' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/realms/:_id')
-  async getRealms(@Param('_id') _id: string): Promise<string[]> {
-    // TODO validate
-    return this.osintService.getRealms(_id);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Get('/guild/:_id')
-  async getGuild(@Param('_id') _id: string): Promise<string> {
-    // TODO validate
-    return this.osintService.getGuild(_id);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Get('/guild/test/:hash')
-  async getGuildTest(@Param('hash') hash: string): Promise<string[]> {
-    // TODO validate
-    return this.osintService.getGuildTest(hash);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Get('/guild/logs/:_id')
-  async getGuildLogs(@Param('_id') _id: string): Promise<string[]> {
-    // TODO validate
-    return this.osintService.getGuildLogs(_id);
+  @Get('/realms')
+  async getRealms(@Query() input: RealmDto): Promise<LeanDocument<Realm>[]> {
+    return this.osintService.getRealms(input);
   }
 }

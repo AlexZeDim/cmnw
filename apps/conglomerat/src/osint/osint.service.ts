@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, Key } from '@app/mongo';
+import { Character, Key, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { CharacterIdDto } from './dto';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -19,6 +19,8 @@ export class OsintService {
   constructor(
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
+    @InjectModel(Realm.name)
+    private readonly RealmModel: Model<Realm>,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
     @BullQueueInject(charactersQueue.name)
@@ -27,16 +29,28 @@ export class OsintService {
 
   async getCharacter(input: CharacterIdDto): Promise<LeanDocument<Character>> {
     try {
-      const character = await this.CharacterModel.findById(input._id).lean();
+      const [ name_slug, realm_slug ] = input._id.split('@');
+      const realm = await this.RealmModel
+        .findOne(
+          { $text: { $search: realm_slug } },
+          { score: { $meta: 'textScore' } },
+        )
+        .sort({ score: { $meta: 'textScore' } })
+        .lean();
+
+      if (!realm) {
+        throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+      }
+
+      const character = await this.CharacterModel.findById(`${name_slug}@${realm.slug}`).lean();
       if (!character) {
         const key = await this.KeyModel.findOne({ tags: this.clearance });
-        const [name, realm] = input._id.split('@');
         await this.queueCharacter.add(
           input._id,
           {
             _id: input._id,
-            name,
-            realm,
+            name: name_slug,
+            realm: realm.slug,
             region: 'eu',
             clientId: key._id,
             clientSecret: key.secret,
@@ -52,12 +66,12 @@ export class OsintService {
             priority: 1
           }
         );
-        await delay(2);
+        await delay(3);
         return await this.CharacterModel.findById(input._id).lean();
       }
       return character;
     } catch (e) {
-      throw new Error('kokoko'); //FIXME
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

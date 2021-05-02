@@ -23,8 +23,8 @@ export class OsintController {
     private readonly osintService: OsintService
   ) {}
 
-  @ApiOperation({ description: 'Returns selected order log' })
-  @ApiOkResponse({ description: 'Request order log with selected parameters' })
+  @ApiOperation({ description: 'Returns requested character' })
+  @ApiOkResponse({ description: 'Request character with selected _id' })
   @ApiUnauthorizedResponse({ description: 'Token can be wrong, blacklisted, expired or not provided' })
   @ApiForbiddenResponse({ description: 'You cannot access this waypoint' })
   @ApiBadRequestResponse({ description: 'Invalid request body' })

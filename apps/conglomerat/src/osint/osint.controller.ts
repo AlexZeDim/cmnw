@@ -38,6 +38,13 @@ export class OsintController {
   }
 
   @UsePipes(new ValidationPipe({ transform: true }))
+  @ApiOperation({ description: 'Returns requested character' })
+  @ApiOkResponse({ description: 'Request character with selected _id' })
+  @ApiUnauthorizedResponse({ description: '' })
+  @ApiForbiddenResponse({ description: 'You cannot access this waypoint' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Gate Orders is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/character/hash/:hash')
   async getCharactersByHash(@Query() input: CharacterHashDto): Promise<LeanDocument<Character[]>> {

@@ -18,4 +18,9 @@ export class DmaService {
   getWowToken(region: string, limit: number): string {
     return `${region}@${limit}`
   }
+
+  getItemValuations(item: string, realm: string): string {
+    // TODO add new dma to queue
+    return `${item}@${realm}`
+  }
 }

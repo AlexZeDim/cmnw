@@ -89,7 +89,7 @@ export class WowprogressService {
       const files: string[] = await fs.readdir(dir);
 
       await Promise.all(
-        files.map(async (file: string, i: number) => {
+        files.map(async (file: string) => {
           if (!file.match(/gz$/g)) return;
 
           const match = file.match(/(?<=_)(.*?)(?=_)/g);

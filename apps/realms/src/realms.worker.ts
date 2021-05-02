@@ -5,13 +5,11 @@ import {
   RealmInterface,
   REALM_TICKER,
   ConnectedRealmInterface,
-  PopulationRealmInterface,
-  MAX_LEVEL, CHARACTER_CLASS, FACTION, COVENANTS, toKey,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, Guild, Realm, RealmPopulation } from '@app/mongo';
-import { LeanDocument, Model } from 'mongoose';
+import { Realm } from '@app/mongo';
+import { Model } from 'mongoose';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 
 @BullWorker({ queueName: realmsQueue.name })

@@ -27,7 +27,7 @@ export class GuildsService {
     private readonly queue: Queue,
   ) {
     this.indexGuilds(GLOBAL_OSINT_KEY);
-    this.indexGuildsUnique(GLOBAL_OSINT_KEY)
+    this.indexGuildsUnique(GLOBAL_OSINT_KEY);
   }
 
   @Cron(CronExpression.EVERY_HOUR)

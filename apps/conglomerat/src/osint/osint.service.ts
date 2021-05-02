@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { CharacterIdDto } from './dto';
+import { CharacterHashDto, CharacterIdDto } from './dto';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { charactersQueue, GLOBAL_OSINT_KEY, OSINT_SOURCE } from '@app/core';
 import { Queue } from 'bullmq';
@@ -71,12 +71,18 @@ export class OsintService {
       }
       return character;
     } catch (e) {
+      // FIXME error handling
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async getCharactersByHash(hash: string): Promise<string[]> {
-    return [hash, hash]
+  async getCharactersByHash(input: CharacterHashDto): Promise<LeanDocument<Character[]>> {
+    try {
+      const [ type, hash ] = input.hash.split('@');
+      return await this.CharacterModel.find({ [`hash_${type}`]: hash }).lean();
+    } catch (e) {
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getCharacterLogs(_id: string): Promise<string[]> {

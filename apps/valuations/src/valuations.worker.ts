@@ -168,7 +168,44 @@ export class ValuationsWorker {
 
   private async getVVA <T extends ItemValuationProps>(args: T): Promise<void> {
     try {
-      // TODO vendor valuation adjustable
+      if (args.asset_class.includes(VALUATION_TYPE.VENDOR)) {
+        const vendor = await this.ValuationsModel.findOne({
+          item_id: args._id,
+          last_modified: args.last_modified,
+          connected_realm_id: args.connected_realm_id,
+          name: 'VENDOR BUY',
+        });
+        if (!vendor && args.purchase_price) {
+          await this.ValuationsModel.create({
+            name: 'VENDOR BUY',
+            flag: FLAG_TYPE.B,
+            item_id: args._id,
+            connected_realm_id: args.connected_realm_id,
+            type: VALUATION_TYPE.VENDOR,
+            last_modified: args.last_modified,
+            value: args.purchase_price,
+          });
+        }
+      }
+      if (args.asset_class.includes(VALUATION_TYPE.VSP)) {
+        const vsp = await this.ValuationsModel.findOne({
+          item_id: args._id,
+          last_modified: args.last_modified,
+          connected_realm_id: args.connected_realm_id,
+          name: 'VENDOR SELL',
+        });
+        if (!vsp && args.sell_price) {
+          await this.ValuationsModel.create({
+            name: 'VENDOR SELL',
+            flag: FLAG_TYPE.S,
+            item_id: args._id,
+            connected_realm_id: args.connected_realm_id,
+            type: VALUATION_TYPE.VSP,
+            last_modified: args.last_modified,
+            value: args.sell_price,
+          });
+        }
+      }
     } catch (e) {
       this.logger.error(`getVVA: item ${args._id}, ${e}`)
     }

@@ -540,8 +540,8 @@ export class ValuationsWorker {
              * TODO probably add to Q & return
              */
             if (!ctd) {
-              await this.queue.add();
-              // TODO re add original?
+              // await this.queue.add();
+              // FIXME re add original?
               return;
             }
             /**

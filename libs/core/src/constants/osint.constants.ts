@@ -50,7 +50,8 @@ export const COVENANTS: string[] = ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord
 export enum FACTION {
   A = "Alliance",
   H = "Horde",
-  N = "Neutral"
+  N = "Neutral",
+  ANY = "Any",
 }
 
 export enum OSINT_SOURCE {

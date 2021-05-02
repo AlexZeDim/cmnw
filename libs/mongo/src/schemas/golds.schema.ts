@@ -1,12 +1,13 @@
 import { Document } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { FACTION } from '@app/core';
 
 @Schema()
 export class Gold extends Document {
   @Prop({ required: true })
   connected_realm_id: number;
 
-  @Prop({ required: true })
+  @Prop({ required: true, enum: FACTION })
   faction: string;
 
   @Prop()

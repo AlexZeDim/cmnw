@@ -4,6 +4,7 @@ import { Gold, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import Xray from 'x-ray';
+import { FACTION } from '@app/core';
 
 @Injectable()
 export class GoldService {
@@ -52,12 +53,17 @@ export class GoldService {
               price: number = parseFloat(order.price.replace(/ ₽/g, '')),
               quantity: number = parseInt(order.quantity.replace(/\s/g, ''));
 
+            let faction: FACTION = FACTION.ANY;
+
+            if (order.faction === FACTION.A || order.faction === 'Альянс') faction = FACTION.A;
+            if (order.faction === FACTION.H || order.faction === 'Horde') faction = FACTION.H
+
             if (quantity < 15000000) {
               realms.add(realm.connected_realm_id)
               orders.push(
                 new this.GoldModel({
                   connected_realm_id: realm.connected_realm_id,
-                  faction: order.faction,
+                  faction: faction,
                   quantity: quantity,
                   status: order.status ? 'Online' : 'Offline',
                   owner: order.owner,

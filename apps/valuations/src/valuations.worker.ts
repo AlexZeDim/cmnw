@@ -46,9 +46,8 @@ export class ValuationsWorker {
 
   private async getCVA <T extends ItemValuationProps>(args: T): Promise<void> {
     try {
-
-      if (!args.asset_class.includes('GOLD')) {
-        this.logger.error(`getCVA: item ${args._id} asset class not GOLD`);
+      if (!args.asset_class.includes(VALUATION_TYPE.GOLD)) {
+        this.logger.error(`getCVA: item ${args._id} asset class not ${VALUATION_TYPE.GOLD}`);
         return;
       }
       /** Request timestamp for gold */
@@ -177,7 +176,111 @@ export class ValuationsWorker {
 
   private async getTVA <T extends ItemValuationProps>(args: T): Promise<void> {
     try {
-      // TODO token valuation adjustable
+      if (!args.asset_class.includes(VALUATION_TYPE.WOWTOKEN)) {
+        this.logger.error(`getTVA: item ${args._id} asset class not ${VALUATION_TYPE.WOWTOKEN}`);
+        return;
+      }
+      /** CONSTANT AMOUNT */
+      const wtConst = [
+        {
+          flag: FLAG_TYPE.FLOAT,
+          wt_value: 550,
+          currency: 'RUB',
+        },
+        {
+          flag: FLAG_TYPE.FIX,
+          wt_value: 1400,
+          currency: 'RUB',
+        },
+      ];
+      /** PAY CURRENCY RECEIVE GOLD */
+      if (args._id === 122270) {
+        /** Check actual pricing for PAY FIX / RECEIVE FLOAT */
+        const wt = await this.ValuationsModel.findOne({
+          item_id: args._id,
+          last_modified: args.last_modified,
+        });
+        if (wt) {
+          this.logger.warn(`getTVA: wowtoken ${args._id} valuation already exists`);
+          return;
+        }
+        /** Check if pricing exists at all */
+        const wtExt = await this.ValuationsModel.find({ item_id: args._id });
+        if (wtExt.length) {
+          /** If yes, updated all the CONST values */
+          await this.ValuationsModel.updateMany(
+            { item_id: args._id },
+            { last_modified: args.last_modified },
+          );
+        } else {
+          await this.RealmModel
+            .find({ locale: 'en_GB' })
+            .cursor()
+            .eachAsync(async (realm: Realm) => {
+              for (const { flag, currency, wt_value } of wtConst) {
+                if (flag === FLAG_TYPE.FIX) {
+                  await this.ValuationsModel.create(
+                    {
+                      name: `PAY FIX ${currency} / RECEIVE FLOAT GOLD`,
+                      flag: flag,
+                      item_id: args._id,
+                      connected_realm_id: realm.connected_realm_id,
+                      type: VALUATION_TYPE.WOWTOKEN,
+                      last_modified: args.last_modified,
+                      value: wt_value,
+                      details: {
+                        quotation: `${currency} per WoWToken`,
+                        swap_type: 'PAY FIX / RECEIVE FLOAT',
+                        description:
+                          'You pay the fixed amount of real-money currency (based on your region) to receive in exchange a WoWToken, which could be converted to gold value of WoWToken, any time further.',
+                      },
+                    }
+                  )
+                }
+              }
+            });
+        }
+      }
+
+      /** PAY GOLD RECEIVE CURRENCY */
+      if (args._id === 122284) {
+        /** Check existing pricing for PAY FLOAT / RECEIVE FIX */
+        const wtExt = await this.ValuationsModel.findOne({
+          item_id: args._id,
+          last_modified: args.last_modified,
+          connected_realm_id: args.connected_realm_id,
+        });
+        if (wtExt) {
+          this.logger.warn(`getTVA: wowtoken ${args._id} valuation already exists`);
+          return;
+        }
+        /** Request existing WT price */
+        const wtPrice = await this.TokenModel
+          .findOne({ region: 'eu' })
+          .sort({ _id: -1 });
+        if (!wtPrice) {
+          this.logger.warn(`getTVA: wowtoken ${args._id} price not found`);
+          return;
+        }
+        for (let { flag, currency, wt_value } of wtConst) {
+          if (flag === FLAG_TYPE.FLOAT) {
+            await this.ValuationsModel.create({
+              name: `PAY FLOAT GOLD / RECEIVE FIX ${currency}`,
+              flag: flag,
+              item_id: args._id,
+              connected_realm_id: args.connected_realm_id,
+              type: VALUATION_TYPE.WOWTOKEN,
+              last_modified: args.last_modified,
+              value: wtPrice.price,
+              details: {
+                quotation: `gold for FIX ${wt_value} ${currency} or 1m subscription`,
+                swap_type: 'PAY FLOAT / RECEIVE FIX',
+                description: `You pay always floating (but fixed in a moment of time) amount of gold for fixed payment of ${wt_value} ${currency} or 1m subscription`,
+              },
+            });
+          }
+        }
+      }
     } catch (e) {
       this.logger.error(`getTVA: item ${args._id}, ${e}`)
     }

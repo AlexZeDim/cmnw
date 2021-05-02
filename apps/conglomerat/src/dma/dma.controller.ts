@@ -40,8 +40,8 @@ export class DmaController {
     return this.dmaService.getWowToken(region, limit);
   }
 
-  @ApiOperation({ description: 'Returns requested item' })
-  @ApiOkResponse({ description: 'Request item with selected _id' })
+  @ApiOperation({ description: 'Returns requested item valuations' })
+  @ApiOkResponse({ description: 'Request item valuations  with selected _id' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
@@ -53,6 +53,51 @@ export class DmaController {
     // TODO validate
     const [item, realm] = id.split('@');
     return this.dmaService.getItemValuations(item, realm);
+  }
+
+  @ApiOperation({ description: 'Returns requested item chart' })
+  @ApiOkResponse({ description: 'Request item chart with selected _id' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
+  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @HttpCode(HttpStatus.OK)
+  @Get('/item/:id')
+  getItemChart(@Param('id') id: string): string {
+    // TODO validate
+    const [item, realm] = id.split('@');
+    return this.dmaService.getItemChart(item, realm);
+  }
+
+  @ApiOperation({ description: 'Returns requested item quotes' })
+  @ApiOkResponse({ description: 'Request item quotes with selected _id' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
+  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @HttpCode(HttpStatus.OK)
+  @Get('/item/:id')
+  getItemQuotes(@Param('id') id: string): string {
+    // TODO validate
+    const [item, realm] = id.split('@');
+    return this.dmaService.getItemQuotes(item, realm);
+  }
+
+  @ApiOperation({ description: 'Returns requested item feed' })
+  @ApiOkResponse({ description: 'Request item feed with selected _id' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
+  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @HttpCode(HttpStatus.OK)
+  @Get('/item/:id')
+  getItemFeed(@Param('id') id: string): string {
+    // TODO validate
+    const [item, realm] = id.split('@');
+    return this.dmaService.getItemFeed(item, realm);
   }
 
 }

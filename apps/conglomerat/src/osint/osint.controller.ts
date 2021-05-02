@@ -11,7 +11,7 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CharacterIdDto } from './dto';
+import { CharacterHashDto, CharacterIdDto } from './dto';
 
 @Controller('osint')
 export class OsintController {
@@ -37,11 +37,11 @@ export class OsintController {
     return this.osintService.getCharacter(input);
   }
 
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/character/hash/:hash')
-  async getCharactersByHash(@Param('hash') hash: string): Promise<string[]> {
-    // TODO validate
-    return this.osintService.getCharactersByHash(hash);
+  async getCharactersByHash(@Query() input: CharacterHashDto): Promise<LeanDocument<Character[]>> {
+    return this.osintService.getCharactersByHash(input);
   }
 
   @HttpCode(HttpStatus.OK)

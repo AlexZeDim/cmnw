@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@anchan828/nest-bullmq": "^0.5.20",
+    "@discordjs/opus": "^0.5.0",
     "@nestjs/common": "^7.6.15",
     "@nestjs/core": "^7.6.15",
     "@nestjs/mongoose": "^7.2.4",
@@ -90,7 +91,8 @@
     "ts-loader": "^8.0.18",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.3",
+    "webpack": "^5.36.2"
   },
   "jest": {
     "moduleFileExtensions": [

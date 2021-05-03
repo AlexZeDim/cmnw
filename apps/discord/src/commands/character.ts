@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CharacterEmbedMessage } from '../converters/character-embed.converter';
+import { CharacterEmbedMessage } from '../converters';
 
 module.exports = {
   name: 'character',

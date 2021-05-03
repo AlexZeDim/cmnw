@@ -4,4 +4,5 @@ export { keysConfig } from './keys.config';
 export { mongoOptionsConfig } from './mongo-options.config';
 export { commonwealthConfig } from './commonwealth.config';
 export { discordConfig } from './discord.config';
+export { yandexConfig } from './yandex.config';
 export * from './interfaces';

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { HashEmbedMessage } from '../converters';
+import { discordConfig } from '@app/configuration';
 
 module.exports = {
   name: 'hash',
@@ -11,7 +12,7 @@ module.exports = {
   cooldown: 10,
   args: true,
   async execute(message, args) {
-    const { data: hash } = await axios.get(encodeURI(`http://localhost:5000/api/osint/character/hash?hash=${args}`));
+    const { data: hash } = await axios.get(encodeURI(`http://${discordConfig.basename}:5000/api/osint/character/hash?hash=${args}`));
     const embed = await HashEmbedMessage(args, hash);
     await message.channel.send(embed);
   }

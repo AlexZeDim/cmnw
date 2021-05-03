@@ -15,6 +15,7 @@ RUN nest build keys \
   && nest build realms \
   && nest build pricing \
   && nest build auctions \
+  && nest build discord \
   && nest build wowtoken \
   && nest build valuations \
   && nest build characters \

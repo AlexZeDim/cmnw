@@ -64,6 +64,23 @@ services:
     networks:
       - conglomerat-network
 
+  discord:
+    build: ./
+    image: conglomerat
+    container_name: discord
+    restart: always
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/discord/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   realms:
     build: ./
     image: conglomerat

@@ -149,7 +149,7 @@ services:
     networks:
       - conglomerat-network
 
-  golds:
+  gold:
     build: ./
     image: conglomerat
     restart: always
@@ -157,7 +157,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/golds/main.js' ]
+    command: [ 'node', 'dist/apps/gold/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:

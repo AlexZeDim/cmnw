@@ -139,14 +139,18 @@ export class WarcraftlogsService {
         .find({ status: false })
         .cursor({ batchSize: 1 })
         .eachAsync(async (log: WarcraftLogs) => {
-          const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
-            .then(res => res.data || { exportedCharacters: [] });
-          const result = await this.exportedCharactersToQueue(exportedCharacters, keys);
-          if (result) {
-            log.status = true;
-            await log.save();
+          try {
+            const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
+              .then(res => res.data || { exportedCharacters: [] });
+            const result = await this.exportedCharactersToQueue(exportedCharacters, keys);
+            if (result) {
+              log.status = true;
+              await log.save();
+            }
+            this.logger.log(`Log: ${log._id}, status: ${log.status}`);
+          } catch (e) {
+            this.logger.error(`Log: ${log._id}, ${e}`);
           }
-          this.logger.log(`Log: ${log._id}, status: ${log.status}`);
         })
     } catch (e) {
       this.logger.error(`indexLogs: ${e}`);

@@ -10,10 +10,12 @@ import {
   ApiForbiddenResponse,
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { CharacterHashDto, CharacterIdDto, GuildIdDto } from './dto';
 import { RealmDto } from './dto/realm.dto';
 
+@ApiTags('osint')
 @Controller('osint')
 export class OsintController {
   private readonly logger = new Logger(

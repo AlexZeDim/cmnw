@@ -1,7 +1,17 @@
 import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Req } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiServiceUnavailableResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiServiceUnavailableResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { DmaService } from './dma.service';
 
+@ApiTags('dma')
 @Controller('dma')
 export class DmaController {
   private readonly logger = new Logger(
@@ -11,7 +21,7 @@ export class DmaController {
   constructor(
     private readonly dmaService: DmaService
   ) {}
-  
+
   @ApiOperation({ description: 'Returns requested item' })
   @ApiOkResponse({ description: 'Request item with selected _id' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
@@ -26,7 +36,7 @@ export class DmaController {
     const [item, realm] = id.split('@');
     return this.dmaService.getItem(item, realm);
   }
-  
+
   @ApiOperation({ description: 'Returns requested WoWToken' })
   @ApiOkResponse({ description: 'Request item with selected timestamp' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })

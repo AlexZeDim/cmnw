@@ -1,22 +1,69 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import * as Discord from 'discord.js';
 import { discordConfig } from '@app/configuration';
+import fs from 'fs-extra';
+import path from "path";
 
 @Injectable()
 export class DiscordService implements OnApplicationBootstrap {
   private client: Discord.Client
 
-  onApplicationBootstrap(): void {
+  private commands: Discord.Collection<string, any>
+
+  private readonly logger = new Logger(
+    DiscordService.name, true,
+  );
+
+  async onApplicationBootstrap(): Promise<void> {
     this.client = new Discord.Client();
-    this.client.login(discordConfig.token);
+    this.commands = new Discord.Collection();
+    this.loadCommands()
+    await this.client.login(discordConfig.token);
     this.test()
   }
 
   test(): void {
-    this.client.on('message', msg => {
-      if (msg.content === 'ping') {
-        msg.reply('Pong!');
+    this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`))
+    this.client.on('message', async message => {
+      if (message.author.bot) return;
+
+      let commandName = '';
+      let args;
+
+      if (message.content.startsWith('direct')) {
+        commandName = message.content.split(/(?<=^\S+)@/)[0];
+        args = message.content.split(/(?<=^\S+)@/)[1];
+      } else {
+        commandName = message.content.split(/(?<=^\S+)\s/)[0];
+        args = message.content.split(/(?<=^\S+)\s/)[1];
+      }
+
+      const command =
+        this.commands.get(commandName) ||
+        this.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+      if (!command) return;
+
+      if (command.guildOnly && message.channel.type !== 'text') {
+        return message.reply("I can't execute that command inside DMs!");
+      }
+
+      try {
+        command.execute(message, args, this.client);
+      } catch (error) {
+        this.logger.error(error);
+        await message.reply('There was an error trying to execute that command!');
       }
     })
+  }
+
+  loadCommands(): void {
+    const commandFiles = fs
+      .readdirSync(path.join(`${__dirname}`, '..', '..', '..', 'apps/discord/src/commands/'))
+      .filter(file => file.endsWith('.ts'));
+    for (const file of commandFiles) {
+      const command = require(`./commands/${file}`);
+      this.commands.set(command.name, command);
+    }
   }
 }

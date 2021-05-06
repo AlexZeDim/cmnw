@@ -58,7 +58,7 @@ export class CharactersService {
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,
               accessToken: keys[i].token,
-              updatedBy: OSINT_SOURCE.INDEXCHARACTER,
+              updated_by: OSINT_SOURCE.INDEXCHARACTER,
               guildRank: false,
               createOnlyUnique: false,
               forceUpdate: true,

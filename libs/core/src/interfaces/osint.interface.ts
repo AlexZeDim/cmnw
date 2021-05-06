@@ -13,6 +13,7 @@ export interface CharacterInterface {
   level?: number,
   character_class?: string,
   last_modified?: Date,
+  looking_for_guild?: boolean,
   created_by?: string,
   updated_by?: string,
   active_spec?: string,

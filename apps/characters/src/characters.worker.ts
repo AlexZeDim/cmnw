@@ -156,6 +156,7 @@ export class CharactersWorker {
       if (args.level) character.level = args.level;
       if (args.gender) character.gender = args.gender;
       if (args.faction) character.faction = args.faction;
+      if (args.looking_for_guild) character.looking_for_guild = args.looking_for_guild;
       if (args.character_class) character.character_class = args.character_class;
       if (args.last_modified) character.last_modified = args.last_modified;
       if (args.updated_by) character.updated_by = args.updated_by;

@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { guildsQueue } from '@app/core';
+import { charactersQueue, guildsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -24,6 +24,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
     BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
+    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
   ],
   controllers: [],
   providers: [WowprogressService],

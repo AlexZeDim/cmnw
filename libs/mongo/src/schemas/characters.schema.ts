@@ -61,14 +61,6 @@ class RaidProgress extends Document {
 
 export const RaidProgressSchema = SchemaFactory.createForClass(RaidProgress);
 
-class LookingForGroup {
-  @Prop({ index: true })
-  status: boolean;
-
-  @Prop()
-  new: boolean;
-}
-
 @Schema({ timestamps: true })
 export class Character extends Document {
   @Prop({ required: true, lowercase: true })
@@ -179,8 +171,8 @@ export class Character extends Document {
   @Prop({ _id: false, type: [ProfessionSchema] })
   professions: MongooseSchema.Types.Array;
 
-  @Prop()
-  lfg: LookingForGroup;
+  @Prop({ index: true })
+  looking_for_guild: boolean;
 
   @Prop()
   rio_score: number;

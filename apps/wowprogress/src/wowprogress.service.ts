@@ -6,11 +6,13 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import Xray from 'x-ray';
-import { GLOBAL_KEY, OSINT_SOURCE, toSlug } from '@app/core';
+import { charactersQueue, GLOBAL_KEY, OSINT_SOURCE, toSlug } from '@app/core';
 import fs from 'fs-extra';
 import axios from 'axios';
 import path from "path";
 import zlib from 'zlib';
+import scraper from 'table-scraper';
+import { union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -25,7 +27,9 @@ export class WowprogressService {
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @BullQueueInject(guildsQueue.name)
-    private readonly queue: Queue,
+    private readonly queueGuilds: Queue,
+    @BullQueueInject(charactersQueue.name)
+    private readonly queueCharacters: Queue,
   ) {
     this.indexWowProgress(GLOBAL_KEY, false);
   }
@@ -120,7 +124,7 @@ export class WowprogressService {
             for (const guild of json) {
               if (!guild.name || guild.name.includes('[Raid]')) continue;
               const _id: string = toSlug(`${guild.name}@${realm.slug}`);
-              await this.queue.add(
+              await this.queueGuilds.add(
                 _id,
                 {
                   _id: _id,
@@ -147,6 +151,59 @@ export class WowprogressService {
       await fs.rmdirSync(dir, { recursive: true });
     } catch (e) {
       this.logger.error(`indexWowProgress: ${e}`)
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async indexWowProgressLfg(clearance: string = GLOBAL_KEY): Promise<void> {
+    try {
+      const keys = await this.KeyModel.find({ tags: clearance });
+      if (!keys.length) {
+        this.logger.error(`indexLookingForGuild: ${keys.length} keys found`);
+        return
+      }
+
+      let index: number = 0;
+
+      const [first, second] = await Promise.all([
+        await scraper.get('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
+        await scraper.get('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then((tableData) => tableData[0] || [])
+      ]);
+      const wpCharacters: Record<string, string>[] = union(first, second);
+      wpCharacters.map(async (character, i) => {
+        if (character.Character && character.Realm) {
+          const name = character.Character.trim();
+          const realm = character.Realm.split('-')[1].trim();
+          const _id = toSlug(`${name}@${realm}`);
+          this.logger.debug(`Added to queue: ${_id}`)
+          await this.queueCharacters.add(
+            _id,
+            {
+              _id,
+              name,
+              realm,
+              region: 'eu',
+              clientId: keys[index]._id,
+              clientSecret: keys[index].secret,
+              accessToken: keys[index].token,
+              created_by: OSINT_SOURCE.WOWPROGRESSLFG,
+              updated_by: OSINT_SOURCE.WOWPROGRESSLFG,
+              looking_for_guild: true,
+              guildRank: false,
+              createOnlyUnique: false,
+              forceUpdate: false,
+              iteration: i,
+            }, {
+              jobId: _id,
+              priority: 2,
+            }
+          )
+        }
+        index++
+        if (i >= keys.length) index = 0;
+      })
+    } catch (e) {
+      this.logger.error(`indexLookingForGuild: ${e}`)
     }
   }
 }

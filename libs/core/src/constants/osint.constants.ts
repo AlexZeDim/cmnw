@@ -65,4 +65,5 @@ export enum OSINT_SOURCE {
   INDEXCHARACTER = 'OSINT-indexCharacters',
   WOWPROGRESS = 'OSINT-wowprogress',
   WARCRAFTLOGS = 'OSINT-warcraftlogs',
+  WOWPROGRESSLFG = 'OSINT-lfgprogress'
 }

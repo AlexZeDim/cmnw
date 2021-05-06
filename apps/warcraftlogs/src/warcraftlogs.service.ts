@@ -179,7 +179,7 @@ export class WarcraftlogsService {
             accessToken: keys[iteration].token,
             guildRank: false,
             createOnlyUnique: true,
-            forceUpdate: false,
+            forceUpdate: 0,
           },
           opts: {
             jobId: _id,

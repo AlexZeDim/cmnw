@@ -131,7 +131,7 @@ export class WowprogressService {
                   name: guild.name,
                   realm: realm.slug,
                   members: [],
-                  forceUpdate: false,
+                  forceUpdate: 86400000,
                   region: 'eu',
                   created_by: OSINT_SOURCE.WOWPROGRESS,
                   updated_by: OSINT_SOURCE.WOWPROGRESS,
@@ -191,7 +191,7 @@ export class WowprogressService {
               looking_for_guild: true,
               guildRank: false,
               createOnlyUnique: false,
-              forceUpdate: false,
+              forceUpdate: 1,
               iteration: i,
             }, {
               jobId: _id,

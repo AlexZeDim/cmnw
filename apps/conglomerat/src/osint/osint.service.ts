@@ -66,7 +66,7 @@ export class OsintService {
           updated_by: OSINT_SOURCE.REQUESTCHARACTER,
           guildRank: false,
           createOnlyUnique: false,
-          forceUpdate: true,
+          forceUpdate: 60000,
         },
         {
           jobId: _id,
@@ -135,7 +135,7 @@ export class OsintService {
           name: name_slug,
           realm: realm.slug,
           members: [],
-          forceUpdate: false,
+          forceUpdate: 60000,
           createOnlyUnique: true,
           region: 'eu',
           created_by: OSINT_SOURCE.REQUESTGUILD,

@@ -56,7 +56,7 @@ export class CharactersWorker {
 
       const
         name_slug: string = toSlug(args.name),
-        now: number = new Date().getTime() - (48 * 60 * 60 * 1000),
+        now: number = new Date().getTime(),
         original: CharacterInterface = {
           _id: `${name_slug}@${realm.slug}`,
           name: capitalize(args.name),
@@ -114,9 +114,11 @@ export class CharactersWorker {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
           return 302
         }
-        //TODO what if force update is time param?
-        if (!args.forceUpdate && now < character.updatedAt.getTime()) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: false`);
+        let forceUpdate: number = 86400000;
+        if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
+
+        if ((now - forceUpdate) < character.updatedAt.getTime()) {
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);
           return 304
         }
         /**

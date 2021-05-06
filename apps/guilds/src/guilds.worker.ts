@@ -53,7 +53,7 @@ export class GuildsWorker {
 
       const
         name_slug: string = toSlug(args.name),
-        t: number = new Date().getTime() - (12 * 60 * 60 * 1000),
+        now: number = new Date().getTime(),
         original: GuildInterface = {
           _id: `${name_slug}@${realm.slug}`,
           name: capitalize(args.name),
@@ -85,15 +85,19 @@ export class GuildsWorker {
 
       if (guild) {
         if (args.createOnlyUnique) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique:${args.createOnlyUnique}`);
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique: ${args.createOnlyUnique}`);
           await job.updateProgress(11);
           return 302;
         }
-        if (!args.forceUpdate && (t < guild.updatedAt.getTime())) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:forceUpdate:${args.forceUpdate}`);
+        let forceUpdate: number = 86400000;
+        if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
+
+        if ((now - forceUpdate) < guild.updatedAt.getTime()) {
+          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:forceUpdate: ${forceUpdate}`);
           await job.updateProgress(13);
           return 304;
         }
+
         Object.assign(original, guild.toObject());
         original.status_code = 100;
         await job.updateProgress(20);

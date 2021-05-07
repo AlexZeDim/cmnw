@@ -203,7 +203,7 @@ export class WowprogressService {
               updateRIO: true,
               updateWCL: true,
               updateWP: true,
-              forceUpdate: 1,
+              forceUpdate: 3600000,
               iteration: i,
             }, {
               jobId: _id,

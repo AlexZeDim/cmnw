@@ -1,5 +1,5 @@
 import { FACTION } from '@app/core';
-import { IsArray, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsArray, IsEnum, IsNumberString, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -17,13 +17,13 @@ export class CharactersLfgDto {
   @ApiProperty(SWAGGER_CHARACTER_REALMS)
   @IsOptional()
   @IsArray()
-  @Transform(({ value: realms }) => realms.map((r) => r.toLowerCase()))
+  @Transform(({ value: realms }) => Array.isArray(realms) && realms ? realms.map((r) => r.toLowerCase()) : [realms])
   readonly realms: string[];
 
   @ApiProperty(SWAGGER_CHARACTER_LANGUAGES)
   @IsOptional()
   @IsArray()
-  @Transform(({ value: languages }) => languages.map((l) => l.toLowerCase()))
+  @Transform(({ value: languages }) => Array.isArray(languages) && languages ? languages.map((l) => l.toLowerCase()) : [languages])
   readonly languages: string[];
 
   @ApiProperty(SWAGGER_CHARACTER_FACTION)
@@ -33,26 +33,26 @@ export class CharactersLfgDto {
 
   @ApiProperty(SWAGGER_CHARACTER_AVGILVL)
   @IsOptional()
-  @IsNumber()
-    readonly average_item_level: number;
+  @IsNumberString()
+  readonly average_item_level: number;
 
   @ApiProperty(SWAGGER_CHARACTER_RIO)
   @IsOptional()
-  @IsNumber()
+  @IsNumberString()
   readonly rio_score: number;
 
   @ApiProperty(SWAGGER_CHARACTER_DAYS_FROM)
   @IsOptional()
-  @IsNumber()
+  @IsNumberString()
   readonly days_from: number;
 
   @ApiProperty(SWAGGER_CHARACTER_DAYS_TO)
   @IsOptional()
-  @IsNumber()
+  @IsNumberString()
   readonly days_to: number;
 
   @ApiProperty(SWAGGER_CHARACTER_WCL)
   @IsOptional()
-  @IsNumber()
+  @IsNumberString()
   readonly wcl_percentile: number;
 }

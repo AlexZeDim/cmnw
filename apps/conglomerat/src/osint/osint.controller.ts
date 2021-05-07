@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OsintService } from './osint.service';
 import { LeanDocument } from "mongoose";
 import { Character, Guild, Log, Realm } from '@app/mongo';
@@ -18,9 +18,6 @@ import { RealmDto } from './dto/realm.dto';
 @ApiTags('osint')
 @Controller('osint')
 export class OsintController {
-  private readonly logger = new Logger(
-    OsintController.name, true,
-  );
 
   constructor(
     private readonly osintService: OsintService

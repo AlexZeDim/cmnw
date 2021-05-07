@@ -53,7 +53,7 @@ export class WowprogressService {
 
       const
         x = Xray(),
-        urls = await x(`https://www.wowprogress.com/export/ranks/`, 'pre', ['a@href',]).then(res => res),
+        urls = await x(`https://www.wowprogress.com/export/ranks/`, 'pre', ['a@href']).then(res => res),
         key = await this.KeyModel.findOne({ tags: clearance });
 
       if (!key || !key.token) {

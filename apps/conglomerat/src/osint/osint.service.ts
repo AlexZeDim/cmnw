@@ -2,9 +2,9 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Key, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { CharacterHashDto, CharacterIdDto, GuildIdDto } from './dto';
+import { CharacterHashDto, CharacterIdDto, CharactersLfgDto, GuildIdDto } from './dto';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, OSINT_SOURCE } from '@app/core';
+import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE } from '@app/core';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
 import { RealmDto } from './dto/realm.dto';
@@ -87,6 +87,23 @@ export class OsintService {
         .find({ [`hash_${type}`]: hash })
         .limit(100)
         .lean();
+    } catch (e) {
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getCharactersLfg(input: CharactersLfgDto): Promise<LeanDocument<Character[]>> {
+    try {
+      const query = { looking_for_guild: LFG.NEW };
+      if (input.faction) Object.assign(query, { faction: input.faction });
+      if (input.average_item_level) Object.assign(query, { average_item_level: { '$gte': input.average_item_level } });
+      if (input.rio_score) Object.assign(query, { rio_score: { '$gte': input.rio_score } });
+      if (input.days_from) Object.assign(query, { days_from: { '$gte': input.days_from } });
+      if (input.days_to) Object.assign(query, { days_to: { '$lte': input.days_to } });
+      if (input.wcl_percentile) Object.assign(query, { wcl_percentile: { '$gte': input.wcl_percentile } });
+      if (input.languages) Object.assign(query, { languages : { '$in': input.languages } });
+      if (input.realms) Object.assign(query, { realms : { '$in': input.realms } });
+      return await this.CharacterModel.find(query);
     } catch (e) {
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }

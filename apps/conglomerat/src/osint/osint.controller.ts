@@ -12,7 +12,7 @@ import {
   ApiUnauthorizedResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CharacterHashDto, CharacterIdDto, GuildIdDto } from './dto';
+import { CharacterHashDto, CharacterIdDto, CharactersLfgDto, GuildIdDto } from './dto';
 import { RealmDto } from './dto/realm.dto';
 
 @ApiTags('osint')
@@ -38,6 +38,20 @@ export class OsintController {
   @Get('/character')
   async getCharacter(@Query() input: CharacterIdDto): Promise<LeanDocument<Character>> {
     return this.osintService.getCharacter(input);
+  }
+
+  @ApiOperation({ description: 'Returns characters which are looking for guild' })
+  @ApiOkResponse({ description: 'Request characters with selected input parameters' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  @Get('/character/lfg')
+  async getCharactersLfg(@Query() input: CharactersLfgDto): Promise<LeanDocument<Character[]>> {
+    return this.osintService.getCharactersLfg(input);
   }
 
   @ApiOperation({ description: 'Returns requested account characters' })

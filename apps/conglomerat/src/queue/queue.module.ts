@@ -10,8 +10,10 @@ import {
   realmsQueue,
   valuationsQueue,
 } from '@app/core';
-import { BullMQAdapter, router, setQueues } from 'bull-board';
+import { createBullBoard } from 'bull-board';
+import { BullMQAdapter } from 'bull-board/bullMQAdapter';
 import { Queue } from 'bullmq';
+import { Express } from 'express';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { Queue } from 'bullmq';
 })
 export class QueueModule {
 
+  private router: Express;
+
   constructor (
     @BullQueueInject(auctionsQueue.name)
     private readonly auctions: Queue,
@@ -51,21 +55,30 @@ export class QueueModule {
     private readonly pricing: Queue,
     @BullQueueInject(valuationsQueue.name)
     private readonly valuations: Queue,
+
   ) {
-    setQueues([
+    const { router } = createBullBoard([
+      // @ts-ignore
       new BullMQAdapter(this.auctions, { readOnlyMode: false }),
+      // @ts-ignore
       new BullMQAdapter(this.characters, { readOnlyMode: false }),
+      // @ts-ignore
       new BullMQAdapter(this.guilds, { readOnlyMode: false }),
+      // @ts-ignore
       new BullMQAdapter(this.realms, { readOnlyMode: false }),
+      // @ts-ignore
       new BullMQAdapter(this.items, { readOnlyMode: false }),
+      // @ts-ignore
       new BullMQAdapter(this.pricing, { readOnlyMode: false }),
+      // @ts-ignore
       new BullMQAdapter(this.valuations, { readOnlyMode: false }),
     ])
+    this.router = router;
   }
 
   configure(consumer: MiddlewareConsumer): void {
     consumer
-      .apply(router)
+      .apply(this.router)
       .forRoutes('/admin/queues');
   }
 }

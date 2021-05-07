@@ -110,7 +110,7 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Get('/realm/population/:_id')
   async getRealmPopulation(@Param('_id') _id: string): Promise<string[]> {
-    // TODO validate
+    // TODO wip
     return this.osintService.getRealmPopulation(_id);
   }
 

@@ -51,7 +51,6 @@ export class QueueModule {
     private readonly pricing: Queue,
     @BullQueueInject(valuationsQueue.name)
     private readonly valuations: Queue,
-
   ) {
     setQueues([
       new BullMQAdapter(this.auctions, { readOnlyMode: false }),

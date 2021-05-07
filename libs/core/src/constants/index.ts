@@ -15,4 +15,5 @@ export {
   COVENANTS,
   PLAYABLE_CLASS,
   OSINT_SOURCE,
+  LFG,
 } from './osint.constants';

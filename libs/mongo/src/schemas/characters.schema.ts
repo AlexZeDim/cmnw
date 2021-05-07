@@ -1,5 +1,6 @@
 import { Document, Schema as MongooseSchema } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { LFG } from '@app/core';
 /**
  * _id and id field represents Blizzard GUID name@realm-id
  * https://wow.gamepedia.com/GUID
@@ -171,8 +172,8 @@ export class Character extends Document {
   @Prop({ _id: false, type: [ProfessionSchema] })
   professions: MongooseSchema.Types.Array;
 
-  @Prop({ index: true })
-  looking_for_guild: boolean;
+  @Prop({ index: true, type: String, enum: LFG })
+  looking_for_guild: string;
 
   @Prop()
   rio_score: number;

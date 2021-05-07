@@ -67,3 +67,9 @@ export enum OSINT_SOURCE {
   WARCRAFTLOGS = 'OSINT-warcraftlogs',
   WOWPROGRESSLFG = 'OSINT-lfgprogress'
 }
+
+export enum LFG {
+  NEW = 'NEW',
+  NOW = 'T',
+  PREV = 'T-1'
+}

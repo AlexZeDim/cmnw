@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { WowprogressService } from './wowprogress.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
+import { Character, CharactersSchema, Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -13,7 +13,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema }
+      { name: Realm.name, schema: RealmsSchema },
+      { name: Character.name, schema: CharactersSchema },
     ]),
     BullModule.forRoot({
       options: {

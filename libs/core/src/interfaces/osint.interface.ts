@@ -1,3 +1,5 @@
+import { LFG } from '@app/core/constants';
+
 export interface CharacterInterface {
   _id: string,
   name: string,
@@ -13,7 +15,7 @@ export interface CharacterInterface {
   level?: number,
   character_class?: string,
   last_modified?: Date,
-  looking_for_guild?: boolean,
+  looking_for_guild?: LFG,
   created_by?: string,
   updated_by?: string,
   active_spec?: string,

@@ -1,19 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key, Realm } from '@app/mongo';
+import { Character, Key, Realm } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import Xray from 'x-ray';
-import { charactersQueue, GLOBAL_KEY, OSINT_SOURCE, toSlug } from '@app/core';
+import { charactersQueue, GLOBAL_KEY, LFG, OSINT_SOURCE, toSlug } from '@app/core';
 import fs from 'fs-extra';
 import axios from 'axios';
 import path from "path";
 import zlib from 'zlib';
 import scraper from 'table-scraper';
-import { union } from 'lodash';
+import { union, differenceBy } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { delay } from '@app/core/utils/converters';
 
 @Injectable()
 export class WowprogressService {
@@ -26,6 +27,8 @@ export class WowprogressService {
     private readonly KeyModel: Model<Key>,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
+    @InjectModel(Character.name)
+    private readonly CharacterModel: Model<Character>,
     @BullQueueInject(guildsQueue.name)
     private readonly queueGuilds: Queue,
     @BullQueueInject(charactersQueue.name)
@@ -157,6 +160,12 @@ export class WowprogressService {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async indexWowProgressLfg(clearance: string = GLOBAL_KEY): Promise<void> {
     try {
+      /**
+       * Revoke characters status from old NOW => to PREV
+       */
+      const charactersRevoked = await this.CharacterModel.updateMany({ looking_for_guild: LFG.NOW }, { looking_for_guild: LFG.PREV });
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} revoked from ${charactersRevoked.nModified} characters`);
+
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
         this.logger.error(`indexLookingForGuild: ${keys.length} keys found`);
@@ -188,9 +197,12 @@ export class WowprogressService {
               accessToken: keys[index].token,
               created_by: OSINT_SOURCE.WOWPROGRESSLFG,
               updated_by: OSINT_SOURCE.WOWPROGRESSLFG,
-              looking_for_guild: true,
+              looking_for_guild: LFG.NOW,
               guildRank: false,
               createOnlyUnique: false,
+              updateRIO: true,
+              updateWCL: true,
+              updateWP: true,
               forceUpdate: 1,
               iteration: i,
             }, {
@@ -202,6 +214,17 @@ export class WowprogressService {
         index++
         if (i >= keys.length) index = 0;
       })
+
+      await delay(90);
+      const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
+      const charactersNow = await this.CharacterModel.find({ looking_for_guild: LFG.NOW });
+      this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${wpCharacters.length} PREV: ${charactersPrev.length}`);
+
+      const charactersNew = differenceBy(charactersNow, charactersPrev, '_id');
+      await this.CharacterModel.updateMany({ _id: { $in: charactersNew.map(c => c._id) } }, { looking_for_guild: LFG.NEW });
+
+      const charactersUnset = await this.CharacterModel.updateMany({ looking_for_guild: LFG.PREV }, { $unset: { looking_for_guild: 1 } });
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.nModified} characters`);
     } catch (e) {
       this.logger.error(`indexLookingForGuild: ${e}`)
     }

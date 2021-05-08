@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { HashEmbedMessage } from '../converters';
+import { HashEmbedMessage } from '../embeds';
 import { discordConfig } from '@app/configuration';
 
 module.exports = {

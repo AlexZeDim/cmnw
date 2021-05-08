@@ -101,11 +101,20 @@ export class CharactersWorker {
                 }
               }
             }
-            this.logger.log(`G:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},guildRank:${args.guildRank}`);
+            this.logger.log(`G:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},guildRank: ${args.guildRank}`);
             await character.save()
             await job.updateProgress(12);
           }
         }
+
+        let forceUpdate: number = 86400000;
+        if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
+        if (args.looking_for_guild) {
+          character.looking_for_guild = args.looking_for_guild;
+          this.logger.log(`LFG: ${character._id},looking for guild: ${args.looking_for_guild}`)
+          await character.save()
+        }
+
         /**
          * If character exists and createOnlyUnique initiated,
          * or updated recently return
@@ -114,8 +123,6 @@ export class CharactersWorker {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
           return 302
         }
-        let forceUpdate: number = 86400000;
-        if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
 
         if ((now - forceUpdate) < character.updatedAt.getTime()) {
           this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);

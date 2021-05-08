@@ -29,7 +29,7 @@ export const QUESTIONS: QuestionInterface[] = [
     question: 'Okay, fine. First of all, let\'s start with the subscription type: should it look for new \`recruiting\` candidates in WoWProgress queue?\n' +
       'Maybe watch for aggregated \`marketdata\` on the auction house? \n' +
       'Or what about full \`orders\` (*time and sales*) information?\n' +
-      'The choice is yours, but accepted only one of them: \`recruiting\`, \`marketdata\`, \`orders\`'
+      'The choice is yours, but accepted only one of them: \`recruiting\`, \`market\`, \`orders\`'
   },
   {
     id: 1,

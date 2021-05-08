@@ -1,9 +1,6 @@
 import axios from 'axios';
 import qs from 'qs';
 import { yandexConfig } from '@app/configuration';
-// import { delay } from '@app/core/utils/converters';
-// import fs from 'fs-extra';
-// import { OpusEncoder } from '@discordjs/opus';
 
 module.exports = {
   name: 'say',

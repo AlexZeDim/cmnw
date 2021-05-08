@@ -7,7 +7,7 @@ import {
   CharacterIdDto,
   CharactersLfgDto,
   DiscordSubscriptionDto,
-  DiscordUnsubscriptionDto,
+  DiscordUidSubscriptionDto,
   GuildIdDto,
 } from './dto';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -202,6 +202,10 @@ export class OsintService {
     return this.RealmModel.find(input);
   }
 
+  async checkDiscord(input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
+    return this.SubscriptionModel.findOne({ discord_id: input.discord_id, channel_id: input.channel_id }).lean();
+  }
+
   async subscribeDiscord(input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
     return this.SubscriptionModel.findOneAndUpdate(
       { discord_id: input.discord_id, channel_id: input.channel_id },
@@ -210,7 +214,7 @@ export class OsintService {
     ).lean();
   }
 
-  async unsubscribeDiscord(input: DiscordUnsubscriptionDto): Promise<void> {
+  async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<void> {
     await this.SubscriptionModel.findOneAndDelete(input);
   }
 }

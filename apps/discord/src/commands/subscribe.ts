@@ -1,6 +1,8 @@
 import { DiscordInterface, LANG } from '@app/core';
-import { sayHello } from '../subscriptions';
-import { subscriptionScene } from '../subscriptions/dialogs';
+import { sayHello, subscriptionScene } from '../subscriptions';
+import axios from 'axios';
+import qs from 'qs';
+import { pick } from 'lodash';
 
 module.exports = {
   name: 'subscribe',
@@ -62,6 +64,35 @@ module.exports = {
         if (configNew.next === 1000) {
           await collector.stop('ok')
         }
+      });
+
+      collector.on('end', async (collected, reason) => {
+        if (reason === 'ok') {
+          // TODO continue
+        }
+        const subscription = pick(config, [
+          'discord_id',
+          'discord_name',
+          'channel_id',
+          'channel_name',
+          'author_id',
+          'author_name',
+          'type',
+          'language',
+          'timestamp',
+          ]
+        );
+        console.log(subscription);
+
+        const { data } = await axios({
+          method: 'POST',
+          url: 'http://localhost:8000/api/osint/discord/subscribe',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded' //multipart/form-data
+          },
+          data: qs.stringify(subscription),
+        });
+        console.log(data)
       });
 
     } catch (e) {

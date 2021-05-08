@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
+  Post, Put,
   Query,
   UsePipes,
   ValidationPipe,
@@ -23,7 +23,14 @@ import {
   ApiUnauthorizedResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CharacterHashDto, CharacterIdDto, CharactersLfgDto, DiscordSubscriptionDto, GuildIdDto } from './dto';
+import {
+  CharacterHashDto,
+  CharacterIdDto,
+  CharactersLfgDto,
+  DiscordSubscriptionDto,
+  DiscordUidSubscriptionDto,
+  GuildIdDto,
+} from './dto';
 import { RealmDto } from './dto/realm.dto';
 
 @ApiTags('osint')
@@ -139,8 +146,45 @@ export class OsintController {
     return this.osintService.getRealms(input);
   }
 
+  @ApiOperation({ description: 'Check current subscription' })
+  @ApiOkResponse({ description: 'Returns discord server with current subscription' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  @Get('/discord')
+  async checkDiscord(@Query() input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
+    return this.osintService.checkDiscord(input);
+  }
+
+  @ApiOperation({ description: 'Create or update subscription' })
+  @ApiOkResponse({ description: 'Returns a created or existing subscription for current channel & server' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
   @Post('/discord/subscribe')
-  async subscribeDiscord(@Query() input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
+  async subscribeDiscord(@Body() input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
     return this.osintService.subscribeDiscord(input)
+  }
+
+  @ApiOperation({ description: 'Unsubscribes discord server and channel from notifications' })
+  @ApiOkResponse({ description: 'Returns empty result on success with status code OK' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'Invalid request body' })
+  @ApiServiceUnavailableResponse({ description: 'Commonwealth API is not available at the moment' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  @Put('/discord/unsubscribe')
+  async unsubscribeDiscord(@Body() input: DiscordUidSubscriptionDto): Promise<void> {
+    return this.osintService.unsubscribeDiscord(input)
   }
 }

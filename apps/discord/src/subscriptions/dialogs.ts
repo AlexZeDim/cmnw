@@ -3,10 +3,12 @@ import { readFileSync } from 'fs';
 import {
   CHARACTER_CLASS,
   DiscordInterface,
-  ERROR_REALM, FACTION,
+  ERROR_REALM,
+  FACTION,
   LANG,
   NOTIFICATIONS,
-  QUESTIONS, REALM_LOCALE,
+  QUESTIONS,
+  REALM_LOCALE,
   SUBSCRIPTION_INTRO,
   WELCOME_FAMILIAR,
   WELCOME_FIRST_TIME,
@@ -16,6 +18,11 @@ import { LeanDocument } from 'mongoose';
 
 export function sayHello(username: string, first: boolean): string {
   return `Greetings / Привет ${username}\n ${(first) ? (WELCOME_FIRST_TIME) : (WELCOME_FAMILIAR)}${SUBSCRIPTION_INTRO}`
+}
+
+export function saySuccess(language: LANG): string {
+  if (language === LANG.RU) return 'Ну вот и всё! Сообщение об успешно созданной подписки можно будет найти ниже.'
+  return 'That\'s all! The message below will show you a subscription status.'
 }
 
 export function subscriptionScene({ current, reply, language, route, index, next, type, actions }: DiscordInterface): Partial<DiscordInterface> {

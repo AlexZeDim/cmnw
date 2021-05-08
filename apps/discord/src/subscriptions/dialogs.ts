@@ -157,7 +157,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
     case 200:
       const items = reply.split(',').map(Number).filter(Boolean);
       if (!items.length ) return {}
-      if (items.length > 5) return { }
+      if (items.length > 10) return {}
       return { items, prev: next, next: 1000, index: index }
     default:
       return {}

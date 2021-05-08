@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 
-export async function HashEmbedMessage(args: string, hash: any): Promise<MessageEmbed> {
+export function HashEmbedMessage(args: string, hash: any): MessageEmbed {
   const embed = new MessageEmbed();
   try {
     const query_hash = args.trim().toUpperCase();

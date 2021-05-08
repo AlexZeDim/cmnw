@@ -45,7 +45,7 @@ export class Subscription extends Document {
   @Prop({ type: String, enum: LANG })
   language: LANG;
 
-  @Prop({ type: Number, default: 10 })
+  @Prop({ type: Number, default: 0 })
   tolerance: number;
 
   @Prop({ type: Number, default: 0 })

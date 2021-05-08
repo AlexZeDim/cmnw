@@ -1,7 +1,7 @@
 import { MessageEmbed } from "discord.js";
 import { FACTION } from '@app/core';
 
-export async function CharacterEmbedMessage(character: any): Promise<MessageEmbed> {
+export function CharacterEmbedMessage(character: any): MessageEmbed {
   const embed = new MessageEmbed();
   try {
     if (character.guild) {

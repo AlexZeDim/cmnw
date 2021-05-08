@@ -109,7 +109,7 @@ export class OsintService {
       if (input.wcl_percentile) Object.assign(query, { wcl_percentile: { '$gte': input.wcl_percentile } });
       if (input.languages) Object.assign(query, { languages : { '$in': input.languages } });
       if (input.realms) Object.assign(query, { realms : { '$in': input.realms } });
-      return await this.CharacterModel.find(query);
+      return await this.CharacterModel.find(query).lean();
     } catch (e) {
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }

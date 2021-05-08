@@ -24,7 +24,7 @@ export function seriousError(language: LANG): string {
 export function collectionSuccess(subscription: Partial<DiscordInterface>, isExists: boolean): string {
   let success: string = 'That\'s all! The message below will show you a subscription status.\n'
   if (subscription.language === LANG.RU) success = 'Ну вот и всё! Сообщение об успешно созданной подписки можно будет найти ниже.\n';
-  const string = Object.entries(subscription).map(([key, value]) => `${key}: ${value} \n`).join('');
+  const string = Object.entries(subscription).map(([key, value]) => `${key}: ${(key === 'realms') ? ((value as any).map(r => r._id).join(', ')) : (value)} \n`).join('');
   if (isExists) {
     if (subscription.language === LANG.RU) success = success.concat('Успех! Ваша подписка была обновлена. Ваши текущие настройки: \n \`\`\`' + string + '\`\`\`');
     if (subscription.language === LANG.EN) success = success.concat('Success! Your subscription has been updated. Your current settings: \n \`\`\`' + string + '\`\`\`');

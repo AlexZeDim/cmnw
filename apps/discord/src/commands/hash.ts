@@ -13,7 +13,7 @@ module.exports = {
   args: true,
   async execute(message, args) {
     const { data: hash } = await axios.get(encodeURI(`${discordConfig.basename}/api/osint/character/hash?hash=${args}`));
-    const embed = await HashEmbedMessage(args, hash);
+    const embed = HashEmbedMessage(args, hash);
     await message.channel.send(embed);
   }
 }

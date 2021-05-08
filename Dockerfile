@@ -8,7 +8,8 @@ RUN npm install
 
 COPY . .
 
-RUN nest build keys \
+RUN nest build conglomerat \
+  && nest build keys \
   && nest build gold \
   && nest build items \
   && nest build guilds \
@@ -19,7 +20,6 @@ RUN nest build keys \
   && nest build wowtoken \
   && nest build valuations \
   && nest build characters \
-  && nest build conglomerat \
   && nest build wowprogress \
   && nest build warcraftlogs
 

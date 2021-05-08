@@ -1,5 +1,12 @@
 import { DiscordInterface, LANG, SUBSCRIPTION_REMOVE } from '@app/core';
-import { sayHello, sayRemove, subscriptionScene } from '../subscriptions';
+import {
+  collectionClose,
+  collectionSuccess,
+  sayHello,
+  sayRemove,
+  seriousError,
+  subscriptionScene,
+} from '../subscriptions';
 import axios from 'axios';
 import qs from 'qs';
 import { pick } from 'lodash';
@@ -13,37 +20,35 @@ module.exports = {
   args: true,
   guildOnly: true,
   async execute(message, args) {
-    try {
-
-      const config: DiscordInterface = {
-        discord_id: message.channel.guild.id,
-        discord_name: message.channel.guild.name,
-        channel_id: message.channel.id,
-        channel_name: message.channel.name,
-        author_id: message.author.id,
-        author_name: message.author.username,
-        actions: {
-          skip: ['пропустить', 'skip'],
-          russian: ['русский', 'russian'],
-          english: ['английский', 'english'],
-          languages: ['german', 'french', 'greek', 'spanish', 'polish'],
-          alliance: ['альянс', 'alliance'],
-          horde: ['орда', 'horde'],
-        },
-        messages: 40,
-        time: 180000,
-        language: LANG.EN,
-        prev: 0,
-        current: 0,
-        index: 0,
-        next: 0,
-        route: {
-          recruiting: [1, 2, 100, 101, 102, 103, 104, 105, 106, 107],
-          market: [1, 2, 200],
-          orders: [1, 2, 200]
-        }
+    const config: DiscordInterface = {
+      discord_id: message.channel.guild.id,
+      discord_name: message.channel.guild.name,
+      channel_id: message.channel.id,
+      channel_name: message.channel.name,
+      author_id: message.author.id,
+      author_name: message.author.username,
+      actions: {
+        skip: ['пропустить', 'skip'],
+        russian: ['русский', 'russian'],
+        english: ['английский', 'english'],
+        languages: ['german', 'french', 'greek', 'spanish', 'polish'],
+        alliance: ['альянс', 'alliance'],
+        horde: ['орда', 'horde'],
+      },
+      messages: 40,
+      time: 180000,
+      language: LANG.EN,
+      prev: 0,
+      current: 0,
+      index: 0,
+      next: 0,
+      route: {
+        recruiting: [1, 2, 100, 101, 102, 103, 104, 105, 106, 107],
+        market: [1, 2, 200],
+        orders: [1, 2, 200]
       }
-
+    }
+    try {
       if (args) {
         if (SUBSCRIPTION_REMOVE.includes(args)) {
           await axios({
@@ -89,45 +94,45 @@ module.exports = {
 
       collector.on('end', async (collected, reason) => {
         if (reason === 'ok') {
-          // TODO continue
+          const subscription = pick(config, [
+              'discord_id',
+              'discord_name',
+              'channel_id',
+              'channel_name',
+              'author_id',
+              'author_name',
+              'type',
+              'language',
+              'timestamp',
+              'items',
+              'realms',
+              'character_class',
+              'days_from',
+              'days_to',
+              'average_item_level',
+              'rio_score',
+              'wcl_percentile',
+              'faction',
+              'languages'
+            ]
+          );
+          const { data } = await axios({
+            method: 'POST',
+            url: 'http://localhost:8000/api/osint/discord/subscribe',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            data: qs.stringify(subscription),
+          });
+          const ok = collectionSuccess(subscription, !!discord);
+          await message.channel.send(ok);
+        } else {
+          const fail = collectionClose(config.language);
+          await message.channel.send(fail);
         }
-        const subscription = pick(config, [
-          'discord_id',
-          'discord_name',
-          'channel_id',
-          'channel_name',
-          'author_id',
-          'author_name',
-          'type',
-          'language',
-          'timestamp',
-          'items',
-          'realms',
-          'character_class',
-          'days_from',
-          'days_to',
-          'average_item_level',
-          'rio_score',
-          'wcl_percentile',
-          'faction',
-          'languages'
-          ]
-        );
-        console.log(subscription);
-
-        const { data } = await axios({
-          method: 'POST',
-          url: 'http://localhost:8000/api/osint/discord/subscribe',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded' //multipart/form-data
-          },
-          data: qs.stringify(subscription),
-        });
-        console.log(data)
       });
-
     } catch (e) {
       console.error(e);
+      const error = seriousError(config.language);
+      await message.channel.send(error);
     }
   }
 }

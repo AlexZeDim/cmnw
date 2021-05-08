@@ -1,1 +1,9 @@
-export { sayHello, saySuccess, subscriptionScene, sayRemove } from './dialogs';
+export {
+  sayHello,
+  saySuccess,
+  subscriptionScene,
+  sayRemove,
+  collectionClose,
+  collectionSuccess,
+  seriousError,
+} from './dialogs';

@@ -27,16 +27,7 @@ export class DiscordService implements OnApplicationBootstrap {
     this.client.on('message', async message => {
       if (message.author.bot) return;
 
-      let commandName = '';
-      let args;
-
-      if (message.content.startsWith('direct')) {
-        commandName = message.content.split(/(?<=^\S+)@/)[0];
-        args = message.content.split(/(?<=^\S+)@/)[1];
-      } else {
-        commandName = message.content.split(/(?<=^\S+)\s/)[0];
-        args = message.content.split(/(?<=^\S+)\s/)[1];
-      }
+      const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
 
       const command =
         this.commands.get(commandName) ||

@@ -16,6 +16,30 @@ import {
 import { Realm } from '@app/mongo';
 import { LeanDocument } from 'mongoose';
 
+export function seriousError(language: LANG): string {
+  if (language === LANG.RU) return 'Хм, это выглядит как серьезная ошибка. Пожалуйста напишите об этом @AlexZeDim#2645, желательно со скриншотом.'
+  return 'This looks like a serious error. Please contact @AlexZeDim#2645 about it'
+}
+
+export function collectionSuccess(subscription: Partial<DiscordInterface>, isExists: boolean): string {
+  let success: string = 'That\'s all! The message below will show you a subscription status.\n'
+  if (subscription.language === LANG.RU) success = 'Ну вот и всё! Сообщение об успешно созданной подписки можно будет найти ниже.\n';
+  const string = Object.entries(subscription).map(([key, value]) => `${key}: ${value} \n`).join('');
+  if (isExists) {
+    if (subscription.language === LANG.RU) success = success.concat('Успех! Ваша подписка была обновлена. Ваши текущие настройки: \n \`\`\`' + string + '\`\`\`');
+    if (subscription.language === LANG.EN) success = success.concat('Success! Your subscription has been updated. Your current settings: \n \`\`\`' + string + '\`\`\`');
+  } else {
+    if (subscription.language === LANG.RU) success = success.concat('У вас получилось подписаться со следующими настройками:  \`\`\`' + string + '\`\`\`');
+    if (subscription.language === LANG.EN) success = success.concat('You have been successfully subscribed with the following settings:  \`\`\`' + string + '\`\`\`');
+  }
+  return success;
+}
+
+export function collectionClose(language: LANG): string {
+  if (language === LANG.RU) return 'Что-то с вашими сообщениями не так. Или время настройки истекло. Может стоит попробовать снова?'
+  return 'Something wrong with that! Probably time goes out. Let us try again, shall we?'
+}
+
 export function sayHello(username: string, first: boolean): string {
   return `Greetings / Привет ${username}\n ${(first) ? (WELCOME_FIRST_TIME) : (WELCOME_FAMILIAR)}${SUBSCRIPTION_INTRO}`
 }
@@ -82,8 +106,8 @@ export function subscriptionScene({ current, reply, language, route, index, next
         return { question: question, prev: next, next: id, index: index + 1 }
       } else {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
-        const class_filter = reply.split(',').filter(s => {
-          const character_class = (s.trim().charAt(0).toUpperCase() + s.trim().slice(1)).trim();
+        const class_filter = reply.split(',').filter(c => {
+          const character_class = c.trim().split(' ').map(s => s.substring(0,1).toUpperCase() + s.substring(1)).join(' ');
           if (CHARACTER_CLASS.includes(character_class)) return character_class
         })
         if (!class_filter.length) return {}

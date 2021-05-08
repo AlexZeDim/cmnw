@@ -53,7 +53,7 @@ module.exports = {
         if (SUBSCRIPTION_REMOVE.includes(args)) {
           await axios({
             method: 'PUT',
-            url: 'http://localhost:8000/api/osint/discord/unsubscribe',
+            url: `${discordConfig.basename}/api/osint/discord/unsubscribe`,
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             },
@@ -118,7 +118,7 @@ module.exports = {
           );
           const { data } = await axios({
             method: 'POST',
-            url: 'http://localhost:8000/api/osint/discord/subscribe',
+            url: `${discordConfig.basename}/api/osint/discord/subscribe`,
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             data: qs.stringify(subscription),
           });

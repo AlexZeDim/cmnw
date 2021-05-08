@@ -215,7 +215,7 @@ export class WowprogressService {
         if (i >= keys.length) index = 0;
       })
 
-      await delay(90);
+      await delay(120);
       const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
       const charactersNow = await this.CharacterModel.find({ looking_for_guild: LFG.NOW });
       this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${wpCharacters.length} PREV: ${charactersPrev.length}`);

@@ -1,8 +1,15 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, Guild, Key, Log, Realm } from '@app/mongo';
+import { Character, Guild, Key, Log, Realm, Subscription } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { CharacterHashDto, CharacterIdDto, CharactersLfgDto, GuildIdDto } from './dto';
+import {
+  CharacterHashDto,
+  CharacterIdDto,
+  CharactersLfgDto,
+  DiscordSubscriptionDto,
+  DiscordUnsubscriptionDto,
+  GuildIdDto,
+} from './dto';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE } from '@app/core';
 import { Queue } from 'bullmq';
@@ -11,9 +18,6 @@ import { RealmDto } from './dto/realm.dto';
 
 @Injectable()
 export class OsintService {
-  private readonly logger = new Logger(
-    OsintService.name, true,
-  );
 
   private clearance: string = GLOBAL_OSINT_KEY;
 
@@ -28,6 +32,8 @@ export class OsintService {
     private readonly GuildModel: Model<Guild>,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
+    @InjectModel(Subscription.name)
+    private readonly SubscriptionModel: Model<Subscription>,
     @BullQueueInject(charactersQueue.name)
     private readonly queueCharacter: Queue,
     @BullQueueInject(guildsQueue.name)
@@ -194,5 +200,17 @@ export class OsintService {
 
   async getRealms(input: RealmDto): Promise<LeanDocument<Realm>[]> {
     return this.RealmModel.find(input);
+  }
+
+  async subscribeDiscord(input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
+    return this.SubscriptionModel.findOneAndUpdate(
+      { discord_id: input.discord_id, channel_id: input.channel_id },
+      { input },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+  }
+
+  async unsubscribeDiscord(input: DiscordUnsubscriptionDto): Promise<void> {
+    await this.SubscriptionModel.findOneAndDelete(input);
   }
 }

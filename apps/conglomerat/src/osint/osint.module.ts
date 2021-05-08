@@ -15,6 +15,8 @@ import {
   LogsSchema,
   Realm,
   RealmsSchema,
+  Subscription,
+  SubscriptionsSchema,
 } from '@app/mongo';
 import { charactersQueue, guildsQueue } from '@app/core';
 
@@ -27,6 +29,7 @@ import { charactersQueue, guildsQueue } from '@app/core';
       { name: Realm.name, schema: RealmsSchema },
       { name: Character.name, schema: CharactersSchema },
       { name: Guild.name, schema: GuildsSchema },
+      { name: Subscription.name, schema: SubscriptionsSchema },
     ]),
     BullModule.forRoot({
       options: {

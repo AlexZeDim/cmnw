@@ -1,7 +1,18 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { OsintService } from './osint.service';
 import { LeanDocument } from "mongoose";
-import { Character, Guild, Log, Realm } from '@app/mongo';
+import { Character, Guild, Log, Realm, Subscription } from '@app/mongo';
 import {
   ApiOperation,
   ApiServiceUnavailableResponse,
@@ -12,7 +23,7 @@ import {
   ApiUnauthorizedResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CharacterHashDto, CharacterIdDto, CharactersLfgDto, GuildIdDto } from './dto';
+import { CharacterHashDto, CharacterIdDto, CharactersLfgDto, DiscordSubscriptionDto, GuildIdDto } from './dto';
 import { RealmDto } from './dto/realm.dto';
 
 @ApiTags('osint')
@@ -126,5 +137,10 @@ export class OsintController {
   @Get('/realms')
   async getRealms(@Query() input: RealmDto): Promise<LeanDocument<Realm>[]> {
     return this.osintService.getRealms(input);
+  }
+
+  @Post('/discord/subscribe')
+  async subscribeDiscord(@Query() input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
+    return this.osintService.subscribeDiscord(input)
   }
 }

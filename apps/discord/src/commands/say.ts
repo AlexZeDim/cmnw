@@ -1,7 +1,7 @@
 import axios from 'axios';
 import qs from 'qs';
 import { yandexConfig } from '@app/configuration';
-import { delay } from '@app/core/utils/converters';
+// import { delay } from '@app/core/utils/converters';
 // import fs from 'fs-extra';
 // import { OpusEncoder } from '@discordjs/opus';
 
@@ -43,7 +43,6 @@ module.exports = {
         console.log('Now playing!');
       });
 
-      // Always remember to handle errors appropriately!
       dispatcher.on('error', console.error);
 
       dispatcher.on('finish', () => {

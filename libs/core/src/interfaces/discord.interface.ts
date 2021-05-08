@@ -1,4 +1,4 @@
-import { LANG, NOTIFICATIONS } from '@app/core/constants';
+import { FACTION, LANG, NOTIFICATIONS } from '@app/core/constants';
 
 export interface DiscordRoute {
   recruiting: number[],
@@ -40,7 +40,7 @@ export interface DiscordInterface {
   average_item_level?: number,
   rio_score?: number,
   wcl_percentile?: number,
-  faction?: number,
+  faction?: FACTION,
   languages?: string[]
 }
 

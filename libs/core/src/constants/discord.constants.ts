@@ -60,7 +60,7 @@ export const QUESTIONS: QuestionInterface[] = [
   {
     id: 100,
     language: LANG.EN,
-    question: 'Hm, recruiting, nice choice! :hugging: So let\'s start with query parameters. What languageuage your candidates should know before joining your guild?\n' +
+    question: 'Hm, recruiting, nice choice! :hugging: So let\'s start with query parameters. What language your candidates should know before joining your guild?\n' +
       '**This parameter is optional and can be skipped! In that case the search will completed by every criteria!**\n' +
       'Available parameters are: \`russian\`, \`english\`, \`german, french, greek, spanish, polish\` any single one that WoWProgress profile supports or \`skip\`'
   },
@@ -159,12 +159,12 @@ export const QUESTIONS: QuestionInterface[] = [
     id: 200,
     language: LANG.EN,
     question: 'And now we need items, but not just items, but their **IDs**. Like previous steps with realms.\n' +
-      'For example: \`142085\`. Or don\'t be shy to use an array of values like \`183017, 183035, 182978\` Come on, only imaging tracking every BoS.. '
+      'For example: \`142085\`. Or don\'t be shy to use an array of values like \`183017, 183035, 182978\` Come on, only imaging tracking every BoE..\n**BUT, be sure that you track no more then 10 items!**'
   },
   {
     id: 200,
     language: LANG.RU,
-    question: 'А теперь нам нужны предметы, но сами они конечно, а их **ID**, Здесь всё точно так же, как и с серверами \n' +
-      'Например: \`142085\`. Или можно не стесняться и вписать сразу все ID через запятую: \`183017, 183035, 182978\`, ты и представить себе не можешь, как удобно отслеживать и выкупать все BoE на аукционе..'
+    question: 'А теперь нам нужны предметы, не сами они конечно, а их **ID**, Здесь всё точно так же, как и с серверами \n' +
+      'Например: \`142085\`. Или можно не стесняться и вписать сразу все ID через запятую: \`183017, 183035, 182978\`, ты и представить себе не можешь, как удобно отслеживать и выкупать все BoE на аукционе..\n**НО, не более 10-ти предметов для отслеживания!**'
   }
 ];

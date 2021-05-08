@@ -1,17 +1,20 @@
-import { DiscordInterface, LANG } from '@app/core';
-import { sayHello, subscriptionScene } from '../subscriptions';
+import { DiscordInterface, LANG, SUBSCRIPTION_REMOVE } from '@app/core';
+import { sayHello, sayRemove, subscriptionScene } from '../subscriptions';
 import axios from 'axios';
 import qs from 'qs';
 import { pick } from 'lodash';
+import { discordConfig } from '@app/configuration';
 
 module.exports = {
   name: 'subscribe',
-  description: 'Initiate the subscription process for selected channel with allows you to receive announcements',
+  description: 'Initiate the subscription process for selected channel which allows you to receive notifications',
   aliases: ['subscribe', 'SUBSCRIBE', 'Subscribe', 'sub', 'SUB', 'Sub'],
   cooldown: 5,
+  args: true,
   guildOnly: true,
-  async execute(message) {
+  async execute(message, args) {
     try {
+
       const config: DiscordInterface = {
         discord_id: message.channel.guild.id,
         discord_name: message.channel.guild.name,
@@ -40,6 +43,24 @@ module.exports = {
           orders: [1, 2, 200]
         }
       }
+
+      if (args) {
+        if (SUBSCRIPTION_REMOVE.includes(args)) {
+          await axios({
+            method: 'PUT',
+            url: 'http://localhost:8000/api/osint/discord/unsubscribe',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: qs.stringify({ discord_id: config.discord_id, channel_id: config.channel_id }),
+          });
+          const removed = sayRemove(config.discord_name, config.channel_name, config.language)
+          await message.channel.send(removed);
+        }
+      }
+
+      const { data: discord } = await axios.get(encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${config.discord_id}&channel_id=${config.channel_id}`));
+      if (discord) Object.assign(config, discord);
 
       /** Start dialog with settings */
       const filter = m => m.author.id === message.author.id;
@@ -80,6 +101,16 @@ module.exports = {
           'type',
           'language',
           'timestamp',
+          'items',
+          'realms',
+          'character_class',
+          'days_from',
+          'days_to',
+          'average_item_level',
+          'rio_score',
+          'wcl_percentile',
+          'faction',
+          'languages'
           ]
         );
         console.log(subscription);

@@ -140,3 +140,12 @@ export const SWAGGER_REALM_CONNECTED_REALM_ID: ApiPropertyOptions = {
   required: false,
   example: 1602,
 }
+
+export const SWAGGER_CHARACTER_CLASSES: ApiPropertyOptions = {
+  name: 'character_class',
+  description: 'Array of unique character classes for looking for guild search',
+  required: false,
+  type: [String],
+  isArray: true,
+  example: ['rogue']
+}

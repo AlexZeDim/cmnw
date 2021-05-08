@@ -11,6 +11,8 @@ export enum LANG {
   EN = 'en-US',
 }
 
+export const SUBSCRIPTION_REMOVE: string[] = ['rm', '-rm', 'remove', '-remove', 'delete', 'del', '-del', '-delete'];
+
 export const SUBSCRIPTION_INTRO: string = 'Type one of two language names below to start / Выбери и напиши один из двух языков, что бы начать \n \`english\` / \`русский\`';
 
 export const WELCOME_FIRST_TIME: string = 'Are you ready to get started with subscriptions? / Готов познакомится с подписками на события?\n';

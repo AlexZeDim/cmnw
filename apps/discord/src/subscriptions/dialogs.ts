@@ -20,6 +20,11 @@ export function sayHello(username: string, first: boolean): string {
   return `Greetings / Привет ${username}\n ${(first) ? (WELCOME_FIRST_TIME) : (WELCOME_FAMILIAR)}${SUBSCRIPTION_INTRO}`
 }
 
+export function sayRemove(discord: string, channel: string, language: LANG): string {
+  if (language === LANG.RU) return `Подписка для сервера ${discord} и канала: ${channel} была успешно удалена.`;
+  return `Subscription for server: ${discord} & channel: ${channel} has been removed successfully.`;
+}
+
 export function saySuccess(language: LANG): string {
   if (language === LANG.RU) return 'Ну вот и всё! Сообщение об успешно созданной подписки можно будет найти ниже.'
   return 'That\'s all! The message below will show you a subscription status.'
@@ -78,7 +83,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
       } else {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
         const class_filter = reply.split(',').filter(s => {
-          const character_class = s.trim().charAt(0).toUpperCase() + s.trim().slice(1);
+          const character_class = (s.trim().charAt(0).toUpperCase() + s.trim().slice(1)).trim();
           if (CHARACTER_CLASS.includes(character_class)) return character_class
         })
         if (!class_filter.length) return {}

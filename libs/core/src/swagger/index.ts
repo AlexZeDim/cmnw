@@ -14,7 +14,8 @@ export {
   SWAGGER_REALM_ID,
   SWAGGER_REALM_NAME,
   SWAGGER_REALM_REGION,
-  SWAGGER_REALM_SLUG
+  SWAGGER_REALM_SLUG,
+  SWAGGER_CHARACTER_CLASSES
 } from './osint.swagger';
 export { AtSignExists } from './validators';
 export {
@@ -26,4 +27,9 @@ export {
   SWAGGER_DISCORD_SERVER_NAME,
   SWAGGER_DISCORD_TYPE,
   SWAGGER_DISCORD_LANG,
+  SWAGGER_DISCORD_TIMESTAMP,
 } from './discord.swagger';
+export {
+  SWAGGER_ITEM_IDS,
+  SWAGGER_REALMS_CONNECTED_SHORT
+} from './dma.swagger';

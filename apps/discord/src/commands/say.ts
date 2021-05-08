@@ -27,7 +27,7 @@ module.exports = {
           'text': text, //Привет
           'lang': 'ru-RU', //ru-RU
           'voice': 'alena',
-          'speed': 1.05
+          'speed': 1.03
         }),
         responseType: 'stream',
       });

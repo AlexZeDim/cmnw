@@ -55,6 +55,15 @@ export const SWAGGER_DISCORD_AUTHOR_NAME: ApiPropertyOptions = {
   example: 'AlexZeDim',
 };
 
+export const SWAGGER_DISCORD_TIMESTAMP: ApiPropertyOptions = {
+  name: 'timestamp',
+  description: 'Timestamp in milliseconds of last successfully notification',
+  type: Number,
+  required: false,
+  nullable: false,
+  example: 1620490494662,
+};
+
 export const SWAGGER_DISCORD_TYPE: ApiPropertyOptions = {
   name: 'type',
   description: 'Notifications type: recruiting, marker or orders',

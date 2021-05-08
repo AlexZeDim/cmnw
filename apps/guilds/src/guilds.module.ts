@@ -17,6 +17,7 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import { GuildsWorker } from './guilds.worker';
 import { ScheduleModule } from '@nestjs/schedule';
+import { charactersQueue } from '@app/core';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
     BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
+    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
   ],
   controllers: [],
   providers: [GuildsService, GuildsWorker],

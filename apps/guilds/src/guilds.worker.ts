@@ -3,10 +3,10 @@ import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Job } from 'bullmq';
+import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Job, Queue } from 'bullmq';
 import {
-  capitalize,
+  capitalize, charactersQueue,
   FACTION,
   GuildInterface,
   guildsQueue,
@@ -34,6 +34,8 @@ export class GuildsWorker {
     private readonly CharacterModel: Model<Character>,
     @InjectModel(Log.name)
     private readonly LogModel: Model<Log>,
+    @BullQueueInject(charactersQueue.name)
+    private readonly queue: Queue,
   ) { }
 
   @BullWorkerProcess(guildsQueue.workerOptions)
@@ -214,6 +216,39 @@ export class GuildsWorker {
           const character_class = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
 
           const character_exist = await this.CharacterModel.findById(_id);
+
+          if (character_exist) {
+            await this.queue.add(
+              _id,
+              {
+                id: member.character.id,
+                name: member.character.name,
+                realm: guild.realm,
+                realm_id: guild.realm_id,
+                realm_name: guild.realm_name,
+                guild_id: `${guild_slug}@${guild.realm}`,
+                guild: guild.name,
+                guild_guid: guild.id,
+                character_class,
+                faction: guild.faction,
+                level: member.character.level ? member.character.level : undefined,
+                last_modified: guild.last_modified,
+                updated_by: 'OSINT-roster',
+                region: BNet.region,
+                clientId: BNet.clientId,
+                clientSecret: BNet.clientSecret,
+                forceUpdate: 2,
+                accessToken: BNet.accessToken,
+                iteration: iteration,
+                guildRank: true,
+                createOnlyUnique: true
+              },
+              {
+                jobId: _id,
+                priority: 3
+              }
+            );
+          }
 
           if (!character_exist) {
             const character = new this.CharacterModel({

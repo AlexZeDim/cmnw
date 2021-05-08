@@ -16,6 +16,7 @@ export {
   PLAYABLE_CLASS,
   OSINT_SOURCE,
   LFG,
+  REALM_LOCALE
 } from './osint.constants';
 export {
   NOTIFICATIONS,
@@ -24,4 +25,5 @@ export {
   SUBSCRIPTION_INTRO,
   WELCOME_FAMILIAR,
   WELCOME_FIRST_TIME,
+  ERROR_REALM,
 } from './discord.constants';

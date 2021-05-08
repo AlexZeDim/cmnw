@@ -1,4 +1,6 @@
-import { DiscordInterface, LANG, SUBSCRIPTION_INTRO, WELCOME_FAMILIAR, WELCOME_FIRST_TIME } from '@app/core';
+import { DiscordInterface, LANG } from '@app/core';
+import { sayHello } from '../subscriptions';
+import { subscriptionScene } from '../subscriptions/dialogs';
 
 module.exports = {
   name: 'subscribe',
@@ -15,6 +17,14 @@ module.exports = {
         channel_name: message.channel.name,
         author_id: message.author.id,
         author_name: message.author.username,
+        actions: {
+          skip: ['пропустить', 'skip'],
+          russian: ['русский', 'russian'],
+          english: ['английский', 'english'],
+          languages: ['german', 'french', 'greek', 'spanish', 'polish'],
+          alliance: ['альянс', 'alliance'],
+          horde: ['орда', 'horde'],
+        },
         messages: 40,
         time: 180000,
         language: LANG.EN,
@@ -26,7 +36,7 @@ module.exports = {
           recruiting: [1, 2, 100, 101, 102, 103, 104, 105, 106, 107],
           market: [1, 2, 200],
           orders: [1, 2, 200]
-        },
+        }
       }
 
       /** Start dialog with settings */
@@ -37,10 +47,25 @@ module.exports = {
         errors: ['time'],
       });
 
-      await message.channel.send(`Greetings / Привет ${message.author.username}\n ${(config.type) ? (WELCOME_FIRST_TIME) : (WELCOME_FAMILIAR)}${SUBSCRIPTION_INTRO}`);
+      const hello = sayHello(message.author.username, !!config.type);
+
+      await message.channel.send(hello);
+
+      collector.on('collect', async m => {
+        config.reply = m.content.toLowerCase().trim();
+        const configNew = subscriptionScene(config);
+        Object.assign(config, configNew);
+        if (configNew.question) {
+          await message.channel.send(configNew.question)
+          if (configNew.next) config.current = configNew.next
+        }
+        if (configNew.next === 1000) {
+          await collector.stop('ok')
+        }
+      });
 
     } catch (e) {
-
+      console.error(e);
     }
   }
 }

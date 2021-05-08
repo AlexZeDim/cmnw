@@ -1,6 +1,23 @@
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LANG, NOTIFICATIONS } from '@app/core';
+import { FACTION, LANG, NOTIFICATIONS } from '@app/core';
+
+@Schema()
+export class RealmConnected extends Document {
+  @Prop()
+  _id: number;
+
+  @Prop()
+  auctions: number;
+
+  @Prop()
+  golds: number;
+
+  @Prop()
+  valuations: number;
+}
+
+export const RealmConnectedSchema = SchemaFactory.createForClass(RealmConnected);
 
 @Schema({ timestamps: true })
 export class Subscription extends Document {
@@ -25,13 +42,47 @@ export class Subscription extends Document {
   @Prop({ type: String, required: true, enum: NOTIFICATIONS })
   type: NOTIFICATIONS;
 
-  @Prop({ type: Number, default: 0 })
-  timestamp: number;
-
   @Prop({ type: String, enum: LANG })
   language: LANG;
 
-  // TODO filters
+  @Prop({ type: Number, default: 10 })
+  tolerance: number;
+
+  @Prop({ type: Number, default: 0 })
+  timestamp: number;
+
+  /**
+   * Subscription FILTERS
+   */
+  @Prop({ default: [] })
+  items: number[];
+
+  @Prop({ type: [RealmConnectedSchema] })
+  realms: MongooseSchema.Types.Array;
+
+  @Prop({ type: [String], default: [] })
+  character_class: MongooseSchema.Types.Array;
+
+  @Prop()
+  days_from: number;
+
+  @Prop()
+  days_to: number;
+
+  @Prop()
+  average_item_level: number;
+
+  @Prop()
+  rio_score: number;
+
+  @Prop()
+  wcl_percentile: number;
+
+  @Prop({ type: String, enum: FACTION })
+  faction: FACTION;
+
+  @Prop({ type: [String] })
+  languages: MongooseSchema.Types.Array;
 }
 
 export const SubscriptionsSchema = SchemaFactory.createForClass(Subscription);

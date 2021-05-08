@@ -19,10 +19,10 @@ export class DiscordService implements OnApplicationBootstrap {
     this.commands = new Discord.Collection();
     this.loadCommands()
     await this.client.login(discordConfig.token);
-    this.test()
+    this.bot()
   }
 
-  test(): void {
+  bot(): void {
     this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`))
     this.client.on('message', async message => {
       if (message.author.bot) return;

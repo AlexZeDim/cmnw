@@ -23,4 +23,4 @@ export {
   GuildSummaryInterface,
 } from './osint.interface';
 export { ItemInterface } from './dma.interface';
-export { DiscordInterface, QuestionInterface, DiscordRoute } from './discord.interface';
+export { DiscordInterface, QuestionInterface, DiscordRoute, RealmConnected } from './discord.interface';

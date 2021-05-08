@@ -17,6 +17,11 @@ export const WELCOME_FIRST_TIME: string = 'Are you ready to get started with sub
 
 export const WELCOME_FAMILIAR: string = 'I saw you already familiar with subscriptions. So what about editing the current one? / Смотрю, ты уже знаком с подписками, как насчет того, что бы отредактировать параметры текущих уведомлений?\n';
 
+export const ERROR_REALM = {
+  [LANG.RU]: 'Похоже что ни один сервер не найден, попробуй ещё раз, только чуть по-другому.',
+  [LANG.EN]: 'Seems like no realms have been found, try again in a different way, please.',
+}
+
 export const QUESTIONS: QuestionInterface[] = [
   {
     id: 1,
@@ -37,10 +42,10 @@ export const QUESTIONS: QuestionInterface[] = [
   {
     id: 2,
     language: LANG.EN,
-    question: 'Must-have-argument! Realms. Where are we going to find? You could name any realms you want via comma on any languageuage you want \n' +
-      'Or you could type languageuage locale group or entire region name and include search on all realms available. Don\'t worry about connected realms, our bot always knows about them and works correctly.\n' +
+    question: 'Must-have-argument! Realms. Where are we going to find? You could name any realms you want via comma on any language you want \n' +
+      'Or you could type language locale group or entire region name and include search on all realms available. Don\'t worry about connected realms, our bot always knows about them and works correctly.\n' +
       'Available examples, for realm or realms: \`silvermoon\`, \`tarren mill, kazzak\` \n' +
-      'For languageuage locale group(s): \`en_GB\`, \`en_GB, de_DE\` \n' +
+      'For language locale group(s): \`en_GB\`, \`en_GB, de_DE\` \n' +
       'Within the entire region: \`Europe\`'
   },
   {

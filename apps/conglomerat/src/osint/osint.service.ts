@@ -207,10 +207,10 @@ export class OsintService {
   }
 
   async subscribeDiscord(input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return this.SubscriptionModel.findOneAndReplace({
+    return this.SubscriptionModel.findOneAndUpdate({
       discord_id: input.discord_id,
       channel_id: input.channel_id
-    }, input as any, { new: true }).lean();
+    }, input as unknown, { upsert: true, new: true, setDefaultsOnInsert: true }).lean();
   }
 
   async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<void> {

@@ -49,9 +49,9 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>, realm:
     } else {
       embed.addField('Transfer', `:x:`, true);
     }
-    if (character.raid_progress) {
-      Object.entries(character.raid_progress).map(([key, value]) => {
-        embed.addField(capitalize(key), value, true);
+    if (character.raid_progress.length) {
+      character.raid_progress.map((raid) => {
+        embed.addField(capitalize(raid._id), raid.progress, true);
       })
     }
     return embed;

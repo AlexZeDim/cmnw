@@ -72,6 +72,6 @@ export class QueueModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(this.router)
-      .forRoutes('/admin/queues');
+      .forRoutes('/queues');
   }
 }

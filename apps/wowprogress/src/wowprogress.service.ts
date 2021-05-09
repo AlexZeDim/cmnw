@@ -164,7 +164,8 @@ export class WowprogressService {
        * Revoke characters status from old NOW => to PREV
        */
       const charactersRevoked = await this.CharacterModel.updateMany({ looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } }, { looking_for_guild: LFG.PREV });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} and ${LFG.NEW} revoked from ${charactersRevoked.nModified} characters`);
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} and ${LFG.NEW} revoked from ${charactersRevoked.nModified} characters to ${LFG.PREV}`);
+      const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
@@ -216,7 +217,6 @@ export class WowprogressService {
       })
 
       await delay(120);
-      const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
       const charactersNow = await this.CharacterModel.find({ looking_for_guild: LFG.NOW });
       this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${wpCharacters.length} PREV: ${charactersPrev.length}`);
 

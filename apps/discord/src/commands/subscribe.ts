@@ -61,6 +61,7 @@ module.exports = {
           });
           const removed = sayRemove(config.discord_name, config.channel_name, config.language)
           await message.channel.send(removed);
+          return;
         }
       }
 

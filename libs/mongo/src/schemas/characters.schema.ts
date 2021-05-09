@@ -1,4 +1,4 @@
-import { Document, Schema as MongooseSchema } from "mongoose";
+import { Document, Schema as MongooseSchema, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LFG } from '@app/core';
 /**
@@ -164,13 +164,13 @@ export class Character extends Document {
   personality: string;
 
   @Prop({ type: [MountsSchema] })
-  mounts: MongooseSchema.Types.Array;
+  mounts: Types.Array<Mount>;
 
   @Prop({ type: [PetsSchema] })
-  pets:  MongooseSchema.Types.Array;
+  pets:  Types.Array<Pet>;
 
   @Prop({ _id: false, type: [ProfessionSchema] })
-  professions: MongooseSchema.Types.Array;
+  professions: Types.Array<Profession>;
 
   @Prop({ index: true, type: String, enum: LFG })
   looking_for_guild: string;
@@ -182,7 +182,7 @@ export class Character extends Document {
   wcl_percentile: number;
 
   @Prop({ type: [RaidProgressSchema] })
-  raid_progress: MongooseSchema.Types.Array;
+  raid_progress: Types.Array<RaidProgress>;
 
   @Prop()
   battle_tag: string;

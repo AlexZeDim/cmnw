@@ -122,6 +122,7 @@ module.exports = {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             data: qs.stringify(subscription),
           });
+          console.log(data);
           const ok = collectionSuccess(subscription, !!discord);
           await message.channel.send(ok);
         } else {

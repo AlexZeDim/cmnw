@@ -58,19 +58,12 @@ export class QueueModule {
 
   ) {
     const { router } = createBullBoard([
-      // @ts-ignore
       new BullMQAdapter(this.auctions, { readOnlyMode: false }),
-      // @ts-ignore
       new BullMQAdapter(this.characters, { readOnlyMode: false }),
-      // @ts-ignore
       new BullMQAdapter(this.guilds, { readOnlyMode: false }),
-      // @ts-ignore
       new BullMQAdapter(this.realms, { readOnlyMode: false }),
-      // @ts-ignore
       new BullMQAdapter(this.items, { readOnlyMode: false }),
-      // @ts-ignore
       new BullMQAdapter(this.pricing, { readOnlyMode: false }),
-      // @ts-ignore
       new BullMQAdapter(this.valuations, { readOnlyMode: false }),
     ])
     this.router = router;

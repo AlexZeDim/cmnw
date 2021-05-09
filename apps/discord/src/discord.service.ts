@@ -106,8 +106,10 @@ export class DiscordService implements OnApplicationBootstrap {
            */
           if (!channel || channel.type !== "text") {
             if (subscription.tolerance > 100) {
+              this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance} remove: true`);
               await this.SubscriptionModel.findOneAndRemove({ discord_id: subscription.disconnect, channel_id: subscription.channel_id });
             } else {
+              this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance}+1`);
               await this.SubscriptionModel.findOneAndUpdate(
                 { discord_id: subscription.disconnect, channel_id: subscription.channel_id },
                 { tolerance: subscription.tolerance + 1 }
@@ -119,14 +121,16 @@ export class DiscordService implements OnApplicationBootstrap {
            * Recruiting
            */
           if (subscription.type === NOTIFICATIONS.RECRUITING) {
+            this.logger.log(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) recruiting`);
             const query = { looking_for_guild: LFG.NEW };
             if (subscription.faction) Object.assign(query, { faction: subscription.faction });
             if (subscription.average_item_level) Object.assign(query, { average_item_level: { '$gte': subscription.average_item_level } });
             if (subscription.rio_score) Object.assign(query, { rio_score: { '$gte': subscription.rio_score } });
             if (subscription.days_from) Object.assign(query, { days_from: { '$gte': subscription.days_from } });
             if (subscription.days_to) Object.assign(query, { days_to: { '$lte': subscription.days_to } });
+            if (subscription.character_class.length) Object.assign(query, { character_class : { '$in': subscription.character_class } });
             if (subscription.wcl_percentile) Object.assign(query, { wcl_percentile: { '$gte': subscription.wcl_percentile } });
-            if (subscription.languages) Object.assign(query, { languages : { '$in': subscription.languages } });
+            if (subscription.languages.length) Object.assign(query, { languages : { '$in': subscription.languages } });
             subscription.realms.map(async realm => {
               Object.assign(query, { realm: realm.slug });
               const characters = await this.CharacterModel.find(query).lean();

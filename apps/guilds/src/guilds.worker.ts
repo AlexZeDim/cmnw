@@ -237,7 +237,6 @@ export class GuildsWorker {
                 region: BNet.region,
                 clientId: BNet.clientId,
                 clientSecret: BNet.clientSecret,
-                forceUpdate: 2,
                 accessToken: BNet.accessToken,
                 iteration: iteration,
                 guildRank: true,

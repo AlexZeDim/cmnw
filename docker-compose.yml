@@ -30,8 +30,8 @@ services:
 
   commonwealth:
     build: ./
-    image: conglomerat
-    container_name: commonwealth
+    image: commonwealth
+    container_name: conglomerat
     restart: always
     links:
       - mongo
@@ -49,7 +49,7 @@ services:
 
   keys:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: keys
     restart: always
     links:
@@ -66,7 +66,7 @@ services:
 
   discord:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: discord
     restart: always
     links:
@@ -83,7 +83,7 @@ services:
 
   realms:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: realms
     links:
@@ -100,7 +100,7 @@ services:
 
   characters:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: characters
     links:
@@ -117,7 +117,7 @@ services:
 
   guilds:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: guilds
     links:
@@ -134,7 +134,7 @@ services:
 
   auctions:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: auctions
     links:
@@ -151,7 +151,7 @@ services:
 
   gold:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: golds
     links:
@@ -168,7 +168,7 @@ services:
 
   wowprogress:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: wowprogress
     links:
@@ -185,7 +185,7 @@ services:
 
   warcraftlogs:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: warcraftlogs
     links:
@@ -202,7 +202,7 @@ services:
 
   items:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: items
     links:
@@ -219,7 +219,7 @@ services:
 
   pricing:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: pricing
     links:
@@ -236,7 +236,7 @@ services:
 
   wowtoken:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: wowtoken
     links:

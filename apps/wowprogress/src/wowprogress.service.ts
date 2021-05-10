@@ -222,11 +222,12 @@ export class WowprogressService {
       this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${wpCharacters.length} PREV: ${charactersPrev.length}`);
 
       const charactersNew = differenceBy(charactersNow, charactersPrev, '_id');
+      const charactersLeave = differenceBy(charactersPrev, charactersNow, '_id');
+      const charactersUnset = await this.CharacterModel.updateMany({ _id: { $in: charactersLeave.map(c => c._id) } }, { $unset: { looking_for_guild: 1 } });
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.nModified} characters`);
+
       this.logger.debug(`indexLookingForGuild: NEW: ${charactersNew.length}`);
       await this.CharacterModel.updateMany({ _id: { $in: charactersNew.map(c => c._id) } }, { looking_for_guild: LFG.NEW });
-
-      const charactersUnset = await this.CharacterModel.updateMany({ looking_for_guild: LFG.PREV }, { $unset: { looking_for_guild: 1 } });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.nModified} characters`);
     } catch (e) {
       this.logger.error(`indexLookingForGuild: ${e}`)
     }

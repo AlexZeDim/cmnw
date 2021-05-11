@@ -164,6 +164,7 @@ export class WowprogressService {
        * Revoke characters status from old NOW => to PREV
        */
       await delay(60);
+      // TODO make it as array
       const charactersRevoked = await this.CharacterModel.updateMany({ looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } }, { looking_for_guild: LFG.PREV });
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} and ${LFG.NEW} revoked from ${charactersRevoked.nModified} characters to ${LFG.PREV}`);
       const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
@@ -226,8 +227,8 @@ export class WowprogressService {
       const charactersUnset = await this.CharacterModel.updateMany({ _id: { $in: charactersLeave.map(c => c._id) } }, { $unset: { looking_for_guild: 1 } });
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.nModified} characters`);
 
-      this.logger.debug(`indexLookingForGuild: NEW: ${charactersNew.length}`);
       await this.CharacterModel.updateMany({ _id: { $in: charactersNew.map(c => c._id) } }, { looking_for_guild: LFG.NEW });
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NEW} set to ${charactersNew.length} characters`);
     } catch (e) {
       this.logger.error(`indexLookingForGuild: ${e}`)
     }

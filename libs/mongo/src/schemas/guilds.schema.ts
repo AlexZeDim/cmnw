@@ -1,4 +1,4 @@
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
@@ -39,7 +39,7 @@ export class Guild extends Document {
   faction: string;
 
   @Prop({ type: [GuildMembersSchema] })
-  members: MongooseSchema.Types.Array
+  members: Types.Array<GuildMember>
 
   @Prop()
   achievement_points: number;

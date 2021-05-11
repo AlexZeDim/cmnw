@@ -29,13 +29,13 @@ export class CharactersService {
       const jobs: number = await this.queue.count();
       if (jobs > 1000000) {
         this.logger.error(`indexCharacters: ${jobs} jobs found`);
-        return
+        return;
       }
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
         this.logger.error(`indexCharacters: ${keys.length} keys found`);
-        return
+        return;
       }
 
       let i: number = 0;
@@ -72,7 +72,7 @@ export class CharactersService {
           i++;
           iteration++;
           if (i >= keys.length) i = 0;
-        })
+        }, { parallel: 50, batchSize: 50 })
     } catch (e) {
       this.logger.error(`indexCharacters: ${e}`)
     }

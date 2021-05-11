@@ -61,7 +61,7 @@ export class CharactersService {
               updated_by: OSINT_SOURCE.INDEXCHARACTER,
               guildRank: false,
               createOnlyUnique: false,
-              forceUpdate: 86400000,
+              forceUpdate: 43200000,
               iteration: iteration,
             },
             {

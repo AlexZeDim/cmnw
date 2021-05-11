@@ -15,6 +15,7 @@ import scraper from 'table-scraper';
 import { union, differenceBy } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { delay } from '@app/core/utils/converters';
+import { nanoid } from 'nanoid'
 
 @Injectable()
 export class WowprogressService {
@@ -164,7 +165,6 @@ export class WowprogressService {
        * Revoke characters status from old NOW => to PREV
        */
       await delay(60);
-      // TODO make it as array
       const charactersRevoked = await this.CharacterModel.updateMany({ looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } }, { looking_for_guild: LFG.PREV });
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} and ${LFG.NEW} revoked from ${charactersRevoked.nModified} characters to ${LFG.PREV}`);
       const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
@@ -189,7 +189,7 @@ export class WowprogressService {
           const _id = toSlug(`${name}@${realm}`);
           this.logger.debug(`Added to queue: ${_id}`)
           await this.queueCharacters.add(
-            _id,
+            `${_id}:${nanoid(10)}`,
             {
               _id,
               name,

@@ -187,9 +187,10 @@ export class WowprogressService {
           const name = character.Character.trim();
           const realm = character.Realm.split('-')[1].trim();
           const _id = toSlug(`${name}@${realm}`);
+          const jobId = `${_id}:${nanoid(10)}`;
           this.logger.debug(`Added to queue: ${_id}`)
           await this.queueCharacters.add(
-            `${_id}:${nanoid(10)}`,
+            jobId,
             {
               _id,
               name,
@@ -209,7 +210,7 @@ export class WowprogressService {
               forceUpdate: 3600000,
               iteration: i,
             }, {
-              jobId: `${_id}:${nanoid(10)}`,
+              jobId,
               priority: 2,
             }
           )

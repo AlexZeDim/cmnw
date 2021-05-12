@@ -209,7 +209,7 @@ export class WowprogressService {
               forceUpdate: 3600000,
               iteration: i,
             }, {
-              jobId: _id,
+              jobId: `${_id}:${nanoid(10)}`,
               priority: 2,
             }
           )

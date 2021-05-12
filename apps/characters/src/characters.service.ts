@@ -41,7 +41,7 @@ export class CharactersService {
       let i: number = 0;
       let iteration: number = 0;
 
-      await this.CharacterModel
+      this.CharacterModel
         .find()
         .sort({ updatedAt: 1 })
         .limit(1000000)
@@ -66,13 +66,14 @@ export class CharactersService {
             },
             {
               jobId: character._id,
-              priority: 5
-            }
+              priority: 5,
+            },
           );
           i++;
           iteration++;
-          if (i >= keys.length) i = 0;
-        }, { parallel: 50, batchSize: 50 })
+          if (i >= keys.length)
+            i = 0;
+        }, { parallel: 50, batchSize: 50 });
     } catch (e) {
       this.logger.error(`indexCharacters: ${e}`)
     }

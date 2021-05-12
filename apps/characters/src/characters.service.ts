@@ -41,7 +41,7 @@ export class CharactersService {
       let i: number = 0;
       let iteration: number = 0;
 
-      this.CharacterModel
+      await this.CharacterModel
         .find()
         .sort({ updatedAt: 1 })
         .limit(1000000)
@@ -71,9 +71,8 @@ export class CharactersService {
           );
           i++;
           iteration++;
-          if (i >= keys.length)
-            i = 0;
-        }, { parallel: 50, batchSize: 50 });
+          if (i >= keys.length) i = 0;
+        }, { parallel: 50 });
     } catch (e) {
       this.logger.error(`indexCharacters: ${e}`)
     }

@@ -27,7 +27,7 @@ export class CharactersService {
   private async indexCharacters(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
-      if (jobs > 1000000) {
+      if (jobs > 150000) {
         this.logger.error(`indexCharacters: ${jobs} jobs found`);
         return;
       }
@@ -44,7 +44,7 @@ export class CharactersService {
       await this.CharacterModel
         .find()
         .sort({ updatedAt: 1 })
-        .limit(1000000)
+        .limit(250000)
         .cursor()
         .eachAsync(async (character: Character) => {
           const [name, realm] = character._id.split('@');

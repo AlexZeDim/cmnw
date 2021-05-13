@@ -6,7 +6,7 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import Xray from 'x-ray';
-import { charactersQueue, GLOBAL_KEY, LFG, OSINT_SOURCE, toSlug } from '@app/core';
+import { charactersQueue, GLOBAL_KEY, LFG, OSINT_SOURCE, randomInt, toSlug } from '@app/core';
 import fs from 'fs-extra';
 import axios from 'axios';
 import path from "path";
@@ -188,6 +188,7 @@ export class WowprogressService {
           const realm = character.Realm.split('-')[1].trim();
           const _id = toSlug(`${name}@${realm}`);
           const jobId = `${_id}:${nanoid(10)}`;
+          const forceUpdate = randomInt(3600000, 7200000)
           this.logger.debug(`Added to queue: ${_id}`)
           await this.queueCharacters.add(
             jobId,
@@ -207,7 +208,7 @@ export class WowprogressService {
               updateRIO: true,
               updateWCL: true,
               updateWP: true,
-              forceUpdate: 3600000,
+              forceUpdate,
               iteration: i,
             }, {
               jobId,

@@ -57,3 +57,5 @@ export const delay = (seconds: number = 5): Promise<void> => {
 export const enumKeys = <O extends object, K extends keyof O = keyof O>(obj: O): K[] => {
   return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
 }
+
+export const randomInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1) + min)

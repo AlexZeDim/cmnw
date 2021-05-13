@@ -27,7 +27,7 @@ export class CharactersService {
   private async indexCharacters(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
-      if (jobs > 150000) {
+      if (jobs > 10000) {
         this.logger.error(`indexCharacters: ${jobs} jobs found`);
         return;
       }

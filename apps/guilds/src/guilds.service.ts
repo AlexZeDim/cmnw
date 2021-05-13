@@ -31,7 +31,7 @@ export class GuildsService {
   async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
-      if (jobs > 10000) {
+      if (jobs > 1000) {
         this.logger.error(`indexGuilds: ${jobs} jobs found`);
         return
       }
@@ -48,7 +48,7 @@ export class GuildsService {
       await this.GuildModel
         .find()
         .sort({ updatedAt: 1 })
-        .limit(10000)
+        .limit(50000)
         .cursor()
         .eachAsync(async (guild: Guild) => {
           await this.queue.add(

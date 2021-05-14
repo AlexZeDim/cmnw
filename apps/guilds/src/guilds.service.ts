@@ -27,7 +27,7 @@ export class GuildsService {
     private readonly queue: Queue,
   ) { }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_8_HOURS)
   async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs: number = await this.queue.count();
@@ -48,7 +48,7 @@ export class GuildsService {
       await this.GuildModel
         .find()
         .sort({ updatedAt: 1 })
-        .limit(50000)
+        .limit(10000)
         .cursor()
         .eachAsync(async (guild: Guild) => {
           await this.queue.add(

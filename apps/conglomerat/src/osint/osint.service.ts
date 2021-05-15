@@ -148,63 +148,61 @@ export class OsintService {
     }
 
     const _id: string = `${name_slug}@${realm.slug}`;
-    const guild = await this.GuildModel.findById(_id);
-    console.log(_id);
-    const [g] = await this.GuildModel.aggregate([
+    const [guild] = await this.GuildModel.aggregate([
       {
         $match: {
           _id: `${name_slug}@${realm.slug}`
         }
       },
-      {
+      /*{
         $project: {
           _id: 1,
           members: { $slice: ['$members', 3] }
         }
-      },
+      },*/
       {
         $lookup: {
           from: "characters",
-          let: {
-            members: "$members"
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $in: [
-                    "$_id",
-                    "$$members._id"
-                  ]
-                }
-              }
-            },
-            {
-              $addFields: {
-                guild_rank: {
-                  $reduce: {
-                    input: "$$members",
-                    initialValue: null,
-                    in: {
-                      $cond: [
-                        {
-                          $eq: [
-                            "$$this._id",
-                            "$_id"
-                          ]
-                        },
-                        "$$this.rank",
-                        "$$value"
-                      ]
-                    }
+          localField: "members._id",
+          foreignField: "_id",
+          as: "guild_members"
+        }
+      },
+      {
+        $project: {
+          "guild_members.pets": 0,
+          "guild_members.professions": 0,
+          "guild_members.mounts": 0,
+          "guild_members.languages": 0,
+          "guild_members.raid_progress": 0,
+        }
+      },
+      {
+        $project: {
+          "members": {
+            $map: {
+              input: "$members",
+              as: "member",
+              in: {
+                $mergeObjects: [
+                  "$$member",
+                  {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$guild_members",
+                          cond: { $eq: ["$$this._id", "$$member._id"] }
+                        }
+                      },
+                      0
+                    ]
                   }
-                }
+                ]
               }
             }
-          ],
-          as: "members"
-        },
-      }
+          }
+        }
+      },
       /*{
         $lookup: {
           from: 'characters',
@@ -213,14 +211,7 @@ export class OsintService {
           as: 'members',
         },
       },*/
-      /*{
-        $project: {
-          members: 1,
-          guild_members: 1
-        }
-      }*/
     ]).allowDiskUse(true);
-    console.log(g);
 
     if (!guild) {
       const key = await this.KeyModel.findOne({ tags: this.clearance });

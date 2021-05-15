@@ -79,7 +79,7 @@ export class Character extends Document {
   @Prop({ required: true })
   realm_name: string;
 
-  @Prop({ required: true })
+  @Prop({  index: true, required: true })
   realm: string;
 
   @Prop()

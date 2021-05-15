@@ -129,7 +129,7 @@ export class OsintService {
       throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
     }
 
-    return this.LogModel.find({ root_id: `${name_slug}@${realm.slug}` }).limit(250).lean();
+    return this.LogModel.find({ root_id: `${name_slug}@${realm.slug}`, event: 'character' }).limit(250).lean();
   }
 
   async getGuild(input: GuildIdDto): Promise<LeanDocument<Guild>> {
@@ -151,15 +151,9 @@ export class OsintService {
     const [guild] = await this.GuildModel.aggregate([
       {
         $match: {
-          _id: `${name_slug}@${realm.slug}`
+          _id: _id
         }
       },
-      /*{
-        $project: {
-          _id: 1,
-          members: { $slice: ['$members', 3] }
-        }
-      },*/
       {
         $lookup: {
           from: "characters",
@@ -203,14 +197,6 @@ export class OsintService {
           }
         }
       },
-      /*{
-        $lookup: {
-          from: 'characters',
-          localField: 'members._id',
-          foreignField: '_id',
-          as: 'members',
-        },
-      },*/
     ]).allowDiskUse(true);
 
     if (!guild) {
@@ -255,7 +241,7 @@ export class OsintService {
       throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
     }
 
-    return this.LogModel.find({ root_id: `${name_slug}@${realm.slug}` }).limit(250).lean();
+    return this.LogModel.find({ root_id: `${name_slug}@${realm.slug}`, event: 'guild' }).limit(250).lean();
   }
 
   async getRealmPopulation(_id: string): Promise<string[]> {

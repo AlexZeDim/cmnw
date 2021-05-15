@@ -172,7 +172,7 @@ export class OsintService {
         }
       },
       {
-        $project: {
+        $addFields: {
           "members": {
             $map: {
               input: "$members",

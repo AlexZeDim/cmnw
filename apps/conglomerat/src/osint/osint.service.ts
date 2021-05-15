@@ -134,6 +134,7 @@ export class OsintService {
 
   async getGuild(input: GuildIdDto): Promise<LeanDocument<Guild>> {
     const [ name_slug, realm_slug ] = input._id.split('@');
+
     const realm = await this.RealmModel
       .findOne(
         { $text: { $search: realm_slug } },
@@ -148,6 +149,78 @@ export class OsintService {
 
     const _id: string = `${name_slug}@${realm.slug}`;
     const guild = await this.GuildModel.findById(_id);
+    console.log(_id);
+    const [g] = await this.GuildModel.aggregate([
+      {
+        $match: {
+          _id: `${name_slug}@${realm.slug}`
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          members: { $slice: ['$members', 3] }
+        }
+      },
+      {
+        $lookup: {
+          from: "characters",
+          let: {
+            members: "$members"
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: [
+                    "$_id",
+                    "$$members._id"
+                  ]
+                }
+              }
+            },
+            {
+              $addFields: {
+                guild_rank: {
+                  $reduce: {
+                    input: "$$members",
+                    initialValue: null,
+                    in: {
+                      $cond: [
+                        {
+                          $eq: [
+                            "$$this._id",
+                            "$_id"
+                          ]
+                        },
+                        "$$this.rank",
+                        "$$value"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          as: "members"
+        },
+      }
+      /*{
+        $lookup: {
+          from: 'characters',
+          localField: 'members._id',
+          foreignField: '_id',
+          as: 'members',
+        },
+      },*/
+      /*{
+        $project: {
+          members: 1,
+          guild_members: 1
+        }
+      }*/
+    ]).allowDiskUse(true);
+    console.log(g);
 
     if (!guild) {
       const key = await this.KeyModel.findOne({ tags: this.clearance });

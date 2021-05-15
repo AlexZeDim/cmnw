@@ -3,10 +3,10 @@ import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Job, Queue } from 'bullmq';
+import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Job } from 'bullmq';
 import {
-  capitalize, charactersQueue,
+  capitalize,
   FACTION,
   GuildInterface,
   guildsQueue,
@@ -34,8 +34,6 @@ export class GuildsWorker {
     private readonly CharacterModel: Model<Character>,
     @InjectModel(Log.name)
     private readonly LogModel: Model<Log>,
-    @BullQueueInject(charactersQueue.name)
-    private readonly queue: Queue,
   ) { }
 
   @BullWorkerProcess(guildsQueue.workerOptions)
@@ -218,35 +216,20 @@ export class GuildsWorker {
           const character_exist = await this.CharacterModel.findById(_id);
 
           if (character_exist) {
-            await this.queue.add(
-              _id,
-              {
-                id: member.character.id,
-                name: member.character.name,
-                realm: guild.realm,
-                realm_id: guild.realm_id,
-                realm_name: guild.realm_name,
-                guild_id: `${guild_slug}@${guild.realm}`,
-                guild: guild.name,
-                guild_guid: guild.id,
-                character_class,
-                faction: guild.faction,
-                level: member.character.level ? member.character.level : undefined,
-                last_modified: guild.last_modified,
-                updated_by: 'OSINT-roster',
-                region: BNet.region,
-                clientId: BNet.clientId,
-                clientSecret: BNet.clientSecret,
-                accessToken: BNet.accessToken,
-                iteration: iteration,
-                guildRank: true,
-                createOnlyUnique: true
-              },
-              {
-                jobId: _id,
-                priority: 3
-              }
-            );
+            character_exist.updated_by = OSINT_SOURCE.ROSTERGUILD;
+            if (guild.last_modified.getTime() > character_exist.last_modified.getTime()) {
+              character_exist.guild_id = guild._id;
+              character_exist.guild = guild.name;
+              character_exist.guild_guid = guild.id;
+              character_exist.guild_rank = member.rank;
+              character_exist.faction = guild.faction;
+              character_exist.level = member.character.level ? member.character.level : undefined;
+              character_exist.character_class = character_class;
+              character_exist.last_modified = guild.last_modified;
+            } else if (guild._id === character_exist.guild_id) {
+              character_exist.guild_rank = member.rank;
+            }
+            await character_exist.save();
           }
 
           if (!character_exist) {
@@ -398,7 +381,7 @@ export class GuildsWorker {
       await Promise.all(
         leaves.map(async guild_member => {
           // More operative way to update character on leave
-          await this.CharacterModel.findByIdAndUpdate(guild_member._id, { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } });
+          await this.CharacterModel.findOneAndUpdate({ _id: guild_member._id, guild_id: original._id }, { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } });
           block.push(
             {
               root_id: updated._id,

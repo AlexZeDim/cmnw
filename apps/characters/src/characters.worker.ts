@@ -80,33 +80,6 @@ export class CharactersWorker {
       await job.updateProgress(10);
 
       if (character) {
-        // if character exists & guildRank true
-        if (args.guildRank) {
-          if (args.guild) {
-            // inherit rank from args, if guild is the same
-            if (character.guild === args.guild) {
-              character.guild_rank = args.guild_rank
-            }
-            // if args has guild data, but character doesn't
-            if (!character.guild || character.guild !== args.guild) {
-              // and last_modified has args & character
-              if (character.last_modified && args.last_modified) {
-                // if timestamp from args > then character
-                if (args.last_modified.getTime() > character.last_modified.getTime()) {
-                  // inherit guild data
-                  character.guild = args.guild
-                  if (args.guild_guid) character.guild_guid = args.guild_guid;
-                  if (args.guild_id) character.guild_id = args.guild_id;
-                  if (args.guild_rank) character.guild_rank = args.guild_rank;
-                }
-              }
-            }
-            this.logger.log(`G:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},guildRank: ${args.guildRank}`);
-            await character.save()
-            await job.updateProgress(12);
-          }
-        }
-
         let forceUpdate: number = 86400000;
         if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
         if (args.looking_for_guild) {
@@ -245,6 +218,15 @@ export class CharactersWorker {
        * only if original
        */
       if (!character.isNew) {
+        if (original.guild_id !== updated.guild_id) {
+          // on leave check timestamp and unset
+          if (!updated.guild_id && original.last_modified?.getTime() < updated.last_modified?.getTime()) {
+            character.guild_id = undefined;
+            character.guild = undefined;
+            character.guild_rank = undefined;
+            character.guild_guid = undefined;
+          }
+        }
         await this.diffs(original, updated);
         await job.updateProgress(90);
       }

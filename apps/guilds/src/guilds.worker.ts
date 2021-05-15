@@ -5,6 +5,8 @@ import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { Job } from 'bullmq';
+import { from } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import {
   capitalize,
   FACTION,
@@ -206,62 +208,69 @@ export class GuildsWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });
-      let iteration: number = 0
-      for (const member of members) {
-        if ('character' in member && 'rank' in member) {
-          iteration += 1;
-          const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
-          const character_class = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
+      let iteration: number = 0;
 
-          const character_exist = await this.CharacterModel.findById(_id);
+      await from(members).pipe(
+        mergeMap(async (member: any) => {
+          try {
+            if ('character' in member && 'rank' in member) {
+              iteration += 1;
+              const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
+              const character_class = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
 
-          if (character_exist) {
-            character_exist.updated_by = OSINT_SOURCE.ROSTERGUILD;
-            if (guild.last_modified.getTime() > character_exist.last_modified.getTime()) {
-              character_exist.guild_id = guild._id;
-              character_exist.guild = guild.name;
-              character_exist.guild_guid = guild.id;
-              character_exist.guild_rank = member.rank;
-              character_exist.faction = guild.faction;
-              character_exist.level = member.character.level ? member.character.level : undefined;
-              character_exist.character_class = character_class;
-              character_exist.last_modified = guild.last_modified;
-            } else if (guild._id === character_exist.guild_id) {
-              character_exist.guild_rank = member.rank;
+              const character_exist = await this.CharacterModel.findById(_id);
+
+              if (character_exist) {
+                character_exist.updated_by = OSINT_SOURCE.ROSTERGUILD;
+                if (guild.last_modified.getTime() > character_exist.last_modified.getTime()) {
+                  character_exist.guild_id = guild._id;
+                  character_exist.guild = guild.name;
+                  character_exist.guild_guid = guild.id;
+                  character_exist.guild_rank = member.rank;
+                  character_exist.faction = guild.faction;
+                  character_exist.level = member.character.level ? member.character.level : undefined;
+                  character_exist.character_class = character_class;
+                  character_exist.last_modified = guild.last_modified;
+                } else if (guild._id === character_exist.guild_id) {
+                  character_exist.guild_rank = member.rank;
+                }
+                await character_exist.save();
+              }
+
+              if (!character_exist) {
+                const character = new this.CharacterModel({
+                  _id,
+                  id: member.character.id,
+                  name: member.character.name,
+                  realm: guild.realm,
+                  realm_id: guild.realm_id,
+                  realm_name: guild.realm_name,
+                  guild_id: `${guild_slug}@${guild.realm}`,
+                  guild: guild.name,
+                  guild_rank: member.rank,
+                  guild_guid: guild.id,
+                  character_class,
+                  faction: guild.faction,
+                  level: member.character.level ? member.character.level : undefined,
+                  last_modified: guild.last_modified,
+                  updated_by: OSINT_SOURCE.ROSTERGUILD,
+                  created_by: OSINT_SOURCE.ROSTERGUILD,
+                })
+
+                characters.push(character)
+              }
+
+              roster.members.push({
+                _id: _id,
+                id: member.character.id,
+                rank: member.rank,
+              });
             }
-            await character_exist.save();
+          } catch (e) {
+            this.logger.error(`member: ${member} from ${guild._id}:${e}`)
           }
-
-          if (!character_exist) {
-            const character = new this.CharacterModel({
-              _id,
-              id: member.character.id,
-              name: member.character.name,
-              realm: guild.realm,
-              realm_id: guild.realm_id,
-              realm_name: guild.realm_name,
-              guild_id: `${guild_slug}@${guild.realm}`,
-              guild: guild.name,
-              guild_rank: member.rank,
-              guild_guid: guild.id,
-              character_class,
-              faction: guild.faction,
-              level: member.character.level ? member.character.level : undefined,
-              last_modified: guild.last_modified,
-              updated_by: OSINT_SOURCE.ROSTERGUILD,
-              created_by: OSINT_SOURCE.ROSTERGUILD,
-            })
-
-            characters.push(character)
-          }
-
-          roster.members.push({
-            _id: _id,
-            id: member.character.id,
-            rank: member.rank,
-          });
-        }
-      }
+        }, 20)
+      ).toPromise();
 
       await this.CharacterModel.insertMany(characters, { rawResult: false })
 

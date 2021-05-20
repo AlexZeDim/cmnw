@@ -5,6 +5,7 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { OsintModule } from './osint/osint.module';
 import { DmaModule } from './dma/dma.module';
 import { QueueModule } from './queue/queue.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { QueueModule } from './queue/queue.module';
     }),
     OsintModule,
     DmaModule,
-    QueueModule
+    AuthModule,
+    QueueModule,
   ],
   controllers: [],
   providers: [],

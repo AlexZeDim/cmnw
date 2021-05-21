@@ -1,6 +1,7 @@
-import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @ApiTags('auth')
@@ -11,10 +12,13 @@ export class AuthController {
   );
   constructor(
     private readonly authService: AuthService
-  ) {}
+  ) {
 
-  @Get('/test')
-  async auth(@Query() input: string): Promise<string> {
-    return await this.authService.test(input)
+  }
+
+  @Get('/discord')
+  @UseGuards(AuthGuard('discord'))
+  async getUserFromDiscordLogin(@Req() req): Promise<any> {
+    return req.user;
   }
 }

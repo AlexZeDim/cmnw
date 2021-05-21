@@ -1,17 +1,19 @@
-import { Document } from "mongoose";
+import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ALIAS_KEY } from '@app/core';
 
 @Schema()
-class Alias {
-  @Prop({ type: String, enum: ALIAS_KEY })
-  key: string;
+class Alias extends Document {
+  @Prop()
+  _id: string;
 
-  @Prop({ type: String })
-  value: string;
+  @Prop({ type: String, enum: ALIAS_KEY })
+  type: string;
 }
 
-@Schema()
+export const AliasSchema = SchemaFactory.createForClass(Alias);
+
+@Schema({ timestamps: true })
 export class Account extends Document {
   @Prop({ type: String, required: true, default: 'Anonymous' })
   cryptonym: string;
@@ -19,8 +21,8 @@ export class Account extends Document {
   @Prop({ type: String })
   tags: string[];
 
-  @Prop({ _id: false })
-  alias: Alias[]
+  @Prop({ type: [AliasSchema] })
+  alias: Types.Array<Alias>
 }
 
 export const AccountsSchema = SchemaFactory.createForClass(Account);

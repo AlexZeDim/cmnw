@@ -1,5 +1,14 @@
 import { ApiPropertyOptions } from '@nestjs/swagger';
 
+export const SWAGGER_ITEM_CROSS_REALM: ApiPropertyOptions = {
+  name: '_id',
+  description: 'Request item by query (ID, ticker, name) and connected_realm (id, slug, name)',
+  type: String,
+  required: true,
+  nullable: false,
+  example: '171276@gordunni',
+}
+
 export const SWAGGER_ITEM_IDS: ApiPropertyOptions = {
   name: 'items',
   description: 'Array of unique items IDs',

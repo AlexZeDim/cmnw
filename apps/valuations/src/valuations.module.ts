@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import {
   Auction,
-  AuctionsShema,
+  AuctionsSchema,
   Gold,
   GoldsSchema,
   Item,
@@ -34,7 +34,7 @@ import { ValuationsWorker } from './valuations.worker';
       { name: Item.name, schema: ItemsSchema },
       { name: Pricing.name, schema: PricingSchema },
       { name: Realm.name, schema: RealmsSchema },
-      { name: Auction.name, schema: AuctionsShema },
+      { name: Auction.name, schema: AuctionsSchema },
       { name: Valuations.name, schema: ValuationsSchema },
       { name: Gold.name, schema: GoldsSchema },
       { name: Token.name, schema: TokenSchema },

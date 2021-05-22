@@ -1,5 +1,5 @@
 export { RealmsSchema, Realm } from './realms.schema';
-export { AuctionsShema, Auction } from './auctions.schema';
+export { AuctionsSchema, Auction } from './auctions.schema';
 export { CharactersSchema, Character } from './characters.schema';
 export { ValuationsSchema, Valuations } from './valuations.schema';
 export { AccountsSchema, Account } from './accounts.schema';

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
 @ValidatorConstraint({ name: 'AtSignExists', async: true })
@@ -10,7 +10,7 @@ export class AtSignExists implements ValidatorConstraintInterface {
       const [first, second] = param.split('@');
       return !!(first && second);
     } catch (e) {
-      throw new Error('Validation Error')
+      throw new BadRequestException('At Sign Validation Error')
     }
   }
 }

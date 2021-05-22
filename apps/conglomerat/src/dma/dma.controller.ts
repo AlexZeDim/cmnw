@@ -1,4 +1,14 @@
-import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Param,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -10,6 +20,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
+import { ItemCrossRealmDto } from './dto/itemCrossRealmDto';
 
 @ApiTags('dma')
 @Controller('dma')
@@ -29,12 +40,11 @@ export class DmaController {
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item/:id')
-  getItem(@Param('id') id: string): string {
-    // TODO validate
-    const [item, realm] = id.split('@');
-    return this.dmaService.getItem(item, realm);
+  getItem(@Query() input: ItemCrossRealmDto): string {
+    return this.dmaService.getItem(input);
   }
 
   @ApiOperation({ description: 'Returns requested WoWToken' })

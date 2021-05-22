@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { ItemCrossRealmDto } from './dto/itemCrossRealmDto';
+import { ItemCrossRealmDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm } from '@app/mongo';
-import { LeanDocument, Model, Query } from 'mongoose';
+import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE } from '@app/core';
+import { ChartOrderInterface, OrderXrsInterface, RealmChartInterface } from './interface';
 
 @Injectable()
 export class DmaService {
@@ -23,6 +24,7 @@ export class DmaService {
   ) { }
 
   async getItem(input: ItemCrossRealmDto) {
+    // TODO what about realm? Probably here?
     const [ item ] = input._id.split('@');
     if (item) {
       if (isNaN(Number(item))) {
@@ -68,15 +70,67 @@ export class DmaService {
     const is_gold = item._id === 1;
     const is_xrs = connected_realms_id.length > 1;
 
-    if (is_commdty) {
-      if (is_xrs) {
-        if (is_gold) {
+    const yAxis = await this.buildYAxis(item._id, connected_realms_id, is_commdty, is_xrs, is_gold);
+    const xAxis = []; // TODO types?
+    const dataset = [];
 
+    await this.RealmModel
+      .aggregate([
+        {
+          $match: { connected_realm_id: { $in: connected_realms_id } }
+        },
+        {
+          $group: {
+            _id: "$connected_realm_id",
+            realms: { $addToSet: "$name_locale" },
+            connected_realm_id: { $first: "$connected_realm_id" },
+            slug: { $first: "$slug" },
+            auctions: { $first: "$auctions" },
+            golds: { $first: "$golds" },
+            valuations: { $first: "$valuations" }
+          }
         }
+      ])
+      .allowDiskUse(true)
+      .cursor()
+      .exec()
+      .eachAsync(async (realm: RealmChartInterface, i: number) => {
+        if (is_commdty) {
+          if (is_xrs) {
+            /** Build X axis */
+            xAxis[i] = realm.realms.join(', ');
+            /** Build Cluster from Orders */
+            if (is_gold) {
+              const dataset = await this.goldXRS(yAxis, realm.connected_realm_id, realm.golds, i);
+              if (dataset && dataset.length) {
+                dataset.push(...dataset);
+              }
+            }
 
-      }
+            if (!is_gold) {
+              const dataset = await this.commdtyXRS(yAxis, item._id, realm.connected_realm_id, realm.auctions, i);
+              if (dataset && dataset.length) {
+                dataset.push(...dataset);
+              }
+            }
+          }
 
-    }
+          if (!is_xrs) {
+            /** Build Cluster by Timestamp */
+            if (is_gold) {
+              const { chart, timestamps } = await this.goldTS(yAxis, realm.connected_realm_id);
+              if (chart && timestamps) {
+                dataset.push(...chart);
+                xAxis.push(...timestamps);
+              }
+            }
+
+            if (!is_gold) {
+
+            }
+          }
+        }
+      })
 
     // TODO valuations of item from table
 
@@ -134,7 +188,7 @@ export class DmaService {
     }
 
     if (!is_gold && !is_xrs) {
-      /** Find distinct prices for each realm */
+      /** Find distinct prices for one */
       const quotes = await this.AuctionModel.find({ 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'unit_price').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('unit_price');
       return this.priceRange(quotes, blocks);
     }
@@ -142,10 +196,317 @@ export class DmaService {
     return []
   }
 
-  async goldXRS(yAxis: number[], realm: LeanDocument<Realm>) {
-    const chart = [];
-    if (!y_axis.length) return chart
+  async goldXRS(
+    yAxis: number[],
+    connected_realm_id: number,
+    golds: number,
+    xIndex: number
+  ): Promise<ChartOrderInterface[]> {
+    const chart: ChartOrderInterface[] = [];
+    if (!yAxis.length) return chart;
+
+    const orders: OrderXrsInterface[] = await this.GoldModel
+      .aggregate([
+        {
+          $match: {
+            status: 'Online',
+            connected_realm_id: connected_realm_id,
+            last_modified: { $eq: golds },
+          },
+        },
+        {
+          $bucket: {
+            groupBy: '$price',
+            boundaries: yAxis,
+            default: 'Other',
+            output: {
+              orders: { $sum: 1 },
+              value: { $sum: '$quantity' },
+              price: { $first: '$price' },
+              oi: {
+                $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] }] },
+              }
+            }
+          }
+        },
+      ])
+      .allowDiskUse(true);
+
+    await Promise.all(
+      orders.map(order => {
+        const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
+        if (yIndex !== -1) {
+          chart.push({
+            x: xIndex,
+            y: yIndex,
+            orders: order.orders,
+            value: order.value,
+            oi: parseInt(order.oi.toFixed(2), 10)
+          });
+        } else if (order._id === 'Other') {
+          // TODO under/review
+          if (order.price > yAxis[yAxis.length-1]) {
+            chart.push({
+              x: xIndex,
+              y: yAxis.length-1,
+              orders: order.orders,
+              value: order.value,
+              oi: parseInt(order.oi.toFixed(2), 10)
+            });
+          } else {
+            chart.push({
+              x: xIndex,
+              y: 0,
+              orders: order.orders,
+              value: order.value,
+              oi: parseInt(order.oi.toFixed(2), 10)
+            });
+          }
+        }
+      })
+    )
+
+    return chart;
   }
+
+  async commdtyXRS(
+    yAxis: number[],
+    item_id: number,
+    connected_realm_id: number,
+    auctions: number,
+    xIndex: number
+  ): Promise<ChartOrderInterface[]> {
+    const chart: ChartOrderInterface[] = [];
+    if (!yAxis.length) return chart;
+
+    const orders: OrderXrsInterface[] = await this.AuctionModel
+      .aggregate([
+        {
+          $match: {
+            connected_realm_id: connected_realm_id,
+            last_modified: { $eq: auctions },
+            'item.id': item_id
+          },
+        },
+        {
+          $bucket: {
+            groupBy: "$unit_price",
+            boundaries: yAxis,
+            default: "Other",
+            output: {
+              orders: { $sum: 1 },
+              value: { $sum: "$quantity" },
+              price: { $first: '$unit_price' },
+              oi: {
+                $sum: { $multiply: ['$unit_price', '$quantity'] },
+              }
+            }
+          }
+        },
+      ])
+      .allowDiskUse(true);
+
+    await Promise.all(
+      orders.map(order => {
+        const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
+        if (yIndex !== -1) {
+          chart.push({
+            x: xIndex,
+            y: yIndex,
+            orders: order.orders,
+            value: order.value,
+            oi: parseInt(order.oi.toFixed(2), 10)
+          });
+        } else if (order._id === 'Other') {
+          // TODO under/review
+          if (order.price > yAxis[yAxis.length-1]) {
+            chart.push({
+              x: xIndex,
+              y: yAxis.length-1,
+              orders: order.orders,
+              value: order.value,
+              oi: parseInt(order.oi.toFixed(2), 10)
+            });
+          } else {
+            chart.push({
+              x: xIndex,
+              y: 0,
+              orders: order.orders,
+              value: order.value,
+              oi: parseInt(order.oi.toFixed(2), 10)
+            });
+          }
+        }
+      })
+    )
+
+    return chart;
+  }
+
+  async goldTS(yAxis: number[], connected_realm_id: number) {
+    const chart: ChartOrderInterface[] = [];
+    if (!yAxis.length) return { chart };
+    if (!connected_realm_id) return { chart };
+
+    /** Find distinct timestamps for each realm */
+    const timestamps: number[] = await this.AuctionModel
+      .find({ connected_realm_id: connected_realm_id }, 'last_modified')
+      .distinct('last_modified');
+
+    timestamps.sort((a, b) => a - b);
+
+    for (let i: number = 0; i < timestamps.length; i++) {
+      await this.GoldModel
+        .aggregate([
+          {
+            $match: {
+              status: 'Online',
+              connected_realm_id: connected_realm_id,
+              last_modified: timestamps[i]
+            }
+          },
+          {
+            $bucket: {
+              groupBy: '$price',
+              boundaries: yAxis,
+              default: 'Other',
+              output: {
+                orders: { $sum: 1 },
+                value: { $sum: '$quantity' },
+                price: { $first: '$price' },
+                oi: {
+                  $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] } ] },
+                }
+              }
+            }
+          },
+          {
+            $addFields: { xIndex: i }
+          }
+        ])
+        .allowDiskUse(true)
+        .cursor()
+        .exec()
+        .eachAsync((order: OrderXrsInterface) => {
+          const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
+          if (yIndex !== -1) {
+            chart.push({
+              x:  order.xIndex,
+              y: yIndex,
+              orders: order.orders,
+              value: order.value,
+              oi: parseInt(order.oi.toFixed(0), 10)
+            });
+          } else if (order._id === 'Other') {
+            // TODO under/review
+            if (order.price > yAxis[yAxis.length-1]) {
+              chart.push({
+                x: order.xIndex,
+                y: yAxis.length-1,
+                orders: order.orders,
+                value: order.value,
+                oi: parseInt(order.oi.toFixed(0), 10)
+              });
+            } else {
+              chart.push({
+                x: order.xIndex,
+                y: 0,
+                orders: order.orders,
+                value: order.value,
+                oi: parseInt(order.oi.toFixed(0), 10)
+              });
+            }
+          }
+        }, { parallel: 20 })
+    }
+
+    return { chart, timestamps };
+  }
+
+  async commdtyTS(yAxis: number[], item_id: number, connected_realm_id: number) {
+    const chart: ChartOrderInterface[] = [];
+    if (!yAxis.length) return { chart };
+    if (!connected_realm_id) return { chart };
+    /** Find distinct timestamps for each realm */
+    const timestamps: number[] = await this.AuctionModel
+      .find({ 'item.id': item_id, connected_realm_id: connected_realm_id }, 'last_modified')
+      .hint({ 'item.id': -1, connected_realm_id: 1 })
+      .distinct('last_modified');
+
+    timestamps.sort((a, b) => a - b);
+
+    await Promise.all(
+      timestamps.map(
+        async (timestamp, i) => {
+          await this.AuctionModel
+            .aggregate([
+              {
+                $match: {
+                  last_modified: timestamp,
+                  'item.id': item_id,
+                  connected_realm_id: connected_realm_id,
+                }
+              },
+              {
+                $bucket: {
+                  groupBy: '$unit_price',
+                  boundaries: yAxis,
+                  default: 'Other',
+                  output: {
+                    orders: { $sum: 1 },
+                    value: { $sum: '$quantity' },
+                    price: { $first: '$price' },
+                    oi: {
+                      $sum: { $multiply: ['$unit_price', '$quantity'] },
+                    }
+                  }
+                }
+              },
+              {
+                $addFields: { xIndex: i }
+              }
+            ])
+            .allowDiskUse(true)
+            .cursor()
+            .exec()
+            .eachAsync((order: OrderXrsInterface) => {
+              const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
+              if (yIndex !== -1) {
+                chart.push({
+                  x: order.xIndex,
+                  y: yIndex,
+                  orders: order.orders,
+                  value: order.value,
+                  oi: order.oi
+                })
+              } else if (order._id === 'Other') {
+                // TODO under/review
+                if (order.price > yAxis[yAxis.length-1]) {
+                  chart.push({
+                    x: order.xIndex,
+                    y: yAxis.length-1,
+                    orders: order.orders,
+                    value: order.value,
+                    oi: order.oi
+                  });
+                } else {
+                  chart.push({
+                    x: order.xIndex,
+                    y: 0,
+                    orders: order.orders,
+                    value: order.value,
+                    oi: order.oi
+                  });
+                }
+              }
+            }, { parallel: 20 })
+        }
+      )
+    );
+
+    return { chart, timestamps };
+  }
+
 
   getItemQuotes(item: string, realm: string): string {
     // TODO add new dma to queue

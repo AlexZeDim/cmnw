@@ -20,7 +20,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
-import { ItemCrossRealmDto } from './dto/itemCrossRealmDto';
+import { ItemCrossRealmDto } from './dto';
 
 @ApiTags('dma')
 @Controller('dma')

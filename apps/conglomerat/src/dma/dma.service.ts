@@ -6,6 +6,7 @@ import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE } from '@app/core';
 import { ChartOrderInterface, OrderXrsInterface, RealmChartInterface } from './interface';
 import { ItemChartDto } from './dto/item-chart.dto';
+import { groupBy } from 'lodash';
 
 @Injectable()
 export class DmaService {
@@ -63,12 +64,11 @@ export class DmaService {
   async getItemChart(input: ItemCrossRealmDto): Promise<ItemChartDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Test')
+      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
     }
 
     const connected_realms_id = [...new Set(realm.map(({ connected_realm_id }) => connected_realm_id))];
-    // FIXME const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
-    const is_commdty = true;
+    const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
     const is_gold = item._id === 1;
     const is_xrs = connected_realms_id.length > 1;
 
@@ -83,13 +83,13 @@ export class DmaService {
         },
         {
           $group: {
-            _id: "$connected_realm_id",
-            realms: { $addToSet: "$name_locale" },
-            connected_realm_id: { $first: "$connected_realm_id" },
-            slug: { $first: "$slug" },
-            auctions: { $first: "$auctions" },
-            golds: { $first: "$golds" },
-            valuations: { $first: "$valuations" }
+            _id: '$connected_realm_id',
+            realms: { $addToSet: '$name_locale' },
+            connected_realm_id: { $first: '$connected_realm_id' },
+            slug: { $first: '$slug' },
+            auctions: { $first: '$auctions' },
+            golds: { $first: '$golds' },
+            valuations: { $first: '$valuations' }
           }
         }
       ])
@@ -103,16 +103,16 @@ export class DmaService {
             xAxis[i] = realm.realms.join(', ');
             /** Build Cluster from Orders */
             if (is_gold) {
-              const dataset = await this.goldXRS(yAxis, realm.connected_realm_id, realm.golds, i);
-              if (dataset && dataset.length) {
-                dataset.push(...dataset);
+              const orderDataset = await this.goldXRS(yAxis, realm.connected_realm_id, realm.golds, i);
+              if (orderDataset && orderDataset.length) {
+                dataset.push(...orderDataset);
               }
             }
 
             if (!is_gold) {
-              const dataset = await this.commdtyXRS(yAxis, item._id, realm.connected_realm_id, realm.auctions, i);
-              if (dataset && dataset.length) {
-                dataset.push(...dataset);
+              const orderDataset = await this.commdtyXRS(yAxis, item._id, realm.connected_realm_id, realm.auctions, i);
+              if (orderDataset && orderDataset.length) {
+                dataset.push(...orderDataset);
               }
             }
           }
@@ -120,7 +120,7 @@ export class DmaService {
           if (!is_xrs) {
             /** Build Cluster by Timestamp */
             if (is_gold) {
-              const { chart, timestamps } = await this.goldTS(yAxis, realm.connected_realm_id);
+              const { chart, timestamps } = await this.goldIntraDay(yAxis, realm.connected_realm_id);
               if (chart && timestamps) {
                 dataset.push(...chart);
                 xAxis.push(...timestamps);
@@ -128,7 +128,7 @@ export class DmaService {
             }
 
             if (!is_gold) {
-              const { chart, timestamps } = await this.commdtyTS(yAxis, item._id, realm.connected_realm_id);
+              const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, realm.connected_realm_id);
               if (chart && timestamps) {
                 dataset.push(...chart);
                 xAxis.push(...timestamps);
@@ -284,7 +284,7 @@ export class DmaService {
     return this.buildDataset(yAxis, orders, xIndex);
   }
 
-  async goldTS(yAxis: number[], connected_realm_id: number) {
+  async goldIntraDay(yAxis: number[], connected_realm_id: number) {
     const chart: ChartOrderInterface[] = [];
     if (!yAxis.length) return { chart };
     if (!connected_realm_id) return { chart };
@@ -363,7 +363,7 @@ export class DmaService {
     return { chart, timestamps };
   }
 
-  async commdtyTS(yAxis: number[], item_id: number, connected_realm_id: number) {
+  async commdtyIntraDay(yAxis: number[], item_id: number, connected_realm_id: number) {
     const chart: ChartOrderInterface[] = [];
     if (!yAxis.length) return { chart };
     if (!connected_realm_id) return { chart };
@@ -410,7 +410,6 @@ export class DmaService {
             .cursor()
             .exec()
             .eachAsync((order: OrderXrsInterface) => {
-              console.log(order);
               const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
               if (yIndex !== -1) {
                 chart.push({
@@ -486,9 +485,38 @@ export class DmaService {
     return `${item}@${realm}`
   }
 
-  getItemFeed(item: string, realm: string): string {
-    // TODO add new dma to queue
-    return `${item}@${realm}`
+  async getItemFeed(input: ItemCrossRealmDto): Promise<Auction[]> {
+    const { item , realm } = await this.validateTransformDmaQuery(input._id);
+    if (!item || !realm || !realm.length) {
+      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
+    }
+    /**
+     * Item should be not commodity or XRS
+     */
+    const connected_realms_id = groupBy(realm, 'connected_realm_id');
+    const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
+    const is_xrs = Object.keys(connected_realms_id).length > 1;
+
+    const feed: Auction[] = [];
+
+    if (!is_xrs && !is_commdty) {
+      await Promise.all(
+        Object.entries(connected_realms_id).map(
+          async ([connected_realms_hub, realms]: [string, LeanDocument<Realm>[]]) => {
+            const orderFeed = await this.AuctionModel.find({
+              connected_realm_id: parseInt(connected_realms_hub),
+              last_modified: realms[0].auctions,
+              'item.id': item._id,
+            });
+            if (orderFeed.length) {
+              feed.push(...orderFeed);
+            }
+          }
+        )
+      );
+    }
+
+    return feed;
   }
 
   async validateTransformDmaQuery(input: string) {

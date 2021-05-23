@@ -23,7 +23,7 @@ import { DmaService } from './dma.service';
 import { ItemCrossRealmDto } from './dto';
 import { ItemChartDto } from './dto/item-chart.dto';
 import { LeanDocument } from 'mongoose';
-import { Item } from '@app/mongo';
+import { Auction, Item } from '@app/mongo';
 
 @ApiTags('dma')
 @Controller('dma')
@@ -116,11 +116,9 @@ export class DmaController {
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
-  @Get('/item/:id')
-  getItemFeed(@Param('id') id: string): string {
-    // TODO validate
-    const [item, realm] = id.split('@');
-    return this.dmaService.getItemFeed(item, realm);
+  @Get('/item/feed')
+  getItemFeed(@Query() input: ItemCrossRealmDto): Promise<Auction[]> {
+    return this.dmaService.getItemFeed(input);
   }
 
 }

@@ -1,6 +1,10 @@
-import { ChartOrderInterface } from '../interface';
 import { ApiProperty } from '@nestjs/swagger';
-import { SWAGGER_ITEM_CHART_DATASET, SWAGGER_ITEM_CHART_X_AXIS, SWAGGER_ITEM_CHART_Y_AXIS } from '@app/core';
+import {
+  ChartOrderInterface,
+  SWAGGER_ITEM_CHART_DATASET,
+  SWAGGER_ITEM_CHART_X_AXIS,
+  SWAGGER_ITEM_CHART_Y_AXIS,
+} from '@app/core';
 
 export class ItemChartDto {
   @ApiProperty(SWAGGER_ITEM_CHART_Y_AXIS)

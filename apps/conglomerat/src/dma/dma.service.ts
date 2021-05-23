@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { ItemCrossRealmDto } from './dto';
+import { ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE } from '@app/core';
-import { ChartOrderInterface, OrderQuotesInterface, OrderXrsInterface, RealmChartInterface } from './interface';
+import { ChartOrderInterface, OrderQuotesInterface, OrderXrsInterface, RealmChartInterface } from '@app/core';
 import { ItemChartDto } from './dto/item-chart.dto';
 import { groupBy } from 'lodash';
 
@@ -480,7 +480,7 @@ export class DmaService {
   }
 
 
-  async getItemQuotes(input: ItemCrossRealmDto): Promise<OrderQuotesInterface[]> {
+  async getItemQuotes(input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
@@ -603,10 +603,10 @@ export class DmaService {
         }
       )
     );
-    return quotes;
+    return { quotes };
   }
 
-  async getItemFeed(input: ItemCrossRealmDto): Promise<Auction[]> {
+  async getItemFeed(input: ItemCrossRealmDto): Promise<ItemFeedDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
@@ -636,7 +636,7 @@ export class DmaService {
       );
     }
 
-    return feed;
+    return { feed };
   }
 
   async validateTransformDmaQuery(input: string) {
@@ -647,7 +647,7 @@ export class DmaService {
     const [ queryItem, queryRealm ] = input.split('@');
     const realmArrayString = queryRealm
       .split(';')
-      .filter(value => value !== '');
+      .filter(Boolean);
 
     if (queryItem) {
       if (isNaN(Number(queryItem))) {

@@ -20,11 +20,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
-import { ItemCrossRealmDto } from './dto';
+import { ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
 import { ItemChartDto } from './dto/item-chart.dto';
 import { LeanDocument } from 'mongoose';
 import { Auction, Item } from '@app/mongo';
-import { OrderQuotesInterface } from './interface';
+import { OrderQuotesInterface } from '@app/core';
 
 @ApiTags('dma')
 @Controller('dma')
@@ -47,8 +47,8 @@ export class DmaController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item')
-  getItem(@Query() input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
-    return this.dmaService.getItem(input);
+  async getItem(@Query() input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
+    return await this.dmaService.getItem(input);
   }
 
   @ApiOperation({ description: 'Returns requested WoWToken' })
@@ -60,8 +60,8 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/token/:region/:limit')
-  getWowToken(@Param('region') region: string, @Param('limit') limit: number): string {
-    return this.dmaService.getWowToken(region, limit);
+  async getWowToken(@Param('region') region: string, @Param('limit') limit: number): string {
+    return await this.dmaService.getWowToken(region, limit);
   }
 
   /*
@@ -103,7 +103,7 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/item/quotes')
-  async getItemQuotes(@Query() input: ItemCrossRealmDto): Promise<OrderQuotesInterface[]> {
+  async getItemQuotes(@Query() input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
     return await this.dmaService.getItemQuotes(input);
   }
 
@@ -116,7 +116,7 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/item/feed')
-  async getItemFeed(@Query() input: ItemCrossRealmDto): Promise<Auction[]> {
+  async getItemFeed(@Query() input: ItemCrossRealmDto): Promise<ItemFeedDto> {
     return await this.dmaService.getItemFeed(input);
   }
 }

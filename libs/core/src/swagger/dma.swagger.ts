@@ -1,4 +1,44 @@
 import { ApiProperty, ApiPropertyOptions, getSchemaPath } from '@nestjs/swagger';
+import { Auction } from '@app/mongo';
+import { OrderQuotesInterface } from '@app/core/interfaces';
+
+class OrderQuotes implements OrderQuotesInterface {
+  readonly id: number;
+
+  readonly price: number;
+
+  readonly quantity: number;
+
+  readonly open_interest: number;
+
+  readonly size: number;
+}
+
+export const SWAGGER_ITEM_QUOTES: ApiPropertyOptions = {
+  name: 'quotes',
+  type: () => OrderQuotes,
+  description: 'Quotes are aggregated Level 2 data of requested COMMDTY item',
+}
+
+export const SWAGGER_ITEM_FEED: ApiPropertyOptions = {
+  name: 'feed',
+  type: () => Auction,
+  description: 'Feed represents an unedited auction house order data feed',
+  example: {
+    id: 123432432,
+    item_id: 171982,
+    item: {
+      id: 171982
+    },
+    connected_realm_id: 1602,
+    last_modified: Date.now(),
+    quantity: 100,
+    bid: 9,
+    buyout: 10,
+    price: 0.1,
+    time_left: 'LONG',
+  }
+}
 
 export const SWAGGER_DATASET_X: ApiPropertyOptions = {
   name: 'x',

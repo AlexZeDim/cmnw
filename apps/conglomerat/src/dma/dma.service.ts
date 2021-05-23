@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE } from '@app/core';
-import { ChartOrderInterface, OrderXrsInterface, RealmChartInterface } from './interface';
+import { ChartOrderInterface, OrderQuotesInterface, OrderXrsInterface, RealmChartInterface } from './interface';
 import { ItemChartDto } from './dto/item-chart.dto';
 import { groupBy } from 'lodash';
 
@@ -48,7 +48,7 @@ export class DmaService {
   async getItemValuations(input: ItemCrossRealmDto): Promise<string> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Test')
+      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
     const connected_realms_id = [...new Set(realm.map(({ connected_realm_id }) => connected_realm_id))];
@@ -64,7 +64,7 @@ export class DmaService {
   async getItemChart(input: ItemCrossRealmDto): Promise<ItemChartDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
+      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
     const connected_realms_id = [...new Set(realm.map(({ connected_realm_id }) => connected_realm_id))];
@@ -204,7 +204,7 @@ export class DmaService {
       return this.priceRange(quotes, blocks);
     }
 
-    return []
+    return [];
   }
 
   async goldXRS(
@@ -480,9 +480,130 @@ export class DmaService {
   }
 
 
-  getItemQuotes(item: string, realm: string): string {
-    // TODO add new dma to queue
-    return `${item}@${realm}`
+  async getItemQuotes(input: ItemCrossRealmDto): Promise<OrderQuotesInterface[]> {
+    const { item , realm } = await this.validateTransformDmaQuery(input._id);
+    if (!item || !realm || !realm.length) {
+      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
+    }
+
+    const connected_realms_id = groupBy(realm, 'connected_realm_id');
+    const is_xrs = Object.keys(connected_realms_id).length > 1;
+    const is_gold = item._id === 1;
+
+    const quotes: OrderQuotesInterface[] = [];
+
+    await Promise.all(
+      Object.entries(connected_realms_id).map(
+        async ([connected_realms_hub, realms]: [string, LeanDocument<Realm>[]]) => {
+          if (!is_xrs) {
+            /** NOT XRS && NOT GOLD */
+            if (!is_gold) {
+              const orderQuotes: OrderQuotesInterface[] = await this.AuctionModel.aggregate([
+                {
+                  $match: {
+                    connected_realm_id: parseInt(connected_realms_hub),
+                    last_modified: realms[0].auctions,
+                    'item.id': item._id,
+                  },
+                },
+                {
+                  $project: {
+                    id: '$id',
+                    quantity: '$quantity',
+                    price: {
+                      $ifNull: ['$buyout', { $ifNull: ['$bid', '$price'] }],
+                    },
+                  },
+                },
+                {
+                  $group: {
+                    _id: '$price',
+                    quantity: { $sum: '$quantity' },
+                    open_interest: {
+                      $sum: { $multiply: ['$price', '$quantity'] },
+                    },
+                    orders: { $addToSet: '$id' },
+                  },
+                },
+                {
+                  $sort: { _id: 1 },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    price: '$_id',
+                    quantity: '$quantity',
+                    open_interest: '$open_interest',
+                    size: {
+                      $cond: {
+                        if: { $isArray: '$orders' },
+                        then: { $size: '$orders' },
+                        else: 0,
+                      },
+                    },
+                  },
+                },
+              ]);
+              // TODO possible cursor
+              quotes.push(...orderQuotes);
+            }
+            /** NOT XRS but GOLD */
+            if (is_gold) {
+              const orderQuotes: OrderQuotesInterface[] = await this.GoldModel.aggregate([
+                {
+                  $match: {
+                    status: 'Online',
+                    connected_realm_id: parseInt(connected_realms_hub),
+                    last_modified: realm[0].golds,
+                  },
+                },
+                {
+                  $project: {
+                    id: '$id',
+                    quantity: '$quantity',
+                    price: '$price',
+                    owner: '$owner',
+                  },
+                },
+                {
+                  $group: {
+                    _id: '$price',
+                    quantity: { $sum: '$quantity' },
+                    open_interest: {
+                      $sum: {
+                        $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+                      },
+                    },
+                    sellers: { $addToSet: '$owner' },
+                  },
+                },
+                {
+                  $sort: { _id: 1 },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    price: '$_id',
+                    quantity: '$quantity',
+                    open_interest: '$open_interest',
+                    size: {
+                      $cond: {
+                        if: { $isArray: '$sellers' },
+                        then: { $size: '$sellers' },
+                        else: 0,
+                      },
+                    },
+                  },
+                },
+              ]);
+              // TODO possible cursor
+              quotes.push(...orderQuotes);
+            }
+          }
+        }
+      )
+    );
+    return quotes;
   }
 
   async getItemFeed(input: ItemCrossRealmDto): Promise<Auction[]> {
@@ -508,9 +629,8 @@ export class DmaService {
               last_modified: realms[0].auctions,
               'item.id': item._id,
             });
-            if (orderFeed.length) {
-              feed.push(...orderFeed);
-            }
+            // TODO possible cursor;
+            feed.push(...orderFeed);
           }
         )
       );
@@ -561,7 +681,7 @@ export class DmaService {
         realm = await this.RealmModel
           .find({ connected_realm_id: parseInt(queryRealm) })
           .limit(1)
-          .lean()
+          .lean();
       }
     } else {
       const realms = realmArrayString.toString().replace(';', ' ');
@@ -571,7 +691,7 @@ export class DmaService {
           { score: { $meta: 'textScore' } },
         )
         .sort({ score: { $meta: 'textScore' } })
-        .lean()
+        .lean();
     }
 
     return { item, realm };

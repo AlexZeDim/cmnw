@@ -18,6 +18,7 @@ import {
 } from '@app/core';
 import { GuildMemberInterface } from '@app/core/interfaces/osint.interface';
 import { differenceBy, intersectionBy } from "lodash";
+import { OSINT_TIMEOUT_TOLERANCE } from '@app/core/constants/osint.constants';
 
 @BullWorker({ queueName: guildsQueue.name })
 export class GuildsWorker {
@@ -161,7 +162,7 @@ export class GuildsWorker {
     const summary: Partial<GuildSummaryInterface> = {};
     try {
       const response: Record<string, any> = await BNet.query(`/data/wow/guild/${realm_slug}/${guild_slug}`, {
-        timeout: 10000,
+        timeout: OSINT_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });
@@ -204,7 +205,7 @@ export class GuildsWorker {
     try {
       const guild_slug = toSlug(guild.name);
       const { members }: Record<string, any> = await BNet.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
-        timeout: 10000,
+        timeout: OSINT_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });

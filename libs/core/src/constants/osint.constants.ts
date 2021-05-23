@@ -1,5 +1,7 @@
 export const MAX_LEVEL: number = 60;
 
+export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
+
 export const REALM_LOCALE: string[] = ['ru_ru', 'en_gb', 'de_de', 'fr_fr', 'it_it', 'es_es'];
 
 export const REALM_TICKER: Map<string, string> = new Map([

@@ -21,6 +21,7 @@ import { hash64 } from 'farmhash';
 import axios from 'axios';
 import Xray from 'x-ray';
 import puppeteer from 'puppeteer';
+import { OSINT_TIMEOUT_TOLERANCE } from '@app/core/constants/osint.constants';
 
 @BullWorker({ queueName: charactersQueue.name })
 export class CharactersWorker {
@@ -246,7 +247,8 @@ export class CharactersWorker {
     try {
       const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/character-media`, {
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
+        timeout: OSINT_TIMEOUT_TOLERANCE,
       })
       if (!response || !response.assets) return media
 
@@ -267,7 +269,8 @@ export class CharactersWorker {
     try {
       const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/collections/mounts`, {
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
+        timeout: OSINT_TIMEOUT_TOLERANCE,
       })
       if (!response || !response.mounts || !response.mounts.length) return mounts_collection
       const { mounts } = response;
@@ -295,7 +298,8 @@ export class CharactersWorker {
         hash_a: string[] = [],
         response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/collections/pets`, {
           params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' }
+          headers: { 'Battlenet-Namespace': 'profile-eu' },
+          timeout: OSINT_TIMEOUT_TOLERANCE,
         });
       if (!response || !response.pets || !response.pets.length) return pets_collection
       const { pets } = response;
@@ -326,7 +330,8 @@ export class CharactersWorker {
     try {
       const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/professions`, {
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
+        timeout: OSINT_TIMEOUT_TOLERANCE,
       })
       if (!response) return professions
       professions.professions = [];
@@ -403,7 +408,8 @@ export class CharactersWorker {
     try {
       const response: Record<string, any> = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}`, {
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
+        timeout: OSINT_TIMEOUT_TOLERANCE,
       })
       if (!response || typeof response !== 'object') return summary
       const keys_named: string[] = ['gender', 'faction', 'race', 'character_class', 'active_spec'];

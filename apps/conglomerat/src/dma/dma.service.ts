@@ -188,13 +188,19 @@ export class DmaService {
     if (!is_gold && is_xrs) {
       const { auctions } = await this.RealmModel.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('auctions').sort({ 'auctions': 1 });
       /** Find distinct prices for each realm */
-      const quotes: number[] = await this.AuctionModel.find({ last_modified: { $gte: auctions }, 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'price').distinct('price');
+      const quotes: number[] = await this.AuctionModel
+        .find({ connected_realm_id: { $in: connected_realms_id }, last_modified: { $gte: auctions }, 'item.id': item_id }, 'price')
+        .hint({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 })
+        .distinct('price');
       return this.priceRange(quotes, blocks);
     }
 
     if (!is_gold && !is_xrs) {
       /** Find distinct prices for one */
-      const quotes = await this.AuctionModel.find({ 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'price').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('price');
+      const quotes = await this.AuctionModel
+        .find({ connected_realm_id: { $in: connected_realms_id }, 'item.id': item_id }, 'price')
+        .hint({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 })
+        .distinct('price');
       return this.priceRange(quotes, blocks);
     }
 
@@ -376,9 +382,9 @@ export class DmaService {
             .aggregate([
               {
                 $match: {
+                  connected_realm_id: connected_realm_id,
                   last_modified: timestamp,
                   'item.id': item_id,
-                  connected_realm_id: connected_realm_id,
                 }
               },
               {

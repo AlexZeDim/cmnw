@@ -42,8 +42,6 @@ export class Auction extends Document {
 }
 
 export const AuctionsSchema = SchemaFactory.createForClass(Auction);
-AuctionsSchema.index({ 'createdAt': -1 }, { name: 'TTL', expireAfterSeconds: 86400 })
-AuctionsSchema.index({ 'connected_realm_id': 1, 'last_modified': -1 }, { name: 'TS' })
-AuctionsSchema.index({ 'item_id': -1, 'connected_realm_id': 1 }, { name: 'Q' })
-AuctionsSchema.index({ 'last_modified': -1, 'item_id': -1, 'connected_realm_id': 1 }, { name: 'PL' })
+AuctionsSchema.index({ 'createdAt': -1 }, { name: 'TTL', expireAfterSeconds: 86400 });
+AuctionsSchema.index({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 }, { name: 'TSqPL' });
 

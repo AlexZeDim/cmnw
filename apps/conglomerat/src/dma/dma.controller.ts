@@ -21,6 +21,9 @@ import {
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
 import { ItemCrossRealmDto } from './dto';
+import { ItemChartDto } from './dto/item-chart.dto';
+import { LeanDocument } from 'mongoose';
+import { Item } from '@app/mongo';
 
 @ApiTags('dma')
 @Controller('dma')
@@ -42,8 +45,8 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/item/:id')
-  getItem(@Query() input: ItemCrossRealmDto): string {
+  @Get('/item')
+  getItem(@Query() input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
     return this.dmaService.getItem(input);
   }
 
@@ -60,6 +63,7 @@ export class DmaController {
     return this.dmaService.getWowToken(region, limit);
   }
 
+  /*
   @ApiOperation({ description: 'Returns requested item valuations' })
   @ApiOkResponse({ description: 'Request item valuations  with selected _id' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
@@ -74,6 +78,7 @@ export class DmaController {
     const [item, realm] = id.split('@');
     return this.dmaService.getItemValuations(item, realm);
   }
+  */
 
   @ApiOperation({ description: 'Returns requested item chart' })
   @ApiOkResponse({ description: 'Request item chart with selected _id' })
@@ -83,11 +88,9 @@ export class DmaController {
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
-  @Get('/item/:id')
-  getItemChart(@Param('id') id: string): string {
-    // TODO validate
-    const [item, realm] = id.split('@');
-    return this.dmaService.getItemChart(item, realm);
+  @Get('/item/chart')
+  async getItemChart(@Query() input: ItemCrossRealmDto): Promise<ItemChartDto> {
+    return await this.dmaService.getItemChart(input);
   }
 
   @ApiOperation({ description: 'Returns requested item quotes' })

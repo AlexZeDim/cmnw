@@ -5,6 +5,7 @@ import { Auction, Gold, Item, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE } from '@app/core';
 import { ChartOrderInterface, OrderXrsInterface, RealmChartInterface } from './interface';
+import { ItemChartDto } from './dto/item-chart.dto';
 
 @Injectable()
 export class DmaService {
@@ -23,7 +24,7 @@ export class DmaService {
     private readonly AuctionModel: Model<Auction>,
   ) { }
 
-  async getItem(input: ItemCrossRealmDto) {
+  async getItem(input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
     // TODO what about realm? Probably here?
     const [ item ] = input._id.split('@');
     if (item) {
@@ -59,20 +60,21 @@ export class DmaService {
     return `${input._id}`
   }
 
-  async getItemChart(input: ItemCrossRealmDto) {
+  async getItemChart(input: ItemCrossRealmDto): Promise<ItemChartDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Test')
     }
 
     const connected_realms_id = [...new Set(realm.map(({ connected_realm_id }) => connected_realm_id))];
-    const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
+    // FIXME const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
+    const is_commdty = true;
     const is_gold = item._id === 1;
     const is_xrs = connected_realms_id.length > 1;
 
     const yAxis = await this.buildYAxis(item._id, connected_realms_id, is_commdty, is_xrs, is_gold);
-    const xAxis = []; // TODO types?
-    const dataset = [];
+    const xAxis: (string | number | Date)[] = [];
+    const dataset: ChartOrderInterface[] = [];
 
     await this.RealmModel
       .aggregate([
@@ -126,15 +128,17 @@ export class DmaService {
             }
 
             if (!is_gold) {
-
+              const { chart, timestamps } = await this.commdtyTS(yAxis, item._id, realm.connected_realm_id);
+              if (chart && timestamps) {
+                dataset.push(...chart);
+                xAxis.push(...timestamps);
+              }
             }
           }
         }
-      })
+      });
 
-    // TODO valuations of item from table
-
-    return `${input._id}`
+    return { yAxis, xAxis, dataset };
   }
 
   priceRange(
@@ -168,6 +172,7 @@ export class DmaService {
      * else => 20
      */
     const blocks: number = is_xrs ? 40 : 20;
+
     /** Request oldest from latest timestamp */
     if (is_gold && is_xrs) {
       const { golds } = await this.RealmModel.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('golds').sort({ 'golds': 1 });
@@ -183,13 +188,13 @@ export class DmaService {
     if (!is_gold && is_xrs) {
       const { auctions } = await this.RealmModel.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('auctions').sort({ 'auctions': 1 });
       /** Find distinct prices for each realm */
-      const quotes: number[] = await this.AuctionModel.find({ last_modified: { $gte: auctions }, 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'unit_price').distinct('unit_price');
+      const quotes: number[] = await this.AuctionModel.find({ last_modified: { $gte: auctions }, 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'price').distinct('price');
       return this.priceRange(quotes, blocks);
     }
 
     if (!is_gold && !is_xrs) {
       /** Find distinct prices for one */
-      const quotes = await this.AuctionModel.find({ 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'unit_price').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('unit_price');
+      const quotes = await this.AuctionModel.find({ 'item.id': item_id, connected_realm_id: { $in: connected_realms_id } }, 'price').hint({ 'item.id': -1, connected_realm_id: 1 }).distinct('price');
       return this.priceRange(quotes, blocks);
     }
 
@@ -202,8 +207,7 @@ export class DmaService {
     golds: number,
     xIndex: number
   ): Promise<ChartOrderInterface[]> {
-    const chart: ChartOrderInterface[] = [];
-    if (!yAxis.length) return chart;
+    if (!yAxis.length) return [];
 
     const orders: OrderXrsInterface[] = await this.GoldModel
       .aggregate([
@@ -232,41 +236,7 @@ export class DmaService {
       ])
       .allowDiskUse(true);
 
-    await Promise.all(
-      orders.map(order => {
-        const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
-        if (yIndex !== -1) {
-          chart.push({
-            x: xIndex,
-            y: yIndex,
-            orders: order.orders,
-            value: order.value,
-            oi: parseInt(order.oi.toFixed(2), 10)
-          });
-        } else if (order._id === 'Other') {
-          // TODO under/review
-          if (order.price > yAxis[yAxis.length-1]) {
-            chart.push({
-              x: xIndex,
-              y: yAxis.length-1,
-              orders: order.orders,
-              value: order.value,
-              oi: parseInt(order.oi.toFixed(2), 10)
-            });
-          } else {
-            chart.push({
-              x: xIndex,
-              y: 0,
-              orders: order.orders,
-              value: order.value,
-              oi: parseInt(order.oi.toFixed(2), 10)
-            });
-          }
-        }
-      })
-    )
-
-    return chart;
+    return this.buildDataset(yAxis, orders, xIndex);
   }
 
   async commdtyXRS(
@@ -276,8 +246,7 @@ export class DmaService {
     auctions: number,
     xIndex: number
   ): Promise<ChartOrderInterface[]> {
-    const chart: ChartOrderInterface[] = [];
-    if (!yAxis.length) return chart;
+    if (!yAxis.length) return [];
 
     const orders: OrderXrsInterface[] = await this.AuctionModel
       .aggregate([
@@ -290,15 +259,15 @@ export class DmaService {
         },
         {
           $bucket: {
-            groupBy: "$unit_price",
+            groupBy: "$price",
             boundaries: yAxis,
             default: "Other",
             output: {
               orders: { $sum: 1 },
               value: { $sum: "$quantity" },
-              price: { $first: '$unit_price' },
+              price: { $first: '$price' },
               oi: {
-                $sum: { $multiply: ['$unit_price', '$quantity'] },
+                $sum: { $multiply: ['$price', '$quantity'] },
               }
             }
           }
@@ -306,41 +275,7 @@ export class DmaService {
       ])
       .allowDiskUse(true);
 
-    await Promise.all(
-      orders.map(order => {
-        const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
-        if (yIndex !== -1) {
-          chart.push({
-            x: xIndex,
-            y: yIndex,
-            orders: order.orders,
-            value: order.value,
-            oi: parseInt(order.oi.toFixed(2), 10)
-          });
-        } else if (order._id === 'Other') {
-          // TODO under/review
-          if (order.price > yAxis[yAxis.length-1]) {
-            chart.push({
-              x: xIndex,
-              y: yAxis.length-1,
-              orders: order.orders,
-              value: order.value,
-              oi: parseInt(order.oi.toFixed(2), 10)
-            });
-          } else {
-            chart.push({
-              x: xIndex,
-              y: 0,
-              orders: order.orders,
-              value: order.value,
-              oi: parseInt(order.oi.toFixed(2), 10)
-            });
-          }
-        }
-      })
-    )
-
-    return chart;
+    return this.buildDataset(yAxis, orders, xIndex);
   }
 
   async goldTS(yAxis: number[], connected_realm_id: number) {
@@ -398,7 +333,6 @@ export class DmaService {
               oi: parseInt(order.oi.toFixed(0), 10)
             });
           } else if (order._id === 'Other') {
-            // TODO under/review
             if (order.price > yAxis[yAxis.length-1]) {
               chart.push({
                 x: order.xIndex,
@@ -449,7 +383,7 @@ export class DmaService {
               },
               {
                 $bucket: {
-                  groupBy: '$unit_price',
+                  groupBy: '$price',
                   boundaries: yAxis,
                   default: 'Other',
                   output: {
@@ -457,7 +391,7 @@ export class DmaService {
                     value: { $sum: '$quantity' },
                     price: { $first: '$price' },
                     oi: {
-                      $sum: { $multiply: ['$unit_price', '$quantity'] },
+                      $sum: { $multiply: ['$price', '$quantity'] },
                     }
                   }
                 }
@@ -470,6 +404,7 @@ export class DmaService {
             .cursor()
             .exec()
             .eachAsync((order: OrderXrsInterface) => {
+              console.log(order);
               const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
               if (yIndex !== -1) {
                 chart.push({
@@ -480,7 +415,6 @@ export class DmaService {
                   oi: order.oi
                 })
               } else if (order._id === 'Other') {
-                // TODO under/review
                 if (order.price > yAxis[yAxis.length-1]) {
                   chart.push({
                     x: order.xIndex,
@@ -505,6 +439,39 @@ export class DmaService {
     );
 
     return { chart, timestamps };
+  }
+
+  buildDataset(yAxis: number[], orders: OrderXrsInterface[], xIndex: number): ChartOrderInterface[] {
+    return orders.map(order => {
+      const yIndex = yAxis.findIndex((pQ) => pQ === order._id);
+      if (yIndex !== -1) {
+        return {
+          x: xIndex,
+          y: yIndex,
+          orders: order.orders,
+          value: order.value,
+          oi: parseInt(order.oi.toFixed(0), 10)
+        };
+      } else if (order._id === 'Other') {
+        if (order.price > yAxis[yAxis.length-1]) {
+          return {
+            x: xIndex,
+            y: yAxis.length-1,
+            orders: order.orders,
+            value: order.value,
+            oi: parseInt(order.oi.toFixed(0), 10)
+          };
+        } else {
+          return {
+            x: xIndex,
+            y: 0,
+            orders: order.orders,
+            value: order.value,
+            oi: parseInt(order.oi.toFixed(0), 10)
+          };
+        }
+      }
+    })
   }
 
 

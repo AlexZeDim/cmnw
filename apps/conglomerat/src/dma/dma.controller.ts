@@ -51,6 +51,7 @@ export class DmaController {
     return await this.dmaService.getItem(input);
   }
 
+  /*
   @ApiOperation({ description: 'Returns requested WoWToken' })
   @ApiOkResponse({ description: 'Request item with selected timestamp' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
@@ -62,7 +63,7 @@ export class DmaController {
   @Get('/token/:region/:limit')
   async getWowToken(@Param('region') region: string, @Param('limit') limit: number): string {
     return await this.dmaService.getWowToken(region, limit);
-  }
+  }*/
 
   /*
   @ApiOperation({ description: 'Returns requested item valuations' })

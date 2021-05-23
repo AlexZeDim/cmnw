@@ -220,7 +220,7 @@ export class CharactersWorker {
       if (!character.isNew) {
         if (original.guild_id !== updated.guild_id) {
           // on leave check timestamp and unset
-          if (!updated.guild_id && original.last_modified?.getTime() < updated.last_modified?.getTime()) {
+          if (!updated.guild_id) {
             character.guild_id = undefined;
             character.guild = undefined;
             character.guild_rank = undefined;

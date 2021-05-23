@@ -5,6 +5,7 @@ import { Account, AccountsSchema } from '@app/mongo';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { DiscordStrategy } from './strategies/discord.strategy';
+import { BattlenetStrategy } from './strategies/battlenet.strategy';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { DiscordStrategy } from './strategies/discord.strategy';
     ]),
     HttpModule,
   ],
-  providers: [AuthService, DiscordStrategy],
+  providers: [AuthService, DiscordStrategy, BattlenetStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

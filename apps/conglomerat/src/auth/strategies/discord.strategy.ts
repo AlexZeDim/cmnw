@@ -10,11 +10,9 @@ import { discordConfig } from '@app/configuration';
 
 @Injectable()
 export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
-
   constructor(
     private authService: AuthService,
     private http: HttpService,
-    private test: 1,
   ) {
     super({
       authorizationURL: `https://discord.com/api/oauth2/authorize?${ stringify({
@@ -27,7 +25,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
       scope           : 'identify',
       clientID: discordConfig.id,
       clientSecret: discordConfig.secret,
-      callbackURL: test,
+      callbackURL: discordConfig.callback,
     });
   }
 

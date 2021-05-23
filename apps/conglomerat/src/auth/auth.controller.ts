@@ -12,13 +12,17 @@ export class AuthController {
   );
   constructor(
     private readonly authService: AuthService
-  ) {
-
-  }
+  ) { }
 
   @Get('/discord')
   @UseGuards(AuthGuard('discord'))
   async getUserFromDiscordLogin(@Req() req): Promise<any> {
+    return req.user;
+  }
+
+  @Get('/battlenet')
+  @UseGuards(AuthGuard('battlenet'))
+  async getUserFromBattlenetLogin(@Req() req): Promise<any> {
     return req.user;
   }
 }

@@ -13,16 +13,13 @@ export class AuthService {
     private readonly AccountModel: Model<Account>,
   ) {}
 
-  async findAccountByDiscordId(discordId: string): Promise<Account> {
-    let user = await this.AccountModel.findOne({ 'alias.type': 'discord', 'alias._id': discordId });
+  async findAccountByDiscordId(discord_id: string): Promise<Account> {
+    let user = await this.AccountModel.findOne({ discord_id });
 
-    if ( !user ) {
+    if (!user) {
       user = await this.AccountModel.create({
         cryptonym: 'Anonymous',
-        alias: [{
-          _id: discordId,
-          type: 'discord'
-        }]
+        discord_id: [discord_id]
       });
     }
 

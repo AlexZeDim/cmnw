@@ -23,6 +23,7 @@ RUN npm install
 COPY . .
 
 RUN nest build conglomerat \
+  && nest build osint \
   && nest build keys \
   && nest build gold \
   && nest build items \

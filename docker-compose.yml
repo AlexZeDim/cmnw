@@ -115,6 +115,91 @@ services:
     networks:
       - conglomerat-network
 
+  osint-container-1:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: osint-container-1
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/osint/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  osint-container-2:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: osint-container-2
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/osint/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  osint-container-3:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: osint-container-3
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/osint/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  osint-container-4:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: osint-container-4
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/osint/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  osint-container-5:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: osint-container-5
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/osint/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   guilds:
     build: ./
     image: conglomerat

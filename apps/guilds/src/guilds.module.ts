@@ -15,8 +15,8 @@ import {
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { GuildsWorker } from './guilds.worker';
 import { ScheduleModule } from '@nestjs/schedule';
+import { GuildsWorker } from '@app/core';
 
 @Module({
   imports: [

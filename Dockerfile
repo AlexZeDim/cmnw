@@ -24,6 +24,7 @@ COPY . .
 
 RUN nest build conglomerat \
   && nest build osint \
+  && nest build dma \
   && nest build keys \
   && nest build gold \
   && nest build items \

@@ -18,7 +18,6 @@ import {
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { pricingQueue } from '@app/core';
-import { PricingWorker } from './pricing.worker';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -27,8 +26,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
-      { name: Item.name, schema: ItemsSchema },
-      { name: Pricing.name, schema: PricingSchema },
       { name: SkillLine.name, schema: SkillLineSchema },
       { name: SpellEffect.name, schema: SpellEffectSchema },
       { name: SpellReagents.name, schema: SpellReagentsSchema },
@@ -44,6 +41,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     BullModule.registerQueue({ queueName: pricingQueue.name, options: pricingQueue.options }),
   ],
   controllers: [],
-  providers: [PricingService, PricingWorker],
+  providers: [PricingService],
 })
 export class PricingModule {}

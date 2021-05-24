@@ -169,6 +169,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/osint/tsconfig.app.json"
       }
+    },
+    "dma": {
+      "type": "application",
+      "root": "apps/dma",
+      "entryFile": "main",
+      "sourceRoot": "apps/dma/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/dma/tsconfig.app.json"
+      }
     }
   }
 }

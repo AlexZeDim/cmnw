@@ -5,25 +5,16 @@ import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration
 import {
   Auction,
   AuctionsSchema,
-  Gold,
-  GoldsSchema,
   Item,
   ItemsSchema,
   Key,
   KeysSchema,
   Pricing,
   PricingSchema,
-  Realm,
-  RealmsSchema,
-  Token,
-  TokenSchema,
-  Valuations,
-  ValuationsSchema,
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { valuationsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ValuationsWorker } from './valuations.worker';
 
 @Module({
   imports: [
@@ -33,12 +24,7 @@ import { ValuationsWorker } from './valuations.worker';
       { name: Key.name, schema: KeysSchema },
       { name: Item.name, schema: ItemsSchema },
       { name: Pricing.name, schema: PricingSchema },
-      { name: Realm.name, schema: RealmsSchema },
       { name: Auction.name, schema: AuctionsSchema },
-      { name: Valuations.name, schema: ValuationsSchema },
-      { name: Gold.name, schema: GoldsSchema },
-      { name: Token.name, schema: TokenSchema },
-      { name: Pricing.name, schema: PricingSchema },
     ]),
     BullModule.forRoot({
       options: {
@@ -51,6 +37,6 @@ import { ValuationsWorker } from './valuations.worker';
     BullModule.registerQueue({ queueName: valuationsQueue.name, options: valuationsQueue.options }),
   ],
   controllers: [],
-  providers: [ValuationsService, ValuationsWorker],
+  providers: [ValuationsService],
 })
 export class ValuationsModule {}

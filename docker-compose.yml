@@ -115,11 +115,11 @@ services:
     networks:
       - conglomerat-network
 
-  osint-container-1:
+  osint-1:
     build: ./
     image: conglomerat
     restart: always
-    container_name: osint-container-1
+    container_name: osint-1
     links:
       - mongo
       - redis
@@ -132,11 +132,11 @@ services:
     networks:
       - conglomerat-network
 
-  osint-container-2:
+  osint-2:
     build: ./
     image: conglomerat
     restart: always
-    container_name: osint-container-2
+    container_name: osint-2
     links:
       - mongo
       - redis
@@ -149,11 +149,11 @@ services:
     networks:
       - conglomerat-network
 
-  osint-container-3:
+  osint-3:
     build: ./
     image: conglomerat
     restart: always
-    container_name: osint-container-3
+    container_name: osint-3
     links:
       - mongo
       - redis
@@ -166,11 +166,11 @@ services:
     networks:
       - conglomerat-network
 
-  osint-container-4:
+  osint-4:
     build: ./
     image: conglomerat
     restart: always
-    container_name: osint-container-4
+    container_name: osint-4
     links:
       - mongo
       - redis
@@ -183,15 +183,100 @@ services:
     networks:
       - conglomerat-network
 
-  osint-container-5:
+  osint-5:
     build: ./
     image: conglomerat
     restart: always
-    container_name: osint-container-5
+    container_name: osint-5
     links:
       - mongo
       - redis
     command: [ 'node', 'dist/apps/osint/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  dma-1:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: dma-1
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/dma/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  dma-2:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: dma-2
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/dma/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  dma-3:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: dma-3
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/dma/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  dma-4:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: dma-4
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/dma/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+  dma-5:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: dma-5
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/dma/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:

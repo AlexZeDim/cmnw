@@ -4,7 +4,6 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
-  Param,
   Query,
   UsePipes,
   ValidationPipe,
@@ -21,10 +20,9 @@ import {
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
 import { ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
-import { ItemChartDto } from './dto/item-chart.dto';
+import { ItemChartDto } from './dto';
 import { LeanDocument } from 'mongoose';
-import { Auction, Item } from '@app/mongo';
-import { OrderQuotesInterface } from '@app/core';
+import { Item } from '@app/mongo';
 
 @ApiTags('dma')
 @Controller('dma')

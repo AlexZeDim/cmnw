@@ -5,7 +5,7 @@ import { Auction, Gold, Item, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE } from '@app/core';
 import { ChartOrderInterface, OrderQuotesInterface, OrderXrsInterface, RealmChartInterface } from '@app/core';
-import { ItemChartDto } from './dto/item-chart.dto';
+import { ItemChartDto } from './dto';
 import { groupBy } from 'lodash';
 
 @Injectable()

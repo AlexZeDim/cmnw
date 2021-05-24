@@ -9,7 +9,7 @@ import {
   WowProgressInterface,
   WarcraftLogsInterface,
   charactersQueue,
-  toSlug, capitalize, CharacterInterface, OSINT_SOURCE,
+  toSlug, capitalize, CharacterInterface, OSINT_SOURCE, OSINT_TIMEOUT_TOLERANCE,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
@@ -21,7 +21,6 @@ import { hash64 } from 'farmhash';
 import axios from 'axios';
 import Xray from 'x-ray';
 import puppeteer from 'puppeteer';
-import { OSINT_TIMEOUT_TOLERANCE } from '@app/core/constants/osint.constants';
 
 @BullWorker({ queueName: charactersQueue.name })
 export class CharactersWorker {
@@ -250,17 +249,17 @@ export class CharactersWorker {
         headers: { 'Battlenet-Namespace': 'profile-eu' },
         timeout: OSINT_TIMEOUT_TOLERANCE,
       })
-      if (!response || !response.assets) return media
+      if (!response || !response.assets) return media;
 
-      if (response.character && response.character.id) media.id = response.character.id
+      if (response.character && response.character.id) media.id = response.character.id;
 
       const assets: { key: string, value: string }[] = response.assets;
       await Promise.all(assets.map(({key, value}) => {
         media[key] = value
       }))
-      return media
+      return media;
     } catch (e) {
-      this.logger.error(`media: ${name_slug}@${realm_slug}:${e}`)
+      this.logger.error(`media: ${name_slug}@${realm_slug}:${e}`);
     }
   }
 
@@ -272,9 +271,9 @@ export class CharactersWorker {
         headers: { 'Battlenet-Namespace': 'profile-eu' },
         timeout: OSINT_TIMEOUT_TOLERANCE,
       })
-      if (!response || !response.mounts || !response.mounts.length) return mounts_collection
+      if (!response || !response.mounts || !response.mounts.length) return mounts_collection;
       const { mounts } = response;
-      mounts_collection.mounts = []
+      mounts_collection.mounts = [];
       await Promise.all(mounts.map((m: { mount: { id: number; name: string; }; }) => {
         if ('mount' in m) {
           mounts_collection.mounts.push({
@@ -283,10 +282,10 @@ export class CharactersWorker {
           })
         }
       }))
-      return mounts_collection
+      return mounts_collection;
     } catch (e) {
-      this.logger.error(`mounts: ${name_slug}@${realm_slug}:${e}`)
-      return mounts_collection
+      this.logger.error(`mounts: ${name_slug}@${realm_slug}:${e}`);
+      return mounts_collection;
     }
   }
 
@@ -301,7 +300,7 @@ export class CharactersWorker {
           headers: { 'Battlenet-Namespace': 'profile-eu' },
           timeout: OSINT_TIMEOUT_TOLERANCE,
         });
-      if (!response || !response.pets || !response.pets.length) return pets_collection
+      if (!response || !response.pets || !response.pets.length) return pets_collection;
       const { pets } = response;
       pets_collection.pets = [];
       await Promise.all(pets.map((pet: { id: number; species: { name: string; }; name: string; is_active: boolean; level: { toString: () => string; }; }) => {
@@ -318,10 +317,10 @@ export class CharactersWorker {
       }))
       if (hash_b.length) pets_collection.hash_b = BigInt(hash64(hash_b.toString())).toString(16);
       if (hash_a.length) pets_collection.hash_a = BigInt(hash64(hash_a.toString())).toString(16);
-      return pets_collection
+      return pets_collection;
     } catch (error) {
       this.logger.error(`pets: ${name_slug}@${realm_slug}:${error}`)
-      return pets_collection
+      return pets_collection;
     }
   }
 
@@ -332,8 +331,8 @@ export class CharactersWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' },
         timeout: OSINT_TIMEOUT_TOLERANCE,
-      })
-      if (!response) return professions
+      });
+      if (!response) return professions;
       professions.professions = [];
       if ('primaries' in response) {
         const { primaries } = response
@@ -454,10 +453,10 @@ export class CharactersWorker {
         summary.guild_rank = undefined;
       }
       summary.status_code = 200;
-      return summary
+      return summary;
     } catch (error) {
       this.logger.error(`summary: ${name_slug}@${realm_slug}:${error}`)
-      return summary
+      return summary;
     }
   }
 
@@ -501,27 +500,27 @@ export class CharactersWorker {
 
     try {
       const wp: Record<string, any> = await x(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`), '.registeredTo', ['.language']);
-      if (!Array.isArray(wp) || !wp || !wp.length) return wowprogress
+      if (!Array.isArray(wp) || !wp || !wp.length) return wowprogress;
       await Promise.all(
         wp.map(line => {
-          const [key, value] = line.split(':')
+          const [key, value] = line.split(':');
           if (key === 'Battletag') wowprogress.battle_tag = value.trim();
           if (key === 'Looking for guild') wowprogress.transfer = value.includes('ready to transfer');
           if (key === 'Raids per week') {
             if (value.includes(' - ')) {
               const [from, to] = value.split(' - ');
               wowprogress.days_from = parseInt(from);
-              wowprogress.days_to = parseInt(to)
+              wowprogress.days_to = parseInt(to);
             }
           }
-          if (key === 'Specs playing') wowprogress.role = value.trim()
-          if (key === 'Languages') wowprogress.languages = value.split(',').map((s: string) => s.toLowerCase().trim())
+          if (key === 'Specs playing') wowprogress.role = value.trim();
+          if (key === 'Languages') wowprogress.languages = value.split(',').map((s: string) => s.toLowerCase().trim());
         })
       )
-      return wowprogress
+      return wowprogress;
     } catch (e) {
       this.logger.error(`wowprogress: ${name}@${realm_slug}:${e}`);
-      return wowprogress
+      return wowprogress;
     }
   }
 

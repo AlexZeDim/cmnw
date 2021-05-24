@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { charactersQueue, CharactersWorker, guildsQueue, GuildsWorker } from '@app/core';
+import { charactersQueue, guildsQueue } from '@app/core';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CharactersWorker } from './characters.worker';
+import { GuildsWorker } from './guilds.worker';
 import {
   Character,
   CharactersSchema,

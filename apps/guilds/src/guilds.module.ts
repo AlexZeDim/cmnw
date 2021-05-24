@@ -16,7 +16,6 @@ import {
 import { BullModule } from '@anchan828/nest-bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import { ScheduleModule } from '@nestjs/schedule';
-import { GuildsWorker } from '@app/core';
 
 @Module({
   imports: [
@@ -40,6 +39,6 @@ import { GuildsWorker } from '@app/core';
     BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
   ],
   controllers: [],
-  providers: [GuildsService, GuildsWorker],
+  providers: [GuildsService],
 })
 export class GuildsModule {}

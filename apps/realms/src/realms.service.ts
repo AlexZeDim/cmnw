@@ -121,7 +121,7 @@ export class RealmsService {
         .cursor()
         .eachAsync(async (realm: Realm) => {
           await this.population(realm);
-        })
+        }, { parallel: 5 })
     } catch (e) {
       this.logger.error(`indexRealmPopulation: ${e}`)
     }
@@ -163,11 +163,14 @@ export class RealmsService {
       population.characters_active_horde = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, faction: FACTION.H });
       population.characters_active_max_level = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, level: MAX_LEVEL });
       population.characters_guild_members = await this.CharacterModel.countDocuments({ realm: realm.slug, guild: { "$ne": undefined } });
-      population.characters_guildless = await this.CharacterModel.countDocuments({ realm: realm.slug, guild: undefined })
-      const players_unique = await this.CharacterModel.find({ realm: realm.slug }).distinct('personality');
-      population.players_unique = players_unique.length;
-      const players_active_unique = await this.CharacterModel.find({ realm: realm.slug, status_code: 200 }).distinct('personality');
-      population.players_active_unique = players_active_unique.length;
+      population.characters_guildless = await this.CharacterModel.countDocuments({ realm: realm.slug, guild: undefined });
+      /**
+       * const players_unique = await this.CharacterModel.find({ realm: realm.slug }).distinct('personality');
+       * population.players_unique = players_unique.length;
+       *
+       * const players_active_unique = await this.CharacterModel.find({ realm: realm.slug, status_code: 200 }).distinct('personality');
+       * population.players_active_unique = players_active_unique.length;
+       */
       /**
        * Guild number
        * and their faction balance
@@ -182,7 +185,7 @@ export class RealmsService {
        */
       for (const character_class of CHARACTER_CLASS) {
         const key: string = toKey(character_class);
-        population.characters_classes[key] = await this.CharacterModel.countDocuments({ realm: realm.slug, statusCode: 200, character_class: character_class });
+        population.characters_classes[key] = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, character_class: character_class });
       }
       /**
        * Count covenant stats
@@ -190,7 +193,7 @@ export class RealmsService {
        */
       for (const covenant of COVENANTS) {
         const key: string = toKey(covenant);
-        population.characters_covenants[key] = await this.CharacterModel.countDocuments({ 'realm.slug': realm.slug, statusCode: 200, 'chosen_covenant': covenant });
+        population.characters_covenants[key] = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, chosen_covenant: covenant });
       }
 
       await this.RealmPopulationModel.create(population);

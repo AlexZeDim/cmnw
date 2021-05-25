@@ -208,7 +208,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/dma/main.js' ]
+    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:
@@ -225,7 +225,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/dma/main.js' ]
+    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:
@@ -242,7 +242,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/dma/main.js' ]
+    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:
@@ -276,7 +276,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/auctions/main.js' ]
+    command: [ 'node', 'dist/apps/auctions/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV:-production}
     depends_on:

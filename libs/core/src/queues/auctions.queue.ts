@@ -11,10 +11,6 @@ export const auctionsQueue: QueueInterface = {
   workerOptions: {
     concurrency: 1,
     lockDuration: 1000 * 60 * 5,
-    limiter: {
-      max: 3,
-      duration: 1000 * 15,
-    }
   },
   options: {
     defaultJobOptions: queueOptions,

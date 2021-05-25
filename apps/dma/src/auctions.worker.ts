@@ -66,12 +66,13 @@ export class AuctionsWorker {
       this.logger.debug(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders.length}`)
 
       await job.updateProgress(90);
-      await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000 });
+      await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000, lean: true });
       await job.updateProgress(95);
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
       await job.updateProgress(100);
       return 200
     } catch (e) {
+      await job.log(e);
       this.logger.error(`${AuctionsWorker.name}: ${e}`)
       return 500
     }

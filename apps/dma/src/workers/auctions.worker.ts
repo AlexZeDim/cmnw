@@ -65,10 +65,9 @@ export class AuctionsWorker {
       const ts: number = parseInt(moment(response.lastModified).format('x'));
 
       const orders = await this.writeBulkOrders(response.auctions, args.connected_realm_id, ts);
-      this.logger.debug(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders}`);
+      await job.log(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders}`);
 
       await job.updateProgress(90);
-      await job.updateProgress(95);
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
       await job.updateProgress(100);
       return 200
@@ -105,6 +104,7 @@ export class AuctionsWorker {
           const ordersBulkAuctions = this.transformOrders(ordersBulk, connected_realm_id, last_modified);
           await this.AuctionModel.insertMany(ordersBulkAuctions, { rawResult: false, lean: true });
           iterator += ordersBulkAuctions.length;
+          this.logger.debug(`writeBulkOrders: ${connected_realm_id}:${iterator}`);
         }),
       ).toPromise();
       return iterator;

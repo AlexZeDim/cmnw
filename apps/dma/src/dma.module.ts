@@ -24,10 +24,7 @@ import {
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
-import { AuctionsWorker } from './auctions.worker';
-import { PricingWorker } from './pricing.worker';
-import { ItemsWorker } from './items.worker';
-import { ValuationsWorker } from './valuations.worker';
+import { AuctionsWorker, ItemsWorker, PricingWorker, ValuationsWorker } from './workers';
 
 @Module({
   imports: [

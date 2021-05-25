@@ -7,6 +7,8 @@ import { Auction, Realm } from '@app/mongo';
 import { Job } from 'bullmq';
 import moment from "moment";
 import { Model } from "mongoose";
+import { bufferCount, concatMap } from 'rxjs/operators';
+import { from } from 'rxjs';
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
@@ -62,11 +64,10 @@ export class AuctionsWorker {
 
       const ts: number = parseInt(moment(response.lastModified).format('x'));
 
-      const orders = this.transformOrders(response.auctions, args.connected_realm_id, ts);
-      this.logger.debug(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders.length}`)
+      const orders = await this.writeBulkOrders(response.auctions, args.connected_realm_id, ts);
+      this.logger.debug(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders}`);
 
       await job.updateProgress(90);
-      await this.AuctionModel.insertMany(orders, { rawResult: false, limit: 10000, lean: true });
       await job.updateProgress(95);
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
       await job.updateProgress(100);
@@ -93,5 +94,23 @@ export class AuctionsWorker {
       order.last_modified = last_modified;
       return new this.AuctionModel(order)
     })
+  }
+
+  private async writeBulkOrders(orders: any[], connected_realm_id: number, last_modified: number): Promise<number> {
+    let iterator: number = 0;
+    try {
+      await from(orders).pipe(
+        bufferCount(10000),
+        concatMap(async (ordersBulk) => {
+          const ordersBulkAuctions = this.transformOrders(ordersBulk, connected_realm_id, last_modified);
+          await this.AuctionModel.insertMany(ordersBulkAuctions, { rawResult: false, lean: true });
+          iterator += ordersBulkAuctions.length;
+        }),
+      ).toPromise();
+      return iterator;
+    } catch (e) {
+      this.logger.error(`writeBulkOrders: ${e}`);
+      return iterator;
+    }
   }
 }

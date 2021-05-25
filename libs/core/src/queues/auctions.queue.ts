@@ -10,7 +10,7 @@ export const auctionsQueue: QueueInterface = {
   name: 'OSINT:Auctions',
   workerOptions: {
     concurrency: 1,
-    lockDuration: 1000 * 60 * 5,
+    lockDuration: 1000 * 60 * 10,
   },
   options: {
     defaultJobOptions: queueOptions,

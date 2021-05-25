@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { ItemInterface, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
+import { DMA_TIMEOUT_TOLERANCE, ItemInterface, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { Job } from 'bullmq';
@@ -45,11 +45,11 @@ export class ItemsWorker {
       /** Request item data */
       const [getItemSummary, getItemMedia] = await (Promise as any).allSettled([
         this.BNet.query(`/data/wow/item/${args._id}`, {
-          timeout: 10000,
+          timeout: DMA_TIMEOUT_TOLERANCE,
           headers: { 'Battlenet-Namespace': 'static-eu' }
         }),
         this.BNet.query(`/data/wow/media/item/${args._id}`, {
-          timeout: 10000,
+          timeout: DMA_TIMEOUT_TOLERANCE,
           headers: { 'Battlenet-Namespace': 'static-eu' }
         })
       ]);

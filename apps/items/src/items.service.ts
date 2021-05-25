@@ -24,13 +24,18 @@ export class ItemsService {
     @BullQueueInject(itemsQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexItems(GLOBAL_KEY, 0, 200000, false);
+    this.indexItems(GLOBAL_KEY, 0, 200000, false, false);
     this.buildItems(false)
   }
 
   @Cron(CronExpression.EVERY_WEEK)
-  async indexItems(clearance: string = GLOBAL_KEY, min: number = 0, max: number = 200000, updateForce: boolean = true): Promise<void> {
+  async indexItems(clearance: string = GLOBAL_KEY, min: number = 0, max: number = 200000, updateForce: boolean = true, init: boolean = true): Promise<void> {
     try {
+      if (!init) {
+        this.logger.log(`indexItems: init: ${init}`);
+        return;
+      }
+
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexItems: clearance: ${clearance} key not found`);

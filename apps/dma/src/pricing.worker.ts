@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_SOURCE, FACTION, PRICING_TYPE, pricingQueue } from '@app/core';
+import { DMA_SOURCE, DMA_TIMEOUT_TOLERANCE, FACTION, PRICING_TYPE, pricingQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -45,11 +45,11 @@ export class PricingWorker {
 
       const [recipe_data, recipe_media]: Record<string, any>[] = await Promise.all([
         this.BNet.query(`/data/wow/recipe/${args.recipe_id}`, {
-          timeout: 10000,
+          timeout: DMA_TIMEOUT_TOLERANCE,
           headers: { 'Battlenet-Namespace': 'static-eu' }
         }),
         this.BNet.query(`/data/wow/media/recipe/${args.recipe_id}`, {
-          timeout: 10000,
+          timeout: DMA_TIMEOUT_TOLERANCE,
           headers: { 'Battlenet-Namespace': 'static-eu' }
         })
       ]);

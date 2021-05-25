@@ -1,3 +1,5 @@
+export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
+
 export enum DMA_SOURCE {
   API = 'DMA-API'
 }

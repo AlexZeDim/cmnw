@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { auctionsQueue, round2 } from '@app/core';
+import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, round2 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -49,7 +49,7 @@ export class AuctionsWorker {
       });
 
       const response: { auctions: Record<string, any>[], lastModified: string } = await this.BNet.query(`/data/wow/connected-realm/${args.connected_realm_id}/auctions`, {
-        timeout: 30000,
+        timeout: DMA_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
         headers: {
           'Battlenet-Namespace': 'dynamic-eu',

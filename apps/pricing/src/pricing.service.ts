@@ -32,13 +32,18 @@ export class PricingService {
     @BullQueueInject(pricingQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexPricing(GLOBAL_DMA_KEY);
+    this.indexPricing(GLOBAL_DMA_KEY, false);
     this.buildPricing(false);
   }
 
   @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM)
-  async indexPricing(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
+  async indexPricing(clearance: string = GLOBAL_DMA_KEY, init: boolean = true): Promise<void> {
     try {
+      if (!init) {
+        this.logger.log(`indexPricing: init: ${init}`);
+        return;
+      }
+
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexPricing: clearance: ${clearance} key not found`);

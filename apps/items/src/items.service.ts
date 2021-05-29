@@ -25,14 +25,14 @@ export class ItemsService {
     private readonly queue: Queue,
   ) {
     this.indexItems(GLOBAL_KEY, 0, 200000, false, false);
-    this.buildItems(false)
+    this.buildItems(false);
   }
 
   @Cron(CronExpression.EVERY_WEEK)
   async indexItems(clearance: string = GLOBAL_KEY, min: number = 0, max: number = 200000, updateForce: boolean = true, init: boolean = true): Promise<void> {
     try {
+      this.logger.log(`indexItems: init: ${init}`);
       if (!init) {
-        this.logger.log(`indexItems: init: ${init}`);
         return;
       }
 
@@ -81,11 +81,10 @@ export class ItemsService {
       this.logger.error(`indexItems: ${e}`)
     }
   }
-
-  async buildItems(init: boolean): Promise<void> {
+  async buildItems(init: boolean = false): Promise<void> {
     try {
+      this.logger.log(`buildItems: init: ${init}`);
       if (!init) {
-        this.logger.log(`buildItems: init: ${init}`);
         return;
       }
 
@@ -99,13 +98,14 @@ export class ItemsService {
           const rows: any[] = await csv.parse(csvString, {
             columns: true,
             skip_empty_lines: true,
-            cast: value => (!isNaN(value as any)) ? parseInt(value) : value
+            cast: (value: number | string) => (Number.isNaN(Number(value)) ? value : Number(value))
           });
           switch (file) {
             case 'taxonomy.csv':
               for (const row of rows) {
                 const item = await this.ItemModel.findById(row._id);
                 if (item) {
+                  this.logger.debug(`item: ${item._id}, asset classes: ${row.asset_class.length}`);
                   if (row.ticker) item.ticker = row.ticker;
                   if (row.profession_class) item.profession_class = row.profession_class;
                   if (row.asset_class) {

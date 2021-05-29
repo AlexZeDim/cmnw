@@ -12,7 +12,7 @@ export enum VALUATION_TYPE {
   MARKET = 'market',
   PREMIUM = 'premium',
   FUNPAY = 'funpay',
-  COMMDTY = ' commdty',
+  COMMDTY = 'commdty',
   ITEM = 'item',
   OTC = 'otc',
   WOWTOKEN = 'wowtoken',

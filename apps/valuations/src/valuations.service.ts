@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Item, Key, Pricing } from '@app/mongo';
-import { Model } from "mongoose";
+import { LeanDocument, Model } from 'mongoose';
 import { VALUATION_TYPE, valuationsQueue } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
@@ -24,14 +24,18 @@ export class ValuationsService {
     @BullQueueInject(valuationsQueue.name)
     private readonly queue: Queue,
   ) {
-    // TODO valuations
     this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], true)
   }
 
+  /**
+   * TODO add migration stage and replace root
+   * @param args
+   * @param init
+   */
   async buildAssetClasses(args: string[] = ['pricing', 'auctions', 'contracts', 'currency', 'tags'], init: boolean = true): Promise<void> {
     try {
+      this.logger.log(`buildAssetClasses: init: ${init}`);
       if (!init) {
-        this.logger.log(`buildAssetClasses: init: ${init}`);
         return;
       }
       /**
@@ -39,6 +43,7 @@ export class ValuationsService {
        * such as REAGENT / DERIVATIVE
        */
       if (args.includes('pricing')) {
+        this.logger.debug('pricing stage started');
         await this.PricingModel
           .find()
           .cursor()
@@ -47,6 +52,7 @@ export class ValuationsService {
               const item = await this.ItemModel.findById(_id);
               if (item) {
                 item.asset_class.addToSet(VALUATION_TYPE.DERIVATIVE);
+                this.logger.debug(`item: ${item._id}, asset_class: ${VALUATION_TYPE.DERIVATIVE}`);
                 await item.save();
               }
             }
@@ -54,50 +60,53 @@ export class ValuationsService {
               const item = await this.ItemModel.findById(_id);
               if (item) {
                 item.asset_class.addToSet(VALUATION_TYPE.REAGENT);
+                this.logger.debug(`item: ${item._id}, asset_class: ${VALUATION_TYPE.REAGENT}`);
                 await item.save();
               }
             }
-          });
+          }, { parallel: 20 });
+        this.logger.debug('pricing stage ended');
       }
       /**
        * This stage add asset_classes from auction_db
        * such as COMMDTY / ITEM and MARKET
        */
       if (args.includes('auctions')) {
+        this.logger.debug('auctions stage started');
         await this.AuctionsModel.aggregate([
           {
             $group: {
               _id: '$item_id',
               data: { $first: "$$ROOT"}
             }
-          },
-          {
-            $project: {
-              item_id: 1
-            }
           }
         ])
           .allowDiskUse(true)
           .cursor({})
           .exec()
-          .eachAsync(async (order: any) => {
-            const item = await this.ItemModel.findById(order._id)
+          .eachAsync(async (itemAuction: { _id: number, data: LeanDocument<Auction> } ) => {
+            const item = await this.ItemModel.findById(itemAuction._id)
             if (item) {
               item.asset_class.addToSet(VALUATION_TYPE.MARKET);
-              if (order.data.unit_price) {
+              const { data: order } = itemAuction;
+              if (order.price) {
                 item.asset_class.addToSet(VALUATION_TYPE.COMMDTY);
-              } else if (order.data.bid || order.data.buyout) {
+                this.logger.debug(`item: ${item._id}, asset_class: ${VALUATION_TYPE.COMMDTY}`);
+              } else if (order.bid || order.buyout) {
                 item.asset_class.addToSet(VALUATION_TYPE.ITEM);
+                this.logger.debug(`item: ${item._id}, asset_class: ${VALUATION_TYPE.ITEM}`);
               }
               await item.save();
             }
-          })
+          }, { parallel: 20 })
+        this.logger.debug('auctions stage ended');
       }
       /**
        * This stage check does item suits the
        * contract criteria based on asset class
        */
       if (args.includes('contracts')) {
+        this.logger.debug('contracts stage started');
         await this.ItemModel
           .updateMany({
             $or: [
@@ -108,24 +117,28 @@ export class ValuationsService {
                 ticker: { $exists: true }
               },
             ],
-          }, { contracts: true  })
+          }, { contracts: true  });
+        this.logger.debug('contracts stage ended');
       }
       /**
        * This stage define to items a special asset_class called PREMIUM
        * based on loot_type and asset_class: REAGENT
        */
       if (args.includes('premium')) {
+        this.logger.debug('premium stage started');
         await this.ItemModel
           .updateMany(
             { asset_class: VALUATION_TYPE.REAGENT, loot_type: 'ON_ACQUIRE' },
             { $addToSet: { asset_class: VALUATION_TYPE.PREMIUM } },
           )
+        this.logger.debug('premium stage ended');
       }
       /**
        * This stage define CURRENCY and WOWTOKEN
        * asset classes to GOLD / WOWTOKEN
        */
       if (args.includes('currency')) {
+        this.logger.debug('currency stage started');
         await this.ItemModel.updateOne(
           { _id: 122270 },
           { $addToSet: { asset_class: VALUATION_TYPE.WOWTOKEN } },
@@ -138,11 +151,13 @@ export class ValuationsService {
           { _id: 1 },
           { $addToSet: { asset_class: VALUATION_TYPE.GOLD } },
         );
+        this.logger.debug('currency stage ended');
       }
       /**
        * In this stage we build tags
        */
       if (args.includes('tags')) {
+        this.logger.debug('tags stage started');
         await this.ItemModel
           .find()
           .cursor()
@@ -163,8 +178,10 @@ export class ValuationsService {
                 item.tags.addToSet(t);
               })
             }
+            this.logger.debug(`item: ${item._id}, tags: ${item.tags.join(', ')}`);
             await item.save();
-          });
+          }, { parallel: 20 });
+        this.logger.debug('tags stage ended');
       }
     } catch (e) {
       this.logger.error(`buildAssetIndex: ${e}`)

@@ -533,7 +533,7 @@ export class DmaService {
                     _id: 0,
                     price: '$_id',
                     quantity: '$quantity',
-                    open_interest: '$open_interest',
+                    open_interest: { $trunc: ['$open_interest', 2] },
                     size: {
                       $cond: {
                         if: { $isArray: '$orders' },
@@ -544,7 +544,7 @@ export class DmaService {
                   },
                 },
               ]);
-              // TODO possible cursor
+              // TODO possible eachAsync cursor
               quotes.push(...orderQuotes);
             }
             /** NOT XRS but GOLD */
@@ -585,7 +585,7 @@ export class DmaService {
                     _id: 0,
                     price: '$_id',
                     quantity: '$quantity',
-                    open_interest: '$open_interest',
+                    open_interest: { $trunc: ['$open_interest', 2] },
                     size: {
                       $cond: {
                         if: { $isArray: '$sellers' },
@@ -596,7 +596,7 @@ export class DmaService {
                   },
                 },
               ]);
-              // TODO possible cursor
+              // TODO possible eachAsync cursor
               quotes.push(...orderQuotes);
             }
           }
@@ -629,7 +629,7 @@ export class DmaService {
               last_modified: realms[0].auctions,
               'item.id': item._id,
             });
-            // TODO possible cursor;
+            // TODO possible eachAsync cursor;
             feed.push(...orderFeed);
           }
         )

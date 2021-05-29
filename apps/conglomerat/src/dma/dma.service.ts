@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
+import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { VALUATION_TYPE } from '@app/core';
-import { ChartOrderInterface, OrderQuotesInterface, OrderXrsInterface, RealmChartInterface } from '@app/core';
-import { ItemChartDto } from './dto';
+import {
+  ChartOrderInterface,
+  OrderQuotesInterface,
+  OrderXrsInterface,
+  RealmChartInterface,
+  VALUATION_TYPE,
+} from '@app/core';
 import { groupBy } from 'lodash';
 
 @Injectable()
@@ -25,24 +29,9 @@ export class DmaService {
     private readonly AuctionModel: Model<Auction>,
   ) { }
 
-  async getItem(input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
+  async getItem(input: ItemCrossRealmDto): Promise<GetItemDto> {
     // TODO what about realm? Probably here?
-    const [ item ] = input._id.split('@');
-    if (item) {
-      if (isNaN(Number(item))) {
-        return this.ItemModel
-          .findOne(
-            { $text: { $search: item } },
-            { score: { $meta: 'textScore' } },
-          )
-          .sort({ score: { $meta: 'textScore' } })
-          .lean();
-      } else {
-        return this.ItemModel
-          .findById(parseInt(item))
-          .lean();
-      }
-    }
+    return await this.validateTransformDmaQuery(input._id);
   }
 
   async getItemValuations(input: ItemCrossRealmDto): Promise<string> {
@@ -396,14 +385,15 @@ export class DmaService {
                     orders: { $sum: 1 },
                     value: { $sum: '$quantity' },
                     price: { $first: '$price' },
-                    oi: {
-                      $sum: { $multiply: ['$price', '$quantity'] },
-                    }
+                    oi: { $sum: { $multiply: ['$price', '$quantity'] } }
                   }
                 }
               },
               {
-                $addFields: { xIndex: i }
+                $addFields: {
+                  xIndex: i,
+                  oi: { $trunc: ['$oi', 2] }
+                }
               }
             ])
             .allowDiskUse(true)
@@ -519,9 +509,7 @@ export class DmaService {
                   $group: {
                     _id: '$price',
                     quantity: { $sum: '$quantity' },
-                    open_interest: {
-                      $sum: { $multiply: ['$price', '$quantity'] },
-                    },
+                    open_interest: { $sum: { $multiply: ['$price', '$quantity'] } },
                     orders: { $addToSet: '$id' },
                   },
                 },
@@ -612,15 +600,14 @@ export class DmaService {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
     }
     /**
-     * Item should be not commodity or XRS
+     * Item should be not commodity
      */
     const connected_realms_id = groupBy(realm, 'connected_realm_id');
     const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
-    const is_xrs = Object.keys(connected_realms_id).length > 1;
 
-    const feed: Auction[] = [];
+    const feed: LeanDocument<Auction>[] = [];
 
-    if (!is_xrs && !is_commdty) {
+    if (!is_commdty) {
       await Promise.all(
         Object.entries(connected_realms_id).map(
           async ([connected_realms_hub, realms]: [string, LeanDocument<Realm>[]]) => {
@@ -628,7 +615,7 @@ export class DmaService {
               connected_realm_id: parseInt(connected_realms_hub),
               last_modified: realms[0].auctions,
               'item.id': item._id,
-            });
+            }).lean();
             // TODO possible eachAsync cursor;
             feed.push(...orderFeed);
           }

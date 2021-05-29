@@ -3,31 +3,31 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 class ItemNames {
-  @Prop({ required: true })
+  @Prop()
   en_US: string;
 
-  @Prop({ required: true })
+  @Prop()
   es_MX: string;
 
-  @Prop({ required: true })
+  @Prop()
   pt_BR: string;
 
-  @Prop({ required: true })
+  @Prop()
   de_DE: string;
 
-  @Prop({ required: true })
+  @Prop()
   en_GB: string;
 
-  @Prop({ required: true })
+  @Prop()
   es_ES: string;
 
-  @Prop({ required: true })
+  @Prop()
   fr_FR: string;
 
-  @Prop({ required: true })
+  @Prop()
   it_IT: string;
 
-  @Prop({ required: true })
+  @Prop()
   ru_RU: string;
 }
 

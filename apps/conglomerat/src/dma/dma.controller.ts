@@ -19,10 +19,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
-import { ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
+import { GetItemDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
 import { ItemChartDto } from './dto';
-import { LeanDocument } from 'mongoose';
-import { Item } from '@app/mongo';
 
 @ApiTags('dma')
 @Controller('dma')
@@ -45,7 +43,7 @@ export class DmaController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item')
-  async getItem(@Query() input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
+  async getItem(@Query() input: ItemCrossRealmDto): Promise<GetItemDto> {
     return await this.dmaService.getItem(input);
   }
 

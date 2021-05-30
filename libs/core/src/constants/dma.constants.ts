@@ -80,11 +80,11 @@ export const PROFESSION_TICKER: Map<number, string> = new Map([
 
 export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
   // GOLD
-  [0, { _id: 1 }],
+  [1, { _id: 1 }],
   // WOWTOKEN
-  [1, { asset_class: 'WOWTOKEN' }],
+  [2, { asset_class: 'WOWTOKEN' }],
   // ACTUAL NON DERIVATIVE REAGENT & MARKET & COMMDTY
-  [2,
+  [3,
     {
       $and: [
         { expansion: 'SHDW' },
@@ -102,7 +102,7 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
     },
   ],
   // ACTUAL ALL REAGENT & DERIVATIVE
-  [3,
+  [4,
     {
       $and: [
         { expansion: 'SHDW' },
@@ -115,7 +115,7 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
     },
   ],
   // PURE DERIVATIVE
-  [4,
+  [5,
     {
       $and: [
         { expansion: 'SHDW' },

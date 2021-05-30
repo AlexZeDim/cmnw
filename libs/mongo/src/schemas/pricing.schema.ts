@@ -2,7 +2,7 @@ import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
-class ItemPricing {
+export class ItemPricing {
   @Prop({ required: true })
   _id: number;
 
@@ -13,7 +13,7 @@ class ItemPricing {
 const ItemSchema = SchemaFactory.createForClass(ItemPricing);
 
 @Schema()
-class ModifiedCraftingSlot {
+export class ModifiedCraftingSlot {
   @Prop({ required: true })
   _id: number;
 }
@@ -115,8 +115,8 @@ export class Pricing extends Document {
   @Prop({ required: true }) //enum: PricingType
   type: string;
 
-  @Prop({ required: true, default: false })
-  single_premium: boolean;
+  @Prop()
+  single_premium: number;
 
   @Prop()
   create_by: string;

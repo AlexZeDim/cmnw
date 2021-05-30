@@ -6,7 +6,7 @@ import {
   ASSET_EVALUATION_PRIORITY,
   IVQInterface,
   VALUATION_TYPE,
-  valuationsQueue
+  valuationsQueue,
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
@@ -30,9 +30,9 @@ export class ValuationsService {
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queue: Queue<IVQInterface>,
+    private readonly queueValuations: Queue<IVQInterface, number>,
   ) {
-    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], false)
+    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], false);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -53,7 +53,8 @@ export class ValuationsService {
         .eachAsync(async ({ _id, auctions, valuations }) => {
           /** Update valuations with new auctions data */
           if (auctions <= valuations) return;
-        })
+          await this.buildValuations(_id, auctions);
+        });
     } catch (e) {
       this.logger.error(`initValuations: ${e}`);
     }
@@ -61,15 +62,15 @@ export class ValuationsService {
 
   async buildValuations(connected_realm_id: number, timestamp: number) {
     try {
-      for (let [k, query] of ASSET_EVALUATION_PRIORITY) {
-        this.logger.log(`buildValuations: ${connected_realm_id}-${k}`);
+      for (let [priority, query] of ASSET_EVALUATION_PRIORITY) {
+        this.logger.log(`buildValuations: ${connected_realm_id}-${priority}`);
         await this.ItemModel
           .find(query)
           .lean()
           .cursor()
           .eachAsync(async (item) => {
             const _id = `${item._id}@${connected_realm_id}:${timestamp}`;
-            await this.queue.add(
+            await this.queueValuations.add(
               _id, {
                 _id: item._id,
                 last_modified: timestamp,
@@ -77,12 +78,14 @@ export class ValuationsService {
                 iteration: 0
               }, {
                 jobId: _id,
+                priority: priority,
               }
-            )
+            );
           }, { parallel: 10 });
         this.logger.log(`=======================================`);
       }
       await this.RealmModel.updateMany({ connected_realm_id }, { valuations: timestamp });
+      this.logger.log(`buildValuations: realm: ${connected_realm_id} updated: ${timestamp}`);
     } catch (e) {
       this.logger.error(`buildValuations: ${e}`)
     }
@@ -158,7 +161,7 @@ export class ValuationsService {
               }
               await item.save();
             }
-          }, { parallel: 20 })
+          }, { parallel: 20 });
         this.logger.debug('auctions stage ended');
       }
       /**
@@ -190,7 +193,7 @@ export class ValuationsService {
           .updateMany(
             { asset_class: VALUATION_TYPE.REAGENT, loot_type: 'ON_ACQUIRE' },
             { $addToSet: { asset_class: VALUATION_TYPE.PREMIUM } },
-          )
+          );
         this.logger.debug('premium stage ended');
       }
       /**
@@ -237,7 +240,7 @@ export class ValuationsService {
                   return;
                 }
                 item.tags.addToSet(t);
-              })
+              });
             }
             this.logger.debug(`item: ${item._id}, tags: ${item.tags.join(', ')}`);
             await item.save();

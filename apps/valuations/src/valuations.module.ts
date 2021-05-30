@@ -11,6 +11,8 @@ import {
   KeysSchema,
   Pricing,
   PricingSchema,
+  Realm,
+  RealmsSchema,
 } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { valuationsQueue } from '@app/core';
@@ -23,6 +25,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
       { name: Item.name, schema: ItemsSchema },
+      { name: Realm.name, schema: RealmsSchema },
       { name: Pricing.name, schema: PricingSchema },
       { name: Auction.name, schema: AuctionsSchema },
     ]),

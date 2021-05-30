@@ -101,6 +101,7 @@ export class OsintService {
   async getCharactersLfg(input: CharactersLfgDto): Promise<LeanDocument<Character[]>> {
     try {
       const query = { looking_for_guild: LFG.NEW };
+      // TODO looking_for_guild
       if (input.faction) Object.assign(query, { faction: input.faction });
       if (input.average_item_level) Object.assign(query, { average_item_level: { '$gte': input.average_item_level } });
       if (input.rio_score) Object.assign(query, { rio_score: { '$gte': input.rio_score } });

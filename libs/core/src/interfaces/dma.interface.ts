@@ -1,3 +1,10 @@
+export interface IVQInterface {
+  _id: number,
+  last_modified: number,
+  connected_realm_id: number,
+  iteration: number,
+}
+
 export interface ItemInterface {
   quality: string,
   item_class: string,

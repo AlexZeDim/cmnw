@@ -5,6 +5,7 @@ import { Job, Queue } from 'bullmq';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Pricing, Realm, Token, Valuations } from '@app/mongo';
 import { Model } from "mongoose";
+import { BattleNetOptions } from 'blizzapi';
 
 interface ItemValuationProps {
   _id: number,
@@ -71,9 +72,14 @@ export class ValuationsWorker {
   @BullWorkerProcess(valuationsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
+      const args: { _id: number } & BattleNetOptions = { ...job.data };
+      await job.updateProgress(5);
+      // TODO extend
+
       return 200;
     } catch (e) {
-      this.logger.error(`${ValuationsWorker.name}: ${e}`)
+      await job.log(e);
+      this.logger.error(`${ValuationsWorker.name}: ${e}`);
       return 500;
     }
   }
@@ -374,9 +380,9 @@ export class ValuationsWorker {
         const [market_data]: MarketData[] = await this.AuctionsModel.aggregate([
           {
             $match: {
-              'last_modified': args.last_modified,
-              'item_id': args._id,
-              'connected_realm_id': args.connected_realm_id,
+              last_modified: args.last_modified,
+              item_id: args._id,
+              connected_realm_id: args.connected_realm_id,
             },
           },
           {

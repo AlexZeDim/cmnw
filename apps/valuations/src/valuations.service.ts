@@ -1,10 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Item, Key, Pricing } from '@app/mongo';
+import { Auction, Item, Key, Pricing, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { VALUATION_TYPE, valuationsQueue } from '@app/core';
+import {
+  ASSET_EVALUATION_PRIORITY,
+  IVQInterface,
+  VALUATION_TYPE,
+  valuationsQueue
+} from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ValuationsService {
@@ -17,16 +23,70 @@ export class ValuationsService {
     private readonly KeyModel: Model<Key>,
     @InjectModel(Item.name)
     private readonly ItemModel: Model<Item>,
+    @InjectModel(Realm.name)
+    private readonly RealmModel: Model<Realm>,
     @InjectModel(Pricing.name)
     private readonly PricingModel: Model<Pricing>,
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queue: Queue,
+    private readonly queue: Queue<IVQInterface>,
   ) {
-    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], true)
+    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], false)
   }
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async initValuations() {
+    try {
+      await this.RealmModel
+        .aggregate([
+          {
+            $group: {
+              _id: '$connected_realm_id',
+              auctions: { $first: "$auctions" },
+              valuations: { $first: "$valuations" }
+            },
+          }
+        ])
+        .cursor({ batchSize: 1 })
+        .exec()
+        .eachAsync(async ({ _id, auctions, valuations }) => {
+          /** Update valuations with new auctions data */
+          if (auctions <= valuations) return;
+        })
+    } catch (e) {
+      this.logger.error(`initValuations: ${e}`);
+    }
+  }
+
+  async buildValuations(connected_realm_id: number, timestamp: number) {
+    try {
+      for (let [k, query] of ASSET_EVALUATION_PRIORITY) {
+        this.logger.log(`buildValuations: ${connected_realm_id}-${k}`);
+        await this.ItemModel
+          .find(query)
+          .lean()
+          .cursor()
+          .eachAsync(async (item) => {
+            const _id = `${item._id}@${connected_realm_id}:${timestamp}`;
+            await this.queue.add(
+              _id, {
+                _id: item._id,
+                last_modified: timestamp,
+                connected_realm_id,
+                iteration: 0
+              }, {
+                jobId: _id,
+              }
+            )
+          }, { parallel: 10 });
+        this.logger.log(`=======================================`);
+      }
+      await this.RealmModel.updateMany({ connected_realm_id }, { valuations: timestamp });
+    } catch (e) {
+      this.logger.error(`buildValuations: ${e}`)
+    }
+  }
   /**
    * TODO add migration stage and replace root
    * @param args
@@ -162,6 +222,7 @@ export class ValuationsService {
           .find()
           .cursor()
           .eachAsync(async (item: Item) => {
+            if (item.sell_price) item.asset_class.addToSet(VALUATION_TYPE.VSP);
             if (item.expansion) item.tags.addToSet(item.expansion.toLowerCase());
             if (item.profession_class) item.tags.addToSet(item.profession_class.toLowerCase());
             if (item.asset_class) item.asset_class.map(asset_class => item.tags.addToSet(asset_class.toLowerCase()));

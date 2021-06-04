@@ -92,7 +92,7 @@ export class GuildsWorker {
           await job.updateProgress(11);
           return 302;
         }
-        let forceUpdate: number = 86400000;
+        let forceUpdate: number = 1000 * 60 * 60 * 4;
         if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
 
         if ((now - forceUpdate) < guild.updatedAt.getTime()) {

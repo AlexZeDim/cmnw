@@ -48,7 +48,6 @@ export class GuildsService {
       await this.GuildModel
         .find()
         .sort({ updatedAt: 1 })
-        .limit(25000)
         .cursor()
         .eachAsync(async (guild: Guild) => {
           await this.queue.add(
@@ -61,7 +60,7 @@ export class GuildsService {
               members: [],
               region: 'eu',
               updated_by: OSINT_SOURCE.INDEXGUILD,
-              forceUpdate: 3600000,
+              forceUpdate: 1000 * 60 * 60 * 4,
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,
               accessToken: keys[i].token,

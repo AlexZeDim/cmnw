@@ -11,6 +11,7 @@ import {
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { valuationsConfig } from '@app/configuration';
 
 @Injectable()
 export class ValuationsService {
@@ -32,7 +33,7 @@ export class ValuationsService {
     @BullQueueInject(valuationsQueue.name)
     private readonly queueValuations: Queue<IVQInterface, number>,
   ) {
-    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], false);
+    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)

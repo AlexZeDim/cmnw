@@ -9,6 +9,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { itemsConfig } from '@app/configuration';
 
 @Injectable()
 export class ItemsService {
@@ -24,8 +25,8 @@ export class ItemsService {
     @BullQueueInject(itemsQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexItems(GLOBAL_KEY, 0, 200000, false, false);
-    this.buildItems(false);
+    this.indexItems(GLOBAL_KEY, 0, 200000, itemsConfig.index_update_force, itemsConfig.index_init);
+    this.buildItems(itemsConfig.build_init);
   }
 
   @Cron(CronExpression.EVERY_WEEK)

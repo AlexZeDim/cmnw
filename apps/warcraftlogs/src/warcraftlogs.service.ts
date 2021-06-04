@@ -18,6 +18,7 @@ import axios from 'axios';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
+import { warcraftlogsConfig } from '@app/configuration';
 
 @Injectable()
 export class WarcraftlogsService {
@@ -41,7 +42,15 @@ export class WarcraftlogsService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  async indexWarcraftLogs(config: WarcraftLogsConfigInterface = { raid_tier: 26, pages_from: 0, pages_to: 500, page: 2, logs: 500 }): Promise<void> {
+  async indexWarcraftLogs(
+    config: WarcraftLogsConfigInterface = {
+      raid_tier: warcraftlogsConfig.raid_tier,
+      pages_from: warcraftlogsConfig.pages_from,
+      pages_to: warcraftlogsConfig.pages_to,
+      page: warcraftlogsConfig.page,
+      logs: warcraftlogsConfig.logs
+    }
+  ): Promise<void> {
     try {
       await this.RealmModel
         .find({ wcl_id: { $ne: null } })

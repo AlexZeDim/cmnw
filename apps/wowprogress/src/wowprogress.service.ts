@@ -16,6 +16,7 @@ import { union, differenceBy } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { delay } from '@app/core/utils/converters';
 import { nanoid } from 'nanoid'
+import { wowprogressConfig } from '@app/configuration';
 
 @Injectable()
 export class WowprogressService {
@@ -35,7 +36,7 @@ export class WowprogressService {
     @BullQueueInject(charactersQueue.name)
     private readonly queueCharacters: Queue,
   ) {
-    this.indexWowProgress(GLOBAL_KEY, false);
+    this.indexWowProgress(GLOBAL_KEY, wowprogressConfig.index_init);
   }
 
   /**

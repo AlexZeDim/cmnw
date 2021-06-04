@@ -10,6 +10,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { pricingConfig } from '@app/configuration';
 
 @Injectable()
 export class PricingService {
@@ -32,8 +33,8 @@ export class PricingService {
     @BullQueueInject(pricingQueue.name)
     private readonly queue: Queue,
   ) {
-    this.indexPricing(GLOBAL_DMA_KEY, false);
-    this.buildPricing(false);
+    this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.pricing_init);
+    this.buildPricing(pricingConfig.build_init);
   }
 
   @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM)

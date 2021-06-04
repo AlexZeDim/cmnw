@@ -5,3 +5,7 @@ export { KeyInterface } from './key.interface';
 export { KeysInterface } from './keys.interface';
 export { DiscordInterface } from './discord.interface';
 export { YandexInterface } from './yandex.interface';
+export { ItemsInterface } from './items.interface';
+export { PricingInterface } from './pricing.interface';
+export { ValuationsInterface } from './valuations.interface';
+export { WowprogressInterface } from './wowprogress.interface';

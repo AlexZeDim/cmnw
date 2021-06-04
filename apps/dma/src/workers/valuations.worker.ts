@@ -57,25 +57,30 @@ export class ValuationsWorker {
       const item = await this.ItemModel.findById(job.data._id).lean();
       if (!item) {
         this.logger.error(`ValuationsWorker: item: ${job.data._id} not found`);
-        return;
+        return 404;
       }
       const args: VAInterface = { ...item, ...job.data };
+      if (args.iteration > 50) {
+        this.logger.error(`item: ${item._id} iteration > ${args.iteration}`);
+        return 403;
+      }
+
       await job.updateProgress(5);
 
       await this.getCVA(args);
-      await job.updateProgress(10);
-
-      await this.getVVA(args);
-      await job.updateProgress(15);
-
-      await this.getTVA(args);
       await job.updateProgress(20);
 
+      await this.getVVA(args);
+      await job.updateProgress(40);
+
+      await this.getTVA(args);
+      await job.updateProgress(60);
+
       await this.getAVA(args);
-      await job.updateProgress(25);
+      await job.updateProgress(80);
 
       await this.getDVA(args);
-      await job.updateProgress(30);
+      await job.updateProgress(100);
 
       return 200;
     } catch (e) {
@@ -291,10 +296,7 @@ export class ValuationsWorker {
 
   private async getTVA <T extends VAInterface>(args: T): Promise<void> {
     try {
-      if (!args.asset_class.includes(VALUATION_TYPE.WOWTOKEN)) {
-        this.logger.error(`getTVA: item ${args._id} asset class not ${VALUATION_TYPE.WOWTOKEN}`);
-        return;
-      }
+      this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.WOWTOKEN);
       /** CONSTANT AMOUNT */
       const wtConst = [
         {
@@ -403,10 +405,7 @@ export class ValuationsWorker {
 
   private async getAVA <T extends VAInterface>(args: T): Promise<void> {
     try {
-      if (!args.asset_class.includes(VALUATION_TYPE.MARKET)) {
-        this.logger.error(`getCVA: item ${args._id} asset class not ${VALUATION_TYPE.MARKET}`);
-        return;
-      }
+      this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.MARKET);
       const ava = await this.ValuationsModel.findOne({
         item_id: args._id,
         last_modified: args.last_modified,
@@ -415,7 +414,7 @@ export class ValuationsWorker {
       });
       if (!ava) {
         /** Request for Quotes */
-        const [market_data]: MarketDataInterface[] = await this.AuctionsModel.aggregate([
+        const [market_data]: MarketDataInterface[] = await this.AuctionsModel.aggregate<MarketDataInterface>([
           {
             $match: {
               last_modified: args.last_modified,
@@ -451,7 +450,7 @@ export class ValuationsWorker {
               orders: { $addToSet: '$id' },
             },
           },
-        ]).exec();
+        ]);
         if (!market_data) {
           this.logger.error(`getAVA: item ${args._id}, marker data not found`)
           return;
@@ -546,7 +545,13 @@ export class ValuationsWorker {
           if (!item) {
             // FIXME stop evaluation, start recursive?
             await this.addMissingItemToQueue(reagent._id);
-            continue;
+            await this.addValuationToQueue({
+              _id: args._id,
+              last_modified: args.last_modified,
+              connected_realm_id: args.connected_realm_id,
+              iteration: args.iteration + 1,
+            });
+            throw new InternalServerErrorException(`item: ${args._id} recursive`);
           }
           const reagent_item: ReagentItemInterface =
             merge<{ value: number }, LeanDocument<Item> & LeanDocument<ItemPricing>>({ value: 0 }, { ...item, ...reagent });
@@ -579,16 +584,22 @@ export class ValuationsWorker {
               .lean();
             /**
              * If CTD not found..
+             * stop evaluation, start recursive?
              */
             if (!ctd) {
-              // FIXME stop evaluation, start recursive?
               await this.addValuationToQueue({
                 _id: reagent_item._id,
                 last_modified: args.last_modified,
                 connected_realm_id: args.connected_realm_id,
                 iteration: args.iteration + 1,
               });
-              return;
+              await this.addValuationToQueue({
+                _id: args._id,
+                last_modified: args.last_modified,
+                connected_realm_id: args.connected_realm_id,
+                iteration: args.iteration + 1,
+              });
+              throw new InternalServerErrorException(`item: ${args._id} recursive`);
             }
             /**
              * If CTD is derivative type,
@@ -741,9 +752,9 @@ export class ValuationsWorker {
            * We request AVA for each Di
            * and sum all for the derivatives cost
            */
-          for (const derivative_item of price_method.derivatives) {
+          // for (const derivative_item of price_method.derivatives) {
             // TODO rework
-          }
+          // }
         }
       }
       /** End of loop for every pricing method */

@@ -25,7 +25,7 @@ export class ItemsService {
     private readonly queue: Queue,
   ) {
     this.indexItems(GLOBAL_KEY, 0, 200000, false, false);
-    this.buildItems(true);
+    this.buildItems(false);
   }
 
   @Cron(CronExpression.EVERY_WEEK)

@@ -285,6 +285,23 @@ services:
     networks:
       - conglomerat-network
 
+  valuations:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: valuations
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/valuations/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   gold:
     build: ./
     image: conglomerat

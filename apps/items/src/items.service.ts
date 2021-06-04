@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Item, Key } from '@app/mongo';
-import { Model } from "mongoose";
+import { LeanDocument, Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { EXPANSION_TICKER, GLOBAL_KEY, itemsQueue } from '@app/core';
+import { EXPANSION_TICKER_ID, GLOBAL_KEY, itemsQueue } from '@app/core';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
@@ -25,7 +25,7 @@ export class ItemsService {
     private readonly queue: Queue,
   ) {
     this.indexItems(GLOBAL_KEY, 0, 200000, false, false);
-    this.buildItems(false);
+    this.buildItems(true);
   }
 
   @Cron(CronExpression.EVERY_WEEK)
@@ -90,8 +90,22 @@ export class ItemsService {
 
       const dir = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dir);
-      const files = await fs.readdir(dir);
+      const files: string[] = await fs.readdir(dir);
       for (const file of files) {
+        if (file === 'items.json') {
+          const itemsJson = await fs.readFile(path.join(dir, file), 'utf-8');
+          const { items }: { items: Partial<LeanDocument<Item>>[] } = JSON.parse(itemsJson);
+          await Promise.all(
+            items.map(async (item) => {
+              const itemExist = await this.ItemModel.findById(item._id);
+              if (!itemExist) {
+                await this.ItemModel.create(item);
+                this.logger.log(`Created: item(${item._id})`);
+              }
+            }),
+          );
+        }
+
         if (file === 'taxonomy.csv' || file === 'itemsparse.csv') {
           const csvString = await fs.readFile(path.join(dir, file), 'utf-8');
 
@@ -134,7 +148,10 @@ export class ItemsService {
               break;
             case 'itemsparse.csv':
               for (const row of rows) {
-                await this.ItemModel.findByIdAndUpdate(row.ID, { stackable: row.Stackable, expansion: EXPANSION_TICKER.get(row.ExpansionID) })
+                await this.ItemModel.findByIdAndUpdate(
+                  row.ID,
+                  { stackable: row.Stackable, expansion: EXPANSION_TICKER_ID.get(row.ExpansionID) }
+                  )
               }
               break;
           }

@@ -61,6 +61,18 @@ export const EXPANSION_TICKER: Map<string, string> = new Map([
   ['Outland', 'TBC'],
 ]);
 
+export const EXPANSION_TICKER_ID: Map<number, string> = new Map([
+  [8, 'SHDW'],
+  [7, 'BFA'],
+  [6, 'LGN'],
+  [5, 'WOD'],
+  [4, 'MOP'],
+  [3, 'CATA'],
+  [2, 'WOTLK'],
+  [1, 'TBC'],
+  [0, 'CLSC'],
+]);
+
 export const PROFESSION_TICKER: Map<number, string> = new Map([
   [164, 'BSMT'],
   [165, 'LTHR'],

@@ -102,12 +102,12 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
         { expansion: 'SHDW' },
         {
           asset_class: {
-            $nin: ['DERIVATIVE', 'PREMIUM'],
+            $nin: [VALUATION_TYPE.DERIVATIVE, VALUATION_TYPE.PREMIUM],
           },
         },
         {
           asset_class: {
-            $all: ['REAGENT', 'MARKET', 'COMMDTY'],
+            $all: [VALUATION_TYPE.REAGENT, VALUATION_TYPE.MARKET, VALUATION_TYPE.COMMDTY],
           },
         },
       ],
@@ -120,7 +120,7 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
         { expansion: 'SHDW' },
         {
           asset_class: {
-            $all: ['REAGENT', 'DERIVATIVE'],
+            $all: [VALUATION_TYPE.REAGENT, VALUATION_TYPE.DERIVATIVE],
           },
         },
       ],
@@ -133,10 +133,10 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
         { expansion: 'SHDW' },
         {
           asset_class: {
-            $nin: ['REAGENT'],
+            $nin: [VALUATION_TYPE.REAGENT],
           },
         },
-        { asset_class: 'DERIVATIVE' },
+        { asset_class: VALUATION_TYPE.DERIVATIVE },
       ],
     },
   ],

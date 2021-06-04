@@ -8,6 +8,8 @@ import {
   GoldsSchema,
   Item,
   ItemsSchema,
+  Key,
+  KeysSchema,
   Pricing,
   PricingSchema,
   Realm,
@@ -30,6 +32,7 @@ import { AuctionsWorker, ItemsWorker, PricingWorker, ValuationsWorker } from './
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
+      { name: Key.name, schema: KeysSchema },
       { name: Item.name, schema: ItemsSchema },
       { name: Realm.name, schema: RealmsSchema },
       { name: Pricing.name, schema: PricingSchema },

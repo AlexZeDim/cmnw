@@ -5,11 +5,11 @@ import { LeanDocument, Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { EXPANSION_TICKER_ID, GLOBAL_KEY, itemsQueue } from '@app/core';
 import { Queue } from 'bullmq';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { itemsConfig } from '@app/configuration';
 import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { itemsConfig } from '@app/configuration';
 
 @Injectable()
 export class ItemsService {

@@ -2,6 +2,7 @@ import { MessageEmbed } from "discord.js";
 import { Character, Realm } from '@app/mongo';
 import { capitalize, FACTION } from '@app/core';
 import { LeanDocument } from 'mongoose';
+import { discordConfig } from "@app/configuration";
 
 export function CandidateEmbedMessage(character: LeanDocument<Character>, realm: LeanDocument<Realm>): MessageEmbed {
   const embed = new MessageEmbed();
@@ -9,7 +10,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>, realm:
     embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm}/${character.name})\n`)
     embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус & Форжспирит`);
     const realm_title: string = realm.name_locale ? realm.name_locale : realm.name;
-    embed.setAuthor(`${character.name}@${realm_title}`.toUpperCase());
+    embed.setAuthor(`${character.name}@${realm_title}`.toUpperCase(), '', encodeURI(`${discordConfig.basename}/character/${character.name}@${realm_title}`));
     if (character.guild) {
       let guild: string = character.guild;
       if (character.guild_rank && character.guild_rank === 0)  {
@@ -18,7 +19,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>, realm:
         guild = guild.concat(` // R${character.guild_rank}`)
       }
       embed.setTitle(guild);
-      // TODO embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild.slug}@${realm.slug}`));
+      embed.setURL(encodeURI(`${discordConfig.basename}/guild/${character.guild_id}`));
     }
     if (character.faction) {
       if (character.faction === FACTION.A) {

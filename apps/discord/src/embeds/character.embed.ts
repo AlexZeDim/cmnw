@@ -1,20 +1,23 @@
 import { MessageEmbed } from "discord.js";
 import { FACTION } from '@app/core';
+import { discordConfig } from "@app/configuration";
+import { LeanDocument } from "mongoose";
+import { Character } from "@app/mongo";
 
-export function CharacterEmbedMessage(character: any): MessageEmbed {
+export function CharacterEmbedMessage(character: LeanDocument<Character>): MessageEmbed {
   const embed = new MessageEmbed();
   try {
     if (character.guild) {
       let guild: string = character.guild;
-      if (character.guild_rank && parseInt(character.guild_rank) === 0)  {
+      if (character.guild_rank && parseInt(character.guild_rank.toString()) === 0)  {
         guild = guild.concat(' // GM')
       } else if (character.guild_rank) {
         guild = guild.concat(` // R${character.guild_rank}`)
       }
       embed.setTitle(guild);
-      // TODO embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild.slug}@${realm.slug}`));
+      embed.setURL(encodeURI(`${discordConfig.basename}/guild/${character.guild_id}`));
     }
-    embed.setAuthor(character._id.toUpperCase());
+    embed.setAuthor(character._id.toUpperCase(), '', encodeURI(`${discordConfig.basename}/character/${character._id}`));
     if (character.id) embed.addField('ID', character.id, true);
     if (character.character_class) embed.addField('Class', character.character_class, true);
     if (character.active_spec) embed.addField('Active Spec', character.active_spec, true);

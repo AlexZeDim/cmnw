@@ -1,3 +1,4 @@
+import { discordConfig } from "@app/configuration";
 import { MessageEmbed } from "discord.js";
 
 export function HashEmbedMessage(args: string, hash: any): MessageEmbed {
@@ -5,7 +6,7 @@ export function HashEmbedMessage(args: string, hash: any): MessageEmbed {
   try {
     const query_hash = args.trim().toUpperCase();
     embed.setTitle(query_hash);
-    // TODO embed.setURL(`https://${process.env.domain}/hash/${query_hash}`);
+    embed.setURL(`${discordConfig.basename}/hash/${query_hash}`);
     if (hash && hash.length) {
       for (let i = 0; i < hash.length; i++) {
         if (i === 19) {
@@ -16,17 +17,17 @@ export function HashEmbedMessage(args: string, hash: any): MessageEmbed {
                     More
                     To
                     Find?
-                    [Conglomerat](https://${process.env.domain}/hash/${query_hash})
+                    [Commonwealth](${discordConfig.basename}//hash/${query_hash})
                     ─────────────`,
             true,
           );
           break;
         }
         embed.addField(`─────────────`,
-          `Name: [${hash[i].name}](https://${process.env.domain}/character/${hash[i]._id})
+          `Name: [${hash[i].name}](${discordConfig.basename}//character/${hash[i]._id})
   ${hash[i].realm_name ? `Realm: ${hash[i].realm_name}` : ``} 
   ${hash[i].faction ? `Faction: ${hash[i].faction}` : ``} 
-  ${hash[i].guild && hash[i].guild_id ? `Guild: [${hash[i].guild}](https://${process.env.domain}/guild/${hash[i].guild_id})` : ``} 
+  ${hash[i].guild && hash[i].guild_id ? `Guild: [${hash[i].guild}](${discordConfig.basename}/guild/${hash[i].guild_id})` : ``} 
   ${typeof hash[i].guild_rank !== 'undefined' ? `Rank: ${parseInt(hash[i].guild_rank) === 0 ? 'GM' : `R${hash[i].guild_rank}`}` : ``} 
    ─────────────`,
           true,

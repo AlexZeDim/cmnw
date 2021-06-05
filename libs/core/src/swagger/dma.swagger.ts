@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptions, getSchemaPath } from '@nestjs/swagger';
-import { Auction } from '@app/mongo';
+import { Auction, Valuations } from '@app/mongo';
 import { OrderQuotesInterface } from '@app/core/interfaces';
 
 class OrderQuotes implements OrderQuotesInterface {
@@ -159,4 +159,18 @@ export const SWAGGER_REALMS_CONNECTED_SHORT: ApiPropertyOptions = {
     golds: 0,
     valuations: 0
   }]
+}
+
+export const SWAGGER_VALUATIONS_EVALUATIONS: ApiPropertyOptions = {
+  name: 'is_evaluating',
+  description: 'This field represent number of missing values for each requested realm',
+  type: Number,
+  example: 1
+}
+
+export const SWAGGER_VALUATIONS: ApiPropertyOptions = {
+  name: 'valuations',
+  description: 'Show every evaluation for requested item',
+  type: () => Valuations,
+  isArray: true,
 }

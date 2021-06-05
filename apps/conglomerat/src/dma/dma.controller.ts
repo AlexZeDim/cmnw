@@ -21,13 +21,11 @@ import {
 import { DmaService } from './dma.service';
 import { GetItemDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
 import { ItemChartDto } from './dto';
+import { ItemValuationsDto } from './dto/item-valuations.dto';
 
 @ApiTags('dma')
 @Controller('dma')
 export class DmaController {
-  private readonly logger = new Logger(
-    DmaController.name, true,
-  );
 
   constructor(
     private readonly dmaService: DmaService
@@ -61,7 +59,6 @@ export class DmaController {
     return await this.dmaService.getWowToken(region, limit);
   }*/
 
-  /*
   @ApiOperation({ description: 'Returns requested item valuations' })
   @ApiOkResponse({ description: 'Request item valuations  with selected _id' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
@@ -70,13 +67,10 @@ export class DmaController {
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
-  @Get('/item/:id')
-  getItemValuations(@Param('id') id: string): string {
-    // TODO validate
-    const [item, realm] = id.split('@');
-    return this.dmaService.getItemValuations(item, realm);
+  @Get('/item/valuations')
+  getItemValuations(@Query() input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
+    return this.dmaService.getItemValuations(input);
   }
-  */
 
   @ApiOperation({ description: 'Returns requested item chart' })
   @ApiOkResponse({ description: 'Request item chart with selected _id' })

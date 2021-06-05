@@ -1,22 +1,21 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Gold, Item, Realm } from '@app/mongo';
+import { Auction, Gold, Item, Realm, Valuations } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import {
-  ChartOrderInterface,
+  ChartOrderInterface, IVQInterface,
   OrderQuotesInterface,
   OrderXrsInterface,
-  RealmChartInterface,
-  VALUATION_TYPE,
+  RealmAggregationInterface,
+  VALUATION_TYPE, valuationsQueue,
 } from '@app/core';
-import { groupBy } from 'lodash';
+import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { Queue } from 'bullmq';
+import { ItemValuationsDto } from './dto/item-valuations.dto';
 
 @Injectable()
 export class DmaService {
-  private readonly logger = new Logger(
-    DmaService.name, true,
-  );
 
   constructor(
     @InjectModel(Realm.name)
@@ -27,79 +26,98 @@ export class DmaService {
     private readonly GoldModel: Model<Gold>,
     @InjectModel(Auction.name)
     private readonly AuctionModel: Model<Auction>,
+    @InjectModel(Valuations.name)
+    private readonly ValuationsModel: Model<Valuations>,
+    @BullQueueInject(valuationsQueue.name)
+    private readonly queueValuations: Queue<IVQInterface, number>,
   ) { }
 
   async getItem(input: ItemCrossRealmDto): Promise<GetItemDto> {
-    // TODO what about realm? Probably here?
     return await this.validateTransformDmaQuery(input._id);
   }
 
-  async getItemValuations(input: ItemCrossRealmDto): Promise<string> {
+  async getItemValuations(input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
-    const connected_realms_id = [...new Set(realm.map(({ connected_realm_id }) => connected_realm_id))];
-    const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
     const is_gold = item._id === 1;
-    const is_xrs = connected_realms_id.length > 1;
+    let is_evaluating: number = 0;
 
-    // TODO valuations of item from table
+    if (item.asset_class.length === 0) {
+      throw new BadRequestException('Required item cannot be evaluated');
+    }
 
-    return `${input._id}`
+    const valuations: LeanDocument<Valuations>[] = [];
+
+    await Promise.all(
+      realm.map(
+        async (connected_realm: RealmAggregationInterface) => {
+          const timestamp = is_gold ? connected_realm.golds : connected_realm.auctions;
+          const item_valuations = await this.ValuationsModel
+            .find({
+              item_id: item._id,
+              last_modified: timestamp,
+              connected_realm_id: connected_realm._id
+            })
+            .lean();
+
+          if (item_valuations.length > 1) {
+            valuations.push(...item_valuations);
+          } else {
+            const _id = `${item._id}@${connected_realm._id}:${timestamp}`
+            await this.queueValuations.add(
+              _id,{
+                _id: item._id,
+                last_modified: timestamp,
+                connected_realm_id: connected_realm._id,
+                iteration: 0
+              }, {
+                jobId: _id,
+                priority: 1,
+              }
+            );
+            is_evaluating = is_evaluating + 1;
+          }
+        }
+      )
+    );
+
+    return { valuations, is_evaluating };
   }
 
   async getItemChart(input: ItemCrossRealmDto): Promise<ItemChartDto> {
-    const { item , realm } = await this.validateTransformDmaQuery(input._id);
+    const { item, realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
-    const connected_realms_id = [...new Set(realm.map(({ connected_realm_id }) => connected_realm_id))];
     const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
     const is_gold = item._id === 1;
-    const is_xrs = connected_realms_id.length > 1;
+    const is_xrs = realm.length > 1;
 
+    const connected_realms_id = realm.map(connected_realm => connected_realm._id);
     const yAxis = await this.buildYAxis(item._id, connected_realms_id, is_commdty, is_xrs, is_gold);
     const xAxis: (string | number | Date)[] = [];
     const dataset: ChartOrderInterface[] = [];
 
-    await this.RealmModel
-      .aggregate([
-        {
-          $match: { connected_realm_id: { $in: connected_realms_id } }
-        },
-        {
-          $group: {
-            _id: '$connected_realm_id',
-            realms: { $addToSet: '$name_locale' },
-            connected_realm_id: { $first: '$connected_realm_id' },
-            slug: { $first: '$slug' },
-            auctions: { $first: '$auctions' },
-            golds: { $first: '$golds' },
-            valuations: { $first: '$valuations' }
-          }
-        }
-      ])
-      .allowDiskUse(true)
-      .cursor()
-      .exec()
-      .eachAsync(async (realm: RealmChartInterface, i: number) => {
+    await Promise.all(
+      realm.map(async(connected_realm: RealmAggregationInterface, i: number) => {
         if (is_commdty) {
           if (is_xrs) {
             /** Build X axis */
-            xAxis[i] = realm.realms.join(', ');
+            xAxis[i] = connected_realm.realms.join(', ');
             /** Build Cluster from Orders */
             if (is_gold) {
-              const orderDataset = await this.goldXRS(yAxis, realm.connected_realm_id, realm.golds, i);
+              const orderDataset = await this.goldXRS(yAxis, connected_realm.connected_realm_id, connected_realm.golds, i);
               if (orderDataset && orderDataset.length) {
                 dataset.push(...orderDataset);
               }
             }
 
             if (!is_gold) {
-              const orderDataset = await this.commdtyXRS(yAxis, item._id, realm.connected_realm_id, realm.auctions, i);
+              const orderDataset = await this.commdtyXRS(yAxis, item._id, connected_realm.connected_realm_id, connected_realm.auctions, i);
               if (orderDataset && orderDataset.length) {
                 dataset.push(...orderDataset);
               }
@@ -109,7 +127,7 @@ export class DmaService {
           if (!is_xrs) {
             /** Build Cluster by Timestamp */
             if (is_gold) {
-              const { chart, timestamps } = await this.goldIntraDay(yAxis, realm.connected_realm_id);
+              const { chart, timestamps } = await this.goldIntraDay(yAxis, connected_realm.connected_realm_id);
               if (chart && timestamps) {
                 dataset.push(...chart);
                 xAxis.push(...timestamps);
@@ -117,7 +135,7 @@ export class DmaService {
             }
 
             if (!is_gold) {
-              const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, realm.connected_realm_id);
+              const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, connected_realm.connected_realm_id);
               if (chart && timestamps) {
                 dataset.push(...chart);
                 xAxis.push(...timestamps);
@@ -125,7 +143,8 @@ export class DmaService {
             }
           }
         }
-      });
+      })
+    );
 
     return { yAxis, xAxis, dataset };
   }
@@ -205,7 +224,7 @@ export class DmaService {
     if (!yAxis.length) return [];
 
     const orders: OrderXrsInterface[] = await this.GoldModel
-      .aggregate([
+      .aggregate<OrderXrsInterface>([
         {
           $match: {
             status: 'Online',
@@ -244,7 +263,7 @@ export class DmaService {
     if (!yAxis.length) return [];
 
     const orders: OrderXrsInterface[] = await this.AuctionModel
-      .aggregate([
+      .aggregate<OrderXrsInterface>([
         {
           $match: {
             connected_realm_id: connected_realm_id,
@@ -476,23 +495,22 @@ export class DmaService {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
     }
 
-    const connected_realms_id = groupBy(realm, 'connected_realm_id');
-    const is_xrs = Object.keys(connected_realms_id).length > 1;
+    const is_xrs = realm.length > 1;
     const is_gold = item._id === 1;
 
     const quotes: OrderQuotesInterface[] = [];
 
     await Promise.all(
-      Object.entries(connected_realms_id).map(
-        async ([connected_realms_hub, realms]: [string, LeanDocument<Realm>[]]) => {
+      realm.map(
+        async (connected_realm) => {
           if (!is_xrs) {
             /** NOT XRS && NOT GOLD */
             if (!is_gold) {
               const orderQuotes: OrderQuotesInterface[] = await this.AuctionModel.aggregate([
                 {
                   $match: {
-                    connected_realm_id: parseInt(connected_realms_hub),
-                    last_modified: realms[0].auctions,
+                    connected_realm_id: connected_realm._id,
+                    last_modified: connected_realm.auctions,
                     'item.id': item._id,
                   },
                 },
@@ -541,8 +559,8 @@ export class DmaService {
                 {
                   $match: {
                     status: 'Online',
-                    connected_realm_id: parseInt(connected_realms_hub),
-                    last_modified: realm[0].golds,
+                    connected_realm_id: connected_realm._id,
+                    last_modified: connected_realm.golds,
                   },
                 },
                 {
@@ -602,18 +620,17 @@ export class DmaService {
     /**
      * Item should be not commodity
      */
-    const connected_realms_id = groupBy(realm, 'connected_realm_id');
     const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
 
     const feed: LeanDocument<Auction>[] = [];
 
     if (!is_commdty) {
       await Promise.all(
-        Object.entries(connected_realms_id).map(
-          async ([connected_realms_hub, realms]: [string, LeanDocument<Realm>[]]) => {
+        realm.map(
+          async (connected_realm) => {
             const orderFeed = await this.AuctionModel.find({
-              connected_realm_id: parseInt(connected_realms_hub),
-              last_modified: realms[0].auctions,
+              connected_realm_id: connected_realm._id,
+              last_modified: connected_realm.auctions,
               'item.id': item._id,
             }).lean();
             // TODO possible eachAsync cursor;
@@ -629,7 +646,7 @@ export class DmaService {
   async validateTransformDmaQuery(input: string) {
     let
       item: LeanDocument<Item>,
-      realm: LeanDocument<Realm>[];
+      realm: RealmAggregationInterface[];
 
     const [ queryItem, queryRealm ] = input.split('@');
     const realmArrayString = queryRealm
@@ -652,33 +669,48 @@ export class DmaService {
       }
     }
 
+    const sortStage = { $sort: { score: { $meta: 'textScore' } } };
+    const groupStage = {
+      $group: {
+        _id: '$connected_realm_id',
+        realms: { $addToSet: '$name_locale' },
+        connected_realm_id: { $first: '$connected_realm_id' },
+        slug: { $first: '$slug' },
+        auctions: { $first: '$auctions' },
+        golds: { $first: '$golds' },
+        valuations: { $first: '$valuations' }
+      }
+    };
+    const limitStage = { $limit: 1 };
+
     if (realmArrayString.length === 1) {
       if (isNaN(Number(queryRealm))) {
         /** if string */
         realm = await this.RealmModel
-          .find(
-            { $text: { $search: queryRealm } },
-            { score: { $meta: 'textScore' } },
-          )
-          .sort({ score: { $meta: 'textScore' } })
-          .limit(1)
-          .lean();
+          .aggregate<RealmAggregationInterface>([
+            { $match: { $text: { $search: queryRealm } } },
+            sortStage,
+            groupStage,
+            limitStage
+          ])
       } else {
         /** if number */
         realm = await this.RealmModel
-          .find({ connected_realm_id: parseInt(queryRealm) })
-          .limit(1)
-          .lean();
+          .aggregate<RealmAggregationInterface>([
+            { $match: { connected_realm_id: parseInt(queryRealm) } },
+            sortStage,
+            groupStage,
+            limitStage
+          ])
       }
     } else {
-      const realms = realmArrayString.toString().replace(';', ' ');
+      const queryRealms = realmArrayString.toString().replace(';', ' ');
       realm = await this.RealmModel
-        .find(
-          { $text: { $search: realms } },
-          { score: { $meta: 'textScore' } },
-        )
-        .sort({ score: { $meta: 'textScore' } })
-        .lean();
+        .aggregate<RealmAggregationInterface>([
+          { $match: { $text: { $search: queryRealms } } },
+          sortStage,
+          groupStage
+        ])
     }
 
     return { item, realm };

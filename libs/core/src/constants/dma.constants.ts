@@ -94,7 +94,7 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
   // GOLD
   [1, { _id: 1 }],
   // WOWTOKEN
-  [2, { asset_class: 'WOWTOKEN' }],
+  [2, { asset_class: VALUATION_TYPE.WOWTOKEN }],
   // ACTUAL NON DERIVATIVE REAGENT & MARKET & COMMDTY
   [3,
     {

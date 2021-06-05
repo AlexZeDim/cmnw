@@ -64,6 +64,7 @@ export class ValuationsService {
   async buildValuations(connected_realm_id: number, timestamp: number) {
     try {
       for (let [priority, query] of ASSET_EVALUATION_PRIORITY) {
+        this.logger.log(`=======================================`);
         this.logger.log(`buildValuations: ${connected_realm_id}-${priority}`);
         await this.ItemModel
           .find(query)
@@ -116,7 +117,7 @@ export class ValuationsService {
               const item = await this.ItemModel.findById(_id);
               if (item) {
                 item.asset_class.addToSet(VALUATION_TYPE.DERIVATIVE);
-                this.logger.debug(`item: ${item._id}, asset_class: ${VALUATION_TYPE.DERIVATIVE}`);
+                this.logger.debug(`item: ${_id}, asset_class: ${VALUATION_TYPE.DERIVATIVE}`);
                 await item.save();
               }
             }
@@ -124,7 +125,7 @@ export class ValuationsService {
               const item = await this.ItemModel.findById(_id);
               if (item) {
                 item.asset_class.addToSet(VALUATION_TYPE.REAGENT);
-                this.logger.debug(`item: ${item._id}, asset_class: ${VALUATION_TYPE.REAGENT}`);
+                this.logger.debug(`item: ${_id}, asset_class: ${VALUATION_TYPE.REAGENT}`);
                 await item.save();
               }
             }

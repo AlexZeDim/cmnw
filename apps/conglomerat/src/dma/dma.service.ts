@@ -1,14 +1,16 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Gold, Item, Realm, Valuations } from '@app/mongo';
+import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import {
-  ChartOrderInterface, IVQInterface,
+  ChartOrderInterface,
+  IVQInterface,
   OrderQuotesInterface,
   OrderXrsInterface,
   RealmAggregationInterface,
-  VALUATION_TYPE, valuationsQueue,
+  VALUATION_TYPE,
+  valuationsQueue,
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
@@ -18,6 +20,8 @@ import { ItemValuationsDto } from './dto/item-valuations.dto';
 export class DmaService {
 
   constructor(
+    @InjectModel(Token.name)
+    private readonly TokenModel: Model<Token>,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Item.name)
@@ -716,7 +720,10 @@ export class DmaService {
     return { item, realm };
   }
 
-  getWowToken(region: string, limit: number): string {
-    return `${region}@${limit}`
+  async getWowToken(input: WowtokenDto): Promise<LeanDocument<Token>[]> {
+    return this.TokenModel.find({
+      region: input.region || 'eu',
+      limit: input.limit ? input.limit : 1,
+    }).lean();
   }
 }

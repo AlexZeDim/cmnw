@@ -19,9 +19,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
-import { GetItemDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto } from './dto';
+import { GetItemDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto } from './dto';
 import { ItemChartDto } from './dto';
 import { ItemValuationsDto } from './dto/item-valuations.dto';
+import { LeanDocument } from "mongoose";
+import { Token } from '@app/mongo';
 
 @ApiTags('dma')
 @Controller('dma')
@@ -45,7 +47,7 @@ export class DmaController {
     return await this.dmaService.getItem(input);
   }
 
-  /*
+
   @ApiOperation({ description: 'Returns requested WoWToken' })
   @ApiOkResponse({ description: 'Request item with selected timestamp' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
@@ -55,9 +57,9 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/token/:region/:limit')
-  async getWowToken(@Param('region') region: string, @Param('limit') limit: number): string {
-    return await this.dmaService.getWowToken(region, limit);
-  }*/
+  async getWowToken(@Query() input: WowtokenDto): Promise<LeanDocument<Token>[]> {
+    return await this.dmaService.getWowToken(input);
+  }
 
   @ApiOperation({ description: 'Returns requested item valuations' })
   @ApiOkResponse({ description: 'Request item valuations  with selected _id' })

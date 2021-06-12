@@ -174,3 +174,23 @@ export const SWAGGER_VALUATIONS: ApiPropertyOptions = {
   type: () => Valuations,
   isArray: true,
 }
+
+export const SWAGGER_WOWTOKEN_LIMIT: ApiPropertyOptions = {
+  name: 'limit',
+  description: 'Request required number of plots from 1 to 250, latest by default',
+  type: Number,
+  required: false,
+  minimum: 0,
+  maximum: 250,
+  example: 5
+}
+
+// TODO cover enum
+export const SWAGGER_WOWTOKEN_REGION: ApiPropertyOptions = {
+  name: 'region',
+  description: 'Request from selected region',
+  required: true,
+  type: String,
+  default: 'eu',
+  example: 'eu'
+}

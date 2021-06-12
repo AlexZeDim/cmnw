@@ -13,6 +13,8 @@ import {
   ItemsSchema,
   Realm,
   RealmsSchema,
+  Token,
+  TokenSchema,
   Valuations,
   ValuationsSchema,
 } from '@app/mongo';
@@ -22,6 +24,7 @@ import { valuationsQueue } from '@app/core';
   imports: [
     MongooseModule.forRoot(mongoConfig.connection_string),
     MongooseModule.forFeature([
+      { name: Token.name, schema: TokenSchema },
       { name: Realm.name, schema: RealmsSchema },
       { name: Item.name, schema: ItemsSchema },
       { name: Gold.name, schema: GoldsSchema },

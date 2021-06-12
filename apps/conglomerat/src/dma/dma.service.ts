@@ -723,7 +723,9 @@ export class DmaService {
   async getWowToken(input: WowtokenDto): Promise<LeanDocument<Token>[]> {
     return this.TokenModel.find({
       region: input.region || 'eu',
-      limit: input.limit ? input.limit : 1,
-    }).lean();
+    })
+      .limit(input.limit ? input.limit : 1)
+      .sort({ _id: -1 })
+      .lean();
   }
 }

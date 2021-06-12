@@ -55,8 +55,9 @@ export class DmaController {
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/token/:region/:limit')
+  @Get('/token')
   async getWowToken(@Query() input: WowtokenDto): Promise<LeanDocument<Token>[]> {
     return await this.dmaService.getWowToken(input);
   }
@@ -68,6 +69,7 @@ export class DmaController {
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item/valuations')
   getItemValuations(@Query() input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
@@ -81,6 +83,7 @@ export class DmaController {
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item/chart')
   async getItemChart(@Query() input: ItemCrossRealmDto): Promise<ItemChartDto> {
@@ -94,6 +97,7 @@ export class DmaController {
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item/quotes')
   async getItemQuotes(@Query() input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
@@ -107,6 +111,7 @@ export class DmaController {
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
   @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item/feed')
   async getItemFeed(@Query() input: ItemCrossRealmDto): Promise<ItemFeedDto> {

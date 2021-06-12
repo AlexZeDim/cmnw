@@ -42,6 +42,7 @@ export class DmaService {
 
   async getItemValuations(input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
+    console.log(item, realm);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
@@ -673,7 +674,8 @@ export class DmaService {
       }
     }
 
-    const sortStage = { $sort: { score: { $meta: 'textScore' } } };
+    const projectStage = { $addFields: { score: { $meta: "textScore" } } };
+    const sortStage = { $sort: { score: { $meta: "textScore" } } };
     const groupStage = {
       $group: {
         _id: '$connected_realm_id',
@@ -693,6 +695,7 @@ export class DmaService {
         realm = await this.RealmModel
           .aggregate<RealmAggregationInterface>([
             { $match: { $text: { $search: queryRealm } } },
+            projectStage,
             sortStage,
             groupStage,
             limitStage
@@ -702,6 +705,7 @@ export class DmaService {
         realm = await this.RealmModel
           .aggregate<RealmAggregationInterface>([
             { $match: { connected_realm_id: parseInt(queryRealm) } },
+            projectStage,
             sortStage,
             groupStage,
             limitStage
@@ -712,6 +716,7 @@ export class DmaService {
       realm = await this.RealmModel
         .aggregate<RealmAggregationInterface>([
           { $match: { $text: { $search: queryRealms } } },
+          projectStage,
           sortStage,
           groupStage
         ])

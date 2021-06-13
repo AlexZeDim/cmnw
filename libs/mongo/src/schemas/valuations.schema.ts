@@ -137,6 +137,9 @@ class Details {
   min_price: number;
 
   @Prop()
+  rank: number;
+
+  @Prop()
   quantity: number;
 
   @Prop()

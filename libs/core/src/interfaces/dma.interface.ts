@@ -159,7 +159,7 @@ export interface ReagentItemInterface
 }
 
 
-export class methodEvaluation {
+export class MethodEvaluation {
   queue_cost: number;
   derivatives_cost: number;
   premium: number;

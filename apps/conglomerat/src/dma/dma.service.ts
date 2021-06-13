@@ -42,7 +42,6 @@ export class DmaService {
 
   async getItemValuations(input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
     const { item , realm } = await this.validateTransformDmaQuery(input._id);
-    console.log(item, realm);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
@@ -71,7 +70,8 @@ export class DmaService {
           if (item_valuations.length > 1) {
             valuations.push(...item_valuations);
           } else {
-            const _id = `${item._id}@${connected_realm._id}:${timestamp}`
+            const _id = `${item._id}@${connected_realm._id}:${timestamp}`;
+            await this.queueValuations.remove(_id)
             await this.queueValuations.add(
               _id,{
                 _id: item._id,
@@ -699,7 +699,7 @@ export class DmaService {
             sortStage,
             groupStage,
             limitStage
-          ])
+          ]);
       } else {
         /** if number */
         realm = await this.RealmModel
@@ -709,7 +709,7 @@ export class DmaService {
             sortStage,
             groupStage,
             limitStage
-          ])
+          ]);
       }
     } else {
       const queryRealms = realmArrayString.toString().replace(';', ' ');
@@ -719,7 +719,7 @@ export class DmaService {
           projectStage,
           sortStage,
           groupStage
-        ])
+        ]);
     }
 
     return { item, realm };

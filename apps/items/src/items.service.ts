@@ -82,6 +82,7 @@ export class ItemsService {
       this.logger.error(`indexItems: ${e}`)
     }
   }
+
   async buildItems(init: boolean = false): Promise<void> {
     try {
       this.logger.log(`buildItems: init: ${init}`);

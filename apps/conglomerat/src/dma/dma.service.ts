@@ -71,7 +71,6 @@ export class DmaService {
             valuations.push(...item_valuations);
           } else {
             const _id = `${item._id}@${connected_realm._id}:${timestamp}`;
-            await this.queueValuations.remove(_id)
             await this.queueValuations.add(
               _id,{
                 _id: item._id,

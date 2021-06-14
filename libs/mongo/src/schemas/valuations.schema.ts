@@ -115,29 +115,42 @@ const ItemValuationsSchema = SchemaFactory.createForClass(ItemValuations);
 
 @Schema()
 class Details {
+  /**
+   * PRVA
+   * (weight index)
+   */
   @Prop()
   wi: number;
 
-  @Prop()
-  quotation: string;
-
+  /**
+   * CVA
+   */
   @Prop()
   lot_size: number;
 
   @Prop()
   minimal_settlement_amount: number;
 
+  /**
+   * CVA || TVA
+   */
+  @Prop()
+  quotation: string;
+
   @Prop()
   description: string;
 
+  /**
+   * TVA
+   */
   @Prop()
   swap_type: string;
 
+  /**
+   * AVA
+   */
   @Prop()
   min_price: number;
-
-  @Prop()
-  rank: number;
 
   @Prop()
   quantity: number;
@@ -147,6 +160,21 @@ class Details {
 
   @Prop()
   orders: number[];
+
+  /**
+   * DVA
+   */
+  @Prop()
+  rank: number;
+
+  @Prop()
+  queue_cost: number;
+
+  @Prop()
+  queue_quantity: number;
+
+  @Prop()
+  derivatives_cost: number;
 
   @Prop({ default: [], type: [ItemValuationsSchema] })
   reagent_items: Types.Array<ItemValuations>;

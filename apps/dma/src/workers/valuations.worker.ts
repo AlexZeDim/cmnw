@@ -21,7 +21,7 @@ import { LeanDocument, Model } from 'mongoose';
 import { merge } from 'lodash';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { from } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { delay } from '@app/core/utils/converters';
 
 
@@ -97,7 +97,18 @@ export class ValuationsWorker {
     if (!asset_class.includes(check)) {
       throw new InternalServerErrorException(`item: ${item_id} asset_class not ${check}`);
     }
-  }
+  };
+
+  private async checkDerivativeItems(
+    derivatives: ItemPricing[],
+  ) {
+    await from(derivatives).pipe(
+      map(async derivative => {
+        const item = await this.ItemModel.findById(derivative._id).lean();
+        this.checkAssetClass(item._id, item.asset_class, VALUATION_TYPE.MARKET);
+      })
+    )
+  };
 
   private async checkReagentItems(
     reagents: ItemPricing[],
@@ -138,7 +149,7 @@ export class ValuationsWorker {
     } catch (e) {
       this.logger.error(`checkReagentItems: derivative ${derivative_id} error`);
     }
-  }
+  };
 
   private async addMissingItemToQueue(_id: number): Promise<void> {
     this.logger.warn(`getDVA: item ${_id} (reagent) not found`);
@@ -179,7 +190,7 @@ export class ValuationsWorker {
         priority: 0,
       }
     );
-  }
+  };
 
   private async getCVA <T extends VAInterface>(args: T): Promise<void> {
     try {
@@ -800,15 +811,41 @@ export class ValuationsWorker {
          *
          * Pricing Method Valuation Adjustment
          * Only for Mass Mills and Prospects
+         * Reversal Scenario
          */
         if (!methodEvaluation.single_derivative && methodEvaluation.single_reagent) {
           /**
-           * We request AVA for each Di
+           * We check and request AVA for each Di
            * and sum all for the derivatives cost
+           * FIXME checkDerivativeItems not sure
+           * FIXME not sure about ava
            */
-          // for (const derivative_item of price_method.derivatives) {
-            // TODO rework
-          // }
+          await this.checkDerivativeItems(price_method.derivatives);
+
+          for (const derivative_item of price_method.derivatives) {
+            // TODO not sure that share represents actual
+            const derivativeShareReversal = round2(1 - (derivative_item.quantity / sumDerivativesQuantity));
+            const value = methodEvaluation.queue_cost * derivativeShareReversal;
+
+            await this.ValuationsModel.create({
+              name: 'Test', // FIXME test
+              flag: FLAG_TYPE.B,
+              type: VALUATION_TYPE.DERIVATIVE,
+              item_id: derivative_item._id,
+              connected_realm_id: args.connected_realm_id,
+              last_modified: args.last_modified,
+              value,
+              details: {
+                queue_cost: round2(methodEvaluation.queue_cost),
+                queue_quantity: derivative_item.quantity,
+                queue_share: derivativeShareReversal,
+                rank: price_method.rank,
+                reagent_items: methodEvaluation.reagent_items,
+                premium_items: methodEvaluation.premium_items,
+                unsorted_items: methodEvaluation.unsorted_items
+              }
+            });
+          }
           continue;
         }
 

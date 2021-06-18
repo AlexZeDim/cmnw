@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
+import { Key, Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { EXPANSION_TICKER, GLOBAL_DMA_KEY, pricingQueue } from '@app/core';
+import { DMA_SOURCE, EXPANSION_TICKER, GLOBAL_DMA_KEY, pricingQueue, VALUATION_TYPE } from '@app/core';
 import BlizzAPI from 'blizzapi';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
@@ -11,6 +11,7 @@ import path from 'path';
 import csv from 'async-csv';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { pricingConfig } from '@app/configuration';
+import { DISENCHANT, PROSPECT } from './lib';
 
 @Injectable()
 export class PricingService {
@@ -30,11 +31,79 @@ export class PricingService {
     private readonly SpellEffectModel: Model<SpellEffect>,
     @InjectModel(SpellReagents.name)
     private readonly SpellReagentsModel: Model<SpellReagents>,
+    @InjectModel(Pricing.name)
+    private readonly PricingModel: Model<Pricing>,
     @BullQueueInject(pricingQueue.name)
     private readonly queue: Queue,
   ) {
     this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.pricing_init);
     this.buildPricing(pricingConfig.build_init);
+  }
+
+  async libPricing(init: boolean = true, libs: string[] = ['prospect', 'disenchant']): Promise<void> {
+    try {
+
+      await this.PricingModel.deleteMany({ createdBy: DMA_SOURCE.LAB });
+      this.logger.log(`libPricing: ${DMA_SOURCE.LAB}`);
+
+      const reversePricingMethod = {
+        mask: `NAME`,
+        media: 'MEDIA',
+        spell_id: 0,
+        profession: `PROFESSION`,
+        expansion: 'SHDW',
+        type: VALUATION_TYPE.DERIVATIVE,
+        createdBy: DMA_SOURCE.LAB,
+        updatedBy: DMA_SOURCE.LAB,
+      };
+
+      if (libs.includes('prospect')) {
+        reversePricingMethod.mask = PROSPECT.name;
+        reversePricingMethod.media = 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_gem_bloodgem_01.jpg';
+        reversePricingMethod.spell_id = 31252;
+
+        PROSPECT.methods.map(async method => {
+          const pricingMethod = new this.PricingModel({
+            // TODO ticker or name
+            recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`), // FIXME
+            reagents: method.reagents,
+            derivatives: method.derivatives,
+            media: reversePricingMethod.media,
+            spell_id: reversePricingMethod.spell_id,
+            profession: reversePricingMethod.profession,
+            type: reversePricingMethod.type,
+            createdBy: reversePricingMethod.createdBy,
+            updatedBy: reversePricingMethod.updatedBy,
+          });
+          await pricingMethod.save();
+        });
+      }
+
+      if (libs.includes('disenchant')) {
+        reversePricingMethod.mask = DISENCHANT.name;
+        reversePricingMethod.media = 'https://render-eu.worldofwarcraft.com/icons/56/inv_enchant_disenchant.jpg';
+        reversePricingMethod.spell_id = 13262;
+
+        DISENCHANT.methods.map(async method => {
+          const pricingMethod = new this.PricingModel({
+            // TODO ticker or name
+            recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`), // FIXME
+            reagents: method.reagents,
+            derivatives: method.derivatives,
+            media: reversePricingMethod.media,
+            spell_id: reversePricingMethod.spell_id,
+            profession: reversePricingMethod.profession,
+            type: reversePricingMethod.type,
+            createdBy: reversePricingMethod.createdBy,
+            updatedBy: reversePricingMethod.updatedBy,
+          });
+          await pricingMethod.save();
+        });
+      }
+
+    } catch (e) {
+      this.logger.error(`libPricing: ${e}`);
+    }
   }
 
   @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM)

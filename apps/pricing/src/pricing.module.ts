@@ -29,6 +29,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       { name: SkillLine.name, schema: SkillLineSchema },
       { name: SpellEffect.name, schema: SpellEffectSchema },
       { name: SpellReagents.name, schema: SpellReagentsSchema },
+      { name: Pricing.name, schema: PricingSchema },
     ]),
     BullModule.forRoot({
       options: {

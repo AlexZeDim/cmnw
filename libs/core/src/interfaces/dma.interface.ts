@@ -1,5 +1,5 @@
 import { LeanDocument } from 'mongoose';
-import { Item } from '@app/mongo';
+import { Item, Pricing } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 
 class ItemNames {

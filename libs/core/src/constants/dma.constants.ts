@@ -3,7 +3,8 @@ import { mquery } from 'mongoose';
 export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
 export enum DMA_SOURCE {
-  API = 'DMA-API'
+  API = 'DMA-API',
+  LAB = 'DMA-LAB'
 }
 
 export enum VALUATION_TYPE {

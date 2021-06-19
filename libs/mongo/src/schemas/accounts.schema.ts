@@ -6,16 +6,16 @@ export class Account extends Document {
   @Prop({ type: String, required: true, default: 'Anonymous', index: true })
   cryptonym: string;
 
-  @Prop({ type: String })
+  @Prop({ type: [String] })
   tags: string[];
 
-  @Prop({ type: String, index: true })
+  @Prop({ type: [String], index: true })
   discord_id: string[];
 
-  @Prop({ type: String, index: true })
+  @Prop({ type: [String], index: true })
   battle_tag: string[];
 
-  @Prop({ type: String })
+  @Prop({ type: [String] })
   characters_id: string[];
 }
 

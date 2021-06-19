@@ -1,16 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account, Character, Guild } from '@app/mongo';
+import { Account, Character, Entity, Guild } from '@app/mongo';
 import { Model } from 'mongoose';
 import path from "path";
 import fs from 'fs-extra';
-import { AccountsMock } from '@app/core';
+import { AccountsMock, capitalize, EntityName } from '@app/core';
+import RussianNouns from 'russian-nouns-js';
 
 @Injectable()
 export class OraculumService {
   private readonly logger = new Logger(
     OraculumService.name, true,
   );
+
+  private readonly rne = new RussianNouns.Engine();
 
   constructor(
     @InjectModel(Account.name)
@@ -19,12 +22,61 @@ export class OraculumService {
     private readonly CharacterModel: Model<Character>,
     @InjectModel(Guild.name)
     private readonly GuildModel: Model<Guild>,
+    @InjectModel(Entity.name)
+    private readonly EntityModel: Model<Entity>,
   ) {
     this.mockAccounts();
-    // this.getHello();
+    this.entityFromAccounts();
+    // this.getCharactersByHash();
   }
 
-  private async getHello(): Promise<void> {
+  private async entityFromAccounts(): Promise<void> {
+    try {
+      await this.AccountModel
+        .find()
+        .cursor()
+        .eachAsync(async (account: Account) => {
+          try {
+            const tags = new Set<string>();
+
+            await Promise.all(
+              account.tags.map(tag => {
+
+                const lemma = RussianNouns.createLemma({
+                  text: tag,
+                  gender: RussianNouns.Gender.COMMON
+                });
+
+                RussianNouns.CASES.map(c =>
+                  this.rne.decline(lemma, c).map(w => {
+                    tags.add(w.toLowerCase());
+                    tags.add(w.toUpperCase());
+                    tags.add(capitalize(w));
+                    tags.add(w);
+                  })
+                );
+              })
+            );
+
+            const texts = Array.from(tags);
+
+            await this.EntityModel.create({
+              parentId: account._id.toString(),
+              entityName: EntityName.Persona,
+              optionName: tags[0],
+              languages: ['ru'],
+              texts
+            });
+          } catch (e) {
+            this.logger.error(`entityFromAccounts: ${e}`)
+          }
+        })
+    } catch (e) {
+      this.logger.log(`createEntities: ${e}`);
+    }
+  }
+
+  private async getCharactersByHash(): Promise<void> {
     try {
       const characters = await this.CharacterModel.aggregate([
         {

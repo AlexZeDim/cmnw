@@ -9,6 +9,7 @@ export { LogsSchema, Log } from './logs.schema';
 export { GoldsSchema, Gold } from './golds.schema';
 export { ItemsSchema, Item } from './items.schema';
 export { TokenSchema, Token } from './token.schema';
+export { EntitySchema, Entity } from './entity.schema';
 export { PricingSchema, Pricing } from './pricing.schema';
 export { SkillLineSchema, SkillLine } from './skill-line.schema';
 export { SpellEffectSchema, SpellEffect } from './spell-effect.schema';

@@ -178,6 +178,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/dma/tsconfig.app.json"
       }
+    },
+    "oraculum": {
+      "type": "application",
+      "root": "apps/oraculum",
+      "entryFile": "main",
+      "sourceRoot": "apps/oraculum/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/oraculum/tsconfig.app.json"
+      }
     }
   }
 }

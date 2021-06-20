@@ -59,6 +59,8 @@
     "class-transformer": "^0.3.1",
     "class-validator": "^0.13.1",
     "config": "^3.3.6",
+    "discord-agent": "npm:discord.js@^11.5.1",
+    "discord-nestjs": "^1.1.12",
     "discord.js": "^12.5.3",
     "farmhash": "^3.2.1",
     "fs-extra": "^9.1.0",

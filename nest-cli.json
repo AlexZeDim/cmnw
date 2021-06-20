@@ -187,6 +187,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/oraculum/tsconfig.app.json"
       }
+    },
+    "oracle": {
+      "type": "application",
+      "root": "apps/oracle",
+      "entryFile": "main",
+      "sourceRoot": "apps/oracle/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/oracle/tsconfig.app.json"
+      }
     }
   }
 }

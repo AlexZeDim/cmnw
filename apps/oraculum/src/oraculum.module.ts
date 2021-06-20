@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OraculumService } from './oraculum.service';
+import { OraculumBuilder } from './oraculum.builder';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
 import {
@@ -12,6 +12,7 @@ import {
   Guild,
   GuildsSchema,
 } from '@app/mongo';
+import { OraculumService } from './oraculum.service';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import {
     ]),
   ],
   controllers: [],
-  providers: [OraculumService],
+  providers: [OraculumBuilder, OraculumService],
 })
 export class OraculumModule {}

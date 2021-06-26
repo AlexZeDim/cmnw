@@ -7,17 +7,17 @@ export class Entity extends Document {
   @Prop({ type: String })
   parentId: string;
 
-  @Prop({ type: String, enum: EntityName })
-  entityName: string;
+  @Prop({ type: String, enum: EntityName, default: EntityName.Entity })
+  entity: string;
 
-  @Prop({ type: String })
-  optionName: string;
+  @Prop({ type: String, index: true })
+  name: string;
 
   @Prop({ type: [String] })
   languages: string[];
 
   @Prop({ type: [String] })
-  texts: string[];
+  tags: string[];
 }
 
 export const EntitySchema = SchemaFactory.createForClass(Entity);

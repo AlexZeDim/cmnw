@@ -1,7 +1,8 @@
 export enum EntityName {
   Entity = 'Entity',
   Guild = 'Guild',
-  Persona = 'Account',
+  Persona = 'Persona',
   Item = 'Item',
-  Class = 'Class'
+  Class = 'Class',
+  Realm = 'Realm',
 }

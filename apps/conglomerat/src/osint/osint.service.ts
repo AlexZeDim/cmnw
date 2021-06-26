@@ -11,7 +11,7 @@ import {
   GuildIdDto,
 } from './dto';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE } from '@app/core';
+import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE, toSlug } from '@app/core';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
 import { RealmDto } from './dto/realm.dto';
@@ -39,6 +39,54 @@ export class OsintService {
     @BullQueueInject(guildsQueue.name)
     private readonly queueGuild: Queue,
   ) { }
+
+  async uploadOsintLua(file: Buffer) {
+    const keys = await this.KeyModel.find({ tags: this.clearance });
+    let i: number = 0;
+    let iteration: number = 0;
+
+    const characterLuaStrings = file.toString('utf8')
+      .split('["csv"] = ')[1]
+      .match(/[^\r\n]+/g)
+
+    characterLuaStrings.map(characterLua => {
+      const [character] = characterLua.split(/(,\s--\s\[\d)/);
+      if (character.startsWith('\t\t"') && character.endsWith('"')) {
+        const [name, realm] = character
+          .replace(/"/g, '')
+          .replace('\t\t', '')
+          .split(',');
+
+        const _id = toSlug(`${name}@${realm}`);
+
+        this.queueCharacter.add(
+          _id,
+          {
+            _id: _id,
+            name: name,
+            realm: realm,
+            region: 'eu',
+            clientId: keys[i]._id,
+            clientSecret: keys[i].secret,
+            accessToken: keys[i].token,
+            created_by: OSINT_SOURCE.OSINT_LUA,
+            updated_by: OSINT_SOURCE.OSINT_LUA,
+            guildRank: false,
+            createOnlyUnique: false,
+            forceUpdate: 60000,
+          },
+          {
+            jobId: _id,
+            priority: 1
+          }
+        );
+
+        i++;
+        iteration++;
+        if (i >= keys.length) i = 0;
+      }
+    });
+  }
 
   async getCharacter(input: CharacterIdDto): Promise<LeanDocument<Character>> {
     const [ name_slug, realm_slug ] = input._id.split('@');

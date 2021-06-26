@@ -6,10 +6,11 @@ import {
   HttpStatus,
   Param,
   Post, Put,
-  Query,
+  Query, UploadedFile, UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { Express } from 'express'
 import { OsintService } from './osint.service';
 import { LeanDocument } from "mongoose";
 import { Character, Guild, Log, Realm, Subscription } from '@app/mongo';
@@ -21,7 +22,7 @@ import {
   ApiForbiddenResponse,
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
-  ApiTags,
+  ApiTags, ApiConsumes, ApiBody,
 } from '@nestjs/swagger';
 import {
   CharacterHashDto,
@@ -32,6 +33,8 @@ import {
   GuildIdDto,
 } from './dto';
 import { RealmDto } from './dto/realm.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import path from 'path';
 
 @ApiTags('osint')
 @Controller('osint')
@@ -40,6 +43,38 @@ export class OsintController {
   constructor(
     private readonly osintService: OsintService
   ) {}
+
+
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 10 * 1000 * 1000 },
+    fileFilter: function (req, file, cb){
+      // Set the filetypes, it is optional
+      const filetypes = /lua/;
+      const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+      if (extname) {
+        return cb(null, true);
+      }
+
+      cb(new Error(`Error: File upload only supports the following filetypes - ${filetypes}`), false);
+    }
+  }))
+  async uploadOsintLua(@UploadedFile() file: Express.Multer.File) {
+    await this.osintService.uploadOsintLua(file.buffer)
+  }
 
   @ApiOperation({ description: 'Returns requested character' })
   @ApiOkResponse({ description: 'Request character with selected _id' })

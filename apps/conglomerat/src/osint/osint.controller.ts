@@ -61,14 +61,9 @@ export class OsintController {
   @UseInterceptors(FileInterceptor('file', {
     limits: { fileSize: 10 * 1000 * 1000 },
     fileFilter: function (req, file, cb){
-      // Set the filetypes, it is optional
       const filetypes = /lua/;
       const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-      if (extname) {
-        return cb(null, true);
-      }
-
+      if (extname) return cb(null, true);
       cb(new Error(`Error: File upload only supports the following filetypes - ${filetypes}`), false);
     }
   }))

@@ -15,27 +15,6 @@ services:
     networks:
       - conglomerat-network
 
-  neo4j:
-    image: neo4j:4.3.0-community
-    restart: always
-    container_name: neo4j
-    volumes:
-      - ./volumes/neo4j/plugins:/plugins
-      - ./volumes/neo4j/conf:/conf
-      - ./volumes/neo4j/data:/data
-      - ./volumes/neo4j/import:/import
-      - ./volumes/neo4j/logs:/logs
-    environment:
-      - NEO4J_dbms_memory_pagecache_size=2G
-      - NEO4J_dbms.memory.heap.initial_size=2G
-      - NEO4J_dbms_memory_heap_max__size=2G
-      - NEO4J_AUTH=neo4j/test
-    ports:
-      - '7474:7474'
-      - '7687:7687'
-    networks:
-      - conglomerat-network
-
   redis:
     image: redis:6-alpine
     restart: always
@@ -46,42 +25,6 @@ services:
       - 6379
     ports:
       - '6379:6379'
-    networks:
-      - conglomerat-network
-
-  commonwealth:
-    build: ./
-    image: conglomerat
-    container_name: commonwealth
-    restart: always
-    links:
-      - mongo
-      - redis
-    command: [ 'node','dist/apps/conglomerat/main.js' ]
-    ports:
-      - '5000:8000'
-    environment:
-      - NODE_ENV=${NODE_ENV:-production}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  keys:
-    build: ./
-    image: conglomerat
-    container_name: keys
-    restart: always
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/keys/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV:-production}
-    depends_on:
-      - mongo
-      - redis
     networks:
       - conglomerat-network
 

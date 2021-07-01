@@ -43,7 +43,7 @@ export class ItemsWorker {
       });
 
       /** Request item data */
-      const [getItemSummary, getItemMedia] = await (Promise as any).allSettled([
+      const [getItemSummary, getItemMedia] = await Promise.allSettled([
         this.BNet.query(`/data/wow/item/${args._id}`, {
           timeout: DMA_TIMEOUT_TOLERANCE,
           headers: { 'Battlenet-Namespace': 'static-eu' }
@@ -54,7 +54,7 @@ export class ItemsWorker {
         })
       ]);
 
-      if (getItemSummary.value) {
+      if (getItemSummary.status === 'fulfilled' && getItemSummary.value) {
         /** Schema fields */
         const
           requested_item: Partial<ItemInterface> = {},
@@ -92,6 +92,7 @@ export class ItemsWorker {
         Object.assign(item, requested_item)
 
         if (
+          getItemMedia.status === 'fulfilled' &&
           getItemMedia.value &&
           getItemMedia.value.assets &&
           getItemMedia.value.assets.length

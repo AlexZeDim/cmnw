@@ -175,7 +175,8 @@ export class CharactersWorker {
 
       await job.updateProgress(25);
       if (character_status && character_status.is_valid && character_status.is_valid === true) {
-        const [summary, pets_collection, mount_collection, professions, media] = await Promise.all([
+
+        const [summary, pets_collection, mount_collection, professions, media] = await Promise.allSettled([
           this.summary(name_slug, character.realm, this.BNet),
           this.pets(name_slug, character.realm, this.BNet),
           this.mounts(name_slug, character.realm, this.BNet),
@@ -183,11 +184,11 @@ export class CharactersWorker {
           this.media(name_slug, character.realm, this.BNet)
         ]);
 
-        Object.assign(updated, summary);
-        Object.assign(updated, pets_collection);
-        Object.assign(updated, mount_collection);
-        Object.assign(updated, professions);
-        Object.assign(updated, media);
+        if (summary.status === 'fulfilled') Object.assign(updated, summary.value);
+        if (pets_collection.status === 'fulfilled') Object.assign(updated, pets_collection.value);
+        if (mount_collection.status === 'fulfilled') Object.assign(updated, mount_collection.value);
+        if (professions.status === 'fulfilled') Object.assign(updated, professions.value);
+        if (media.status === 'fulfilled') Object.assign(updated, media.value);
       }
       await job.updateProgress(50);
       /**

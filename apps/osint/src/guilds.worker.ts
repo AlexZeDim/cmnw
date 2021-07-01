@@ -300,7 +300,7 @@ export class GuildsWorker {
         joins: GuildMemberInterface[] = differenceBy(updated.members, original.members, 'id'),
         leaves: GuildMemberInterface[] = differenceBy(original.members, updated.members, 'id');
 
-      await Promise.all(
+      await Promise.allSettled(
         intersection.map(async (guild_member_new: GuildMemberInterface) => {
           const guild_member_old: GuildMemberInterface | undefined = original.members.find(({ id }) => id === guild_member_new.id);
           if (guild_member_old) {
@@ -360,7 +360,7 @@ export class GuildsWorker {
         })
       );
 
-      await Promise.all(
+      await Promise.allSettled(
         joins.map(async guild_member => {
           // Join
           block.push(
@@ -388,7 +388,7 @@ export class GuildsWorker {
         })
       );
 
-      await Promise.all(
+      await Promise.allSettled(
         leaves.map(async guild_member => {
           // More operative way to update character on leave
           await this.CharacterModel.findOneAndUpdate({ _id: guild_member._id, guild_id: original._id }, { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } });

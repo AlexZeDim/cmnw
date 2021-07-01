@@ -196,7 +196,7 @@ export class OsintService {
       throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
     }
 
-    const _id: string = `${name_slug}@${realm.slug}`;
+    const _id: string = toSlug(`${name_slug}@${realm.slug}`);
     const [guild] = await this.GuildModel.aggregate([
       {
         $match: {

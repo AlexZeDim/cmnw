@@ -27,7 +27,7 @@ export class Auction extends Document {
   @Prop({ type: Number })
   buyout: number;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, index: true })
   price: number;
 
   // TODO enum?

@@ -27,7 +27,7 @@ export class Auction extends Document {
   @Prop({ type: Number })
   buyout: number;
 
-  @Prop({ type: Number, index: true })
+  @Prop({ type: Number })
   price: number;
 
   // TODO enum?
@@ -43,5 +43,5 @@ export class Auction extends Document {
 
 export const AuctionsSchema = SchemaFactory.createForClass(Auction);
 AuctionsSchema.index({ 'createdAt': -1 }, { name: 'TTL', expireAfterSeconds: 86400 });
-AuctionsSchema.index({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 }, { name: 'TSqPL' });
+AuctionsSchema.index({ 'connected_realm_id': -1, 'item_id': -1, 'last_modified': -1,  }, { name: 'TSqPL' });
 

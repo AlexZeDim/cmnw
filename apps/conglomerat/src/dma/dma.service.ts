@@ -201,7 +201,7 @@ export class DmaService {
       const { auctions } = await this.RealmModel.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('auctions').sort({ 'auctions': 1 });
       /** Find distinct prices for each realm */
       const quotes: number[] = await this.AuctionModel
-        .find({ connected_realm_id: { $in: connected_realms_id }, last_modified: { $gte: auctions }, 'item.id': item_id }, 'price')
+        .find({ connected_realm_id: { $in: connected_realms_id }, 'item.id': item_id, last_modified: { $gte: auctions }, }, 'price')
         .hint({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 })
         .distinct('price');
       return this.priceRange(quotes, blocks);
@@ -211,7 +211,7 @@ export class DmaService {
       /** Find distinct prices for one */
       const quotes = await this.AuctionModel
         .find({ connected_realm_id: { $in: connected_realms_id }, 'item.id': item_id }, 'price')
-        .hint({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 })
+        .hint({ 'connected_realm_id': -1, 'item_id': -1, 'last_modified': -1, })
         .distinct('price');
       return this.priceRange(quotes, blocks);
     }
@@ -271,8 +271,8 @@ export class DmaService {
         {
           $match: {
             connected_realm_id: connected_realm_id,
+            'item.id': item_id,
             last_modified: { $eq: auctions },
-            'item.id': item_id
           },
         },
         {
@@ -381,8 +381,7 @@ export class DmaService {
     if (!connected_realm_id) return { chart };
     /** Find distinct timestamps for each realm */
     const timestamps: number[] = await this.AuctionModel
-      .find({ 'item.id': item_id, connected_realm_id: connected_realm_id }, 'last_modified')
-      .hint({ 'item.id': -1, connected_realm_id: 1 })
+      .find({ connected_realm_id: connected_realm_id, 'item.id': item_id }, 'last_modified')
       .distinct('last_modified');
 
     timestamps.sort((a, b) => a - b);
@@ -395,8 +394,8 @@ export class DmaService {
               {
                 $match: {
                   connected_realm_id: connected_realm_id,
-                  last_modified: timestamp,
                   'item.id': item_id,
+                  last_modified: timestamp,
                 }
               },
               {
@@ -634,8 +633,8 @@ export class DmaService {
           async (connected_realm) => {
             const orderFeed = await this.AuctionModel.find({
               connected_realm_id: connected_realm._id,
-              last_modified: connected_realm.auctions,
               'item.id': item._id,
+              last_modified: connected_realm.auctions,
             }).lean();
             // TODO possible eachAsync cursor;
             feed.push(...orderFeed);

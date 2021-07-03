@@ -479,9 +479,9 @@ export class ValuationsWorker {
         const [market_data]: MarketDataInterface[] = await this.AuctionsModel.aggregate<MarketDataInterface>([
           {
             $match: {
-              last_modified: args.last_modified,
-              item_id: args._id,
               connected_realm_id: args.connected_realm_id,
+              item_id: args._id,
+              last_modified: args.last_modified,
             },
           },
           {

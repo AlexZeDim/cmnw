@@ -300,77 +300,79 @@ export class DmaService {
     const chart: ChartOrderInterface[] = [];
     if (!yAxis.length) return { chart };
     if (!connected_realm_id) return { chart };
-
     /** Find distinct timestamps for each realm */
-    const timestamps: number[] = await this.AuctionModel
+    const timestamps: number[] = await this.GoldModel
       .find({ connected_realm_id: connected_realm_id }, 'last_modified')
       .distinct('last_modified');
 
     timestamps.sort((a, b) => a - b);
 
-    for (let i: number = 0; i < timestamps.length; i++) {
-      await this.GoldModel
-        .aggregate([
-          {
-            $match: {
-              status: 'Online',
-              connected_realm_id: connected_realm_id,
-              last_modified: timestamps[i]
-            }
-          },
-          {
-            $bucket: {
-              groupBy: '$price',
-              boundaries: yAxis,
-              default: 'Other',
-              output: {
-                orders: { $sum: 1 },
-                value: { $sum: '$quantity' },
-                price: { $first: '$price' },
-                oi: {
-                  $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] } ] },
+    await Promise.all(timestamps.map(
+      async (timestamp, i) => {
+        await this.GoldModel
+          .aggregate([
+            {
+              $match: {
+                status: 'Online',
+                connected_realm_id: connected_realm_id,
+                last_modified: timestamp
+              }
+            },
+            {
+              $bucket: {
+                groupBy: '$price',
+                boundaries: yAxis,
+                default: 'Other',
+                output: {
+                  orders: { $sum: 1 },
+                  value: { $sum: '$quantity' },
+                  price: { $first: '$price' },
+                  oi: {
+                    $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] } ] },
+                  }
                 }
               }
+            },
+            {
+              $addFields: { xIndex: i }
             }
-          },
-          {
-            $addFields: { xIndex: i }
-          }
-        ])
-        .allowDiskUse(true)
-        .cursor()
-        .exec()
-        .eachAsync((order: OrderXrsInterface) => {
-          const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
-          if (yIndex !== -1) {
-            chart.push({
-              x:  order.xIndex,
-              y: yIndex,
-              orders: order.orders,
-              value: order.value,
-              oi: parseInt(order.oi.toFixed(0), 10)
-            });
-          } else if (order._id === 'Other') {
-            if (order.price > yAxis[yAxis.length-1]) {
+          ])
+          .allowDiskUse(true)
+          .cursor()
+          .exec()
+          .eachAsync((order: OrderXrsInterface) => {
+            console.log(order);
+            const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
+            if (yIndex !== -1) {
               chart.push({
-                x: order.xIndex,
-                y: yAxis.length-1,
+                x:  order.xIndex,
+                y: yIndex,
                 orders: order.orders,
                 value: order.value,
                 oi: parseInt(order.oi.toFixed(0), 10)
               });
-            } else {
-              chart.push({
-                x: order.xIndex,
-                y: 0,
-                orders: order.orders,
-                value: order.value,
-                oi: parseInt(order.oi.toFixed(0), 10)
-              });
+            } else if (order._id === 'Other') {
+              if (order.price > yAxis[yAxis.length-1]) {
+                chart.push({
+                  x: order.xIndex,
+                  y: yAxis.length-1,
+                  orders: order.orders,
+                  value: order.value,
+                  oi: parseInt(order.oi.toFixed(0), 10)
+                });
+              } else {
+                chart.push({
+                  x: order.xIndex,
+                  y: 0,
+                  orders: order.orders,
+                  value: order.value,
+                  oi: parseInt(order.oi.toFixed(0), 10)
+                });
+              }
             }
-          }
-        }, { parallel: 20 })
-    }
+          }, { parallel: 20 });
+      })
+    );
 
     return { chart, timestamps };
   }
@@ -450,7 +452,7 @@ export class DmaService {
                   });
                 }
               }
-            }, { parallel: 20 })
+            }, { parallel: 20 });
         }
       )
     );

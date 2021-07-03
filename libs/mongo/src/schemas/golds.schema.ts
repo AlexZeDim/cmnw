@@ -27,5 +27,5 @@ export class Gold extends Document {
 }
 
 export const GoldsSchema = SchemaFactory.createForClass(Gold);
-GoldsSchema.index({ createdAt: -1 }, { name: 'TTL', expireAfterSeconds: 86400 })
+GoldsSchema.index({ last_modified: -1 }, { name: 'TTL', expireAfterSeconds: 86400 })
 GoldsSchema.index({ status: 1, connected_realm_id: 1, last_modified: -1 }, { name: 'Q' })

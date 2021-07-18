@@ -16,7 +16,7 @@ export class Contract extends Document {
   @Prop({ type: Number, required: true })
   last_modified: number;
 
-  @Prop()
+  @Prop({ type: { day: Number, week: Number, month: Number, year: Number } })
   date: {
     day: number;
     week: number;

@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
@@ -15,8 +15,8 @@ export class Key extends Document {
   @Prop()
   expired_in: number;
 
-  @Prop()
-  tags: string[];
+  @Prop({ type: [String] })
+  tags: Types.Array<String>;
 }
 
 export const KeysSchema = SchemaFactory.createForClass(Key);

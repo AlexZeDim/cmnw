@@ -4,6 +4,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema({ timestamps: true })
 export class Account extends Document {
   @Prop({ type: String, required: true, default: 'Anonymous', index: true })
+  nickname: string;
+
+  @Prop({ type: String, required: true, default: 'Anonymous', index: true })
   cryptonym: string;
 
   @Prop({ type: [String] })

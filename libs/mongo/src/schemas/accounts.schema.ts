@@ -7,6 +7,9 @@ export class Account extends Document {
   cryptonym: string;
 
   @Prop({ type: [String] })
+  clearance: string[];
+
+  @Prop({ type: [String] })
   tags: string[];
 
   @Prop({ type: [String], index: true })
@@ -20,5 +23,5 @@ export class Account extends Document {
 }
 
 export const AccountsSchema = SchemaFactory.createForClass(Account);
-AccountsSchema.index({ discord: 1, battlenet: 1 }, {  name: 'Aliases' })
+AccountsSchema.index({ discord: 1, battlenet: 1 }, { name: 'Aliases' })
 

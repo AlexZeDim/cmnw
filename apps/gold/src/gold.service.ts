@@ -56,21 +56,20 @@ export class GoldService {
             let faction: FACTION = FACTION.ANY;
 
             if (order.faction === FACTION.A || order.faction === 'Альянс') faction = FACTION.A;
-            if (order.faction === FACTION.H || order.faction === 'Horde') faction = FACTION.H
+            if (order.faction === FACTION.H || order.faction === 'Horde') faction = FACTION.H;
 
             if (quantity < 15000000) {
-              realms.add(realm.connected_realm_id)
-              orders.push(
-                new this.GoldModel({
-                  connected_realm_id: realm.connected_realm_id,
-                  faction: faction,
-                  quantity: quantity,
-                  status: order.status ? 'Online' : 'Offline',
-                  owner: order.owner,
-                  price: price,
-                  last_modified: now,
-                })
-              )
+              const gold = new this.GoldModel({
+                connected_realm_id: realm.connected_realm_id,
+                faction: faction,
+                quantity: quantity,
+                status: order.status ? 'Online' : 'Offline',
+                owner: order.owner,
+                price: price,
+                last_modified: now,
+              });
+              realms.add(realm.connected_realm_id);
+              orders.push(gold);
             } else {
               this.logger.log(`indexGold: order quantity: ${quantity} found`);
             }
@@ -84,7 +83,7 @@ export class GoldService {
       }
 
       await this.GoldModel.insertMany(orders, { rawResult: false });
-      await this.RealmModel.updateMany({ 'connected_realm_id': { '$in': Array.from(realms) } }, { golds: now });
+      await this.RealmModel.updateMany({ connected_realm_id: { $in: Array.from(realms) } }, { golds: now });
       this.logger.log(`indexGold: ${orders.length} orders on timestamp: ${now} successfully inserted`);
     } catch (e) {
       this.logger.error(`indexGold: ${e}`)

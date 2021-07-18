@@ -17,6 +17,7 @@ export class AuthService {
     let user = await this.AccountModel.findOne({ discord_id });
 
     if (!user) {
+      // TODO cryptonym // nickname
       user = await this.AccountModel.create({
         cryptonym: 'Anonymous',
         discord_id: [discord_id]

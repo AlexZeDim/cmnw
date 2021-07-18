@@ -9,7 +9,10 @@ import {
   WowProgressInterface,
   WarcraftLogsInterface,
   charactersQueue,
-  toSlug, capitalize, CharacterInterface, OSINT_SOURCE, OSINT_TIMEOUT_TOLERANCE,
+  toSlug, capitalize,
+  CharacterInterface,
+  OSINT_SOURCE,
+  OSINT_TIMEOUT_TOLERANCE,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import BlizzAPI, { BattleNetOptions } from 'blizzapi';

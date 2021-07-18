@@ -46,7 +46,10 @@ export class DmaService {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
-    const is_gold = item._id === 1;
+    let is_gold = false;
+
+    if (item._id === 1 || item.asset_class.includes(VALUATION_TYPE.WOWTOKEN)) is_gold = true;
+
     let is_evaluating: number = 0;
 
     if (item.asset_class.length === 0) {
@@ -59,15 +62,16 @@ export class DmaService {
       realm.map(
         async (connected_realm: RealmAggregationInterface) => {
           const timestamp = is_gold ? connected_realm.golds : connected_realm.auctions;
+
           const item_valuations = await this.ValuationsModel
             .find({
-              item_id: item._id,
+              item_id: item.asset_class.includes(VALUATION_TYPE.WOWTOKEN) ? { $in: [122284, 122270] } : item._id,
               last_modified: timestamp,
               connected_realm_id: connected_realm._id
             })
             .lean();
 
-          if (item_valuations.length > 1) {
+          if (item_valuations.length > 0) {
             valuations.push(...item_valuations);
           } else {
             const _id = `${item._id}@${connected_realm._id}:${timestamp}`;
@@ -515,8 +519,8 @@ export class DmaService {
                 {
                   $match: {
                     connected_realm_id: connected_realm._id,
-                    last_modified: connected_realm.auctions,
                     'item.id': item._id,
+                    last_modified: connected_realm.auctions,
                   },
                 },
                 {

@@ -5,9 +5,11 @@ import fs from 'fs-extra';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Message } from '@app/mongo';
 import { Model } from 'mongoose';
+import { EXIT_CODES } from '@app/core';
+// import { OGM, Model as Neo4jModel } from '@neo4j/graphql-ogm';
 // @ts-ignore
 import Discord from 'discord-agent';
-import { EXIT_CODES } from '@app/core';
+import { Neo4jService } from 'nest-neo4j';
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -26,6 +28,7 @@ export class OracleService implements OnApplicationBootstrap {
     private readonly KeysModel: Model<Key>,
     @InjectModel(Message.name)
     private readonly MessagesModel: Model<Message>,
+    private readonly neo4jService: Neo4jService,
   ) { }
 
   private readonly logger = new Logger(
@@ -65,7 +68,7 @@ export class OracleService implements OnApplicationBootstrap {
     key.tags.addToSet('taken');
 
     await key.save();
-    await this.client.login(key.token);
+    // await this.client.login(key.token);
 
     this.logger.warn(`Key ${key.token} has been taken!`);
 
@@ -79,7 +82,13 @@ export class OracleService implements OnApplicationBootstrap {
       this.logger.warn(`Key ${key.token} has been released!`);
     }));
 
+    this.test();
     await this.bot();
+  }
+
+  private async test(): Promise<void> {
+    const c = this.neo4jService.getConfig();
+    console.log(c);
   }
 
   private async bot(): Promise<void> {

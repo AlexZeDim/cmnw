@@ -3,10 +3,11 @@ import { NlpManager } from 'node-nlp';
 import path from "path";
 import fs from 'fs-extra';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key } from '@app/mongo';
+import { Key, Message } from '@app/mongo';
 import { Model } from 'mongoose';
 // @ts-ignore
 import Discord from 'discord-agent';
+import { EXIT_CODES } from '@app/core';
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -22,7 +23,9 @@ export class OracleService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(Key.name)
-    private readonly KeysModel: Model<Key>
+    private readonly KeysModel: Model<Key>,
+    @InjectModel(Message.name)
+    private readonly MessagesModel: Model<Message>,
   ) { }
 
   private readonly logger = new Logger(
@@ -46,8 +49,6 @@ export class OracleService implements OnApplicationBootstrap {
     await this.manager.import(corpus);
 
     this.client = new Discord.Client({
-      fetchAllMembers: true,
-      // disabledEvents: ['READY'],
       ws: {
         large_threshold: 1000000,
         compress: true,
@@ -62,6 +63,7 @@ export class OracleService implements OnApplicationBootstrap {
 
     key.tags.pull('free');
     key.tags.addToSet('taken');
+
     await key.save();
     await this.client.login(key.token);
 
@@ -69,22 +71,22 @@ export class OracleService implements OnApplicationBootstrap {
 
     this.commands = new Discord.Collection();
 
-    await this.bot();
+    EXIT_CODES.forEach((eventType) => process.on(eventType,  async () => {
+      key.tags.pull('taken');
+      key.tags.addToSet('free');
 
-    [`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`]
-      .forEach((eventType) => process.on(eventType,  async () => {
-        key.tags.pull('taken');
-        key.tags.addToSet('free');
-        key.save();
-        this.logger.warn(`Key ${key.token} has been released!`);
-      }));
+      await key.save();
+      this.logger.warn(`Key ${key.token} has been released!`);
+    }));
+
+    await this.bot();
   }
 
   private async bot(): Promise<void> {
     try {
       this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`));
 
-      this.client.on('message', async message => {
+      this.client.on('message', async (message: Discord.Message) => {
 
         if (message.author.bot) return;
 
@@ -98,7 +100,15 @@ export class OracleService implements OnApplicationBootstrap {
         } catch (e) {
           this.logger.error(`Error: ${e}`);
         }
-      })
+      });
+
+      this.client.on('voiceStateUpdate', async (oldMember: Discord.GuildMember, newMember: Discord.GuildMember) => {
+        console.log(oldMember, newMember);
+      });
+
+      // TODO generate invites
+
+      // TODO join servers
 
     /*
       for (const [guild_id] of this.client.guilds) {

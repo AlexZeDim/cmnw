@@ -12,3 +12,5 @@ export enum SOURCE_TYPE {
   DiscordText = 'discord-text',
   DiscordVoice = 'discord-voice',
 }
+
+export const EXIT_CODES: string[] = [`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`];

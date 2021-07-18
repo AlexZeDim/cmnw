@@ -1,5 +1,5 @@
 import { Document, Types } from 'mongoose';
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CLEARANCE, SOURCE_TYPE } from '@app/core';
 
 @Schema()
@@ -43,3 +43,5 @@ export class Message extends Document {
   @Prop({ _id: false, timestamps: false })
   source: Source;
 }
+
+export const MessagesSchema = SchemaFactory.createForClass(Message);

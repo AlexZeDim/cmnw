@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { CLEARANCE, SOURCE_TYPE } from '@app/core';
+import { CLEARANCE_LEVEL, SOURCE_TYPE } from '@app/core';
 
 @Schema()
 class Source {
@@ -34,7 +34,7 @@ export class Message extends Document {
   @Prop({ type: [String] })
   tags: Types.Array<String>
 
-  @Prop({ type: [String], enum: CLEARANCE })
+  @Prop({ type: [String], enum: CLEARANCE_LEVEL })
   clearance: Types.Array<String>
 
   @Prop({ type: String })

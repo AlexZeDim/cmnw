@@ -78,13 +78,3 @@ export enum LFG {
   NOW = 'T',
   PREV = 'T-1'
 }
-
-export enum CLEARANCE {
-  C = 'c',
-  CONTROL = 'control',
-  CONGLOMERAT = 'conglomerat',
-  COMMUNITY = 'community',
-  RED = 'red',
-  YELLOW = 'yellow',
-  GREEN = 'green',
-}

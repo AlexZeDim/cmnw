@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { EntityName } from '@app/core';
+import { ENTITY_NAME } from '@app/core';
 import { Document } from "mongoose";
 
 @Schema()
@@ -7,7 +7,7 @@ export class Entity extends Document {
   @Prop({ type: String })
   parentId: string;
 
-  @Prop({ type: String, enum: EntityName, default: EntityName.Entity })
+  @Prop({ type: String, enum: ENTITY_NAME, default: ENTITY_NAME.Entity })
   entity: string;
 
   @Prop({ type: String, index: true })

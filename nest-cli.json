@@ -196,6 +196,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/oracle/tsconfig.app.json"
       }
+    },
+    "contracts": {
+      "type": "application",
+      "root": "apps/contracts",
+      "entryFile": "main",
+      "sourceRoot": "apps/contracts/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/contracts/tsconfig.app.json"
+      }
     }
   }
 }

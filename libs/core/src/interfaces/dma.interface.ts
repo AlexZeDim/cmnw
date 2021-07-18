@@ -1,5 +1,5 @@
 import { LeanDocument } from 'mongoose';
-import { Item, Pricing } from '@app/mongo';
+import { Contract, Item, Pricing } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 
 class ItemNames {
@@ -124,6 +124,23 @@ export interface VAInterface
   last_modified: number,
   connected_realm_id: number,
   iteration: number,
+}
+
+export interface ContractAggregation extends LeanDocument<Contract> {
+  _id: string;
+  item_id: number;
+  connected_realm_id: number;
+  last_modified: number;
+  date: {
+    day: number;
+    week: number;
+    month: number;
+    year: number;
+  };
+  price: number;
+  price_size: number;
+  quantity: number;
+  open_interest: number;
 }
 
 /**

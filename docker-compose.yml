@@ -285,6 +285,23 @@ services:
     networks:
       - conglomerat-network
 
+  contracts:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: contracts
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/contracts/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   valuations:
     build: ./
     image: conglomerat

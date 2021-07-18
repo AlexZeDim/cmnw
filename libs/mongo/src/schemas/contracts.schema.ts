@@ -1,0 +1,46 @@
+import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+
+
+@Schema({ timestamps: true })
+export class Contract extends Document {
+  @Prop({ type: String, required: true })
+  _id: string;
+
+  @Prop({ type: Number, required: true, ref: 'Item' })
+  item_id: number;
+
+  @Prop({ type: Number, required: true })
+  connected_realm_id: number;
+
+  @Prop({ type: Number, required: true })
+  last_modified: number;
+
+  @Prop()
+  date: {
+    day: number;
+    week: number;
+    month: number;
+    year: number;
+  }
+
+  @Prop({ type: Number })
+  price: number;
+
+  @Prop({ type: Number })
+  price_size: number;
+
+  @Prop({ type: Number })
+  quantity: number;
+
+  @Prop({ type: Number })
+  open_interest: number;
+
+  @Prop({ default: [], type: [Number] })
+  orders: Types.Array<Number>;
+
+  @Prop({ default: [], type: [String] })
+  sellers: Types.Array<String>;
+}
+
+export const ContractsSchema = SchemaFactory.createForClass(Contract);

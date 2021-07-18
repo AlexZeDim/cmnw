@@ -2,6 +2,7 @@ export { RealmsSchema, Realm } from './realms.schema';
 export { AuctionsSchema, Auction } from './auctions.schema';
 export { CharactersSchema, Character } from './characters.schema';
 export { ValuationsSchema, Valuations } from './valuations.schema';
+export { ContractsSchema, Contract } from './contracts.schema';
 export { AccountsSchema, Account } from './accounts.schema';
 export { GuildsSchema, Guild } from './guilds.schema';
 export { KeysSchema, Key } from './keys.schema';

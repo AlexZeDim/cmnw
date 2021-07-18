@@ -33,7 +33,7 @@ class ItemNames {
 
 @Schema()
 export class Item extends Document {
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   _id: number;
 
   @Prop({ _id: false, timestamps: false })

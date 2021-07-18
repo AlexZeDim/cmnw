@@ -6,7 +6,7 @@ import { NlpManager } from 'node-nlp';
 import fs from 'fs-extra';
 import path from 'path';
 import crypto from 'crypto';
-import { AccountsMock, capitalize, EntityMocks, EntityName } from '@app/core';
+import { AccountsMock, capitalize, EntityMocks, ENTITY_NAME } from '@app/core';
 import RussianNouns from 'russian-nouns-js';
 
 @Injectable()
@@ -148,7 +148,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
             await this.EntityModel.findOneAndUpdate({ name: texts[0] }, {
               parentId: account._id.toString(),
-              entity: EntityName.Persona,
+              entity: ENTITY_NAME.Persona,
               name: texts[0],
               languages: ['ru', 'en'],
               tags: texts

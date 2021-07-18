@@ -10,4 +10,5 @@ export { warcraftlogsConfig } from './warcraftlogs.config';
 export { valuationsConfig } from './valuations.config';
 export { pricingConfig } from './pricing.config';
 export { itemsConfig } from './items.config';
+export { neo4jConfig } from './neo4j.config';
 export * from './interfaces';

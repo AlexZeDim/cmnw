@@ -9,3 +9,4 @@ export { ItemsInterface } from './items.interface';
 export { PricingInterface } from './pricing.interface';
 export { ValuationsInterface } from './valuations.interface';
 export { WowprogressInterface } from './wowprogress.interface';
+export { Neo4jInterface } from './neo4j.interface';

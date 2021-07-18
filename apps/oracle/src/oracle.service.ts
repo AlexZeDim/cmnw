@@ -6,10 +6,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Key, Message } from '@app/mongo';
 import { Model } from 'mongoose';
 import { EXIT_CODES } from '@app/core';
-// import { OGM, Model as Neo4jModel } from '@neo4j/graphql-ogm';
+import { OGM, Model as Neo4jModel } from '@neo4j/graphql-ogm';
 // @ts-ignore
 import Discord from 'discord-agent';
-import { Neo4jService } from 'nest-neo4j';
+import neo4j from 'neo4j-driver';
+import { typeDefs } from '@app/neo4j';
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -28,7 +29,6 @@ export class OracleService implements OnApplicationBootstrap {
     private readonly KeysModel: Model<Key>,
     @InjectModel(Message.name)
     private readonly MessagesModel: Model<Message>,
-    private readonly neo4jService: Neo4jService,
   ) { }
 
   private readonly logger = new Logger(
@@ -87,8 +87,24 @@ export class OracleService implements OnApplicationBootstrap {
   }
 
   private async test(): Promise<void> {
-    const c = this.neo4jService.getConfig();
-    console.log(c);
+    const driver = neo4j.driver(
+      'bolt://localhost:7687',
+      neo4j.auth.basic('neo4j', 'test'),
+    );
+
+    const ogm = new OGM({ typeDefs, driver });
+    this.logger.log(ogm)
+
+    const Entity = ogm.model("Entity");
+    this.logger.log(Entity);
+
+    const create = await Entity.create({ input: [{ name: "Bluratella" }] });
+    this.logger.log(create);
+
+    const [node] = await Entity.find({ where: { name: "Bluratella" } });
+    this.logger.log(node);
+
+    await Entity.delete({ where: { name: "Bluratella" } })
   }
 
   private async bot(): Promise<void> {

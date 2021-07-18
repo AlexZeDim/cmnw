@@ -140,7 +140,9 @@
       "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
       "@app/core": "<rootDir>/libs/core/src",
       "@app/mongo/(.*)": "<rootDir>/libs/mongo/src/$1",
-      "@app/mongo": "<rootDir>/libs/mongo/src"
+      "@app/mongo": "<rootDir>/libs/mongo/src",
+      "@app/neo4j/(.*)": "<rootDir>/libs/neo4j/src/$1",
+      "@app/neo4j": "<rootDir>/libs/neo4j/src"
     }
   }
 }

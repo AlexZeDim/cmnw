@@ -32,13 +32,18 @@ export class ValuationsService {
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queueValuations: Queue<IVQInterface, number>,
+    private readonly queue: Queue<IVQInterface, number>,
   ) {
+    this.clearQueue();
     this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
   }
 
+  async clearQueue(): Promise<void> {
+    await this.queue.drain(true);
+  }
+
   // @Cron(CronExpression.EVERY_10_MINUTES)
-  async initValuations() {
+  async initValuations(): Promise<void> {
     try {
       await this.RealmModel
         .aggregate([
@@ -62,7 +67,7 @@ export class ValuationsService {
     }
   }
 
-  async buildValuations(connected_realm_id: number, timestamp: number) {
+  async buildValuations(connected_realm_id: number, timestamp: number): Promise<void> {
     try {
       for (let [priority, query] of ASSET_EVALUATION_PRIORITY) {
         this.logger.log(`=======================================`);
@@ -73,7 +78,7 @@ export class ValuationsService {
           .cursor()
           .eachAsync(async (item) => {
             const _id = `${item._id}@${connected_realm_id}:${timestamp}`;
-            await this.queueValuations.add(
+            await this.queue.add(
               _id, {
                 _id: item._id,
                 last_modified: timestamp,

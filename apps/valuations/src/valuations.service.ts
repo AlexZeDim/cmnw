@@ -10,8 +10,9 @@ import {
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { valuationsConfig } from '@app/configuration';
+// import { Cron, CronExpression } from '@nestjs/schedule';
+
 
 @Injectable()
 export class ValuationsService {
@@ -31,13 +32,18 @@ export class ValuationsService {
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queueValuations: Queue<IVQInterface, number>,
+    private readonly queue: Queue<IVQInterface, number>,
   ) {
+    this.clearQueue();
     this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async initValuations() {
+  async clearQueue(): Promise<void> {
+    await this.queue.obliterate({ force: true });
+  }
+
+  // @Cron(CronExpression.EVERY_10_MINUTES)
+  async initValuations(): Promise<void> {
     try {
       await this.RealmModel
         .aggregate([
@@ -61,7 +67,7 @@ export class ValuationsService {
     }
   }
 
-  async buildValuations(connected_realm_id: number, timestamp: number) {
+  async buildValuations(connected_realm_id: number, timestamp: number): Promise<void> {
     try {
       for (let [priority, query] of ASSET_EVALUATION_PRIORITY) {
         this.logger.log(`=======================================`);
@@ -72,7 +78,7 @@ export class ValuationsService {
           .cursor()
           .eachAsync(async (item) => {
             const _id = `${item._id}@${connected_realm_id}:${timestamp}`;
-            await this.queueValuations.add(
+            await this.queue.add(
               _id, {
                 _id: item._id,
                 last_modified: timestamp,

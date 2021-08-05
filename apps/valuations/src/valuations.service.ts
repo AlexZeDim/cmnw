@@ -10,8 +10,9 @@ import {
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { valuationsConfig } from '@app/configuration';
+// import { Cron, CronExpression } from '@nestjs/schedule';
+
 
 @Injectable()
 export class ValuationsService {
@@ -36,7 +37,7 @@ export class ValuationsService {
     this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  // @Cron(CronExpression.EVERY_10_MINUTES)
   async initValuations() {
     try {
       await this.RealmModel

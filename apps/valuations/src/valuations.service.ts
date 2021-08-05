@@ -39,7 +39,7 @@ export class ValuationsService {
   }
 
   async clearQueue(): Promise<void> {
-    await this.queue.drain(true);
+    await this.queue.obliterate({ force: true });
   }
 
   // @Cron(CronExpression.EVERY_10_MINUTES)

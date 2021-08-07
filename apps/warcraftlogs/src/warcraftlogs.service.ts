@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm, WarcraftLogs } from '@app/mongo';
 import { Model } from "mongoose";
@@ -21,7 +21,7 @@ import { delay } from '@app/core/utils/converters';
 import { warcraftlogsConfig } from '@app/configuration';
 
 @Injectable()
-export class WarcraftlogsService {
+export class WarcraftlogsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     WarcraftlogsService.name, true,
   );
@@ -37,8 +37,10 @@ export class WarcraftlogsService {
     private readonly KeyModel: Model<Key>,
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexLogs(GLOBAL_OSINT_KEY);
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexLogs(GLOBAL_OSINT_KEY);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Item, Key } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
@@ -12,7 +12,7 @@ import path from 'path';
 import csv from 'async-csv';
 
 @Injectable()
-export class ItemsService {
+export class ItemsService implements OnApplicationBootstrap  {
   private readonly logger = new Logger(
     ItemsService.name, true,
   );
@@ -24,9 +24,11 @@ export class ItemsService {
     private readonly ItemModel: Model<Item>,
     @BullQueueInject(itemsQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexItems(GLOBAL_KEY, 0, 200000, itemsConfig.index_update_force, itemsConfig.index_init);
-    this.buildItems(itemsConfig.build_init);
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexItems(GLOBAL_KEY, 0, 200000, itemsConfig.index_update_force, itemsConfig.index_init);
+    await this.buildItems(itemsConfig.build_init);
   }
 
   @Cron(CronExpression.EVERY_WEEK)

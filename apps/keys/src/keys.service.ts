@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Key } from '@app/mongo';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,7 +11,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { GLOBAL_BLIZZARD_KEY } from '@app/core';
 
 @Injectable()
-export class KeysService {
+export class KeysService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     KeysService.name, true,
   );
@@ -19,9 +19,11 @@ export class KeysService {
   constructor(
     @InjectModel(Key.name)
     private readonly KeysModel: Model<Key>,
-  ) {
-    this.initKeys();
-    this.indexKeys();
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.initKeys();
+    await this.indexKeys();
   }
 
   private async initKeys(): Promise<void> {

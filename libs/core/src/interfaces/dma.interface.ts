@@ -1,5 +1,5 @@
 import { LeanDocument } from 'mongoose';
-import { Contract, Item, Pricing } from '@app/mongo';
+import { Auction, Contract, Item, Pricing } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 
 class ItemNames {
@@ -72,7 +72,7 @@ export interface OrderXrsInterface {
   price: number;
 }
 
-export interface RealmAggregationInterface {
+export interface RealmAInterface {
   readonly _id: number,
   readonly realms: string[],
   readonly slug: string,
@@ -80,6 +80,17 @@ export interface RealmAggregationInterface {
   readonly golds: number;
   readonly auctions: number;
   readonly valuations: number;
+}
+
+export interface RealmVAInterface {
+  readonly _id: number;
+  readonly auctions: number;
+  readonly valuations: number;
+}
+
+export interface AuctionsVAInterface {
+  readonly _id: number;
+  readonly data: LeanDocument<Auction>;
 }
 
 /**

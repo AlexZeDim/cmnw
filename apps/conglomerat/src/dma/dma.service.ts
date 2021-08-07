@@ -8,7 +8,7 @@ import {
   IVQInterface,
   OrderQuotesInterface,
   OrderXrsInterface,
-  RealmAggregationInterface,
+  RealmAInterface,
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
@@ -60,7 +60,7 @@ export class DmaService {
 
     await Promise.all(
       realm.map(
-        async (connected_realm: RealmAggregationInterface) => {
+        async (connected_realm: RealmAInterface) => {
           const timestamp = is_gold ? connected_realm.golds : connected_realm.auctions;
 
           const item_valuations = await this.ValuationsModel
@@ -111,7 +111,7 @@ export class DmaService {
     const dataset: ChartOrderInterface[] = [];
 
     await Promise.all(
-      realm.map(async(connected_realm: RealmAggregationInterface, i: number) => {
+      realm.map(async(connected_realm: RealmAInterface, i: number) => {
         if (is_commdty) {
           if (is_xrs) {
             /** Build X axis */
@@ -655,7 +655,7 @@ export class DmaService {
   async validateTransformDmaQuery(input: string) {
     let
       item: LeanDocument<Item>,
-      realm: RealmAggregationInterface[];
+      realm: RealmAInterface[];
 
     const [ queryItem, queryRealm ] = input.split('@');
     const realmArrayString = queryRealm
@@ -697,7 +697,7 @@ export class DmaService {
       if (isNaN(Number(queryRealm))) {
         /** if string */
         realm = await this.RealmModel
-          .aggregate<RealmAggregationInterface>([
+          .aggregate<RealmAInterface>([
             { $match: { $text: { $search: queryRealm } } },
             projectStage,
             sortStage,
@@ -707,7 +707,7 @@ export class DmaService {
       } else {
         /** if number */
         realm = await this.RealmModel
-          .aggregate<RealmAggregationInterface>([
+          .aggregate<RealmAInterface>([
             { $match: { connected_realm_id: parseInt(queryRealm) } },
             projectStage,
             sortStage,
@@ -718,7 +718,7 @@ export class DmaService {
     } else {
       const queryRealms = realmArrayString.toString().replace(';', ' ');
       realm = await this.RealmModel
-        .aggregate<RealmAggregationInterface>([
+        .aggregate<RealmAInterface>([
           { $match: { $text: { $search: queryRealms } } },
           projectStage,
           sortStage,

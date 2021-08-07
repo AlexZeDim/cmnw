@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Item, Key, Pricing, Realm } from '@app/mongo';
-import { LeanDocument, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import {
-  ASSET_EVALUATION_PRIORITY,
-  IVQInterface,
+  ASSET_EVALUATION_PRIORITY, AuctionsVAInterface,
+  IVQInterface, RealmVAInterface,
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
@@ -15,7 +15,7 @@ import { valuationsConfig } from '@app/configuration';
 
 
 @Injectable()
-export class ValuationsService {
+export class ValuationsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     ValuationsService.name, true,
   );
@@ -33,9 +33,11 @@ export class ValuationsService {
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
     private readonly queue: Queue<IVQInterface, number>,
-  ) {
-    this.clearQueue();
-    this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.clearQueue();
+    await this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
   }
 
   async clearQueue(): Promise<void> {
@@ -46,7 +48,7 @@ export class ValuationsService {
   async initValuations(): Promise<void> {
     try {
       await this.RealmModel
-        .aggregate([
+        .aggregate<RealmVAInterface>([
           {
             $group: {
               _id: '$connected_realm_id',
@@ -57,7 +59,7 @@ export class ValuationsService {
         ])
         .cursor({ batchSize: 1 })
         .exec()
-        .eachAsync(async ({ _id, auctions, valuations }) => {
+        .eachAsync(async ({ _id, auctions, valuations }: RealmVAInterface) => {
           /** Update valuations with new auctions data */
           if (auctions <= valuations) return;
           await this.buildValuations(_id, auctions);
@@ -69,7 +71,7 @@ export class ValuationsService {
 
   async buildValuations(connected_realm_id: number, timestamp: number): Promise<void> {
     try {
-      for (let [priority, query] of ASSET_EVALUATION_PRIORITY) {
+      for (const [priority, query] of ASSET_EVALUATION_PRIORITY) {
         this.logger.log(`=======================================`);
         this.logger.log(`buildValuations: ${connected_realm_id}-${priority}`);
         await this.ItemModel
@@ -144,7 +146,7 @@ export class ValuationsService {
        */
       if (args.includes('auctions')) {
         this.logger.debug('auctions stage started');
-        await this.AuctionsModel.aggregate([
+        await this.AuctionsModel.aggregate<AuctionsVAInterface>([
           {
             $group: {
               _id: '$item_id',
@@ -155,7 +157,7 @@ export class ValuationsService {
           .allowDiskUse(true)
           .cursor({})
           .exec()
-          .eachAsync(async (itemAuction: { _id: number, data: LeanDocument<Auction> } ) => {
+          .eachAsync(async (itemAuction: AuctionsVAInterface) => {
             const item = await this.ItemModel.findById(itemAuction._id)
             if (item) {
               item.asset_class.addToSet(VALUATION_TYPE.MARKET);

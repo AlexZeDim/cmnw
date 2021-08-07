@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -10,7 +10,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
 
 @Injectable()
-export class AuctionsService {
+export class AuctionsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     AuctionsService.name, true,
   );
@@ -22,8 +22,10 @@ export class AuctionsService {
     private readonly KeyModel: Model<Key>,
     @BullQueueInject(auctionsQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexAuctions(GLOBAL_DMA_KEY)
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexAuctions(GLOBAL_DMA_KEY)
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)

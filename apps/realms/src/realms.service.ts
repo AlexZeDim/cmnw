@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { range } from 'lodash';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Key, Realm, RealmPopulation } from '@app/mongo';
@@ -19,7 +19,7 @@ import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
-export class RealmsService {
+export class RealmsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     RealmsService.name, true,
   );
@@ -39,8 +39,10 @@ export class RealmsService {
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(realmsQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexRealms(GLOBAL_KEY);
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexRealms(GLOBAL_KEY);
   }
 
   @Cron(CronExpression.EVERY_WEEK)

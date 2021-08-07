@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { Model } from "mongoose";
@@ -19,7 +19,7 @@ import { nanoid } from 'nanoid'
 import { wowprogressConfig } from '@app/configuration';
 
 @Injectable()
-export class WowprogressService {
+export class WowprogressService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     WowprogressService.name, true,
   );
@@ -35,8 +35,10 @@ export class WowprogressService {
     private readonly queueGuilds: Queue,
     @BullQueueInject(charactersQueue.name)
     private readonly queueCharacters: Queue,
-  ) {
-    this.indexWowProgress(GLOBAL_KEY, wowprogressConfig.index_init);
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexWowProgress(GLOBAL_KEY, wowprogressConfig.index_init);
   }
 
   /**

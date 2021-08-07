@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from "mongoose";
@@ -14,7 +14,7 @@ import { pricingConfig } from '@app/configuration';
 import { DISENCHANT, PROSPECT } from './lib';
 
 @Injectable()
-export class PricingService {
+export class PricingService implements OnApplicationBootstrap {
 
   private readonly logger = new Logger(
     PricingService.name, true,
@@ -35,14 +35,15 @@ export class PricingService {
     private readonly PricingModel: Model<Pricing>,
     @BullQueueInject(pricingQueue.name)
     private readonly queue: Queue,
-  ) {
-    this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.pricing_init);
-    this.buildPricing(pricingConfig.build_init);
+  ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.pricing_init);
+    await this.buildPricing(pricingConfig.build_init);
   }
 
   async libPricing(init: boolean = true, libs: string[] = ['prospect', 'disenchant']): Promise<void> {
     try {
-
       await this.PricingModel.deleteMany({ createdBy: DMA_SOURCE.LAB });
       this.logger.log(`libPricing: ${DMA_SOURCE.LAB}`);
 

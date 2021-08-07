@@ -214,6 +214,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/neo4j/tsconfig.lib.json"
       }
+    },
+    "bench": {
+      "type": "application",
+      "root": "apps/bench",
+      "entryFile": "main",
+      "sourceRoot": "apps/bench/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/bench/tsconfig.app.json"
+      }
     }
   }
 }

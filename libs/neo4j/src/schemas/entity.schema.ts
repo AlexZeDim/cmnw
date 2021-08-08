@@ -1,6 +1,6 @@
 import { SchemaObject } from 'neode';
 
-export const EntityModel = `
+export const EntityGQLModel = `
     enum EntityType {
         Entity
         Guild

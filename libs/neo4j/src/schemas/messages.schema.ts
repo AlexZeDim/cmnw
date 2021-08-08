@@ -1,6 +1,6 @@
 import { SchemaObject } from 'neode';
 
-export const MessageModel = `
+export const MessageGQLModel = `
   type Message {
     id: ID! @id
     context: String

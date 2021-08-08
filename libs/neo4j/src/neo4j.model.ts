@@ -1,9 +1,9 @@
 import { mergeTypeDefs } from '@graphql-tools/merge';
-import { EntityModel, MessageModel } from '@app/neo4j/schemas';
+import { EntityGQLModel, MessageGQLModel } from '@app/neo4j/schemas';
 
 const typesArray = [
-  EntityModel,
-  MessageModel,
+  EntityGQLModel,
+  MessageGQLModel,
 ];
 
 const typeDefs = mergeTypeDefs(typesArray);

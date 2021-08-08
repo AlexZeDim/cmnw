@@ -4,7 +4,7 @@ export const MessageModel = `
     context: String
     tags: [String]
     clearance: [String]
-    entities: [Entity] @relationship(type: "MENTIONED", direction: OUT)
+    entity: [Entity] @relationship(type: "MENTIONED", direction: OUT)
     source: String
   }
 `

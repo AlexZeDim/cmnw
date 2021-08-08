@@ -1,16 +1,16 @@
 export const EntityModel = `
     enum EntityType {
-        ENTITY
-        GUILD
-        PERSONA
-        ITEM
-        CLASS
-        REALM
+        Entity
+        Guild
+        Persona
+        Item
+        Class
+        Realm
     }
 
     type Entity {
         id: ID! @id
-        entity: EntityType
+        entity: EntityType!
         name: String
         tags: [String]
         languages: [String]

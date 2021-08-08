@@ -72,6 +72,7 @@
     "lodash": "4.17.21",
     "mongoose": "5.12.7",
     "neo4j-driver": "4.1",
+    "neode-nestjs": "^0.0.9",
     "nest-neo4j": "^0.1.4",
     "node-nlp": "4.22.1",
     "passport": "0.4.1",

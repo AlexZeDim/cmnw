@@ -1,3 +1,5 @@
+import { SchemaObject } from 'neode';
+
 export const EntityModel = `
     enum EntityType {
         Entity
@@ -17,3 +19,32 @@ export const EntityModel = `
         messages: [Message] @relationship(type: "MENTIONED", direction: IN)
     }
 `;
+
+export const EntitySchema: SchemaObject = {
+  id: {
+    type: 'uuid',
+    primary: true,
+    required: true,
+  },
+  name: {
+    type: 'string',
+    required: true,
+  },
+  entity: {
+    type: 'string',
+    required: true,
+  },
+  tags: {
+    type: 'string',
+    required: false,
+  },
+  mentioned_in: {
+    type: 'relationship',
+    target: 'Message',
+    relationship: 'MENTIONED',
+    direction: 'in',
+    properties: {
+      name: 'string'
+    }
+  }
+};

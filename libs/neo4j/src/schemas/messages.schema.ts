@@ -1,3 +1,5 @@
+import { SchemaObject } from 'neode';
+
 export const MessageModel = `
   type Message {
     id: ID! @id
@@ -8,3 +10,28 @@ export const MessageModel = `
     source: String
   }
 `
+
+export const MessageSchema: SchemaObject = {
+  id: {
+    type: 'uuid',
+    primary: true,
+    required: true,
+  },
+  context: {
+    type: 'string',
+    required: true,
+  },
+  tags: {
+    type: 'string',
+    required: false,
+  },
+  mentioned: {
+    type: 'relationship',
+    target: 'Entity',
+    relationship: 'MENTIONED',
+    direction: 'out',
+    properties: {
+      name: 'string'
+    }
+  }
+};

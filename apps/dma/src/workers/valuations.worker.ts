@@ -86,9 +86,9 @@ export class ValuationsWorker {
       await job.updateProgress(100);
 
       return 200;
-    } catch (e) {
-      await job.log(e);
-      this.logger.error(`${ValuationsWorker.name}: ${e}`);
+    } catch (errorException) {
+      await job.log(errorException);
+      this.logger.error(`${ValuationsWorker.name}: ${errorException}`);
       return 500;
     }
   }
@@ -146,7 +146,7 @@ export class ValuationsWorker {
         }, 8),
       ).toPromise()
       await delay(1.5);
-    } catch (e) {
+    } catch (errorException) {
       this.logger.error(`checkReagentItems: derivative ${derivative_id} error`);
     }
   };
@@ -306,8 +306,8 @@ export class ValuationsWorker {
           }
         })
       }
-    } catch (e) {
-      this.logger.error(`getCVA: item ${args._id}, ${e}`)
+    } catch (errorException) {
+      this.logger.error(`getCVA: item ${args._id}, ${errorException}`)
     }
   }
 
@@ -351,8 +351,8 @@ export class ValuationsWorker {
           });
         }
       }
-    } catch (e) {
-      this.logger.error(`getVVA: item ${args._id}, ${e}`)
+    } catch (errorException) {
+      this.logger.error(`getVVA: item ${args._id}, ${errorException}`)
     }
   }
 
@@ -460,8 +460,8 @@ export class ValuationsWorker {
           }
         }
       }
-    } catch (e) {
-      this.logger.error(`getTVA: item ${args._id}, ${e}`)
+    } catch (errorException) {
+      this.logger.error(`getTVA: item ${args._id}, ${errorException}`)
     }
   }
 
@@ -539,8 +539,8 @@ export class ValuationsWorker {
           });
         }
       }
-    } catch (e) {
-      this.logger.error(`getAVA: item ${args._id}, ${e}`)
+    } catch (errorException) {
+      this.logger.error(`getAVA: item ${args._id}, ${errorException}`)
     }
   }
 
@@ -884,8 +884,8 @@ export class ValuationsWorker {
         }
       }
       /** End of loop for every pricing method */
-    } catch (e) {
-      this.logger.error(`getDVA: item ${args._id}, ${e}`)
+    } catch (errorException) {
+      this.logger.error(`getDVA: item ${args._id}, ${errorException}`)
     }
   }
 }

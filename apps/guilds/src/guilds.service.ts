@@ -75,8 +75,8 @@ export class GuildsService {
           if (i >= keys.length) i = 0;
         });
 
-    } catch (e) {
-      this.logger.error(`indexGuilds: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexGuilds: ${errorException}`)
     }
   }
 
@@ -126,8 +126,8 @@ export class GuildsService {
           }
         });
 
-    } catch (e) {
-      this.logger.error(`indexGuildsFromCharacters: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexGuildsFromCharacters: ${errorException}`)
     }
   }
 }

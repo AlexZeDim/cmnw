@@ -73,8 +73,8 @@ export class CharactersService {
           iteration++;
           if (i >= keys.length) i = 0;
         }, { parallel: 50 });
-    } catch (e) {
-      this.logger.error(`indexCharacters: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexCharacters: ${errorException}`)
     }
   }
 }

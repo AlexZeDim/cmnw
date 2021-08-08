@@ -96,12 +96,12 @@ export class CharactersWorker {
          * or updated recently return
          */
         if (args.createOnlyUnique) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
+          this.logger.warn(`errorException:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
           return 302
         }
 
         if ((now - forceUpdate) < character.updatedAt.getTime()) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);
+          this.logger.warn(`errorException:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);
           return 304
         }
         /**
@@ -240,8 +240,8 @@ export class CharactersWorker {
       await character.save();
       await job.updateProgress(100);
       return character.status_code;
-    } catch (e) {
-      this.logger.error(`${CharactersWorker.name}: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`${CharactersWorker.name}: ${errorException}`)
     }
   }
 
@@ -262,8 +262,8 @@ export class CharactersWorker {
         media[key] = value
       }))
       return media;
-    } catch (e) {
-      this.logger.error(`media: ${name_slug}@${realm_slug}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`media: ${name_slug}@${realm_slug}:${errorException}`);
     }
   }
 
@@ -287,8 +287,8 @@ export class CharactersWorker {
         }
       }))
       return mounts_collection;
-    } catch (e) {
-      this.logger.error(`mounts: ${name_slug}@${realm_slug}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`mounts: ${name_slug}@${realm_slug}:${errorException}`);
       return mounts_collection;
     }
   }
@@ -491,8 +491,8 @@ export class CharactersWorker {
         }
       }
       return raider_io;
-    } catch (e) {
-      this.logger.error(`raiderio: ${name}@${realm_slug}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`raiderio: ${name}@${realm_slug}:${errorException}`);
       return raider_io;
     }
   }
@@ -522,8 +522,8 @@ export class CharactersWorker {
         })
       )
       return wowprogress;
-    } catch (e) {
-      this.logger.error(`wowprogress: ${name}@${realm_slug}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`wowprogress: ${name}@${realm_slug}:${errorException}`);
       return wowprogress;
     }
   }
@@ -543,8 +543,8 @@ export class CharactersWorker {
       }
       await browser.close();
       return warcraft_logs;
-    } catch (e) {
-      this.logger.error(`warcraftlogs: ${name}@${realm_slug}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`warcraftlogs: ${name}@${realm_slug}:${errorException}`);
       return warcraft_logs;
     }
   }
@@ -585,8 +585,8 @@ export class CharactersWorker {
         })
       );
       if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });
-    } catch (e) {
-      this.logger.error(`diffs: ${original._id}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`diffs: ${original._id}:${errorException}`);
     }
   }
 }

@@ -71,9 +71,9 @@ export class AuctionsWorker {
       await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
       await job.updateProgress(100);
       return 200
-    } catch (e) {
-      await job.log(e);
-      this.logger.error(`${AuctionsWorker.name}: ${e}`)
+    } catch (errorException) {
+      await job.log(errorException);
+      this.logger.error(`${AuctionsWorker.name}: ${errorException}`)
       return 500
     }
   }
@@ -108,8 +108,8 @@ export class AuctionsWorker {
         }),
       ).toPromise();
       return iterator;
-    } catch (e) {
-      this.logger.error(`writeBulkOrders: ${e}`);
+    } catch (errorException) {
+      this.logger.error(`writeBulkOrders: ${errorException}`);
       return iterator;
     }
   }

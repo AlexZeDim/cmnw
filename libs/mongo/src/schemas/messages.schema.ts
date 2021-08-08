@@ -38,6 +38,9 @@ export class Message extends Document {
   clearance: Types.Array<String>
 
   @Prop({ type: String })
+  subject: string;
+
+  @Prop({ type: String, required: true })
   context: string;
 
   @Prop({ _id: false, timestamps: false })

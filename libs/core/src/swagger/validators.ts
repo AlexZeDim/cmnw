@@ -9,7 +9,7 @@ export class AtSignExists implements ValidatorConstraintInterface {
       if (!param.includes('@')) return false;
       const [first, second] = param.split('@');
       return !!(first && second);
-    } catch (e) {
+    } catch (errorException) {
       throw new BadRequestException('At Sign Validation Error')
     }
   }

@@ -104,8 +104,8 @@ export class ItemsWorker {
         return 200;
       }
       return 404
-    } catch (e) {
-      this.logger.error(`${ItemsWorker.name}: ${e}`);
+    } catch (errorException) {
+      this.logger.error(`${ItemsWorker.name}: ${errorException}`);
       return 500;
     }
   }

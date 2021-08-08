@@ -55,7 +55,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>, realm:
       })
     }
     return embed;
-  } catch (e) {
+  } catch (errorException) {
     return embed;
   }
 }

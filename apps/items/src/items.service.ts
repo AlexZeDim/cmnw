@@ -80,8 +80,8 @@ export class ItemsService implements OnApplicationBootstrap  {
             )
           })
       }
-    } catch (e) {
-      this.logger.error(`indexItems: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexItems: ${errorException}`)
     }
   }
 
@@ -161,8 +161,8 @@ export class ItemsService implements OnApplicationBootstrap  {
           }
         }
       }
-    } catch (e) {
-      this.logger.error(`buildItems: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`buildItems: ${errorException}`)
     }
   }
 }

@@ -1,13 +1,13 @@
 import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account, Character, Entity, Guild } from '@app/mongo';
 import { Model } from 'mongoose';
 import { NlpManager } from 'node-nlp';
 import fs from 'fs-extra';
 import path from 'path';
 import crypto from 'crypto';
-import { AccountsMock, capitalize, EntityMocks, ENTITY_NAME } from '@app/core';
 import RussianNouns from 'russian-nouns-js';
+import { Account, Character, Entity, Guild } from '@app/mongo';
+import { AccountsMock, capitalize, EntityMocks, ENTITY_NAME } from '@app/core';
 
 @Injectable()
 export class OraculumService implements OnApplicationBootstrap {
@@ -43,7 +43,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
   private async buildAccountsFromMocks(): Promise<void> {
     try {
-      this.logger.debug(`Ensure mock account data`);
+      this.logger.debug('Ensure mock account data');
       const dir = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dir);
       const files: string[] = await fs.readdir(dir);
@@ -155,8 +155,8 @@ export class OraculumService implements OnApplicationBootstrap {
             }, {
               upsert: true
             });
-          } catch (e) {
-            this.logger.error(`buildEntitiesFromAccounts: ${e}`)
+          } catch (errorException) {
+            this.logger.error(`buildEntitiesFromAccounts: ${errorException}`)
           }
         })
     } catch (error) {

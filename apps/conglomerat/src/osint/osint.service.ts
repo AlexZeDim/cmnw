@@ -141,7 +141,7 @@ export class OsintService {
         .find({ [`hash_${type}`]: hash })
         .limit(100)
         .lean();
-    } catch (e) {
+    } catch (errorException) {
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -159,7 +159,7 @@ export class OsintService {
       if (input.languages) Object.assign(query, { languages : { '$in': input.languages } });
       if (input.realms) Object.assign(query, { realms : { '$in': input.realms } });
       return await this.CharacterModel.find(query).lean();
-    } catch (e) {
+    } catch (errorException) {
       throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

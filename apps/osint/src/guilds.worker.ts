@@ -88,7 +88,7 @@ export class GuildsWorker {
 
       if (guild) {
         if (args.createOnlyUnique) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique: ${args.createOnlyUnique}`);
+          this.logger.warn(`errorException:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:createOnlyUnique: ${args.createOnlyUnique}`);
           await job.updateProgress(11);
           return 302;
         }
@@ -96,7 +96,7 @@ export class GuildsWorker {
         if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
 
         if ((now - forceUpdate) < guild.updatedAt.getTime()) {
-          this.logger.warn(`E:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:forceUpdate: ${forceUpdate}`);
+          this.logger.warn(`errorException:${(args.iteration) ? (args.iteration + ':') : ('')}${guild._id}:forceUpdate: ${forceUpdate}`);
           await job.updateProgress(13);
           return 304;
         }
@@ -153,8 +153,8 @@ export class GuildsWorker {
       await guild.save();
       await job.updateProgress(100);
       return guild.status_code;
-    } catch (e) {
-      this.logger.error(`${GuildsWorker.name}, ${e}`);
+    } catch (errorException) {
+      this.logger.error(`${GuildsWorker.name}, ${errorException}`);
     }
   }
 
@@ -193,8 +193,8 @@ export class GuildsWorker {
       );
       summary.status_code = 200;
       return summary
-    } catch (e) {
-      this.logger.error(`summary: ${guild_slug}@${realm_slug}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`summary: ${guild_slug}@${realm_slug}:${errorException}`);
       return summary
     }
   }
@@ -267,8 +267,8 @@ export class GuildsWorker {
                 rank: member.rank,
               });
             }
-          } catch (e) {
-            this.logger.error(`member: ${member} from ${guild._id}:${e}`)
+          } catch (errorException) {
+            this.logger.error(`member: ${member} from ${guild._id}:${errorException}`)
           }
         }, 20)
       ).toPromise();
@@ -276,8 +276,8 @@ export class GuildsWorker {
       await this.CharacterModel.insertMany(characters, { rawResult: false })
 
       return roster
-    } catch (e) {
-      this.logger.error(`roster: ${guild._id}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`roster: ${guild._id}:${errorException}`);
       return roster
     }
   }
@@ -418,8 +418,8 @@ export class GuildsWorker {
       );
       await this.LogModel.insertMany(block, { rawResult: false });
       this.logger.log(`logs: ${updated._id} updated`);
-    } catch (e) {
-      this.logger.error(`logs: ${updated._id}:${e}`)
+    } catch (errorException) {
+      this.logger.error(`logs: ${updated._id}:${errorException}`)
     }
   }
 
@@ -576,8 +576,8 @@ export class GuildsWorker {
         );
       }
       return block;
-    } catch (e) {
-      this.logger.error(`gm: ${updated._id}:${e}`);
+    } catch (errorException) {
+      this.logger.error(`gm: ${updated._id}:${errorException}`);
       return block;
     }
   }
@@ -619,8 +619,8 @@ export class GuildsWorker {
       );
       if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });
       this.logger.log(`diffs: ${updated._id}, blocks: ${block.length}`)
-    } catch (e) {
-      this.logger.error(`diffs: ${updated._id}:${e}`)
+    } catch (errorException) {
+      this.logger.error(`diffs: ${updated._id}:${errorException}`)
     }
   }
 }

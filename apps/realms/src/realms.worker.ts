@@ -123,8 +123,8 @@ export class RealmsWorker {
 
       await realm.save();
       await job.updateProgress(100);
-    } catch (e) {
-      this.logger.error(`${RealmsWorker.name}: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`${RealmsWorker.name}: ${errorException}`)
     }
   }
 }

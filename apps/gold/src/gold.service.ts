@@ -85,8 +85,8 @@ export class GoldService {
       await this.GoldModel.insertMany(orders, { rawResult: false });
       await this.RealmModel.updateMany({ connected_realm_id: { $in: Array.from(realms) } }, { golds: now });
       this.logger.log(`indexGold: ${orders.length} orders on timestamp: ${now} successfully inserted`);
-    } catch (e) {
-      this.logger.error(`indexGold: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexGold: ${errorException}`)
     }
   }
 }

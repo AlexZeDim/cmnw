@@ -130,8 +130,8 @@ module.exports = {
           await message.channel.send(fail);
         }
       });
-    } catch (e) {
-      console.error(e);
+    } catch (errorException) {
+      console.error(errorException);
       const error = seriousError(config.language);
       await message.channel.send(error);
     }

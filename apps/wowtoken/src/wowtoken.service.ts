@@ -54,8 +54,8 @@ export class WowtokenService {
           last_modified: lastModified,
         })
       }
-    } catch (e) {
-      this.logger.error(`${WowtokenService.name}: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`${WowtokenService.name}: ${errorException}`)
     }
   }
 }

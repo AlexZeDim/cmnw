@@ -64,8 +64,8 @@ export class ValuationsService implements OnApplicationBootstrap {
           if (auctions <= valuations) return;
           await this.buildValuations(_id, auctions);
         });
-    } catch (e) {
-      this.logger.error(`initValuations: ${e}`);
+    } catch (errorException) {
+      this.logger.error(`initValuations: ${errorException}`);
     }
   }
 
@@ -96,8 +96,8 @@ export class ValuationsService implements OnApplicationBootstrap {
       }
       await this.RealmModel.updateMany({ connected_realm_id }, { valuations: timestamp });
       this.logger.log(`buildValuations: realm: ${connected_realm_id} updated: ${timestamp}`);
-    } catch (e) {
-      this.logger.error(`buildValuations: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`buildValuations: ${errorException}`)
     }
   }
   /**
@@ -257,8 +257,8 @@ export class ValuationsService implements OnApplicationBootstrap {
           }, { parallel: 20 });
         this.logger.debug('tags stage ended');
       }
-    } catch (e) {
-      this.logger.error(`buildAssetIndex: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`buildAssetIndex: ${errorException}`)
     }
   }
 }

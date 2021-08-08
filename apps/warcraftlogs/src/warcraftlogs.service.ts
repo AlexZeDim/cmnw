@@ -107,7 +107,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
                 if (log) {
                   /** If exists counter +1*/
                   ex_logs += 1;
-                  this.logger.log(`E, Log: ${log._id}, Log EX: ${ex_logs}`);
+                  this.logger.log(`errorException, Log: ${log._id}, Log EX: ${ex_logs}`);
                 } else {
                   /** Else, counter -1 and create in DB */
                   if (ex_logs > 1) ex_logs -= 1;
@@ -125,8 +125,8 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
             }
           }
         })
-    } catch (e) {
-      this.logger.error(`${WarcraftlogsService.name},${e}`)
+    } catch (errorException) {
+      this.logger.error(`${WarcraftlogsService.name},${errorException}`)
     }
   }
 
@@ -159,11 +159,11 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
               await log.save();
             }
             this.logger.log(`Log: ${log._id}, status: ${log.status}`);
-          } catch (e) {
-            this.logger.error(`Log: ${log._id}, ${e}`);
+          } catch (errorException) {
+            this.logger.error(`Log: ${log._id}, ${errorException}`);
           }
         })
-    } catch (e) {
+    } catch (errorException) {
       this.logger.error(`indexLogs: ${e}`);
     }
   }

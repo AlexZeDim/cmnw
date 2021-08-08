@@ -41,7 +41,7 @@ export function CharacterEmbedMessage(character: any): MessageEmbed {
     if (character.last_modified) embed.setTimestamp(character.last_modified);
     if (character.created_by) embed.setFooter(`${character.created_by} | Gonikon`);
     return embed;
-  } catch (e) {
+  } catch (errorException) {
     embed.setAuthor('Oops, sorry!');
     embed.addField('Error', 'Tell the @AlexZeDim2645 that there is an error in CharacterEmbedMessage', false);
     embed.setThumbnail('https://cdn.discordapp.com/avatars/240464611562881024/d266faef37db5f6de78cf2fd687634d0.png?size=128')

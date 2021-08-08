@@ -73,8 +73,8 @@ export class AuctionsService implements OnApplicationBootstrap {
             }
           )
         });
-    } catch (e) {
-      this.logger.error(`indexAuctions: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexAuctions: ${errorException}`)
     }
   }
 }

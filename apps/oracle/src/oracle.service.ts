@@ -1,13 +1,15 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { NlpManager } from 'node-nlp';
-import path from "path";
+import path from 'path';
 import fs from 'fs-extra';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Message } from '@app/mongo';
-import { Model } from 'mongoose';
+import { EXIT_CODES } from '@app/core';
+
 // @ts-ignore
 import Discord from 'discord-agent';
-import { EXIT_CODES } from '@app/core';
+
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -66,10 +68,9 @@ export class OracleService implements OnApplicationBootstrap {
 
     await key.save();
     await this.client.login(key.token);
+    this.commands = new Discord.Collection();
 
     this.logger.warn(`Key ${key.token} has been taken!`);
-
-    this.commands = new Discord.Collection();
 
     EXIT_CODES.forEach((eventType) => process.on(eventType,  async () => {
       key.tags.pull('taken');
@@ -97,8 +98,8 @@ export class OracleService implements OnApplicationBootstrap {
           // if (message.author.id === '240464611562881024') await message.send('My watch is eternal');
           // const match = await this.manager.extractEntities('ru', message.content);
           // console.log(match)
-        } catch (e) {
-          this.logger.error(`Error: ${e}`);
+        } catch (errorException) {
+          this.logger.error(`Error: ${errorException}`);
         }
       });
 
@@ -116,8 +117,8 @@ export class OracleService implements OnApplicationBootstrap {
         const members = await guild.fetchMembers();
         console.log(members);
       }*/
-    } catch (e) {
-      this.logger.error(e);
+    } catch (errorException) {
+      this.logger.error(errorException);
     }
 
 

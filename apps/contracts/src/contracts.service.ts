@@ -209,12 +209,12 @@ export class ContractsService {
               const contractExists = await this.ContractModel.findById(contract._id);
               if (!!contractExists) await this.ContractModel.create(contract);
 
-              const flag = !!contractExists ? 'E' : 'C';
+              const flag = !!contractExists ? 'errorException' : 'C';
               const contract_name = item.ticker ? item.ticker : item.name.en_GB;
 
               this.logger.log(`buildContract: ${flag} | ${contract_name} |${contract._id}`);
             }, { parallel: 4 });
-        } catch (e) {
+        } catch (errorException) {
           this.logger.error(`buildContract: fail to create contract for item: ${item._id}`);
         }
       })

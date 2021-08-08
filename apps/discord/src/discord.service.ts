@@ -143,8 +143,8 @@ export class DiscordService implements OnApplicationBootstrap {
             });
           }
           await this.SubscriptionModel.findOneAndUpdate({ discord_id: subscription.discord_id, channel_id: subscription.channel_id }, { timestamp: new Date().getTime() });
-        } catch (e) {
-          this.logger.error(`subscriptions: ${e}`);
+        } catch (errorException) {
+          this.logger.error(`subscriptions: ${errorException}`);
         }
       });
   }

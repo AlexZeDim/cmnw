@@ -87,8 +87,8 @@ export class RealmsService implements OnApplicationBootstrap {
           }
         );
       }
-    } catch (e) {
-      this.logger.error(`indexRealms: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexRealms: ${errorException}`)
     }
   }
 
@@ -110,8 +110,8 @@ export class RealmsService implements OnApplicationBootstrap {
           this.logger.debug(`${wcl_id}:${realm_name}, ${realm}`);
         }
       }
-    } catch (e) {
-      this.logger.error(`getRealmsWarcraftLogsID: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`getRealmsWarcraftLogsID: ${errorException}`)
     }
   }
 
@@ -124,7 +124,7 @@ export class RealmsService implements OnApplicationBootstrap {
         .eachAsync(async (realm: Realm) => {
           await this.population(realm);
         }, { parallel: 5 })
-    } catch (e) {
+    } catch (errorException) {
       this.logger.error(`indexRealmPopulation: ${e}`)
     }
   }

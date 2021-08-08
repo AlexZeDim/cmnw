@@ -156,8 +156,8 @@ export class WowprogressService implements OnApplicationBootstrap {
         })
       );
       await fs.rmdirSync(dir, { recursive: true });
-    } catch (e) {
-      this.logger.error(`indexWowProgress: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexWowProgress: ${errorException}`)
     }
   }
 
@@ -234,8 +234,8 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       await this.CharacterModel.updateMany({ _id: { $in: charactersNew.map(c => c._id) } }, { looking_for_guild: LFG.NEW });
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NEW} set to ${charactersNew.length} characters`);
-    } catch (e) {
-      this.logger.error(`indexLookingForGuild: ${e}`)
+    } catch (errorException) {
+      this.logger.error(`indexLookingForGuild: ${errorException}`)
     }
   }
 }

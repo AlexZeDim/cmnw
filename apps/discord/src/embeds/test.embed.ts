@@ -4,7 +4,7 @@ export async function TestEmbedMessage(test: any): Promise<MessageEmbed> {
   const embed = new MessageEmbed();
   try {
     return embed
-  } catch (e) {
+  } catch (errorException) {
     return embed
   }
 }

@@ -1,6 +1,7 @@
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FACTION, LANG, NOTIFICATIONS } from '@app/core';
+import { Item } from '@app/mongo/schemas/items.schema';
 
 @Schema()
 export class RealmConnected extends Document {
@@ -54,10 +55,10 @@ export class Subscription extends Document {
   /**
    * Subscription FILTERS
    */
-  @Prop({ default: [] })
-  items: number[];
+  @Prop({ default: [], type: [Number], ref: 'Item' })
+  items: number[] | Item[];
 
-  @Prop({ type: [RealmConnectedSchema] })
+  @Prop({ type: [RealmConnectedSchema], ref: 'Realm' })
   realms: MongooseSchema.Types.Array;
 
   @Prop({ type: [String], default: [] })

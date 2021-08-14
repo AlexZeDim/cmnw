@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Realm } from '@app/mongo/schemas/realms.schema';
 
 class CharacterCovenants {
   @Prop()
@@ -55,11 +56,11 @@ class CharacterClasses {
 
 @Schema({ timestamps: true })
 export class RealmPopulation extends Document {
-  @Prop({ type: Number })
-  realm_id: number;
+  @Prop({ type: Number, ref: 'Realm' })
+  realm_id: number | Realm;
 
-  @Prop()
-  connected_realm_id: number;
+  @Prop({ type: Number, ref: 'Realm' })
+  connected_realm_id: number | Realm;
 
   /**
    * TODO name probably? day?

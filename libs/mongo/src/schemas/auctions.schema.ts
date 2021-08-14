@@ -6,13 +6,13 @@ export class Auction extends Document {
   @Prop({ type: Number, required: true })
   id: number;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true, ref: 'Item' })
   item_id: number;
 
   @Prop()
   item: Mixed;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true, ref: 'Realm' })
   connected_realm_id: number;
 
   @Prop({ type: Number, required: true })

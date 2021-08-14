@@ -1,5 +1,6 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Realm } from '@app/mongo/schemas/realms.schema';
 
 @Schema()
 class GuildMember {
@@ -29,8 +30,8 @@ export class Guild extends Document {
   @Prop({ required: true })
   realm: string;
 
-  @Prop({ required: true })
-  realm_id: number;
+  @Prop({ required: true, type: Number, ref: 'Realm' })
+  realm_id: number | Realm;
 
   @Prop({ required: true })
   realm_name: string;

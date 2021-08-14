@@ -1,5 +1,7 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Item } from '@app/mongo/schemas/items.schema';
+import { PRICING_TYPE } from '@app/core';
 
 @Schema()
 export class ItemPricing {
@@ -61,7 +63,7 @@ class Locales {
 
 @Schema()
 export class Pricing extends Document {
-  @Prop()
+  @Prop({ type: String })
   ticker: string;
 
   @Prop({ _id: false, timestamp: false })
@@ -70,10 +72,10 @@ export class Pricing extends Document {
   @Prop({ _id: false, timestamp: false })
   description: Locales;
 
-  @Prop()
+  @Prop({ type: String })
   faction: string;
 
-  @Prop()
+  @Prop({ type: String })
   media: string;
   /**
    * API or LOCAL
@@ -86,12 +88,13 @@ export class Pricing extends Document {
    * {id: Number, Quantity: Number}
    */
 
-  @Prop({ default: [], type: [ItemSchema] })
-  derivatives: Types.Array<ItemPricing>;
+  @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
+  derivatives: Types.Array<ItemPricing | Item>;
 
-  @Prop({ default: [], type: [ItemSchema] })
-  reagents: Types.Array<ItemPricing>;
+  @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
+  reagents: Types.Array<ItemPricing | Item>;
 
+  // TODO cover ref?
   @Prop({ required: true, index: true })
   recipe_id: number;
 
@@ -102,26 +105,26 @@ export class Pricing extends Document {
   modified_crafting_slots:  Types.Array<ModifiedCraftingSlot>;
   /** if Local then Convert from SkillLine */
 
-  @Prop()
+  @Prop({ type: String })
   profession: string;
   /** API */
 
-  @Prop()
+  @Prop({ type: String })
   expansion: string;
 
-  @Prop()
+  @Prop({ type: Number })
   rank: number;
 
-  @Prop({ required: true }) //enum: PricingType
+  @Prop({ required: true, type: String, enum: PRICING_TYPE })
   type: string;
 
-  @Prop()
+  @Prop({ type: Number })
   single_premium: number;
 
-  @Prop()
+  @Prop({ type: String })
   create_by: string;
 
-  @Prop()
+  @Prop({ type: String })
   updated_by: string;
 }
 

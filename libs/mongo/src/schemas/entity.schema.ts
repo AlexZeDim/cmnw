@@ -4,9 +4,6 @@ import { Document } from "mongoose";
 
 @Schema()
 export class Entity extends Document {
-  @Prop({ type: String })
-  parentId: string;
-
   @Prop({ type: String, enum: ENTITY_NAME, default: ENTITY_NAME.Entity })
   entity: string;
 

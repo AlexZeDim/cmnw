@@ -1,5 +1,7 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Item } from '@app/mongo/schemas/items.schema';
+import { Realm } from '@app/mongo/schemas/realms.schema';
 
 
 @Schema({ timestamps: true })
@@ -8,10 +10,10 @@ export class Contract extends Document {
   _id: string;
 
   @Prop({ type: Number, required: true, ref: 'Item' })
-  item_id: number;
+  item_id: number | Item;
 
-  @Prop({ type: Number, required: true })
-  connected_realm_id: number;
+  @Prop({ type: Number, required: true, ref: 'Realm' })
+  connected_realm_id: number | Realm;
 
   @Prop({ type: Number, required: true })
   last_modified: number;

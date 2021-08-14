@@ -2,6 +2,7 @@ import { Document, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
 import { Item } from '@app/mongo/schemas/items.schema';
+import { Realm } from '@app/mongo/schemas/realms.schema';
 
 @Schema()
 class ItemNames {
@@ -176,23 +177,23 @@ class Details {
   @Prop()
   derivatives_cost: number;
 
-  @Prop({ default: [], type: [ItemValuationsSchema] })
+  @Prop({ default: [], type: [ItemValuationsSchema], ref: 'Item' })
   reagent_items: Types.Array<ItemValuations>;
 
-  @Prop({ default: [], type: [ItemValuationsSchema] })
+  @Prop({ default: [], type: [ItemValuationsSchema], ref: 'Item' })
   premium_reagent_items: Types.Array<ItemValuations>;
 
-  @Prop({ default: [], type: [ItemValuationsSchema] })
+  @Prop({ default: [], type: [ItemValuationsSchema], ref: 'Item' })
   unsorted_reagent_items: Types.Array<ItemValuations>;
 }
 
 @Schema()
 export class Valuations extends Document {
-  @Prop({ required: true })
-  item_id: number;
+  @Prop({ required: true, type: Number, ref: 'Item' })
+  item_id: number | Item;
 
-  @Prop({ required: true })
-  connected_realm_id: number;
+  @Prop({ required: true, type: Number, ref: 'Realm' })
+  connected_realm_id: number | Realm;
 
   @Prop({ required: true })
   last_modified: number;

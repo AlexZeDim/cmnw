@@ -1,5 +1,7 @@
 import { Document, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Protocol } from 'puppeteer';
+import Item = Protocol.DOMStorage.Item;
 
 /**
  *  TODO description
@@ -10,7 +12,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
  */
 
 @Schema()
-class Item {
+class ItemReagent {
   @Prop({ type: Number, required: true })
   _id: number;
 
@@ -18,7 +20,7 @@ class Item {
   quantity: number;
 }
 
-const ItemSchema = SchemaFactory.createForClass(Item);
+const ItemSchema = SchemaFactory.createForClass(ItemReagent);
 
 @Schema()
 export class SpellReagents extends Document {
@@ -28,8 +30,8 @@ export class SpellReagents extends Document {
   @Prop({ required: true, index: true })
   spell_id: number;
 
-  @Prop({ default: [], type: [ItemSchema] })
-  reagents: Types.Array<Item>;
+  @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
+  reagents: Types.Array<ItemReagent | Item>;
 }
 
 export const SpellReagentsSchema = SchemaFactory.createForClass(SpellReagents);

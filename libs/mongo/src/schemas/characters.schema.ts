@@ -1,6 +1,8 @@
 import { Document, Schema as MongooseSchema, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LFG } from '@app/core';
+import { Guild } from '@app/mongo/schemas/guilds.schema';
+import { Realm } from '@app/mongo/schemas/realms.schema';
 /**
  * _id and id field represents Blizzard GUID name@realm-id
  * https://wow.gamepedia.com/GUID
@@ -73,20 +75,20 @@ export class Character extends Document {
   @Prop({ required: true, index: true })
   name: string;
 
-  @Prop({ required: true })
-  realm_id: number;
+  @Prop({ required: true, type: Number, ref: 'Realm' })
+  realm_id: number | Realm;
 
   @Prop({ required: true })
   realm_name: string;
 
-  @Prop({  index: true, required: true })
+  @Prop({ index: true, required: true })
   realm: string;
 
   @Prop()
   guild: string;
 
-  @Prop({ lowercase: true, index: true })
-  guild_id: string;
+  @Prop({ type: String, lowercase: true, index: true, ref: 'Guild' })
+  guild_id: string | Guild;
 
   @Prop()
   guild_guid: number;

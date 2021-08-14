@@ -3,69 +3,69 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Realm extends Document {
-  @Prop()
+  @Prop({ type: Number })
   _id: number;
 
-  @Prop()
+  @Prop({ type: String })
   slug: string;
 
-  @Prop()
+  @Prop({ type: String })
   name: string;
 
-  @Prop()
+  @Prop({ type: String })
   region: string;
 
-  @Prop()
+  @Prop({ type: String })
   name_locale: string;
 
-  @Prop()
+  @Prop({ type: String })
   slug_locale: string;
 
-  @Prop()
+  @Prop({ type: String })
   ticker: string;
 
-  @Prop()
+  @Prop({ type: String })
   status: string;
 
-  @Prop()
+  @Prop({ type: String })
   category: string;
 
-  @Prop()
+  @Prop({ type: String })
   locale: string;
 
-  @Prop()
+  @Prop({ type: String })
   timezone: string;
 
-  @Prop()
+  @Prop({ type: String })
   type: string;
 
-  @Prop()
+  @Prop({ type: String })
   population_status: string;
 
   @Prop({ type: Number })
   connected_realm_id: number;
 
-  @Prop()
+  @Prop({ type: [String] })
   connected_realms: [string];
 
   /**
    * Kihra's WarcraftLogs realm ids
    * for parsing logs via fromLogs
    */
-  @Prop()
+  @Prop({ type: Number })
   wcl_id: number;
 
   /**
    * String lastModified timestamp for auctions, gold and valuations
    * Required for valuations, getAuctionData, getGold
    */
-  @Prop({ default: 0 })
+  @Prop({ default: 0, type: Number })
   auctions: number;
 
-  @Prop({ default: 0 })
+  @Prop({ default: 0, type: Number })
   valuations: number;
 
-  @Prop({ default: 0 })
+  @Prop({ default: 0, type: Number })
   golds: number;
 }
 

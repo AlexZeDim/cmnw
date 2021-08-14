@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Key, Log, Realm, Subscription } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
@@ -40,14 +47,14 @@ export class OsintService {
     private readonly queueGuild: Queue,
   ) { }
 
-  async uploadOsintLua(file: Buffer) {
+  async uploadOsintLua(file: Buffer): Promise<void> {
     const keys = await this.KeyModel.find({ tags: this.clearance });
     let i: number = 0;
     let iteration: number = 0;
 
     const characterLuaStrings = file.toString('utf8')
       .split('["csv"] = ')[1]
-      .match(/[^\r\n]+/g)
+      .match(/[^\r\n]+/g);
 
     characterLuaStrings.map(characterLua => {
       const [character] = characterLua.split(/(,\s--\s\[\d)/);
@@ -99,7 +106,7 @@ export class OsintService {
       .lean();
 
     if (!realm) {
-      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException( `Realm: ${realm_slug} for selected character: ${input._id} not found!`);
     }
 
     const _id: string = `${name_slug}@${realm.slug}`;
@@ -127,8 +134,7 @@ export class OsintService {
           priority: 1
         }
       );
-      await delay(5);
-      return this.CharacterModel.findById(_id).lean();
+      throw new NotFoundException(`Character: ${_id} not found, but will be added to OSINT-DB on existence shortly`);
     }
     return character;
   }
@@ -142,14 +148,13 @@ export class OsintService {
         .limit(100)
         .lean();
     } catch (errorException) {
-      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new ServiceUnavailableException(`Query: ${input.hash} got error on request!`);
     }
   }
 
   async getCharactersLfg(input: CharactersLfgDto): Promise<LeanDocument<Character[]>> {
     try {
       const query = { looking_for_guild: LFG.NEW };
-      // TODO looking_for_guild
       if (input.faction) Object.assign(query, { faction: input.faction });
       if (input.average_item_level) Object.assign(query, { average_item_level: { '$gte': input.average_item_level } });
       if (input.rio_score) Object.assign(query, { rio_score: { '$gte': input.rio_score } });
@@ -193,59 +198,62 @@ export class OsintService {
       .lean();
 
     if (!realm) {
-      throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException( `Realm: ${realm_slug} for selected character: ${input._id} not found!`);
     }
 
     const _id: string = toSlug(`${name_slug}@${realm.slug}`);
-    const [guild] = await this.GuildModel.aggregate([
-      {
-        $match: {
-          _id: _id
-        }
-      },
-      {
-        $lookup: {
-          from: "characters",
-          localField: "members._id",
-          foreignField: "_id",
-          as: "guild_members"
-        }
-      },
-      {
-        $project: {
-          "guild_members.pets": 0,
-          "guild_members.professions": 0,
-          "guild_members.mounts": 0,
-          "guild_members.languages": 0,
-          "guild_members.raid_progress": 0,
-        }
-      },
-      {
-        $addFields: {
-          "members": {
-            $map: {
-              input: "$members",
-              as: "member",
-              in: {
-                $mergeObjects: [
-                  "$$member",
-                  {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: "$guild_members",
-                          cond: { $eq: ["$$this._id", "$$member._id"] }
-                        }
-                      },
-                      0
-                    ]
-                  }
-                ]
-              }
+
+    const matchStage = { $match: { _id: _id } };
+    const lookupStage = {
+      $lookup: {
+        from: "characters",
+        localField: "members._id",
+        foreignField: "_id",
+        as: "guild_members"
+      }
+    };
+    const projectStage = {
+      $project: {
+        "guild_members.pets": 0,
+        "guild_members.professions": 0,
+        "guild_members.mounts": 0,
+        "guild_members.languages": 0,
+        "guild_members.raid_progress": 0,
+      }
+    };
+    const addFieldStage = {
+      $addFields: {
+        "members": {
+          $map: {
+            input: "$members",
+            as: "member",
+            in: {
+              $mergeObjects: [
+                "$$member",
+                {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$guild_members",
+                        cond: { $eq: ["$$this._id", "$$member._id"] }
+                      }
+                    },
+                    0
+                  ]
+                }
+              ]
             }
           }
         }
-      },
+      }
+    };
+
+    // TODO add interface
+    const [guild] = await this.GuildModel.aggregate([
+      matchStage,
+      lookupStage,
+      projectStage,
+      addFieldStage,
     ]).allowDiskUse(true);
 
     if (!guild) {
@@ -270,8 +278,7 @@ export class OsintService {
           priority: 1
         }
       );
-      await delay(5);
-      return this.GuildModel.findById(_id).lean();
+      throw new NotFoundException(`Guild: ${_id} not found, but will be added to OSINT-DB on existence shortly`);
     }
     return guild;
   }

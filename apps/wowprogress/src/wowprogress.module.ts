@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { WowprogressService } from './wowprogress.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
@@ -6,9 +6,11 @@ import { Character, CharactersSchema, Key, KeysSchema, Realm, RealmsSchema } fro
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
+    HttpModule,
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
@@ -16,6 +18,12 @@ import { ScheduleModule } from '@nestjs/schedule';
       { name: Realm.name, schema: RealmsSchema },
       { name: Character.name, schema: CharactersSchema },
     ]),
+    RedisModule.forRoot({
+      config: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
+    }),
     BullModule.forRoot({
       options: {
         connection: {

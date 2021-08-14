@@ -1,14 +1,12 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import Xray from 'x-ray';
 import { charactersQueue, GLOBAL_KEY, LFG, OSINT_SOURCE, randomInt, toSlug } from '@app/core';
 import fs from 'fs-extra';
-import axios from 'axios';
 import path from "path";
 import zlib from 'zlib';
 import scraper from 'table-scraper';
@@ -19,6 +17,8 @@ import { nanoid } from 'nanoid'
 import { wowprogressConfig } from '@app/configuration';
 import { from } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import cheerio from "cheerio";
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
@@ -27,6 +27,9 @@ export class WowprogressService implements OnApplicationBootstrap {
   );
 
   constructor(
+    private httpService: HttpService,
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
     @InjectModel(Realm.name)
@@ -44,7 +47,6 @@ export class WowprogressService implements OnApplicationBootstrap {
   }
 
   /**
-   * TODO probably split in to 2 separate functions
    * @param clearance
    * @param init
    */
@@ -58,8 +60,7 @@ export class WowprogressService implements OnApplicationBootstrap {
       }
 
       const
-        x = Xray(),
-        urls = await x(`https://www.wowprogress.com/export/ranks/`, 'pre', ['a@href']).then(res => res),
+        response = await this.httpService.get('https://www.wowprogress.com/export/ranks/').toPromise(),
         key = await this.KeyModel.findOne({ tags: clearance });
 
       if (!key || !key.token) {
@@ -70,34 +71,50 @@ export class WowprogressService implements OnApplicationBootstrap {
       const dir: string = path.join(__dirname, '..', '..', 'files', 'wowprogress');
       await fs.ensureDir(dir);
 
-      for (let url of urls) {
-        if (!url.includes(`eu_`)) continue;
+      const page = cheerio.load(response.data);
+      const test = page
+        .html('body > pre:nth-child(3) > a');
 
-        const
-          download: string = encodeURI(decodeURI(url)),
-          file_name: string = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1)),
-          match = file_name.match(/(?<=_)(.*?)(?=_)/g);
+      page(test).map(async (x, node) => {
+        if ('attribs' in node) {
+          const url = node.attribs.href;
+          if (!url.includes(`eu_`)) return;
 
-        if (!match || !match.length) continue;
+          const
+            download: string = encodeURI(decodeURI(url)),
+            file_name: string = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1)),
+            match = file_name.match(/(?<=_)(.*?)(?=_)/g);
 
-        const
-          [realm_query] = match,
-          realm = await this.RealmModel
-            .findOne(
-              { $text: { $search: realm_query } },
-              { score: { $meta: 'textScore' } },
-              { projection: { slug_locale: 1 } }
-            )
-            .sort({ score: { $meta: 'textScore' } })
-            .lean();
+          if (!match || !match.length) return;
 
-        if (!realm) continue;
+          const
+            [realm_query] = match,
+            realm = await this.RealmModel
+              .findOne(
+                { $text: { $search: realm_query } },
+                { score: { $meta: 'textScore' } },
+                { projection: { slug_locale: 1 } }
+              )
+              .sort({ score: { $meta: 'textScore' } })
+              .lean();
 
-        await axios({
-          url: download,
-          responseType: 'stream',
-        }).then(async response => response.data.pipe(fs.createWriteStream(`${dir}/${file_name}`)));
-      }
+          if (!realm) return;
+
+          await this.httpService
+            .request({
+              url: download,
+              responseType: 'stream',
+             })
+            .toPromise()
+            .then(
+              async response => response.data
+                .pipe(
+                  fs.createWriteStream(`${dir}/${file_name}`)
+                )
+            );
+        }
+      });
+
 
       const files: string[] = await fs.readdir(dir);
 
@@ -169,7 +186,7 @@ export class WowprogressService implements OnApplicationBootstrap {
           } catch (error) {
             this.logger.warn(`indexWowProgress: file ${file} has error: ${error}`);
           }
-        }, 2),
+        }, 1),
       ).toPromise()
 
       await fs.rmdirSync(dir, { recursive: true });
@@ -202,15 +219,22 @@ export class WowprogressService implements OnApplicationBootstrap {
         await scraper.get('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
         await scraper.get('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then((tableData) => tableData[0] || [])
       ]);
+
       const wpCharacters: Record<string, string>[] = union(first, second);
-      wpCharacters.map(async (character, i) => {
-        if (character.Character && character.Realm) {
-          const name = character.Character.trim();
-          const realm = character.Realm.split('-')[1].trim();
-          const _id = toSlug(`${name}@${realm}`);
-          const jobId = `${_id}:${nanoid(10)}`;
-          const forceUpdate = randomInt(3600000, 7200000)
-          this.logger.debug(`Added to queue: ${_id}`)
+
+      await from(wpCharacters).pipe(
+        mergeMap(async (character, i) => {
+
+          if (!character.Character && !character.Realm) return;
+          index++
+
+          const
+            name = character.Character.trim(),
+            realm = character.Realm.split('-')[1].trim(),
+            _id = toSlug(`${name}@${realm}`),
+            jobId = `${_id}:${nanoid(10)}`,
+            forceUpdate = randomInt(3600000, 7200000);
+
           await this.queueCharacters.add(
             jobId,
             {
@@ -235,11 +259,12 @@ export class WowprogressService implements OnApplicationBootstrap {
               jobId,
               priority: 2,
             }
-          )
-        }
-        index++
-        if (i >= keys.length) index = 0;
-      })
+          );
+
+          this.logger.log(`Added to character queue: ${_id}`);
+          if (i >= keys.length) index = 0;
+        }, 1),
+      ).toPromise();
 
       await delay(120);
       const charactersNow = await this.CharacterModel.find({ looking_for_guild: LFG.NOW });

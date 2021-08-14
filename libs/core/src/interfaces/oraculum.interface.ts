@@ -16,7 +16,7 @@ export interface AccountsMock {
   readonly accounts: AccountMock[]
 }
 
-export class EntityMock implements Pick<Entity, 'parentId' | 'entity' | 'name' | 'languages' | 'tags'> {
+export class EntityMock implements Pick<Entity, 'entity' | 'name' | 'languages' | 'tags'> {
   readonly parentId: string;
 
   readonly entity: string;

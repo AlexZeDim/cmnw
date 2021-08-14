@@ -17,6 +17,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { delay } from '@app/core/utils/converters';
 import { nanoid } from 'nanoid'
 import { wowprogressConfig } from '@app/configuration';
+import { from } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
@@ -99,63 +101,79 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       const files: string[] = await fs.readdir(dir);
 
-      await Promise.all(
-        files.map(async (file: string) => {
-          if (!file.match(/gz$/g)) return;
-
-          const match = file.match(/(?<=_)(.*?)(?=_)/g);
-
-          if (!match || !match.length) return;
-
-          const
-            [realm_query] = match,
-            realm = await this.RealmModel
-              .findOne(
-                { $text: { $search: realm_query } },
-                { score: { $meta: 'textScore' } },
-                { projection: { slug: 1 } }
-              )
-              .sort({ score: { $meta: 'textScore' } })
-              .lean();
-
-          if (!realm) return;
-
-          const
-            buffer = await fs.readFile(`${dir}/${file}`),
-            data = await zlib.unzipSync(buffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH }).toString(),
-            json = JSON.parse(data);
-
-          // TODO logger coverage
-
-          if (json && Array.isArray(json) && json.length) {
-            for (const guild of json) {
-              if (!guild.name || guild.name.includes('[Raid]')) continue;
-              const _id: string = toSlug(`${guild.name}@${realm.slug}`);
-              await this.queueGuilds.add(
-                _id,
-                {
-                  _id: _id,
-                  name: guild.name,
-                  realm: realm.slug,
-                  members: [],
-                  forceUpdate: 86400000,
-                  region: 'eu',
-                  created_by: OSINT_SOURCE.WOWPROGRESS,
-                  updated_by: OSINT_SOURCE.WOWPROGRESS,
-                  clientId: key._id,
-                  clientSecret: key.secret,
-                  accessToken: key.token
-                },
-                {
-                  jobId: _id,
-                  priority: 4
-                }
-              )
+      await from(files).pipe(
+        mergeMap(async (file) => {
+          try {
+            if (!file.match(/gz$/g)) {
+              this.logger.warn(`indexWowProgress: file ${file} not match pattern #1`);
+              return;
             }
+
+            const match = file.match(/(?<=_)(.*?)(?=_)/g);
+
+            if (!match || !match.length) {
+              this.logger.warn(`indexWowProgress: file ${file} not match pattern #2`);
+             return;
+            }
+
+            const
+              [realm_query] = match,
+              realm = await this.RealmModel
+                .findOne(
+                  { $text: { $search: realm_query } },
+                  { score: { $meta: 'textScore' } },
+                  { projection: { slug: 1 } }
+                )
+                .sort({ score: { $meta: 'textScore' } })
+                .lean();
+
+            if (!realm) {
+              this.logger.warn(`indexWowProgress: realm ${realm_query} not found!`);
+              return;
+            }
+
+            const
+              buffer = await fs.readFile(`${dir}/${file}`),
+              data = await zlib.unzipSync(buffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH }).toString(),
+              json = JSON.parse(data);
+
+            if (json && Array.isArray(json) && json.length) {
+              for (const guild of json) {
+                if (!guild.name || guild.name.includes('[Raid]')) {
+                 this.logger.log(`indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`);
+                 continue;
+                }
+                const _id: string = toSlug(`${guild.name}@${realm.slug}`);
+                await this.queueGuilds.add(
+                  _id,
+                  {
+                    _id: _id,
+                    name: guild.name,
+                    realm: realm.slug,
+                    members: [],
+                    forceUpdate: 86400000,
+                    region: 'eu',
+                    created_by: OSINT_SOURCE.WOWPROGRESS,
+                    updated_by: OSINT_SOURCE.WOWPROGRESS,
+                    clientId: key._id,
+                    clientSecret: key.secret,
+                    accessToken: key.token
+                  },
+                  {
+                    jobId: _id,
+                    priority: 4
+                  }
+                )
+              }
+            }
+          } catch (error) {
+            this.logger.warn(`indexWowProgress: file ${file} has error: ${error}`);
           }
-        })
-      );
+        }, 2),
+      ).toPromise()
+
       await fs.rmdirSync(dir, { recursive: true });
+      this.logger.warn(`indexWowProgress: directory ${dir} has been removed!`);
     } catch (errorException) {
       this.logger.error(`indexWowProgress: ${errorException}`)
     }

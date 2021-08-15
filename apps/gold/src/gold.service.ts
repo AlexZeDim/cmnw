@@ -31,7 +31,6 @@ export class GoldService {
       const listingHTML = funPayHTML
         .html('a.tc-item');
 
-
       const listing: Partial<FunPayGoldInterface>[] = [];
       const orders: Gold[] = [];
       const realms: Set<number> = new Set<number>();

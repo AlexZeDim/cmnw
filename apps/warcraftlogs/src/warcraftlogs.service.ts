@@ -1,9 +1,8 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm, WarcraftLogs } from '@app/mongo';
 import { Model } from "mongoose";
 import { range } from 'lodash';
-import Xray from 'x-ray';
 import {
   ExportedCharactersInterface,
   GLOBAL_WCL_KEY,
@@ -14,11 +13,11 @@ import {
   GLOBAL_OSINT_KEY,
 } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import axios from 'axios';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
 import { warcraftlogsConfig } from '@app/configuration';
+import cheerio from "cheerio";
 
 @Injectable()
 export class WarcraftlogsService implements OnApplicationBootstrap {
@@ -26,9 +25,8 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     WarcraftlogsService.name, true,
   );
 
-  private readonly x = Xray();
-
   constructor(
+    private httpService: HttpService,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @InjectModel(WarcraftLogs.name)
@@ -45,82 +43,74 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async indexWarcraftLogs(
-    config: WarcraftLogsConfigInterface = {
-      raid_tier: warcraftlogsConfig.raid_tier,
-      pages_from: warcraftlogsConfig.pages_from,
-      pages_to: warcraftlogsConfig.pages_to,
-      page: warcraftlogsConfig.page,
-      logs: warcraftlogsConfig.logs
-    }
+    config: WarcraftLogsConfigInterface = warcraftlogsConfig
   ): Promise<void> {
     try {
       await this.RealmModel
         .find({ wcl_id: { $ne: null } })
         .cursor({ batchSize: 1 })
         .eachAsync(async (realm: Realm) => {
-          const pages = range(0, 500, 1);
-          let ex_page = 0;
-          let ex_logs = 0;
+          const pages = range(warcraftlogsConfig.pages_from, warcraftlogsConfig.pages_to, 1);
+          let
+            exPage = 0,
+            exLogs = 0;
 
           for (const page of pages) {
+            // TODO review
             await delay(5);
-            const index_logs = await this.x(
-              `https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`,
-              '.description-cell',
-              [
-                {
-                  link: 'a@href',
-                },
-              ],
-            ).then(res => res);
+            const response = await this.httpService.get(`https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`).toPromise();
+
+            const wclHTML = cheerio.load(response.data);
+            const wclTable = wclHTML
+              .html('td.description-cell > a');
+            const wclLogsSet = new Set<string>();
+
+            wclHTML(wclTable)
+              .each((_x, node) => {
+                const hrefString = wclHTML(node).attr('href');
+                if (hrefString.includes('reports')) {
+                  const [link]: string[] = hrefString.match(/(.{16})\s*$/g);
+                  wclLogsSet.add(link);
+                }
+              });
+
             /**
              * If indexing logs on page have ended
              * and page fault tolerance is more then
              * config, then break for loop
              */
-            if (ex_page > config.page) {
-              this.logger.log(`BREAK, ${realm.name}, Page: ${page}, Page FT: ${ex_page} > ${config.page}`);
-              break
+            if (exPage > config.page) {
+              this.logger.log(`BREAK, ${realm.name}, Page: ${page}, Page FT: ${exPage} > ${config.page}`);
+              break;
             }
-            /** If parsed page have results */
-            if (!index_logs || !index_logs.length) {
+            /** If parsed page have no results */
+            if (!!wclTable || !wclLogsSet.size) {
               this.logger.log(`ERROR, ${realm.name}, Page: ${page}, Logs not found`);
-              ex_page += 1;
-              continue
+              exPage += 1;
+              continue;
             }
-            // TODO probably to separate function
-            const logsBulk: WarcraftLogs[] = [];
-            for (const index_log of index_logs) {
-              if (ex_logs > config.logs) {
-                this.logger.log(`BREAK, ${realm.name}, Log FT: ${ex_logs} > ${config.logs}`);
-                break
+
+            for (const logId of wclLogsSet.values()) {
+              if (exLogs > config.logs) {
+                this.logger.log(`BREAK, ${realm.name}, Log FT: ${exLogs} > ${config.logs}`);
+                break;
               }
-              if (!index_log.link) {
-                this.logger.log(`ERROR, ${realm.name}, Page: ${page}, Link not found`);
-                ex_logs += 1;
-                continue
-              }
-              const [link]: string[] = index_log.link.match(/(.{16})\s*$/g);
-              if (index_log.link.includes('reports')) {
-                /*** Check logs in collection */
-                let log: WarcraftLogs = await this.WarcraftLogsModel.findById(link);
-                if (log) {
-                  /** If exists counter +1*/
-                  ex_logs += 1;
-                  this.logger.log(`errorException, Log: ${log._id}, Log EX: ${ex_logs}`);
-                } else {
-                  /** Else, counter -1 and create in DB */
-                  if (ex_logs > 1) ex_logs -= 1;
-                  this.logger.log(`C, Log: ${link}, Log EX: ${ex_logs}`)
-                  log = new this.WarcraftLogsModel({ _id: link });
-                  logsBulk.push(log);
-                }
+              let log: WarcraftLogs = await this.WarcraftLogsModel.findById(logId);
+              if (log) {
+                /** If exists counter +1*/
+                exLogs += 1;
+                wclLogsSet.delete(logId);
+                this.logger.warn(`E, Log: ${log._id}, Log EX: ${exLogs}`);
+              } else {
+                /** Else, counter -1 and create in DB */
+                if (exLogs > 1) exLogs -= 1;
+                this.logger.log(`C, Log: ${logId}, Log EX: ${exLogs}`)
+                await this.WarcraftLogsModel.create({ _id: logId });
               }
             }
-            await this.WarcraftLogsModel.insertMany(logsBulk, { rawResult: false });
-            this.logger.log(`Inserted: ${logsBulk.length} logs`);
-            if (ex_logs > config.logs) {
-              this.logger.log(`BREAK, ${realm.name}, Log FT: ${ex_logs} > ${config.logs}`);
+
+            if (exLogs > config.logs) {
+              this.logger.log(`BREAK, ${realm.name}, Log FT: ${exLogs} > ${config.logs}`);
               break
             }
           }
@@ -134,7 +124,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
   async indexLogs(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       await delay(30);
-      const [ warcraft_logs_key, keys ] = await Promise.all([
+      const [warcraft_logs_key, keys] = await Promise.all([
         await this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY }),
         await this.KeyModel.find({ tags: clearance })
       ])
@@ -151,7 +141,9 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         .cursor({ batchSize: 1 })
         .eachAsync(async (log: WarcraftLogs) => {
           try {
-            const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } = await axios.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
+            // FIXME remove
+            const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } =
+              await this.httpService.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
               .then(res => res.data || { exportedCharacters: [] });
             const result = await this.exportedCharactersToQueue(exportedCharacters, keys);
             if (result) {
@@ -164,7 +156,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
           }
         })
     } catch (errorException) {
-      this.logger.error(`indexLogs: ${e}`);
+      this.logger.error(`indexLogs: ${errorException}`);
     }
   }
 
@@ -172,7 +164,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     try {
       let iteration = 0;
       const charactersToJobs = exportedCharacters.map((character) => {
-        const _id: string = toSlug(`${character.name}@${character.server}`);
+        const _id = toSlug(`${character.name}@${character.server}`);
         iteration++
         if (iteration >= keys.length) iteration = 0;
         return {

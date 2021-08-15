@@ -93,6 +93,15 @@ export interface AuctionsVAInterface {
   readonly data: LeanDocument<Auction>;
 }
 
+export interface FunPayGoldInterface {
+  readonly realm: string;
+  readonly faction: string;
+  readonly status: boolean;
+  readonly quantity: string;
+  readonly owner: string;
+  readonly price: string;
+}
+
 /**
  * Market Data Response from aggregation
  * for Auction Valuation Adjustable

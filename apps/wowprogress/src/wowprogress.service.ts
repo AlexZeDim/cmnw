@@ -187,7 +187,7 @@ export class WowprogressService implements OnApplicationBootstrap {
             this.logger.warn(`indexWowProgress: file ${file} has error: ${error}`);
           }
         }, 1),
-      ).toPromise()
+      ).toPromise();
 
       await fs.rmdirSync(dir, { recursive: true });
       this.logger.warn(`indexWowProgress: directory ${dir} has been removed!`);

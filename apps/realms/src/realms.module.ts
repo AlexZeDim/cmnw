@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
@@ -22,6 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    HttpModule,
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([

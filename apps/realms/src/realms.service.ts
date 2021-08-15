@@ -1,9 +1,9 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { range } from 'lodash';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Key, Realm, RealmPopulation } from '@app/mongo';
 import { Model } from 'mongoose';
-import Xray from 'x-ray';
+import * as cheerio from 'cheerio';
 import {
   CHARACTER_CLASS, COVENANTS,
   FACTION,
@@ -27,6 +27,7 @@ export class RealmsService implements OnApplicationBootstrap {
   private BNet: BlizzAPI
 
   constructor(
+    private httpService: HttpService,
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
     @InjectModel(Realm.name)
@@ -99,15 +100,17 @@ export class RealmsService implements OnApplicationBootstrap {
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   private async getRealmsWarcraftLogsID(start: number = 1, end: number = 517): Promise<void> {
-    const x = Xray();
     try {
       if (start < 1) start = 1;
       const wcl_ids: number[] = range(start, end + 1, 1);
       for (const wcl_id of wcl_ids) {
-        const realm_name: string = await x(`https://www.warcraftlogs.com/server/id/${wcl_id}`, '.server-name').then(res => res);
-        if (realm_name) {
-          const realm = await this.RealmModel.findOneAndUpdate({ $or: [{ name: realm_name }, { name_locale: realm_name } ]}, { wcl_id: wcl_id });
-          this.logger.debug(`${wcl_id}:${realm_name}, ${realm}`);
+        const response = await this.httpService.get(`https://www.warcraftlogs.com/server/id/${wcl_id}`).toPromise();
+        const wclHTML = cheerio.load(response.data);
+        const serverElement = wclHTML.html('.server-name');
+        const realmName = wclHTML(serverElement).text();
+        if (!!realmName) {
+          const realm = await this.RealmModel.findOneAndUpdate({ $or: [{ name: realmName }, { name_locale: realmName } ]}, { wcl_id: wcl_id });
+          this.logger.debug(`${wcl_id}:${realmName}, ${realm}`);
         }
       }
     } catch (errorException) {
@@ -125,7 +128,7 @@ export class RealmsService implements OnApplicationBootstrap {
           await this.population(realm);
         }, { parallel: 5 })
     } catch (errorException) {
-      this.logger.error(`indexRealmPopulation: ${e}`)
+      this.logger.error(`indexRealmPopulation: ${errorException}`)
     }
   }
 

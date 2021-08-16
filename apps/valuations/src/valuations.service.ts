@@ -17,7 +17,7 @@ import { valuationsConfig } from '@app/configuration';
 @Injectable()
 export class ValuationsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    ValuationsService.name, true,
+    ValuationsService.name, { timestamp: true },
   );
 
   constructor(

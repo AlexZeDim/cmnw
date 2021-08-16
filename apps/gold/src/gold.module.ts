@@ -1,7 +1,9 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { GoldService } from './gold.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
 import {
   Gold,
@@ -9,6 +11,7 @@ import {
   Realm,
   RealmsSchema
 } from '@app/mongo';
+
 
 @Module({
   imports: [

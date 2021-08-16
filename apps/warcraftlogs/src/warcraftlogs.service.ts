@@ -1,4 +1,4 @@
-import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm, WarcraftLogs } from '@app/mongo';
 import { Model } from "mongoose";
@@ -17,12 +17,13 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
 import { warcraftlogsConfig } from '@app/configuration';
+import { HttpService } from '@nestjs/axios';
 import cheerio from "cheerio";
 
 @Injectable()
 export class WarcraftlogsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    WarcraftlogsService.name, true,
+    WarcraftlogsService.name, { timestamp: true },
   );
 
   constructor(

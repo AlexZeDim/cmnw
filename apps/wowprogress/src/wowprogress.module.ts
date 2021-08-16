@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { WowprogressService } from './wowprogress.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
@@ -7,6 +7,7 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [

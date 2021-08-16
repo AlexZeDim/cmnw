@@ -3,8 +3,6 @@ import { PricingService } from './pricing.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import {
-  Item,
-  ItemsSchema,
   Key,
   KeysSchema,
   Pricing,

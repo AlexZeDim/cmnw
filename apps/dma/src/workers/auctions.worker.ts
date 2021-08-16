@@ -1,19 +1,19 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, round2 } from '@app/core';
 import { Logger } from '@nestjs/common';
-import BlizzAPI, { BattleNetOptions } from 'blizzapi';
+import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Realm } from '@app/mongo';
 import { Job } from 'bullmq';
-import moment from "moment";
-import { Model } from "mongoose";
+import moment from 'moment';
+import { Model } from 'mongoose';
 import { bufferCount, concatMap } from 'rxjs/operators';
 import { from } from 'rxjs';
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
   private readonly logger = new Logger(
-    AuctionsWorker.name, true,
+    AuctionsWorker.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI;

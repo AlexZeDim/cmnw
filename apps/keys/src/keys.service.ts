@@ -13,7 +13,7 @@ import { GLOBAL_BLIZZARD_KEY } from '@app/core';
 @Injectable()
 export class KeysService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    KeysService.name, true,
+    KeysService.name, { timestamp: true },
   );
 
   constructor(

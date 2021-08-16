@@ -8,7 +8,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(
-    AuthController.name, true,
+    AuthController.name, { timestamp: true },
   );
   constructor(
     private readonly authService: AuthService

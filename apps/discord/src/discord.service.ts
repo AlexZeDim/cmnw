@@ -18,7 +18,7 @@ export class DiscordService implements OnApplicationBootstrap {
   private commands: Discord.Collection<string, any>
 
   private readonly logger = new Logger(
-    DiscordService.name, true,
+    DiscordService.name, { timestamp: true },
   );
 
   constructor(

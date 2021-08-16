@@ -11,7 +11,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class GuildsService {
   private readonly logger = new Logger(
-    GuildsService.name, true,
+    GuildsService.name, { timestamp: true },
   );
 
   constructor(

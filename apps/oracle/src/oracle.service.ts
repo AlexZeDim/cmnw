@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
 import { NlpManager } from 'node-nlp';
 import path from 'path';
 import fs from 'fs-extra';
@@ -31,7 +31,7 @@ export class OracleService implements OnApplicationBootstrap {
   ) { }
 
   private readonly logger = new Logger(
-    OracleService.name, true,
+    OracleService.name, { timestamp: true },
   );
 
   async onApplicationBootstrap(): Promise<void> {
@@ -42,8 +42,7 @@ export class OracleService implements OnApplicationBootstrap {
     const fileExist = fs.existsSync(file);
 
     if (!fileExist) {
-      this.logger.warn(`Corpus from: ${file} not found!`)
-      return;
+      throw new ServiceUnavailableException(`Corpus from: ${file} not found!`);
     }
 
     const corpus = fs.readFileSync(file, 'utf8');
@@ -59,8 +58,7 @@ export class OracleService implements OnApplicationBootstrap {
 
     const key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'free' ] } });
     if (!key) {
-      this.logger.warn('Available keys not found!');
-      return;
+      throw new ServiceUnavailableException('Available keys not found!');
     }
 
     key.tags.pull('free');
@@ -96,8 +94,8 @@ export class OracleService implements OnApplicationBootstrap {
           console.log(message.author);
           // TODO execute command only for clearance personal
           // if (message.author.id === '240464611562881024') await message.send('My watch is eternal');
-          // const match = await this.manager.extractEntities('ru', message.content);
-          // console.log(match)
+          const match = await this.manager.extractEntities('ru', message.content);
+          console.log(match)
         } catch (errorException) {
           this.logger.error(`Error: ${errorException}`);
         }

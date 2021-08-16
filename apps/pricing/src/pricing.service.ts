@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
-import { Model } from "mongoose";
+import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { DMA_SOURCE, EXPANSION_TICKER, GLOBAL_DMA_KEY, pricingQueue, VALUATION_TYPE } from '@app/core';
-import BlizzAPI from 'blizzapi';
+import { BlizzAPI } from 'blizzapi';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
@@ -17,7 +17,7 @@ import { DISENCHANT, PROSPECT } from './lib';
 export class PricingService implements OnApplicationBootstrap {
 
   private readonly logger = new Logger(
-    PricingService.name, true,
+    PricingService.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI

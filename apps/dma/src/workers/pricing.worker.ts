@@ -1,7 +1,7 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { DMA_SOURCE, DMA_TIMEOUT_TOLERANCE, FACTION, PRICING_TYPE, pricingQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
-import BlizzAPI, { BattleNetOptions } from 'blizzapi';
+import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -12,7 +12,7 @@ import { PROFESSION_TICKER } from '@app/core/constants/dma.constants';
 @BullWorker({ queueName: pricingQueue.name })
 export class PricingWorker {
   private readonly logger = new Logger(
-    PricingWorker.name, true,
+    PricingWorker.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI

@@ -1,17 +1,18 @@
-import { HttpService, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Gold, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FACTION, FunPayGoldInterface } from '@app/core';
-import cheerio from "cheerio";
+import cheerio from 'cheerio';
 import { from } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class GoldService {
   private readonly logger = new Logger(
-    GoldService.name, true,
+    GoldService.name, { timestamp: true },
   );
 
   constructor(

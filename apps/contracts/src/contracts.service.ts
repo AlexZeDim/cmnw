@@ -9,7 +9,7 @@ import moment from 'moment';
 @Injectable()
 export class ContractsService {
   private readonly logger = new Logger(
-    ContractsService.name, true,
+    ContractsService.name, { timestamp: true },
   );
 
   constructor(

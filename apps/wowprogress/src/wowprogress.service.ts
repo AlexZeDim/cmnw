@@ -1,4 +1,4 @@
-import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { Model } from "mongoose";
@@ -19,11 +19,12 @@ import { from } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import cheerio from "cheerio";
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    WowprogressService.name, true,
+    WowprogressService.name, { timestamp: true },
   );
 
   constructor(

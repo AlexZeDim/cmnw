@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig } from '@app/configuration';
 import { Account, AccountsSchema } from '@app/mongo';
@@ -6,14 +6,15 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { DiscordStrategy } from './strategies/discord.strategy';
 import { BattlenetStrategy } from './strategies/battlenet.strategy';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forRoot(mongoConfig.connection_string),
     MongooseModule.forFeature([
       { name: Account.name, schema: AccountsSchema }
     ]),
-    HttpModule,
   ],
   providers: [AuthService, DiscordStrategy, BattlenetStrategy],
   controllers: [AuthController],

@@ -31,7 +31,7 @@ export class SpellReagents extends Document {
   spell_id: number;
 
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
-  reagents: Types.Array<ItemReagent | Item>;
+  reagents: Types.Array<ItemReagent>;
 }
 
 export const SpellReagentsSchema = SchemaFactory.createForClass(SpellReagents);

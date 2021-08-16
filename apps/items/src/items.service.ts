@@ -14,7 +14,7 @@ import csv from 'async-csv';
 @Injectable()
 export class ItemsService implements OnApplicationBootstrap  {
   private readonly logger = new Logger(
-    ItemsService.name, true,
+    ItemsService.name, { timestamp: true },
   );
 
   constructor(

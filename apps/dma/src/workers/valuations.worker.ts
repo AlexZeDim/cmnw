@@ -28,7 +28,7 @@ import { delay } from '@app/core/utils/converters';
 @BullWorker({ queueName: valuationsQueue.name })
 export class ValuationsWorker {
   private readonly logger = new Logger(
-    ValuationsWorker.name, true,
+    ValuationsWorker.name, { timestamp: true },
   );
 
   constructor(

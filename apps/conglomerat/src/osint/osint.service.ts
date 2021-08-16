@@ -20,7 +20,6 @@ import {
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE, toSlug } from '@app/core';
 import { Queue } from 'bullmq';
-import { delay } from '@app/core/utils/converters';
 import { RealmDto } from './dto/realm.dto';
 
 @Injectable()

@@ -1,4 +1,3 @@
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { Job } from 'bullmq';
 import {
   realmsQueue,
@@ -10,12 +9,13 @@ import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Realm } from '@app/mongo';
 import { Model } from 'mongoose';
-import BlizzAPI, { BattleNetOptions } from 'blizzapi';
+import { BlizzAPI, BattleNetOptions } from 'blizzapi';
+import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 
 @BullWorker({ queueName: realmsQueue.name })
 export class RealmsWorker {
   private readonly logger = new Logger(
-    RealmsWorker.name, true,
+    RealmsWorker.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI

@@ -15,12 +15,13 @@ import {
   OSINT_TIMEOUT_TOLERANCE,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
-import BlizzAPI, { BattleNetOptions } from 'blizzapi';
+import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
+// TODO rework Xray & axios
 import axios from 'axios';
 import Xray from 'x-ray';
 import puppeteer from 'puppeteer';
@@ -28,7 +29,7 @@ import puppeteer from 'puppeteer';
 @BullWorker({ queueName: charactersQueue.name })
 export class CharactersWorker {
   private readonly logger = new Logger(
-    CharactersWorker.name, true,
+    CharactersWorker.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI

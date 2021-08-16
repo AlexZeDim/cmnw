@@ -1,4 +1,4 @@
-import { HttpService, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { range } from 'lodash';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Key, Realm, RealmPopulation } from '@app/mongo';
@@ -13,15 +13,16 @@ import {
   realmsQueue,
   toKey,
 } from '@app/core';
-import BlizzAPI from 'blizzapi';
+import { BlizzAPI } from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class RealmsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    RealmsService.name, true,
+    RealmsService.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI

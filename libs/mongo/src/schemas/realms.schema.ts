@@ -81,16 +81,18 @@ RealmsSchema.index(
     locale: 'text',
   },
   {
-    weights:
-      {
-        slug: 10,
-        name: 1,
-        slug_locale: 1,
-        name_locale: 1,
-        ticker: 3,
-        region: 1,
-        locale: 1,
-      },
+    collation: {
+      weights:
+        {
+          slug: 10,
+          name: 1,
+          slug_locale: 1,
+          name_locale: 1,
+          ticker: 3,
+          region: 1,
+          locale: 1,
+        },
+    },
     name: 'SQ',
   },
 );

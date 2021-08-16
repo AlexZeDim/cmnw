@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import BlizzAPI, { BattleNetOptions } from 'blizzapi';
+import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
@@ -7,23 +7,24 @@ import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { Job } from 'bullmq';
 import { from } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { differenceBy, intersectionBy } from 'lodash';
 import {
   capitalize,
   FACTION,
   GuildInterface,
+  GuildMemberInterface,
   guildsQueue,
-  GuildSummaryInterface, OSINT_SOURCE,
+  GuildSummaryInterface,
+  OSINT_SOURCE,
+  OSINT_TIMEOUT_TOLERANCE,
   PLAYABLE_CLASS,
   toSlug,
 } from '@app/core';
-import { GuildMemberInterface } from '@app/core/interfaces/osint.interface';
-import { differenceBy, intersectionBy } from "lodash";
-import { OSINT_TIMEOUT_TOLERANCE } from '@app/core/constants/osint.constants';
 
 @BullWorker({ queueName: guildsQueue.name })
 export class GuildsWorker {
   private readonly logger = new Logger(
-    GuildsWorker.name, true,
+    GuildsWorker.name, { timestamp: true },
   );
 
   private BNet: BlizzAPI

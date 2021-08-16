@@ -12,7 +12,7 @@ import moment from 'moment';
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    AuctionsService.name, true,
+    AuctionsService.name, { timestamp: true },
   );
 
   constructor(

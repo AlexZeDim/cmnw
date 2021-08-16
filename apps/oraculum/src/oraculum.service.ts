@@ -12,7 +12,7 @@ import { AccountsMock, capitalize, EntityMocks, ENTITY_NAME } from '@app/core';
 @Injectable()
 export class OraculumService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
-    OraculumService.name, true,
+    OraculumService.name, { timestamp: true },
   );
 
   private readonly rne = new RussianNouns.Engine();

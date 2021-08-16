@@ -1,10 +1,12 @@
-import { HttpModule, Module } from '@nestjs/common';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { Module } from '@nestjs/common';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
 import { MongooseModule } from '@nestjs/mongoose';
 import { realmsQueue } from '@app/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@anchan828/nest-bullmq';
+import { HttpModule } from '@nestjs/axios';
 import {
   Character,
   CharactersSchema,
@@ -17,8 +19,6 @@ import {
   RealmPopulation,
   RealmsPopulationSchema,
 } from '@app/mongo';
-import { ScheduleModule } from '@nestjs/schedule';
-
 
 @Module({
   imports: [

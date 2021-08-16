@@ -11,7 +11,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 export class CharactersService {
   // TODO cover with logger
   private readonly logger = new Logger(
-    CharactersService.name, true,
+    CharactersService.name, { timestamp: true },
   );
 
   constructor(

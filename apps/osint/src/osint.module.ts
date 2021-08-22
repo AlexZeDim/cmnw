@@ -5,6 +5,7 @@ import { charactersQueue, guildsQueue } from '@app/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CharactersWorker } from './characters.worker';
 import { GuildsWorker } from './guilds.worker';
+import { HttpModule } from '@nestjs/axios';
 import {
   Character,
   CharactersSchema,
@@ -18,6 +19,7 @@ import {
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },

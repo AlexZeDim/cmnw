@@ -21,10 +21,10 @@ import { Character, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
-// TODO rework Xray & axios
-import axios from 'axios';
-import Xray from 'x-ray';
 import puppeteer from 'puppeteer';
+import { lastValueFrom } from 'rxjs';
+import cheerio from 'cheerio';
+import { HttpService } from '@nestjs/axios';
 
 @BullWorker({ queueName: charactersQueue.name })
 export class CharactersWorker {
@@ -35,6 +35,7 @@ export class CharactersWorker {
   private BNet: BlizzAPI
 
   constructor(
+    private httpService: HttpService,
     @InjectModel(Realm.name)
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Character.name)
@@ -56,6 +57,7 @@ export class CharactersWorker {
         )
         .sort({ score: { $meta: 'textScore' } })
         .lean();
+
       if (!realm) return
 
       const
@@ -468,8 +470,10 @@ export class CharactersWorker {
   private async raiderio(name: string, realm_slug: string): Promise<Partial<RaiderIoInterface>> {
     const raider_io: Partial<RaiderIoInterface> = {};
     try {
-      const response: Record<string, any> = await axios.get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`));
-      if (!response || !response.data) return raider_io
+      const response = await lastValueFrom(this.httpService
+        .get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`))
+      );
+      if (!response || !response.data) return raider_io;
       if ('raid_progression' in response.data) {
         const raid_progress: Record<string, any> = response.data['raid_progression'];
         const raid_tiers: { _id: string, progress: string }[] = [];
@@ -499,29 +503,33 @@ export class CharactersWorker {
   }
 
   private async wowprogress(name: string, realm_slug: string): Promise<Partial<WowProgressInterface>> {
-    const
-      wowprogress: Partial<WowProgressInterface> = {},
-      x = Xray();
+    const wowprogress: Partial<WowProgressInterface> = {};
 
     try {
-      const wp: Record<string, any> = await x(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`), '.registeredTo', ['.language']);
-      if (!Array.isArray(wp) || !wp || !wp.length) return wowprogress;
-      await Promise.all(
-        wp.map(line => {
-          const [key, value] = line.split(':');
-          if (key === 'Battletag') wowprogress.battle_tag = value.trim();
-          if (key === 'Looking for guild') wowprogress.transfer = value.includes('ready to transfer');
-          if (key === 'Raids per week') {
-            if (value.includes(' - ')) {
-              const [from, to] = value.split(' - ');
-              wowprogress.days_from = parseInt(from);
-              wowprogress.days_to = parseInt(to);
-            }
-          }
-          if (key === 'Specs playing') wowprogress.role = value.trim();
-          if (key === 'Languages') wowprogress.languages = value.split(',').map((s: string) => s.toLowerCase().trim());
-        })
+      const response = await lastValueFrom(
+        this.httpService.get(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`))
       )
+
+      const wowProgress = cheerio.load(response.data);
+      const wpHTML = wowProgress
+        .html('.language');
+
+      wowProgress(wpHTML).each((_x, node) => {
+        const characterText = wowProgress(node).text();
+        const [key, value] = characterText.split(':');
+        if (key === 'Battletag') wowprogress.battle_tag = value.trim();
+        if (key === 'Looking for guild') wowprogress.transfer = value.includes('ready to transfer');
+        if (key === 'Raids per week') {
+          if (value.includes(' - ')) {
+            const [from, to] = value.split(' - ');
+            wowprogress.days_from = parseInt(from);
+            wowprogress.days_to = parseInt(to);
+          }
+        }
+        if (key === 'Specs playing') wowprogress.role = value.trim();
+        if (key === 'Languages') wowprogress.languages = value.split(',').map((s: string) => s.toLowerCase().trim());
+      });
+
       return wowprogress;
     } catch (errorException) {
       this.logger.error(`wowprogress: ${name}@${realm_slug}:${errorException}`);

@@ -53,6 +53,7 @@ export class GuildsWorker {
         )
         .sort({ score: { $meta: 'textScore' } })
         .lean();
+
       if (!realm) return;
 
       const

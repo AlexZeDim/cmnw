@@ -547,6 +547,7 @@ export class ValuationsWorker {
   private async getDVA <T extends VAInterface>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.DERIVATIVE);
+
       const primary_methods = await this.PricingModel.find({ 'derivatives._id': args._id, type: { $ne: PRICING_TYPE.REVIEW } }).lean();
       if (!primary_methods.length) {
         this.logger.warn(`geDVA: item ${args._id}, ${primary_methods.length} pricing methods found`);

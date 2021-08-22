@@ -12,9 +12,9 @@ import {
   toSlug, capitalize,
   CharacterInterface,
   OSINT_SOURCE,
-  OSINT_TIMEOUT_TOLERANCE,
+  OSINT_TIMEOUT_TOLERANCE, CharacterQI, CharacterStatusI,
 } from '@app/core';
-import { Logger } from '@nestjs/common';
+import { BadRequestException, GatewayTimeoutException, Logger, NotFoundException } from '@nestjs/common';
 import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Log, Realm } from '@app/mongo';
@@ -45,9 +45,9 @@ export class CharactersWorker {
   ) {}
 
   @BullWorkerProcess(charactersQueue.workerOptions)
-  public async process(job: Job): Promise<number> {
+  public async process(job: Job<CharacterQI, number>): Promise<number> {
     try {
-      const args: BattleNetOptions & CharacterInterface = { ...job.data };
+      const args: CharacterQI = { ...job.data };
       await job.updateProgress(1);
 
       const realm = await this.RealmModel
@@ -88,6 +88,9 @@ export class CharactersWorker {
       if (character) {
         let forceUpdate: number = 86400000;
         if (args.forceUpdate || args.forceUpdate === 0) forceUpdate = args.forceUpdate;
+        /**
+         * FIXME LFG EXPLAIN?
+         */
         if (args.looking_for_guild) {
           character.looking_for_guild = args.looking_for_guild;
           this.logger.log(`LFG: ${character._id},looking for guild: ${args.looking_for_guild}`)
@@ -99,7 +102,7 @@ export class CharactersWorker {
          * or updated recently return
          */
         if (args.createOnlyUnique) {
-          this.logger.warn(`errorException:${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
+          this.logger.warn(`errorException: ${(args.iteration) ? (args.iteration + ':') : ('')}${character._id},createOnlyUnique: ${args.createOnlyUnique}`);
           return 302
         }
 
@@ -158,7 +161,7 @@ export class CharactersWorker {
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken
-      })
+      });
 
       const character_status: Record<string, any> = await this.BNet.query(`/profile/wow/character/${character.realm}/${name_slug}/status`, {
         params: { locale: 'en_GB' },
@@ -245,6 +248,111 @@ export class CharactersWorker {
       return character.status_code;
     } catch (errorException) {
       this.logger.error(`${CharactersWorker.name}: ${errorException}`)
+    }
+  }
+
+  private async checkExistOrCreate(character: CharacterQI): Promise<Character> {
+    try {
+      const forceUpdate: number = character.forceUpdate || 86400 * 1000;
+      const name_slug: string = toSlug(character.name);
+      const now: number = new Date().getTime();
+
+      const realm = await this.RealmModel
+        .findOne(
+          { $text: { $search: character.realm } },
+          { score: { $meta: 'textScore' } },
+        )
+        .sort({ score: { $meta: 'textScore' } })
+        .lean();
+
+      if (!realm) {
+        throw new NotFoundException(`realm ${character.realm} not found`);
+      }
+
+      const characterExist = await this.CharacterModel.findById(character._id);
+      if (!characterExist) {
+        const characterNew = new this.CharacterModel({
+          _id: character._id,
+          name: capitalize(name_slug),
+          status_code: 100,
+          realm: realm.slug,
+          realm_id: realm._id,
+          realm_name: realm.name
+        });
+
+        /**
+         * Assign values from queue
+         * only if they were passed
+         */
+        if (character.guild) characterNew.guild = character.guild;
+        if (character.guild_guid) characterNew.guild_guid = character.guild_guid;
+        if (character.guild_id) characterNew.guild_id = character.guild_id;
+        if (character.created_by) characterNew.created_by = character.created_by;
+
+        return characterNew;
+      }
+
+      /**
+       * Update LFG status immediately
+       * if it was passed from queue
+       */
+      if (character.looking_for_guild) {
+        characterExist.looking_for_guild = character.looking_for_guild;
+        this.logger.log(`LFG: ${characterExist._id},looking for guild: ${character.looking_for_guild}`);
+        await characterExist.save();
+      }
+
+      /**
+       * If character exists
+       * and createOnlyUnique initiated
+       */
+      if (character.createOnlyUnique) {
+        throw new BadRequestException(`${(character.iteration) ? (character.iteration + ':') : ('')}${character._id},createOnlyUnique: ${character.createOnlyUnique}`);
+      }
+      /**
+       * ...or character was updated recently
+       */
+      if ((now - forceUpdate) < characterExist.updatedAt.getTime()) {
+        throw new GatewayTimeoutException(`${(character.iteration) ? (character.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);
+      }
+
+      characterExist.status_code = 100;
+
+      return characterExist;
+    } catch (errorException) {
+      this.logger.error(`checkExistCreate: ${errorException}`);
+    }
+  }
+
+  private static async checkStatus(
+    name_slug: string,
+    realm_slug: string,
+    status: boolean,
+    BNet: BlizzAPI
+  ): Promise<Partial<CharacterStatusI>> {
+    const characterStatus: Partial<CharacterStatusI> = {};
+    try {
+      const character_status = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/status`, {
+        params: {
+          locale: 'en_GB',
+          timeout: 30000
+        },
+        headers: { 'Battlenet-Namespace': 'profile-eu' }
+      });
+
+      characterStatus.id = character_status.id;
+      characterStatus.last_modified = character_status.lastModified;
+      characterStatus.status_code = 201;
+
+      return characterStatus;
+    } catch (errorException) {
+      if (errorException.response) {
+        if (errorException.response.data && errorException.response.data.code) {
+          characterStatus.status_code = errorException.response.data.code
+        }
+      }
+      if (status) throw new NotFoundException(`Character: ${name_slug}@${realm_slug}, status: ${status}`);
+      return characterStatus;
     }
   }
 
@@ -420,39 +528,39 @@ export class CharactersWorker {
       if (!response || typeof response !== 'object') return summary
       const keys_named: string[] = ['gender', 'faction', 'race', 'character_class', 'active_spec'];
       const keys: string[] = ['level', 'achievement_points'];
-      await Promise.all(
-        Object.entries(response).map(([key, value]) => {
-          if (keys_named.includes(key) && value !== null && value.name) summary[key] = value.name
-          if (keys.includes(key) && value !== null) summary[key] = value
-          if (key === 'last_login_timestamp') summary.last_modified = value
-          if (key === 'average_item_level') summary.average_item_level = value
-          if (key === 'equipped_item_level') summary.equipped_item_level = value
-          if (key === 'covenant_progress' && typeof value === 'object' && value !== null) {
-            if (value.chosen_covenant && value.chosen_covenant.name) summary.chosen_covenant = value.chosen_covenant.name;
-            if (value.renown_level) summary.renown_level = value.renown_level;
+
+      Object.entries(response).map(([key, value]) => {
+        if (keys_named.includes(key) && value !== null && value.name) summary[key] = value.name
+        if (keys.includes(key) && value !== null) summary[key] = value
+        if (key === 'last_login_timestamp') summary.last_modified = value
+        if (key === 'average_item_level') summary.average_item_level = value
+        if (key === 'equipped_item_level') summary.equipped_item_level = value
+        if (key === 'covenant_progress' && typeof value === 'object' && value !== null) {
+          if (value.chosen_covenant && value.chosen_covenant.name) summary.chosen_covenant = value.chosen_covenant.name;
+          if (value.renown_level) summary.renown_level = value.renown_level;
+        }
+        if (key === 'guild' && typeof value === 'object' && value !== null) {
+          if (value.id && value.name) {
+            summary.guild_id = toSlug(`${value.name}@${realm_slug}`);
+            summary.guild = value.name;
+            summary.guild_guid = value.id;
           }
-          if (key === 'guild' && typeof value === 'object' && value !== null) {
-            if (value.id && value.name) {
-              summary.guild_id = toSlug(`${value.name}@${realm_slug}`);
-              summary.guild = value.name;
-              summary.guild_guid = value.id;
-            }
+        }
+        if (key === 'realm' && typeof value === 'object' && value !== null) {
+          if (value.id && value.name && value.slug) {
+            summary.realm_id = value.id;
+            summary.realm_name = value.name;
+            summary.realm = value.slug;
           }
-          if (key === 'realm' && typeof value === 'object' && value !== null) {
-            if (value.id && value.name && value.slug) {
-              summary.realm_id = value.id;
-              summary.realm_name = value.name;
-              summary.realm = value.slug;
-            }
+        }
+        if (key === 'active_title' && typeof value === 'object' && value !== null) {
+          if ('active_title' in value) {
+            const { active_title } = value
+            if (active_title.id) summary.hash_t = active_title.id.toString(16);
           }
-          if (key === 'active_title' && typeof value === 'object' && value !== null) {
-            if ('active_title' in value) {
-              const { active_title } = value
-              if (active_title.id) summary.hash_t = active_title.id.toString(16);
-            }
-          }
-        })
-      )
+        }
+      });
+
       if (!summary.guild) {
         summary.guild_id = undefined;
         summary.guild = undefined;

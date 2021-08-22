@@ -1,4 +1,61 @@
-import { LFG } from '@app/core/constants';
+import { LFG, OSINT_SOURCE } from '@app/core/constants';
+import { BattleNetOptions } from 'blizzapi';
+
+export class CharacterQI implements BattleNetOptions {
+  readonly _id: string;
+
+  readonly name: string;
+
+  readonly realm: string;
+
+  readonly guild: string | undefined;
+
+  readonly guild_guid: number | undefined;
+
+  readonly guild_id: string | undefined;
+
+  readonly created_by: string | undefined;
+
+  readonly region: string;
+
+  readonly clientId: string;
+
+  readonly clientSecret: string;
+
+  readonly accessToken: string;
+
+  readonly updated_by: OSINT_SOURCE;
+
+  readonly guildRank: boolean;
+
+  readonly createOnlyUnique: boolean;
+
+  readonly forceUpdate: number;
+
+  readonly iteration: number | undefined;
+
+  readonly looking_for_guild: LFG | undefined;
+
+  readonly updateRIO: boolean | undefined;
+
+  readonly updateWCL: boolean | undefined;
+
+  readonly updateWP: boolean | undefined;
+
+  readonly race: string | undefined;
+
+  readonly level: number | undefined;
+
+  readonly faction: string | undefined;
+
+  readonly gender: string | undefined;
+
+  readonly character_class: string | undefined;
+
+  readonly last_modified: Date | undefined;
+
+  readonly active_spec: string | undefined;
+}
 
 export interface CharacterInterface {
   _id: string,
@@ -240,6 +297,12 @@ export interface CharacterSummaryInterface {
   renown_level: number,
   status_code: number,
   hash_t: string
+}
+
+export interface CharacterStatusI {
+  id: number;
+  last_modified: Date;
+  status_code: number;
 }
 
 export interface WowProgressInterface {

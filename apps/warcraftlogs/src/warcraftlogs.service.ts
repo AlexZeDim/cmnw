@@ -4,10 +4,10 @@ import { Key, Realm, WarcraftLogs } from '@app/mongo';
 import { Model } from "mongoose";
 import { range } from 'lodash';
 import {
-  ExportedCharactersInterface,
+  ICharactersExported,
   GLOBAL_WCL_KEY,
   charactersQueue,
-  WarcraftLogsConfigInterface,
+  IWarcraftLogsConfig,
   OSINT_SOURCE,
   toSlug,
   GLOBAL_OSINT_KEY,
@@ -44,7 +44,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async indexWarcraftLogs(
-    config: WarcraftLogsConfigInterface = warcraftlogsConfig
+    config: IWarcraftLogsConfig = warcraftlogsConfig
   ): Promise<void> {
     try {
       await this.RealmModel
@@ -143,7 +143,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         .eachAsync(async (log: WarcraftLogs) => {
           try {
             // FIXME remove
-            const { exportedCharacters }: { exportedCharacters: ExportedCharactersInterface[] } =
+            const { exportedCharacters }: { exportedCharacters: ICharactersExported[] } =
               await this.httpService.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
               .then(res => res.data || { exportedCharacters: [] });
             const result = await this.exportedCharactersToQueue(exportedCharacters, keys);
@@ -161,7 +161,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     }
   }
 
-  async exportedCharactersToQueue(exportedCharacters: ExportedCharactersInterface[], keys: Key[]): Promise<boolean | undefined> {
+  async exportedCharactersToQueue(exportedCharacters: ICharactersExported[], keys: Key[]): Promise<boolean | undefined> {
     try {
       let iteration = 0;
       const charactersToJobs = exportedCharacters.map((character) => {

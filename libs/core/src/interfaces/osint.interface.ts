@@ -93,13 +93,13 @@ export interface CharacterInterface {
   iteration?: number,
 }
 
-export interface GuildMemberInterface {
+export interface IGuildMember {
   _id: string,
   id: number,
   rank: number
 }
 
-export interface GuildRosterInterface {
+export interface IGuildRoster {
   members: {
     rank: number,
     character: {
@@ -113,7 +113,7 @@ export interface GuildRosterInterface {
   }[]
 }
 
-export interface GuildInterface {
+export interface IGuild {
   _id: string,
   name: string,
   realm: string,
@@ -121,7 +121,7 @@ export interface GuildInterface {
   realm_name?: string,
   id?: number,
   faction?: string,
-  members: GuildMemberInterface[],
+  members: IGuildMember[],
   achievement_points?: number,
   member_count?: number,
   last_modified?: Date,
@@ -136,7 +136,7 @@ export interface GuildInterface {
   createdAt?: Date,
 }
 
-export interface RealmInterface {
+export interface IRealm {
   _id: number,
   slug: string,
   name?: string,
@@ -155,7 +155,7 @@ export interface RealmInterface {
   connected_realms?: string[],
 }
 
-export interface LogInterface {
+export interface ILog {
   root_id: string,
   root_history: string[],
   original: string,
@@ -181,7 +181,7 @@ export interface Locales {
   zh_CN: string
 }
 
-export interface PopulationByClassInterface {
+export interface IPopulationByClass {
   death_knight: number,
   demon_hunter: number,
   druid: number,
@@ -196,14 +196,14 @@ export interface PopulationByClassInterface {
   warrior: number
 }
 
-export interface PopulationByCovenantsInterface {
+export interface IPopulationByCovenants {
   kyrian: number,
   venthyr: number,
   night_fae: number,
   necrolord: number
 }
 
-export interface PopulationRealmInterface {
+export interface IPopulationRealm {
   realm_id: number,
   characters_total: number,
   characters_active: number,
@@ -217,11 +217,11 @@ export interface PopulationRealmInterface {
   guilds_total: number,
   guilds_alliance: number,
   guilds_horde: number,
-  characters_classes: PopulationByClassInterface,
-  characters_covenants: PopulationByCovenantsInterface,
+  characters_classes: IPopulationByClass,
+  characters_covenants: IPopulationByCovenants,
 }
 
-export interface ConnectedRealmInterface {
+export interface IConnectedRealm {
   id: string,
   has_queue: boolean,
   status: {
@@ -235,7 +235,7 @@ export interface ConnectedRealmInterface {
   }]
 }
 
-export interface MediaInterface {
+export interface IMedia {
   id: number,
   avatar: string,
   inset: string,
@@ -243,22 +243,22 @@ export interface MediaInterface {
   'main-raw': string
 }
 
-export interface IdNameInterface {
+export interface IidName {
   _id: number,
   name: string
 }
 
-export interface MountsInterface {
-  mounts: IdNameInterface[]
+export interface IMounts {
+  mounts: IidName[]
 }
 
-export interface PetsInterface {
-  pets: IdNameInterface[],
+export interface IPets {
+  pets: IidName[],
   hash_b: string,
   hash_a: string
 }
 
-export interface ProfessionInterface {
+export interface IProfession {
   name: string,
   id: number,
   tier: string,
@@ -266,16 +266,16 @@ export interface ProfessionInterface {
   max_skill_points: number,
 }
 
-export interface ProfessionsInterface {
-  professions: Partial<ProfessionInterface>[]
+export interface IProfessions {
+  professions: Partial<IProfession>[]
 }
 
-export interface RaiderIoInterface {
+export interface IRaiderIO {
   raid_progress: { _id: string, progress: string }[],
   rio_score: number
 }
 
-export interface CharacterSummaryInterface {
+export interface ICharacterSummary {
   gender: string,
   faction: string,
   race: string,
@@ -299,13 +299,14 @@ export interface CharacterSummaryInterface {
   hash_t: string
 }
 
-export interface CharacterStatusI {
+export interface ICharacterStatus {
   id: number;
+  is_valid: boolean;
   last_modified: Date;
   status_code: number;
 }
 
-export interface WowProgressInterface {
+export interface IWowProgress {
   battle_tag: string,
   transfer: boolean,
   days_from: number,
@@ -314,11 +315,11 @@ export interface WowProgressInterface {
   languages: string[]
 }
 
-export interface WarcraftLogsInterface {
+export interface IWarcraftLogs {
   wcl_percentile: number
 }
 
-export interface WarcraftLogsConfigInterface {
+export interface IWarcraftLogsConfig {
   readonly raid_tier: number
   readonly pages_from: number,
   readonly pages_to: number,
@@ -326,12 +327,12 @@ export interface WarcraftLogsConfigInterface {
   readonly logs: number,
 }
 
-export interface ExportedCharactersInterface {
+export interface ICharactersExported {
   readonly name: string,
   readonly server: string
 }
 
-export interface GuildSummaryInterface {
+export interface IGuildSummary {
   id: number
   name: string,
   faction: string,

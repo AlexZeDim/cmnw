@@ -9,7 +9,7 @@ import {
   FACTION,
   GLOBAL_KEY,
   MAX_LEVEL,
-  PopulationRealmInterface,
+  IPopulationRealm,
   realmsQueue,
   toKey,
 } from '@app/core';
@@ -136,7 +136,7 @@ export class RealmsService implements OnApplicationBootstrap {
   private async population(realm: Realm): Promise<void> {
     try {
       this.logger.log(`population: ${realm._id} started`)
-      const population: Partial<PopulationRealmInterface> = {
+      const population: Partial<IPopulationRealm> = {
         realm_id: realm._id,
         characters_classes: {
           death_knight: 0,

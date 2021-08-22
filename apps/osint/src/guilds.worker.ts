@@ -11,10 +11,10 @@ import { differenceBy, intersectionBy } from 'lodash';
 import {
   capitalize,
   FACTION,
-  GuildInterface,
-  GuildMemberInterface,
+  IGuild,
+  IGuildMember,
   guildsQueue,
-  GuildSummaryInterface,
+  IGuildSummary,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
   PLAYABLE_CLASS,
@@ -43,7 +43,7 @@ export class GuildsWorker {
   @BullWorkerProcess(guildsQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
-      const args: GuildInterface & BattleNetOptions = { ...job.data };
+      const args: IGuild & BattleNetOptions = { ...job.data };
       await job.updateProgress(5);
 
       const realm = await this.RealmModel
@@ -59,7 +59,7 @@ export class GuildsWorker {
       const
         name_slug: string = toSlug(args.name),
         now: number = new Date().getTime(),
-        original: GuildInterface = {
+        original: IGuild = {
           _id: `${name_slug}@${realm.slug}`,
           name: capitalize(args.name),
           status_code: 100,
@@ -68,7 +68,7 @@ export class GuildsWorker {
           realm_name: realm.name,
           members: []
         },
-        updated: GuildInterface = {
+        updated: IGuild = {
           _id: `${name_slug}@${realm.slug}`,
           name: capitalize(args.name),
           status_code: 100,
@@ -160,8 +160,8 @@ export class GuildsWorker {
     }
   }
 
-  async summary(guild_slug: string, realm_slug: string, BNet: BlizzAPI): Promise<Partial<GuildSummaryInterface>> {
-    const summary: Partial<GuildSummaryInterface> = {};
+  async summary(guild_slug: string, realm_slug: string, BNet: BlizzAPI): Promise<Partial<IGuildSummary>> {
+    const summary: Partial<IGuildSummary> = {};
     try {
       const response: Record<string, any> = await BNet.query(`/data/wow/guild/${realm_slug}/${guild_slug}`, {
         timeout: OSINT_TIMEOUT_TOLERANCE,
@@ -201,8 +201,8 @@ export class GuildsWorker {
     }
   }
 
-  async roster(guild: GuildInterface, BNet: BlizzAPI) {
-    const roster: { members: GuildMemberInterface[] } = { members: [] };
+  async roster(guild: IGuild, BNet: BlizzAPI) {
+    const roster: { members: IGuildMember[] } = { members: [] };
     const characters: Character[] = [];
     try {
       const guild_slug = toSlug(guild.name);
@@ -284,11 +284,11 @@ export class GuildsWorker {
     }
   }
 
-  async logs(original: GuildInterface, updated: GuildInterface): Promise<void> {
+  async logs(original: IGuild, updated: IGuild): Promise<void> {
     try {
       const
-        gm_member_new: GuildMemberInterface | undefined = updated.members.find(m => m.rank === 0),
-        gm_member_old: GuildMemberInterface | undefined = original.members.find(m => m.rank === 0),
+        gm_member_new: IGuildMember | undefined = updated.members.find(m => m.rank === 0),
+        gm_member_old: IGuildMember | undefined = original.members.find(m => m.rank === 0),
         block: LeanDocument<Log>[] = [];
 
       /** Guild Master have been changed */
@@ -298,13 +298,13 @@ export class GuildsWorker {
       }
 
       const
-        intersection: GuildMemberInterface[] = intersectionBy(updated.members, original.members, 'id'),
-        joins: GuildMemberInterface[] = differenceBy(updated.members, original.members, 'id'),
-        leaves: GuildMemberInterface[] = differenceBy(original.members, updated.members, 'id');
+        intersection: IGuildMember[] = intersectionBy(updated.members, original.members, 'id'),
+        joins: IGuildMember[] = differenceBy(updated.members, original.members, 'id'),
+        leaves: IGuildMember[] = differenceBy(original.members, updated.members, 'id');
 
       await Promise.allSettled(
-        intersection.map(async (guild_member_new: GuildMemberInterface) => {
-          const guild_member_old: GuildMemberInterface | undefined = original.members.find(({ id }) => id === guild_member_new.id);
+        intersection.map(async (guild_member_new: IGuildMember) => {
+          const guild_member_old: IGuildMember | undefined = original.members.find(({ id }) => id === guild_member_new.id);
           if (guild_member_old) {
             if (guild_member_old.rank !== 0 || guild_member_new.rank !== 0) {
               if (guild_member_new.rank > guild_member_old.rank) {
@@ -425,7 +425,7 @@ export class GuildsWorker {
     }
   }
 
-  async gm(member_new: GuildMemberInterface, member_old: GuildMemberInterface, original: GuildInterface, updated: GuildInterface): Promise<LeanDocument<Log>[]> {
+  async gm(member_new: IGuildMember, member_old: IGuildMember, original: IGuild, updated: IGuild): Promise<LeanDocument<Log>[]> {
     const block: LeanDocument<Log>[] = [];
     try {
       /** FIXME Update both GM hash ^^^priority */
@@ -584,7 +584,7 @@ export class GuildsWorker {
     }
   }
 
-  async diffs(original: GuildInterface, updated: GuildInterface): Promise<void> {
+  async diffs(original: IGuild, updated: IGuild): Promise<void> {
     try {
       const
         detectiveFields: string[] = ['name', 'faction'],

@@ -1,9 +1,9 @@
 import { Job } from 'bullmq';
 import {
   realmsQueue,
-  RealmInterface,
+  IRealm,
   REALM_TICKER,
-  ConnectedRealmInterface,
+  IConnectedRealm,
 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -28,8 +28,8 @@ export class RealmsWorker {
   @BullWorkerProcess(realmsQueue.workerOptions)
   public async process(job: Job): Promise<void> {
     try {
-      const args: RealmInterface & BattleNetOptions = { ...job.data };
-      const summary: RealmInterface = { _id: args._id, slug: args.slug };
+      const args: IRealm & BattleNetOptions = { ...job.data };
+      const summary: IRealm = { _id: args._id, slug: args.slug };
 
       await job.updateProgress(1);
 
@@ -99,7 +99,7 @@ export class RealmsWorker {
           if (key === 'connected_realm' && value && value.href) {
             const connected_realm_id: number = parseInt(value.href.replace(/\D/g, ''));
             if (connected_realm_id && !isNaN(connected_realm_id)) {
-              const connected_realm: ConnectedRealmInterface = await this.BNet.query(`/data/wow/connected-realm/${connected_realm_id}`, {
+              const connected_realm: IConnectedRealm = await this.BNet.query(`/data/wow/connected-realm/${connected_realm_id}`, {
                 timeout: 10000,
                 params: { locale: 'en_GB' },
                 headers: { 'Battlenet-Namespace': 'dynamic-eu' },

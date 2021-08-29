@@ -16,27 +16,76 @@ export class OsintIndexQOI {
   readonly updated_by: OSINT_SOURCE;
 }
 
-export interface IGuild {
-  _id: string,
-  name: string,
-  realm: string,
-  realm_id?: number,
-  realm_name?: string,
-  id?: number,
-  faction?: string,
-  members: IGuildMember[],
-  achievement_points?: number,
-  member_count?: number,
-  last_modified?: Date,
-  created_timestamp?: Date,
-  status_code?: number,
-  created_by?: string,
-  updated_by?: string,
-  createOnlyUnique?: boolean,
-  forceUpdate?: number,
-  iteration?: number,
-  updatedAt?: Date,
-  createdAt?: Date,
+export interface SelfKeyHrefI {
+  readonly href: string;
+}
+
+export interface IGuildRoster {
+  readonly members: IGuildMember[]
+}
+
+export class IGuildMember {
+  readonly _id: string;
+
+  readonly id: number;
+
+  readonly rank: number;
+}
+
+
+export interface GuildRosterI {
+  readonly _links: {
+    readonly self: SelfKeyHrefI
+  }
+
+  readonly guild: {
+    readonly key: SelfKeyHrefI
+    readonly name: string;
+
+    readonly id: number;
+
+    readonly realm: {
+      readonly key: SelfKeyHrefI
+
+      readonly name: string;
+      readonly id: number;
+      readonly slug: string;
+    };
+  }
+
+  readonly faction: {
+    readonly type: string;
+    readonly name: string;
+  }
+
+  readonly members: Array<{
+    readonly character: {
+      readonly key: SelfKeyHrefI
+
+      readonly name: string;
+      readonly id: number;
+      readonly realm: {
+        readonly key: SelfKeyHrefI
+
+        readonly id: number;
+        readonly slug: string;
+      };
+      readonly level: number;
+      readonly playable_class: {
+        readonly key: SelfKeyHrefI
+
+        readonly id: number;
+      }
+
+      readonly playable_race: {
+        readonly key: SelfKeyHrefI
+
+        readonly id: number;
+      }
+    }
+
+    readonly rank: number;
+  }>
 }
 
 export class GuildQI implements Pick<Guild, '_id' | 'name'>, OsintIndexQOI, BattleNetOptions {
@@ -133,26 +182,6 @@ export class CharacterQI implements BattleNetOptions, OsintIndexQOI {
   readonly active_spec?: string;
 }
 
-export interface IGuildMember {
-  _id: string,
-  id: number,
-  rank: number
-}
-
-export interface IGuildRoster {
-  members: {
-    rank: number,
-    character: {
-      id: number,
-      name: string,
-      level: number,
-      playable_class: {
-        id: number
-      }
-    }
-  }[]
-}
-
 export interface IRealm {
   _id: number,
   slug: string,
@@ -170,17 +199,6 @@ export interface IRealm {
   population_status?: string,
   status?: string,
   connected_realms?: string[],
-}
-
-export interface ILog {
-  root_id: string,
-  root_history: string[],
-  original: string,
-  updated: string,
-  event: string,
-  action: string,
-  t0: Date,
-  t1: Date
 }
 
 export interface Locales {

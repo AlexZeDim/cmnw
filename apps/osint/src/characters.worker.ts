@@ -141,7 +141,7 @@ export class CharactersWorker {
             character.guild_guid = undefined;
           }
         }
-        await this.diffs(original, character);
+        await this.checkDiffs(original, character);
         await job.updateProgress(90);
       }
 
@@ -621,7 +621,7 @@ export class CharactersWorker {
     }
   }
 
-  private async diffs(
+  private async checkDiffs(
     original: LeanDocument<Character>,
     updated: Character
   ): Promise<void> {

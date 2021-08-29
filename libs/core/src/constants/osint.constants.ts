@@ -58,6 +58,20 @@ export enum FACTION {
   ANY = "Any",
 }
 
+export enum EVENT_LOG {
+  GUILD = 'guild',
+  CHARACTER = 'character',
+}
+
+export enum ACTION_LOG {
+  PROMOTE = 'promote',
+  DEMOTE = 'demote',
+  JOIN = 'join',
+  LEAVE = 'leave',
+  OWNERSHIP = 'ownership',
+  TITLE = 'title',
+}
+
 export enum OSINT_SOURCE {
   REQUESTGUILD = 'OSINT-requestGuild',
   UNIQUEGUILDS = 'OSINT-indexGuildsUnique',

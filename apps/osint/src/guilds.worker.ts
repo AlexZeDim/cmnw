@@ -3,8 +3,8 @@ import { BlizzAPI } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Log, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Job } from 'bullmq';
+import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Job, Queue } from 'bullmq';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { differenceBy, intersectionBy } from 'lodash';
@@ -19,7 +19,10 @@ import {
   PLAYABLE_CLASS,
   toSlug, GuildQI,
   GuildRosterI,
-  IGuildRoster, EVENT_LOG,
+  IGuildRoster,
+  EVENT_LOG,
+  charactersQueue,
+  CharacterQI,
 } from '@app/core';
 
 @BullWorker({ queueName: guildsQueue.name })
@@ -39,6 +42,8 @@ export class GuildsWorker {
     private readonly CharacterModel: Model<Character>,
     @InjectModel(Log.name)
     private readonly LogModel: Model<Log>,
+    @BullQueueInject(charactersQueue.name)
+    private readonly queue: Queue<CharacterQI, number>,
   ) { }
 
   @BullWorkerProcess(guildsQueue.workerOptions)
@@ -157,7 +162,41 @@ export class GuildsWorker {
               if ('character' in member && 'rank' in member) {
                 iteration += 1;
                 const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
-                const character_class: string | undefined = PLAYABLE_CLASS.has(member.character.playable_class.id) ? PLAYABLE_CLASS.get(member.character.playable_class.id) : undefined;
+                const character_class
+                  = PLAYABLE_CLASS.has(member.character.playable_class.id)
+                  ? PLAYABLE_CLASS.get(member.character.playable_class.id)
+                  : undefined;
+
+                if (member.rank === 0) {
+                  // Force update GMs only
+                  await this.queue.add(
+                    _id,
+                    {
+                      _id: _id,
+                      name: member.character.name,
+                      realm: guild.realm,
+                      guild_id: `${guild_slug}@${guild.realm}`,
+                      guild: guild.name,
+                      guild_guid: guild.id,
+                      character_class,
+                      faction: guild.faction,
+                      level: member.character.level ? member.character.level : undefined,
+                      last_modified: guild.last_modified,
+                      updated_by: OSINT_SOURCE.ROSTERGUILD,
+                      created_by: OSINT_SOURCE.ROSTERGUILD,
+                      accessToken: BNet.accessToken,
+                      clientId: BNet.clientId,
+                      clientSecret: BNet.clientSecret,
+                      createOnlyUnique: false,
+                      forceUpdate: 1,
+                      guildRank: true,
+                      region: 'eu',
+                    }, {
+                      jobId: _id,
+                      priority: 2,
+                    }
+                  )
+                }
 
                 const characterExist = await this.CharacterModel.findById(_id);
 
@@ -387,7 +426,6 @@ export class GuildsWorker {
     const block: Log[] = [];
     const now = new Date();
     try {
-      /** FIXME Update both GM hash ^^^priority */
       const
         gm_character_old = await this.CharacterModel.findById(member_old._id),
         gm_character_new = await this.CharacterModel.findById(member_new._id);

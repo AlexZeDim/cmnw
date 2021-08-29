@@ -5,7 +5,7 @@ import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import {
   ChartOrderInterface,
-  IVQInterface,
+  ItemValuationQI,
   OrderQuotesInterface,
   OrderXrsInterface,
   RealmAInterface,
@@ -33,7 +33,7 @@ export class DmaService {
     @InjectModel(Valuations.name)
     private readonly ValuationsModel: Model<Valuations>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queueValuations: Queue<IVQInterface, number>,
+    private readonly queueValuations: Queue<ItemValuationQI, number>,
   ) { }
 
   async getItem(input: ItemCrossRealmDto): Promise<GetItemDto> {

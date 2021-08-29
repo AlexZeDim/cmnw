@@ -4,7 +4,7 @@ import {
   FLAG_TYPE,
   GLOBAL_DMA_KEY,
   itemsQueue,
-  IVQInterface,
+  ItemValuationQI,
   MarketDataInterface,
   MethodEvaluation,
   PRICING_TYPE,
@@ -49,19 +49,23 @@ export class ValuationsWorker {
     @InjectModel(Item.name)
     private readonly ItemModel: Model<Item>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queueValuations: Queue<IVQInterface, number>,
+    private readonly queueValuations: Queue<ItemValuationQI, number>,
     @BullQueueInject(itemsQueue.name)
     private readonly queueItems: Queue,
   ) {}
 
   @BullWorkerProcess(valuationsQueue.workerOptions)
-  public async process(job: Job<IVQInterface, number>): Promise<number> {
+  public async process(job: Job<ItemValuationQI, number>): Promise<number> {
     try {
-      const item = await this.ItemModel.findById(job.data._id).lean();
+      const item = await this.ItemModel
+        .findById(job.data._id)
+        .lean();
+
       if (!item) {
         this.logger.error(`ValuationsWorker: item: ${job.data._id} not found`);
         return 404;
       }
+
       const args: VAInterface = { ...item, ...job.data };
       if (args.iteration > 50) {
         this.logger.error(`item: ${item._id} iteration > ${args.iteration}`);
@@ -154,10 +158,12 @@ export class ValuationsWorker {
   private async addMissingItemToQueue(_id: number): Promise<void> {
     this.logger.warn(`getDVA: item ${_id} (reagent) not found`);
     const key = await this.KeyModel.findOne({ tags: GLOBAL_DMA_KEY });
+
     if (!key || !key.token) {
       this.logger.error(`indexItems: clearance: ${GLOBAL_DMA_KEY} key not found`);
       return;
     }
+
     await this.queueItems.add(
       `${_id}`,
       {
@@ -173,7 +179,7 @@ export class ValuationsWorker {
     );
   }
 
-  private async addValuationToQueue<T extends IVQInterface>(args: T): Promise<void> {
+  private async addValuationToQueue<T extends ItemValuationQI>(args: T): Promise<void> {
     const jobId = `${args._id}@${args.connected_realm_id}:${args.last_modified}`;
     const jobRemove: number = await this.queueValuations.remove(jobId);
     this.logger.warn(`addValuationToQueue: ${jobId}, remove job: ${jobRemove}`);

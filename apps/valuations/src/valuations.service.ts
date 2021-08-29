@@ -4,7 +4,7 @@ import { Auction, Item, Key, Pricing, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import {
   ASSET_EVALUATION_PRIORITY, AuctionsVAInterface,
-  IVQInterface, RealmVAInterface,
+  ItemValuationQI, RealmVAInterface,
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
@@ -32,7 +32,7 @@ export class ValuationsService implements OnApplicationBootstrap {
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queue: Queue<IVQInterface, number>,
+    private readonly queue: Queue<ItemValuationQI, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {

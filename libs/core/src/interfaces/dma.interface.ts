@@ -14,11 +14,66 @@ class ItemNames {
   ru_RU: string;
 }
 
-export interface IVQInterface {
+export interface ItemValuationQI {
   _id: number,
   last_modified: number,
   connected_realm_id: number,
   iteration: number,
+}
+
+/**
+ * Value Adjustable Interface
+ * argument for evaluation functions
+ */
+export class VAInterface
+  implements Pick<Item, '_id' | 'name' | 'quality' | 'ilvl' | 'level'> ,
+    ItemValuationQI
+{
+  readonly _id: number;
+
+  readonly name: ItemNames;
+
+  readonly quality: string;
+
+  readonly ilvl: number;
+
+  readonly level: number;
+
+  readonly icon: string;
+
+  readonly item_class: string;
+
+  readonly item_subclass: string;
+
+  readonly purchase_price: number;
+
+  readonly purchase_quantity: number;
+
+  readonly sell_price: number;
+
+  readonly is_equippable: boolean;
+
+  readonly is_stackable: boolean;
+
+  readonly inventory_type: string;
+
+  readonly loot_type: string;
+
+  readonly contracts: boolean;
+
+  readonly expansion: string;
+
+  readonly stackable: number;
+
+  readonly profession_class: string;
+
+  readonly ticker: string;
+
+  readonly last_modified: number;
+
+  readonly connected_realm_id: number;
+
+  readonly iteration: number;
 }
 
 export interface ItemInterface {
@@ -115,36 +170,6 @@ export interface MarketDataInterface {
   orders: number[]
 }
 
-/**
- * Value Adjustable Interface
- * argument for evaluation functions
- */
-export interface VAInterface
-  extends LeanDocument<Item>, IVQInterface {
-  _id: number,
-  name: ItemNames,
-  quality: string,
-  ilvl: number,
-  level: number,
-  icon: string,
-  item_class: string,
-  item_subclass: string,
-  purchase_price: number,
-  purchase_quantity: number,
-  sell_price: number,
-  is_equippable: boolean,
-  is_stackable: boolean,
-  inventory_type: string,
-  loot_type: string,
-  contracts: boolean,
-  expansion: string,
-  stackable: number,
-  profession_class: string,
-  ticker: string,
-  last_modified: number,
-  connected_realm_id: number,
-  iteration: number,
-}
 
 export interface ContractAggregation extends LeanDocument<Contract> {
   _id: string;

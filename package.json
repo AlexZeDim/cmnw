@@ -68,7 +68,7 @@
     "fs-extra": "10.0.0",
     "ioredis": "4.27.7",
     "lodash": "4.17.21",
-    "mongoose": "5.13.7",
+    "mongoose": "5.12.7",
     "natural": "5.0.4",
     "node-nlp": "3.10.2",
     "passport": "0.4.1",

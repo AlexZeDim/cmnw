@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { GuildsService } from './guilds.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@anchan828/nest-bullmq';
+import { guildsQueue } from '@app/core/queues/guilds.queue';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   Character,
   CharactersSchema,
@@ -13,9 +16,6 @@ import {
   Realm,
   RealmsSchema,
 } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
-import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [

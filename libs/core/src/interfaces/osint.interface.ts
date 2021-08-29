@@ -1,116 +1,19 @@
 import { LFG, OSINT_SOURCE } from '@app/core/constants';
 import { BattleNetOptions } from 'blizzapi';
+import { Guild } from '@app/mongo';
 
-export class CharacterQI implements BattleNetOptions {
-  readonly _id: string;
-
-  readonly name: string;
-
-  readonly realm: string;
-
-  readonly guild: string | undefined;
-
-  readonly guild_guid: number | undefined;
-
-  readonly guild_id: string | undefined;
-
-  readonly created_by: string | undefined;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
-
-  readonly updated_by: OSINT_SOURCE;
-
-  readonly guildRank: boolean;
+export class OsintIndexQOI {
+  readonly forceUpdate: number;
 
   readonly createOnlyUnique: boolean;
 
-  readonly forceUpdate: number;
+  readonly iteration?: number;
 
-  readonly iteration: number | undefined;
+  readonly guildRank: boolean;
 
-  readonly looking_for_guild: LFG | undefined;
+  readonly created_by?: OSINT_SOURCE;
 
-  readonly updateRIO: boolean | undefined;
-
-  readonly updateWCL: boolean | undefined;
-
-  readonly updateWP: boolean | undefined;
-
-  readonly race: string | undefined;
-
-  readonly level: number | undefined;
-
-  readonly faction: string | undefined;
-
-  readonly gender: string | undefined;
-
-  readonly character_class: string | undefined;
-
-  readonly last_modified: Date | undefined;
-
-  readonly active_spec: string | undefined;
-}
-
-export interface CharacterInterface {
-  _id: string,
-  name: string,
-  realm: string,
-  realm_id?: number,
-  realm_name?: string,
-  id?: number,
-  guild?: string,
-  guild_id?: string,
-  guild_guid?: number,
-  guild_rank?: number,
-  status_code?: number,
-  level?: number,
-  character_class?: string,
-  last_modified?: Date,
-  looking_for_guild?: LFG,
-  created_by?: string,
-  updated_by?: string,
-  active_spec?: string,
-  race?: string,
-  gender?: string,
-  faction?: string,
-  avatar?: string,
-  inset?: string,
-  main?: string,
-  updatedAt?: Date,
-  createdAt?: Date,
-  guildRank?: boolean,
-  createOnlyUnique?: boolean,
-  forceUpdate?: number,
-  updateRIO?: boolean,
-  updateWCL?: boolean,
-  updateWP?: boolean,
-  iteration?: number,
-}
-
-export interface IGuildMember {
-  _id: string,
-  id: number,
-  rank: number
-}
-
-export interface IGuildRoster {
-  members: {
-    rank: number,
-    character: {
-      id: number,
-      name: string,
-      level: number,
-      playable_class: {
-        id: number
-      }
-    }
-  }[]
+  readonly updated_by: OSINT_SOURCE;
 }
 
 export interface IGuild {
@@ -134,6 +37,120 @@ export interface IGuild {
   iteration?: number,
   updatedAt?: Date,
   createdAt?: Date,
+}
+
+export class GuildQI implements Pick<Guild, '_id' | 'name'>, OsintIndexQOI, BattleNetOptions {
+  readonly _id: string;
+
+  readonly id?: number;
+
+  readonly name: string;
+
+  readonly realm: string;
+
+  readonly realm_id?: number;
+
+  readonly realm_name?: string;
+
+  readonly faction?: string;
+
+  readonly region: string;
+
+  readonly clientId: string;
+
+  readonly clientSecret: string;
+
+  readonly accessToken: string;
+
+  readonly created_by?: OSINT_SOURCE;
+
+  readonly updated_by: OSINT_SOURCE;
+
+  readonly forceUpdate: number;
+
+  readonly createOnlyUnique: boolean;
+
+  readonly iteration?: number;
+
+  readonly last_modified?: Date;
+
+  readonly guildRank: boolean;
+}
+
+export class CharacterQI implements BattleNetOptions, OsintIndexQOI {
+  readonly _id: string;
+
+  readonly name: string;
+
+  readonly realm: string;
+
+  readonly guild?: string;
+
+  readonly guild_guid?: number;
+
+  readonly guild_id?: string;
+
+  readonly created_by?: OSINT_SOURCE;
+
+  readonly region: string;
+
+  readonly clientId: string;
+
+  readonly clientSecret: string;
+
+  readonly accessToken: string;
+
+  readonly updated_by: OSINT_SOURCE;
+
+  readonly guildRank: boolean;
+
+  readonly createOnlyUnique: boolean;
+
+  readonly forceUpdate: number;
+
+  readonly iteration?: number;
+
+  readonly looking_for_guild?: LFG;
+
+  readonly updateRIO?: boolean;
+
+  readonly updateWCL?: boolean;
+
+  readonly updateWP?: boolean;
+
+  readonly race?: string;
+
+  readonly level?: number;
+
+  readonly faction?: string;
+
+  readonly gender?: string;
+
+  readonly character_class?: string;
+
+  readonly last_modified?: Date;
+
+  readonly active_spec?: string;
+}
+
+export interface IGuildMember {
+  _id: string,
+  id: number,
+  rank: number
+}
+
+export interface IGuildRoster {
+  members: {
+    rank: number,
+    character: {
+      id: number,
+      name: string,
+      level: number,
+      playable_class: {
+        id: number
+      }
+    }
+  }[]
 }
 
 export interface IRealm {

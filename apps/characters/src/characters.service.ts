@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key } from '@app/mongo';
-import { Model } from "mongoose";
+import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { CharacterQI, charactersQueue, GLOBAL_OSINT_KEY, OSINT_SOURCE } from '@app/core';
 import { Queue } from 'bullmq';
@@ -9,7 +9,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class CharactersService {
-  // TODO cover with logger
   private readonly logger = new Logger(
     CharactersService.name, { timestamp: true },
   );
@@ -28,13 +27,13 @@ export class CharactersService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 10000) {
-        this.logger.error(`indexCharacters: ${jobs} jobs found`);
+        this.logger.warn(`indexCharacters: ${jobs} jobs found`);
         return;
       }
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
-        this.logger.error(`indexCharacters: ${keys.length} keys found`);
+        this.logger.warn(`indexCharacters: ${keys.length} keys found`);
         return;
       }
 
@@ -43,7 +42,7 @@ export class CharactersService {
 
       await this.CharacterModel
         .find()
-        .sort({ updatedAt: 1 })
+        .sort({ hash_b: 1 })
         .limit(250000)
         .cursor()
         .eachAsync(async (character: Character) => {
@@ -62,7 +61,7 @@ export class CharactersService {
               guildRank: false,
               createOnlyUnique: false,
               forceUpdate: 43200000,
-              iteration: iteration,
+              iteration: iteration
             },
             {
               jobId: character._id,

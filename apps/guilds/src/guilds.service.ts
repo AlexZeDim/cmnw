@@ -5,7 +5,7 @@ import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { GLOBAL_OSINT_KEY, OSINT_SOURCE } from '@app/core';
+import { GLOBAL_OSINT_KEY, GuildQI, OSINT_SOURCE } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class GuildsService {
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(guildsQueue.name)
-    private readonly queue: Queue,
+    private readonly queue: Queue<GuildQI, number>,
   ) { }
 
   @Cron(CronExpression.EVERY_4_HOURS)
@@ -32,13 +32,13 @@ export class GuildsService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 1000) {
-        this.logger.error(`indexGuilds: ${jobs} jobs found`);
+        this.logger.warn(`indexGuilds: ${jobs} jobs found`);
         return
       }
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
-        this.logger.error(`indexGuilds: ${keys.length} keys found`);
+        this.logger.warn(`indexGuilds: ${keys.length} keys found`);
         return
       }
 
@@ -53,18 +53,19 @@ export class GuildsService {
           await this.queue.add(
             guild._id,
             {
+              guildRank: false,
+              createOnlyUnique: false,
               _id: guild._id,
               name: guild.name,
               realm: guild.realm,
               faction: guild.faction,
-              members: [],
               region: 'eu',
               updated_by: OSINT_SOURCE.INDEXGUILD,
               forceUpdate: 1000 * 60 * 60 * 4,
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,
               accessToken: keys[i].token,
-              iteration: iteration,
+              iteration: iteration
             }, {
               jobId: guild._id,
               priority: 5,
@@ -85,7 +86,7 @@ export class GuildsService {
     try {
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
-        this.logger.error(`indexGuilds: ${keys.length} keys found`);
+        this.logger.error(`indexGuildsUnique: ${keys.length} keys found`);
         return
       }
 
@@ -97,16 +98,18 @@ export class GuildsService {
         .cursor()
         .eachAsync(async (realm: Realm) => {
           const uniqueGuilds: string[] = await this.CharacterModel.distinct('guild_id', { 'realm': realm.slug });
+
           for (const guild_slug of uniqueGuilds) {
             const [name] = guild_slug.split('@');
 
             await this.queue.add(
               guild_slug,
               {
+                region: 'eu',
+                guildRank: false,
                 _id: guild_slug,
                 name: name,
                 realm: realm.slug,
-                members: [],
                 created_by: OSINT_SOURCE.UNIQUEGUILDS,
                 updated_by: OSINT_SOURCE.UNIQUEGUILDS,
                 forceUpdate: 3600000,
@@ -114,7 +117,7 @@ export class GuildsService {
                 clientId: keys[i]._id,
                 clientSecret: keys[i].secret,
                 accessToken: keys[i].token,
-                iteration: iteration,
+                iteration: iteration
               }, {
                 jobId: guild_slug,
                 priority: 4,
@@ -127,7 +130,7 @@ export class GuildsService {
         });
 
     } catch (errorException) {
-      this.logger.error(`indexGuildsFromCharacters: ${errorException}`)
+      this.logger.error(`indexGuildsUnique: ${errorException}`)
     }
   }
 }

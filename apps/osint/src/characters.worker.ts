@@ -19,10 +19,12 @@ import {
   IRaiderIO,
   IWowProgress,
   IWarcraftLogs,
+  ICharacterStatus,
   charactersQueue,
   toSlug, capitalize,
   OSINT_SOURCE,
-  OSINT_TIMEOUT_TOLERANCE, CharacterQI, ICharacterStatus,
+  OSINT_TIMEOUT_TOLERANCE,
+  CharacterQI,
 } from '@app/core';
 
 @BullWorker({ queueName: charactersQueue.name })
@@ -101,6 +103,7 @@ export class CharactersWorker {
         if (professions.status === 'fulfilled') Object.assign(character, professions.value);
         if (media.status === 'fulfilled') Object.assign(character, media.value);
       }
+
       await job.updateProgress(50);
       /**
        * update RIO, WCL & Progress
@@ -142,8 +145,6 @@ export class CharactersWorker {
         await job.updateProgress(90);
       }
 
-      Object.assign(character, character);
-
       await character.save();
       await job.updateProgress(100);
       return character.status_code;
@@ -171,6 +172,7 @@ export class CharactersWorker {
       }
 
       const characterExist = await this.CharacterModel.findById(character._id);
+
       if (!characterExist) {
         const characterNew = new this.CharacterModel({
           _id: character._id,
@@ -275,7 +277,7 @@ export class CharactersWorker {
 
       assets.map(({key, value}) => {
         media[key] = value
-      })
+      });
 
       return media;
     } catch (errorException) {

@@ -1,5 +1,5 @@
 import { LeanDocument } from 'mongoose';
-import { Auction, Contract, Item, Pricing } from '@app/mongo';
+import { Auction, Contract, Item } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 
 class ItemNames {
@@ -22,18 +22,19 @@ export interface ItemValuationQI {
 }
 
 /**
- * Value Adjustable Interface
+ * Value Adjustable Class
  * argument for evaluation functions
  */
-export class VAInterface
-  implements Pick<Item, '_id' | 'name' | 'quality' | 'ilvl' | 'level'> ,
-    ItemValuationQI
-{
+export class ItemVAI implements Pick<Item, '_id' | 'name'>, ItemValuationQI {
   readonly _id: number;
 
   readonly name: ItemNames;
 
   readonly quality: string;
+
+  readonly asset_class: LeanDocument<String>[];
+
+  readonly tags: LeanDocument<String>[];
 
   readonly ilvl: number;
 
@@ -192,28 +193,51 @@ export interface ContractAggregation extends LeanDocument<Contract> {
  * Reagent Item Interface
  * extends Item & Pricing(Q) & implement value: number(0)
  */
-export interface ReagentItemInterface
-  extends LeanDocument<Item>, LeanDocument<ItemPricing> {
-  _id: number;
-  contracts: boolean;
-  expansion: string;
-  icon: string;
-  ilvl: number;
-  inventory_type: string;
-  is_equippable: boolean;
-  is_stackable: boolean;
-  item_class: string;
-  item_subclass: string;
-  level: number;
-  loot_type: string;
-  name: ItemNames;
-  profession_class: string;
-  purchase_price: number;
-  purchase_quantity: number;
-  quality: string;
-  sell_price: number;
-  stackable: number;
-  ticker: string;
+export class ReagentItemI implements LeanDocument<Item>, ItemPricing {
+  readonly _id: number;
+
+  readonly contracts: boolean;
+
+  readonly expansion: string;
+
+  readonly icon: string;
+
+  readonly ilvl: number;
+
+  readonly inventory_type: string;
+
+  readonly is_equippable: boolean;
+
+  readonly is_stackable: boolean;
+
+  readonly item_class: string;
+
+  readonly item_subclass: string;
+
+  readonly level: number;
+
+  readonly loot_type: string;
+
+  readonly name: ItemNames;
+
+  readonly profession_class: string;
+
+  readonly purchase_price: number;
+
+  readonly purchase_quantity: number;
+
+  readonly quality: string;
+
+  readonly sell_price: number;
+
+  readonly stackable: number;
+
+  readonly ticker: string;
+
+  readonly asset_class: LeanDocument<String>[];
+
+  readonly tags: LeanDocument<String>[];
+
   // ItemPricing
   quantity: number;
   // Implement Value
@@ -222,18 +246,32 @@ export interface ReagentItemInterface
 
 
 export class MethodEvaluation {
+
   queue_cost: number;
+
   derivatives_cost: number;
+
   premium: number;
+
   nominal_value: number;
+
   nominal_value_draft: number;
-  q_reagents_sum: number;
-  q_derivatives_sum: number;
-  premium_items: ReagentItemInterface[];
-  reagent_items: ReagentItemInterface[];
-  unsorted_items: ReagentItemInterface[];
+
+  reagent_quantity_sum: number;
+
+  derivative_quantity_sum: number;
+
+  premium_items: ReagentItemI[];
+
+  reagent_items: ReagentItemI[];
+
+  unsorted_items: ReagentItemI[];
+
   single_derivative: boolean;
+
   single_reagent: boolean;
+
   single_premium: boolean;
+
   premium_clearance: boolean
 }

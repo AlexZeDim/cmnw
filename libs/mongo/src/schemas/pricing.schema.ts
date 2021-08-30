@@ -89,10 +89,10 @@ export class Pricing extends Document {
    */
 
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
-  derivatives: Types.Array<ItemPricing | Item>;
+  derivatives: Types.Array<ItemPricing>;
 
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
-  reagents: Types.Array<ItemPricing | Item>;
+  reagents: Types.Array<ItemPricing>;
 
   // TODO cover ref?
   @Prop({ required: true, index: true })

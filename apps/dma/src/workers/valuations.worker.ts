@@ -1032,7 +1032,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async dvaT(
+  private async dvaReverseReagent(
     args: ItemVAI,
     price_method: LeanDocument<Pricing>,
     methodEvaluation: MethodEvaluation
@@ -1041,14 +1041,19 @@ export class ValuationsWorker {
 
       /**
        * This, pricing method type reverse
+       * && derivative length > 1 && reagent = 1
        */
-      if (price_method.type === PRICING_TYPE.REVERSE) {
+      if (
+        price_method.type === PRICING_TYPE.REVERSE
+        && methodEvaluation.single_derivative === false
+        && methodEvaluation.single_reagent === true
+      ) {
 
       }
 
       return methodEvaluation;
     } catch (errorException) {
-      this.logger.error(`dvaT: ${errorException}`)
+      this.logger.error(`dvaReverseReagent: ${errorException}`)
     }
   }
 }

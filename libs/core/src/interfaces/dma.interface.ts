@@ -237,11 +237,15 @@ export class ReagentItemI implements LeanDocument<Item>, ItemPricing {
   readonly asset_class: LeanDocument<String>[];
 
   readonly tags: LeanDocument<String>[];
-
   // ItemPricing
   quantity: number;
   // Implement Value
   value: number;
+}
+
+export interface csvReagents {
+  readonly _id: number;
+  readonly quantity: number;
 }
 
 

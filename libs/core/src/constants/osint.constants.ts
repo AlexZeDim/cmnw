@@ -52,10 +52,10 @@ export const CHARACTER_CLASS: string[] = [
 export const COVENANTS: string[] = ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord'];
 
 export enum FACTION {
-  A = "Alliance",
-  H = "Horde",
-  N = "Neutral",
-  ANY = "Any",
+  A = 'Alliance',
+  H = 'Horde',
+  N = 'Neutral',
+  ANY = 'Any',
 }
 
 export enum EVENT_LOG {
@@ -70,6 +70,16 @@ export enum ACTION_LOG {
   LEAVE = 'leave',
   OWNERSHIP = 'ownership',
   TITLE = 'title',
+}
+
+export enum ALIAS_KEY {
+  Discord = 'discord',
+  Bnet = 'battle.tag',
+  Twitter = 'twitter',
+  Name = 'name',
+  Character = 'character',
+  Nickname = 'nickname',
+  Codename = 'codename',
 }
 
 export enum OSINT_SOURCE {

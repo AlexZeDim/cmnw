@@ -4,13 +4,14 @@ import {
   FLAG_TYPE,
   GLOBAL_DMA_KEY,
   itemsQueue,
+  ItemVAI,
   ItemValuationQI,
   MarketDataInterface,
   MethodEvaluation,
   PRICING_TYPE,
+  PricingMethods,
   ReagentItemI,
   round2,
-  ItemVAI,
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
@@ -913,12 +914,141 @@ export class ValuationsWorker {
               premium_items: methodEvaluation.premium_items,
               unsorted_items: methodEvaluation.unsorted_items
             }
-          })
+          });
         }
       }
       /** End of loop for every pricing method */
     } catch (errorException) {
       this.logger.error(`getDVA: item ${args._id}, ${errorException}`)
+    }
+  }
+
+  private async dvaPremiumItems(
+    args: ItemVAI,
+    price_method: LeanDocument<Pricing>,
+    methodEvaluation: MethodEvaluation
+  ): Promise<MethodEvaluation> {
+    try {
+
+      if (methodEvaluation.premium_items.length && methodEvaluation.single_derivative) {
+        this.logger.log(`single_derivative: ${methodEvaluation.single_derivative}`);
+        /** Pre-valuate nominal value w/o premium part */
+        const [firstPremiumItem] = methodEvaluation.premium_items;
+        methodEvaluation.nominal_value = round2(methodEvaluation.queue_cost / firstPremiumItem.quantity);
+
+        // TODO is it possible to out of here?
+        /** Request market price from method item_id */
+        const ava = await this.ValuationsModel.findOne({
+          item_id: args._id,
+          last_modified: args.last_modified,
+          connected_realm_id: args.connected_realm_id,
+          type: VALUATION_TYPE.MARKET,
+          flag: FLAG_TYPE.S,
+        });
+
+        /** Single Premium Flag */
+        methodEvaluation.single_premium = methodEvaluation.premium_items.length === 1;
+        this.logger.log(`single_premium: ${methodEvaluation.single_premium}`);
+
+        /** If ava.exists and premium_items is one */
+        if (methodEvaluation.single_premium && ava) {
+          methodEvaluation.premium = round2(ava.value - methodEvaluation.queue_cost);
+        }
+
+        for (const premium_item of methodEvaluation.premium_items) {
+          /** Single Name Valuation */
+          if (methodEvaluation.single_premium) {
+            await this.PricingModel.findByIdAndUpdate(price_method._id, { single_premium: premium_item._id });
+            const prva = await this.ValuationsModel.findOne({
+              item_id: premium_item._id,
+              last_modified: args.last_modified,
+              connected_realm_id: args.connected_realm_id,
+              type: VALUATION_TYPE.PREMIUM,
+            }).sort({ 'details.wi': -1 });
+
+            if (prva) {
+              methodEvaluation.queue_cost += round2(prva.value * premium_item.quantity);
+            } else {
+              methodEvaluation.unsorted_items.push(premium_item);
+            }
+          }
+
+          if (premium_item.asset_class.includes(VALUATION_TYPE.DERIVATIVE)) {
+            /**
+             * Find cheapest to delivery
+             * for premium_item on current timestamp
+             */
+            const ctdValuation = await this.ValuationsModel.findOne({
+              item_id: premium_item._id,
+              last_modified: args.last_modified,
+              connected_realm_id: args.connected_realm_id,
+              type: VALUATION_TYPE.DERIVATIVE
+            }).sort({ value: 1 });
+
+            if (!ctdValuation) {
+              await this.addValuationToQueue({
+                _id: premium_item._id,
+                last_modified: args.last_modified,
+                connected_realm_id: args.connected_realm_id,
+                iteration: args.iteration + 1,
+              });
+              methodEvaluation.unsorted_items.push(premium_item);
+              continue;
+            }
+
+            methodEvaluation.queue_cost += round2(ctdValuation.value * premium_item.quantity);
+
+          } else {
+            /**
+             * CTD FOR PREMIUM
+             *
+             * When we are first time here, the premium is still clear
+             * require additional research
+             */
+            if (methodEvaluation.premium_clearance && ava) {
+              methodEvaluation.premium = round2(ava.value - methodEvaluation.queue_cost);
+              methodEvaluation.premium_clearance = false;
+            }
+
+            const prva = await this.ValuationsModel.findOne({
+              item_id: premium_item._id,
+              last_modified: args.last_modified,
+              connected_realm_id: args.connected_realm_id,
+              type: VALUATION_TYPE.PREMIUM,
+            }).sort({ 'details.wi': -1 });
+
+            if (prva) {
+              methodEvaluation.queue_cost += round2(prva.value * premium_item.quantity);
+            } else {
+              methodEvaluation.unsorted_items.push(premium_item);
+            }
+          }
+        }
+      }
+
+      return methodEvaluation;
+    } catch (errorException) {
+      this.logger.error(`dvaReagentItems: ${errorException}`)
+    }
+  }
+
+  private async dvaT(
+    args: ItemVAI,
+    price_method: LeanDocument<Pricing>,
+    methodEvaluation: MethodEvaluation
+  ): Promise<MethodEvaluation> {
+    try {
+
+      /**
+       * This, pricing method type reverse
+       */
+      if (price_method.type === PRICING_TYPE.REVERSE) {
+
+      }
+
+      return methodEvaluation;
+    } catch (errorException) {
+      this.logger.error(`dvaT: ${errorException}`)
     }
   }
 }

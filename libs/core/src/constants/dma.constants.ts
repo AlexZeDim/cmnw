@@ -34,18 +34,9 @@ export enum FIX_FLOAT {
   FLOAT = 'PAY FLOAT',
 }
 
-export enum ALIAS_KEY {
-  Discord = 'discord',
-  Bnet = 'battle.tag',
-  Twitter = 'twitter',
-  Name = 'name',
-  Character = 'character',
-  Nickname = 'nickname',
-  Codename = 'codename',
-}
-
 export enum PRICING_TYPE {
   PRIMARY = 'primary',
+  REVERSE = 'reverse',
   DERIVATIVE = 'derivative',
   REVIEW = 'review',
 }

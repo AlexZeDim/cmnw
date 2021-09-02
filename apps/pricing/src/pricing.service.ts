@@ -3,7 +3,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Key, Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { DMA_SOURCE, EXPANSION_TICKER, GLOBAL_DMA_KEY, pricingQueue, VALUATION_TYPE } from '@app/core';
+import {
+  csvReagents,
+  DMA_SOURCE,
+  EXPANSION_TICKER,
+  GLOBAL_DMA_KEY,
+  PRICING_TYPE,
+  pricingQueue,
+  VALUATION_TYPE,
+} from '@app/core';
 import { BlizzAPI } from 'blizzapi';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
@@ -11,7 +19,8 @@ import path from 'path';
 import csv from 'async-csv';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { pricingConfig } from '@app/configuration';
-import { DISENCHANT, PROSPECT } from './lib';
+import { DISENCHANT, MILLING, PROSPECT } from './lib';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
 export class PricingService implements OnApplicationBootstrap {
@@ -42,7 +51,7 @@ export class PricingService implements OnApplicationBootstrap {
     await this.buildPricing(pricingConfig.build_init);
   }
 
-  async libPricing(init: boolean = true, libs: string[] = ['prospect', 'disenchant']): Promise<void> {
+  async libPricing(init: boolean = true, libs: string[] = ['prospect', 'disenchant', 'milling']): Promise<void> {
     try {
       await this.PricingModel.deleteMany({ createdBy: DMA_SOURCE.LAB });
       this.logger.log(`libPricing: ${DMA_SOURCE.LAB}`);
@@ -53,7 +62,7 @@ export class PricingService implements OnApplicationBootstrap {
         spell_id: 0,
         profession: `PROFESSION`,
         expansion: 'SHDW',
-        type: VALUATION_TYPE.DERIVATIVE,
+        type: PRICING_TYPE.REVERSE,
         createdBy: DMA_SOURCE.LAB,
         updatedBy: DMA_SOURCE.LAB,
       };
@@ -63,21 +72,47 @@ export class PricingService implements OnApplicationBootstrap {
         reversePricingMethod.media = 'https://render-eu.worldofwarcraft.com/icons/56/inv_misc_gem_bloodgem_01.jpg';
         reversePricingMethod.spell_id = 31252;
 
-        PROSPECT.methods.map(async method => {
-          const pricingMethod = new this.PricingModel({
-            // TODO ticker or name
-            recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`), // FIXME
-            reagents: method.reagents,
-            derivatives: method.derivatives,
-            media: reversePricingMethod.media,
-            spell_id: reversePricingMethod.spell_id,
-            profession: reversePricingMethod.profession,
-            type: reversePricingMethod.type,
-            createdBy: reversePricingMethod.createdBy,
-            updatedBy: reversePricingMethod.updatedBy,
-          });
-          await pricingMethod.save();
-        });
+        await lastValueFrom(
+          from(PROSPECT.methods).pipe(
+            mergeMap(async (method) => {
+              await this.PricingModel.create({
+                recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`),
+                reagents: method.reagents,
+                derivatives: method.derivatives,
+                media: reversePricingMethod.media,
+                spell_id: reversePricingMethod.spell_id,
+                profession: reversePricingMethod.profession,
+                type: reversePricingMethod.type,
+                createdBy: reversePricingMethod.createdBy,
+                updatedBy: reversePricingMethod.updatedBy,
+              });
+            })
+          )
+        );
+      }
+
+      if (libs.includes('milling')) {
+        reversePricingMethod.mask = MILLING.name;
+        reversePricingMethod.media = 'https://render-eu.worldofwarcraft.com/icons/56/ability_miling.jpg';
+        reversePricingMethod.spell_id = 51005;
+
+        await lastValueFrom(
+          from(MILLING.methods).pipe(
+            mergeMap(async (method) => {
+              await this.PricingModel.create({
+                recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`),
+                reagents: method.reagents,
+                derivatives: method.derivatives,
+                media: reversePricingMethod.media,
+                spell_id: reversePricingMethod.spell_id,
+                profession: reversePricingMethod.profession,
+                type: reversePricingMethod.type,
+                createdBy: reversePricingMethod.createdBy,
+                updatedBy: reversePricingMethod.updatedBy,
+              });
+            })
+          )
+        )
       }
 
       if (libs.includes('disenchant')) {
@@ -85,21 +120,23 @@ export class PricingService implements OnApplicationBootstrap {
         reversePricingMethod.media = 'https://render-eu.worldofwarcraft.com/icons/56/inv_enchant_disenchant.jpg';
         reversePricingMethod.spell_id = 13262;
 
-        DISENCHANT.methods.map(async method => {
-          const pricingMethod = new this.PricingModel({
-            // TODO ticker or name
-            recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`), // FIXME
-            reagents: method.reagents,
-            derivatives: method.derivatives,
-            media: reversePricingMethod.media,
-            spell_id: reversePricingMethod.spell_id,
-            profession: reversePricingMethod.profession,
-            type: reversePricingMethod.type,
-            createdBy: reversePricingMethod.createdBy,
-            updatedBy: reversePricingMethod.updatedBy,
-          });
-          await pricingMethod.save();
-        });
+        await lastValueFrom(
+          from(DISENCHANT.methods).pipe(
+            mergeMap(async (method) => {
+              await this.PricingModel.create({
+                recipe_id: parseInt(`${reversePricingMethod.spell_id}${method.reagents[0]._id}`),
+                reagents: method.reagents,
+                derivatives: method.derivatives,
+                media: reversePricingMethod.media,
+                spell_id: reversePricingMethod.spell_id,
+                profession: reversePricingMethod.profession,
+                type: reversePricingMethod.type,
+                createdBy: reversePricingMethod.createdBy,
+                updatedBy: reversePricingMethod.updatedBy,
+              });
+            })
+          )
+        );
       }
 
     } catch (errorException) {
@@ -249,7 +286,7 @@ export class PricingService implements OnApplicationBootstrap {
               reagentsKeyIndex: number[] = [2, 3, 4, 5, 6, 7, 8, 9],
               quantityIndex: number[] = [10, 11, 12, 13, 14, 15, 16, 17],
               row_value: any[] = Object.values(row),
-              reagents: { _id: number, quantity: number}[] = [];
+              reagents: Array<csvReagents> = [];
 
             reagentsKeyIndex.map((n, i) => {
               if (row_value[n] !== 0) {

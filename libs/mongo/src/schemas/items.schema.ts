@@ -3,31 +3,31 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 class ItemNames {
-  @Prop()
+  @Prop({ type: String })
   en_US: string;
 
-  @Prop()
+  @Prop({ type: String })
   es_MX: string;
 
-  @Prop()
+  @Prop({ type: String })
   pt_BR: string;
 
-  @Prop()
+  @Prop({ type: String })
   de_DE: string;
 
-  @Prop()
+  @Prop({ type: String })
   en_GB: string;
 
-  @Prop()
+  @Prop({ type: String })
   es_ES: string;
 
-  @Prop()
+  @Prop({ type: String })
   fr_FR: string;
 
-  @Prop()
+  @Prop({ type: String })
   it_IT: string;
 
-  @Prop()
+  @Prop({ type: String })
   ru_RU: string;
 }
 
@@ -39,64 +39,64 @@ export class Item extends Document {
   @Prop({ _id: false, timestamps: false })
   name: ItemNames;
 
-  @Prop()
+  @Prop({ type: String })
   quality: string;
 
-  @Prop()
+  @Prop({ type: Number })
   ilvl: number;
 
-  @Prop()
+  @Prop({ type: Number })
   level: number;
 
-  @Prop()
+  @Prop({ type: String })
   icon: string;
 
-  @Prop()
+  @Prop({ type: String })
   item_class: string;
 
-  @Prop()
+  @Prop({ type: String })
   item_subclass: string;
 
-  @Prop()
+  @Prop({ type: Number })
   purchase_price: number;
 
-  @Prop()
+  @Prop({ type: Number })
   purchase_quantity: number;
 
-  @Prop()
+  @Prop({ type: Number })
   sell_price: number;
 
-  @Prop()
+  @Prop({ type: Boolean })
   is_equippable: boolean;
 
-  @Prop()
+  @Prop({ type: Boolean })
   is_stackable: boolean;
 
-  @Prop()
+  @Prop({ type: String })
   inventory_type: string;
 
-  @Prop()
+  @Prop({ type: String })
   loot_type: string;
 
   @Prop({ required: true, default: false })
   contracts: boolean;
-  /** add via indexAssetClass - csv import */
 
+  /** add via indexAssetClass - csv import */
   @Prop({ default: [], type: [String] })
   asset_class: Types.Array<String>;
-  /** add via importTaxonomy_CSV('itemsparse') */
 
-  @Prop()
+  /** add via importTaxonomy_CSV('itemsparse') */
+  @Prop({ type: String })
   expansion: string;
 
-  @Prop()
+  @Prop({ type: Number })
   stackable: number;
-  /** add via importTaxonomy_CSV('taxonomy') */
 
-  @Prop()
+  /** add via importTaxonomy_CSV('taxonomy') */
+  @Prop({ type: String })
   profession_class: string;
 
-  @Prop()
+  @Prop({ type: String })
   ticker: string;
 
   @Prop({ default: [], type: [String] })
@@ -113,6 +113,7 @@ ItemsSchema.index(
     'tags': 'text'
   },
   {
+    // @ts-ignore
     weights:
       {
         'ticker': 2,

@@ -18,7 +18,7 @@ RUN npm install -g @nestjs/cli \
   && chmod +x /usr/sbin/wait-for-it.sh
 
 COPY package.json ./
-RUN npm install
+RUN npm install  --force
 
 COPY . .
 

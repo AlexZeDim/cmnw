@@ -2,9 +2,10 @@ import { PassportStrategy } from '@nestjs/passport/dist';
 import { Strategy } from 'passport-oauth2';
 import { AuthService } from '../auth.service';
 import { Injectable } from '@nestjs/common';
-import { stringify } from "querystring";
+import { stringify } from 'querystring';
 import { commonwealthConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 
 /**
@@ -15,7 +16,7 @@ import { HttpService } from '@nestjs/axios';
 export class BattlenetStrategy extends PassportStrategy(Strategy, 'battlenet') {
   constructor(
     private authService: AuthService,
-    private http: HttpService,
+    private httpService: HttpService,
   ) {
     super({
       authorizationURL: `https://eu.battle.net/oauth/authorize?${ stringify({
@@ -40,9 +41,11 @@ export class BattlenetStrategy extends PassportStrategy(Strategy, 'battlenet') {
     accessToken: string,
   ): Promise<any> {
     console.log(`accessToken: ${accessToken}`);
-    const { data } = await this.http.get('https://eu.battle.net/oauth/userinfo', {
-      headers: { Authorization: `Bearer ${ accessToken }` },
-    }).toPromise();
+    const { data } = await lastValueFrom(
+      this.httpService.get('https://eu.battle.net/oauth/userinfo', {
+        headers: { Authorization: `Bearer ${ accessToken }` },
+      })
+    );
     console.log(data);
   }
 }

@@ -203,7 +203,11 @@ export class GuildsWorker {
                 if (characterExist) {
                   characterExist.updated_by = OSINT_SOURCE.ROSTERGUILD;
 
-                  if (guild.last_modified.getTime() > characterExist.last_modified.getTime()) {
+                  if (
+                    guild.last_modified
+                    && characterExist.last_modified
+                    && guild.last_modified.getTime() > characterExist.last_modified.getTime()
+                  ) {
                     characterExist.guild_id = guild._id;
                     characterExist.guild = guild.name;
                     characterExist.guild_guid = guild.id;
@@ -249,7 +253,7 @@ export class GuildsWorker {
                 });
               }
             } catch (errorException) {
-              this.logger.error(`member: ${member} from ${guild._id}:${errorException}`)
+              this.logger.error(`member: ${member.character.id} from ${guild._id}:${errorException}`)
             }
           }, 20)
         )

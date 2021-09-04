@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm, WarcraftLogs } from '@app/mongo';
 import { Model } from "mongoose";
@@ -18,7 +18,8 @@ import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
 import { warcraftlogsConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
-import cheerio from "cheerio";
+import cheerio from 'cheerio';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class WarcraftlogsService implements OnApplicationBootstrap {
@@ -57,9 +58,9 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
             exLogs = 0;
 
           for (const page of pages) {
-            // TODO review
+
             await delay(5);
-            const response = await this.httpService.get(`https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`).toPromise();
+            const response = await lastValueFrom(this.httpService.get(`https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`));
 
             const wclHTML = cheerio.load(response.data);
             const wclTable = wclHTML
@@ -125,28 +126,23 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
   async indexLogs(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       await delay(30);
-      const [warcraft_logs_key, keys] = await Promise.all([
-        await this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY }),
-        await this.KeyModel.find({ tags: clearance })
-      ])
+      const warcraft_logs_key = await this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY });
+      const keys = await this.KeyModel.find({ tags: clearance });
       if (!warcraft_logs_key || !warcraft_logs_key.token) {
-        this.logger.error(`indexLogs: clearance: WCL key not found`);
-        return;
+        throw new NotFoundException(`indexLogs: clearance: WCL key not found`);
       }
       if (!keys.length) {
-        this.logger.error(`indexLogs: clearance ${clearance} ${keys.length} have been found`);
-        return;
+        throw new NotFoundException(`indexLogs: clearance ${clearance} ${keys.length} have been found`);
       }
+
       await this.WarcraftLogsModel
         .find({ status: false })
         .cursor({ batchSize: 1 })
         .eachAsync(async (log: WarcraftLogs) => {
           try {
-            // FIXME remove
-            const { exportedCharacters }: { exportedCharacters: ICharactersExported[] } =
-              await this.httpService.get(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`)
-              .then(res => res.data || { exportedCharacters: [] });
-            const result = await this.exportedCharactersToQueue(exportedCharacters, keys);
+            const response = await lastValueFrom(this.httpService.get<{ exportedCharacters: ICharactersExported[] }>(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${warcraft_logs_key.token}`));
+
+            const result = await this.exportedCharactersToQueue(response.data.exportedCharacters, keys);
             if (result) {
               log.status = true;
               await log.save();
@@ -161,13 +157,15 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     }
   }
 
-  async exportedCharactersToQueue(exportedCharacters: ICharactersExported[], keys: Key[]): Promise<boolean | undefined> {
+  async exportedCharactersToQueue(exportedCharacters: ICharactersExported[], keys: Key[]): Promise<boolean> {
     try {
       let iteration = 0;
       const charactersToJobs = exportedCharacters.map((character) => {
         const _id = toSlug(`${character.name}@${character.server}`);
+
         iteration++
         if (iteration >= keys.length) iteration = 0;
+
         return {
           name: _id,
           data: {
@@ -191,11 +189,13 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
           },
         }
       });
+
       await this.queue.addBulk(charactersToJobs);
       this.logger.log(`addCharacterToQueue, add ${charactersToJobs.length} characters to characterQueue`);
       return true;
-    } catch (e) {
-      this.logger.error(`addCharacterToQueue: ${e}`);
+    } catch (errorException) {
+      this.logger.error(`addCharacterToQueue: ${errorException}`);
+      return false;
     }
   }
 }

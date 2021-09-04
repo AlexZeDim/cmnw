@@ -25,7 +25,7 @@ export interface ItemValuationQI {
  * Value Adjustable Class
  * argument for evaluation functions
  */
-export class ItemVAI implements Pick<Item, '_id' | 'name'>, ItemValuationQI {
+export class ItemVAI implements ItemValuationQI {
   readonly _id: number;
 
   readonly name: ItemNames;
@@ -193,7 +193,7 @@ export interface ContractAggregation extends LeanDocument<Contract> {
  * Reagent Item Interface
  * extends Item & Pricing(Q) & implement value: number(0)
  */
-export class ReagentItemI implements Pick<Item, '_id' | 'name' | 'contracts'>, ItemPricing {
+export class ReagentItemI implements ItemPricing {
   readonly _id: number;
 
   readonly contracts: boolean;

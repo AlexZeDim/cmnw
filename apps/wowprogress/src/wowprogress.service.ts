@@ -204,7 +204,12 @@ export class WowprogressService implements OnApplicationBootstrap {
        * Revoke characters status from old NOW => to PREV
        */
       await delay(60);
-      const charactersRevoked = await this.CharacterModel.updateMany({ looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } }, { looking_for_guild: LFG.PREV });
+      const charactersRevoked = await this.CharacterModel
+        .updateMany(
+        { looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } },
+        { looking_for_guild: LFG.PREV }
+        );
+
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} and ${LFG.NEW} revoked from ${charactersRevoked.nModified} characters to ${LFG.PREV}`);
       const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
 
@@ -216,6 +221,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       let index: number = 0;
 
+      // TODO refactor
       const [first, second] = await Promise.all([
         await scraper.get('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
         await scraper.get('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then((tableData) => tableData[0] || [])

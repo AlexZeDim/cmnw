@@ -1,12 +1,10 @@
 import { PassportStrategy } from '@nestjs/passport/dist';
-import {
-  HttpService,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { Strategy } from 'passport-oauth2';
 import { stringify } from 'querystring';
 import { discordConfig } from '@app/configuration';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {

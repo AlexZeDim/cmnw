@@ -1,9 +1,10 @@
 import { PassportStrategy } from '@nestjs/passport/dist';
 import { Strategy } from 'passport-oauth2';
 import { AuthService } from '../auth.service';
-import { HttpService, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { stringify } from "querystring";
 import { commonwealthConfig } from '@app/configuration';
+import { HttpService } from '@nestjs/axios';
 
 
 /**

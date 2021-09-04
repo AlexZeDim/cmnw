@@ -6,9 +6,11 @@ import { OsintModule } from './osint/osint.module';
 import { DmaModule } from './dma/dma.module';
 import { QueueModule } from './queue/queue.module';
 import { AuthModule } from './auth/auth.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     BullModule.forRoot({
       options: {

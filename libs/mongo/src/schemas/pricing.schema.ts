@@ -87,7 +87,6 @@ export class Pricing extends Document {
    * for massive Proportion evaluation
    * {id: Number, Quantity: Number}
    */
-
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
   derivatives: Types.Array<ItemPricing>;
 
@@ -103,12 +102,12 @@ export class Pricing extends Document {
 
   @Prop({ default: [], type: [ModifiedCraftingSlotSchema] })
   modified_crafting_slots:  Types.Array<ModifiedCraftingSlot>;
-  /** if Local then Convert from SkillLine */
 
+  /** if Local then Convert from SkillLine */
   @Prop({ type: String })
   profession: string;
-  /** API */
 
+  /** API */
   @Prop({ type: String })
   expansion: string;
 

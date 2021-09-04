@@ -193,7 +193,7 @@ export interface ContractAggregation extends LeanDocument<Contract> {
  * Reagent Item Interface
  * extends Item & Pricing(Q) & implement value: number(0)
  */
-export class ReagentItemI implements LeanDocument<Item>, ItemPricing {
+export class ReagentItemI implements Pick<Item, '_id' | 'name' | 'contracts'>, ItemPricing {
   readonly _id: number;
 
   readonly contracts: boolean;

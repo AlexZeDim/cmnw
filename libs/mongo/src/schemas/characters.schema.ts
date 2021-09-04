@@ -3,17 +3,17 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LFG } from '@app/core';
 import { Guild } from '@app/mongo/schemas/guilds.schema';
 import { Realm } from '@app/mongo/schemas/realms.schema';
+
 /**
  * _id and id field represents Blizzard GUID name@realm-id
  * https://wow.gamepedia.com/GUID
  */
-
 @Schema()
 class Mount extends Document  {
-  @Prop()
+  @Prop({ type: Number })
   _id: number;
 
-  @Prop()
+  @Prop({ type: String })
   name: string;
 }
 
@@ -21,10 +21,10 @@ export const MountsSchema = SchemaFactory.createForClass(Mount);
 
 @Schema()
 class Pet extends Document  {
-  @Prop()
+  @Prop({ type: Number })
   _id: number;
 
-  @Prop()
+  @Prop({ type: String })
   name: string;
 }
 
@@ -32,22 +32,22 @@ export const PetsSchema = SchemaFactory.createForClass(Pet);
 
 @Schema()
 class Profession extends Document {
-  @Prop()
+  @Prop({ type: String })
   name: string;
 
-  @Prop()
+  @Prop({ type: String })
   tier: string;
 
-  @Prop()
+  @Prop({ type: Number })
   id: number;
 
-  @Prop()
+  @Prop({ type: Number })
   skill_points: number;
 
-  @Prop()
+  @Prop({ type: Number })
   max_skill_points: number;
 
-  @Prop()
+  @Prop({ type: String })
   specialization: string;
 }
 
@@ -55,10 +55,10 @@ export const ProfessionSchema = SchemaFactory.createForClass(Profession);
 
 @Schema()
 class RaidProgress extends Document {
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   _id: string
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   progress: string
 }
 
@@ -66,103 +66,103 @@ export const RaidProgressSchema = SchemaFactory.createForClass(RaidProgress);
 
 @Schema({ timestamps: true })
 export class Character extends Document {
-  @Prop({ required: true, lowercase: true })
+  @Prop({ required: true, lowercase: true, type: String })
   _id: string;
 
-  @Prop()
+  @Prop({ type: Number })
   id: number;
 
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, index: true, type: String })
   name: string;
 
   @Prop({ required: true, type: Number, ref: 'Realm' })
   realm_id: number | Realm;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   realm_name: string;
 
-  @Prop({ index: true, required: true })
+  @Prop({ index: true, required: true, type: String })
   realm: string;
 
-  @Prop()
+  @Prop({ type: String })
   guild: string;
 
   @Prop({ type: String, lowercase: true, index: true, ref: 'Guild' })
   guild_id: string | Guild;
 
-  @Prop()
+  @Prop({ type: Number })
   guild_guid: number;
 
-  @Prop()
+  @Prop({ type: Number })
   guild_rank: number;
 
-  @Prop({ index: true })
+  @Prop({ index: true, type: String })
   hash_a: string;
 
-  @Prop({ index: true })
+  @Prop({ index: true, type: String })
   hash_b: string;
 
-  @Prop()
+  @Prop({ type: String })
   hash_f: string;
 
-  @Prop()
+  @Prop({ type: String })
   hash_t: string;
 
-  @Prop()
+  @Prop({ type: String })
   race: string;
 
-  @Prop()
+  @Prop({ type: String })
   character_class: string;
 
-  @Prop()
+  @Prop({ type: String })
   active_spec: string;
 
-  @Prop()
+  @Prop({ type: String })
   gender: string;
 
-  @Prop()
+  @Prop({ type: String })
   faction: string;
 
-  @Prop()
+  @Prop({ type: Number })
   level: number;
 
-  @Prop()
+  @Prop({ type: Number })
   achievement_points: number;
 
-  @Prop()
+  @Prop({ type: Number })
   status_code: number;
 
-  @Prop()
+  @Prop({ type: Number })
   average_item_level: number;
 
-  @Prop()
+  @Prop({ type: Number })
   equipped_item_level: number;
 
-  @Prop()
+  @Prop({ type: String })
   chosen_covenant: string;
 
-  @Prop()
+  @Prop({ type: Number })
   renown_level: number;
 
   @Prop({ default: Date.now() })
   last_modified: Date;
 
-  @Prop()
+  @Prop({ type: String })
   created_by: string;
 
-  @Prop()
+  @Prop({ type: String })
   updated_by: string;
 
-  @Prop()
+  @Prop({ type: String })
   avatar: string;
 
-  @Prop()
+  @Prop({ type: String })
   inset: string;
 
-  @Prop()
+  @Prop({ type: String })
   main: string;
 
-  @Prop()
+  @Prop({ type: String })
   personality: string;
 
   @Prop({ type: [MountsSchema] })
@@ -177,37 +177,37 @@ export class Character extends Document {
   @Prop({ index: true, type: String, enum: LFG })
   looking_for_guild: string;
 
-  @Prop()
+  @Prop({ type: Number })
   rio_score: number;
 
-  @Prop()
+  @Prop({ type: Number })
   wcl_percentile: number;
 
   @Prop({ type: [RaidProgressSchema] })
   raid_progress: Types.Array<RaidProgress>;
 
-  @Prop()
+  @Prop({ type: String })
   battle_tag: string;
 
-  @Prop()
+  @Prop({ type: Number })
   days_from: number;
 
-  @Prop()
+  @Prop({ type: Number })
   days_to: number;
 
-  @Prop()
+  @Prop({ type: String })
   role: string;
 
-  @Prop()
+  @Prop({ type: Boolean })
   transfer: boolean;
 
   @Prop({ type: [String] })
   languages: MongooseSchema.Types.Array;
 
-  @Prop({ index: true })
+  @Prop({ type: Date, index: true })
   updatedAt: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   createdAt: Date;
 }
 

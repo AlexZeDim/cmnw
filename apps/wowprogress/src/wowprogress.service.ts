@@ -1,25 +1,34 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
-import { Model } from "mongoose";
+import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { charactersQueue, GLOBAL_KEY, LFG, OSINT_SOURCE, randomInt, toSlug } from '@app/core';
 import fs from 'fs-extra';
-import path from "path";
+import path from 'path';
 import zlib from 'zlib';
-import scraper from 'table-scraper';
-import { union, differenceBy } from 'lodash';
+import { differenceBy, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { delay } from '@app/core/utils/converters';
-import { nanoid } from 'nanoid'
+import { nanoid } from 'nanoid';
 import { wowprogressConfig } from '@app/configuration';
-import { from } from 'rxjs';
+import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
-import cheerio from "cheerio";
+import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
+import {
+  CharacterQI,
+  charactersQueue,
+  GLOBAL_KEY,
+  GuildQI,
+  ICharacterWpLfg,
+  LFG,
+  OSINT_SOURCE,
+  randomInt,
+  toSlug,
+} from '@app/core';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
@@ -38,19 +47,15 @@ export class WowprogressService implements OnApplicationBootstrap {
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(guildsQueue.name)
-    private readonly queueGuilds: Queue,
+    private readonly queueGuilds: Queue<GuildQI, number>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queueCharacters: Queue,
+    private readonly queueCharacters: Queue<CharacterQI, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
     await this.indexWowProgress(GLOBAL_KEY, wowprogressConfig.index_init);
   }
 
-  /**
-   * @param clearance
-   * @param init
-   */
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async indexWowProgress(clearance: string = GLOBAL_KEY, init: boolean = true): Promise<void> {
     try {
@@ -61,7 +66,7 @@ export class WowprogressService implements OnApplicationBootstrap {
       }
 
       const
-        response = await this.httpService.get('https://www.wowprogress.com/export/ranks/').toPromise(),
+        response = await lastValueFrom(this.httpService.get('https://www.wowprogress.com/export/ranks/')),
         key = await this.KeyModel.findOne({ tags: clearance });
 
       if (!key || !key.token) {
@@ -73,10 +78,10 @@ export class WowprogressService implements OnApplicationBootstrap {
       await fs.ensureDir(dir);
 
       const page = cheerio.load(response.data);
-      const test = page
+      const wpPage = page
         .html('body > pre:nth-child(3) > a');
 
-      page(test).map(async (x, node) => {
+      page(wpPage).map(async (x, node) => {
         if ('attribs' in node) {
           const url = node.attribs.href;
           if (!url.includes(`eu_`)) return;
@@ -119,7 +124,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       const files: string[] = await fs.readdir(dir);
 
-      await from(files).pipe(
+      await lastValueFrom(from(files).pipe(
         mergeMap(async (file) => {
           try {
             if (!file.match(/gz$/g)) {
@@ -131,7 +136,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
             if (!match || !match.length) {
               this.logger.warn(`indexWowProgress: file ${file} not match pattern #2`);
-             return;
+              return;
             }
 
             const
@@ -162,14 +167,16 @@ export class WowprogressService implements OnApplicationBootstrap {
                  continue;
                 }
                 const _id: string = toSlug(`${guild.name}@${realm.slug}`);
+                // TODO refactor
                 await this.queueGuilds.add(
                   _id,
                   {
+                    guildRank: false,
+                    createOnlyUnique: false,
                     _id: _id,
                     name: guild.name,
                     realm: realm.slug,
-                    members: [],
-                    forceUpdate: 86400000,
+                    forceUpdate: 1000 * 60 * 60 * 4,
                     region: 'eu',
                     created_by: OSINT_SOURCE.WOWPROGRESS,
                     updated_by: OSINT_SOURCE.WOWPROGRESS,
@@ -188,7 +195,7 @@ export class WowprogressService implements OnApplicationBootstrap {
             this.logger.warn(`indexWowProgress: file ${file} has error: ${error}`);
           }
         }, 1),
-      ).toPromise();
+      ));
 
       await fs.rmdirSync(dir, { recursive: true });
       this.logger.warn(`indexWowProgress: directory ${dir} has been removed!`);
@@ -215,34 +222,48 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
-        this.logger.error(`indexLookingForGuild: ${keys.length} keys found`);
-        return
+        throw new NotFoundException(`indexLookingForGuild: ${keys.length} keys found`)
       }
 
       let index: number = 0;
 
       // TODO refactor
-      const [first, second] = await Promise.all([
-        await scraper.get('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts').then((tableData) => tableData[0] || []),
-        await scraper.get('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts').then((tableData) => tableData[0] || [])
+
+      const t = await this.redisService.get(LFG.PREV);
+
+      const [firstPage, secondPage] = await Promise.all([
+        await this.getWowProgressLfg('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts'),
+        await this.getWowProgressLfg('https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts'),
       ]);
 
-      const wpCharacters: Record<string, string>[] = union(first, second);
+      const characters: ICharacterWpLfg[] = union(firstPage, secondPage);
 
-      await from(wpCharacters).pipe(
+      const characterFilter: string[] = characters.map((character) => {
+        const
+          name = character.name.trim(),
+          realm = character.realm.split('-')[1].trim();
+
+        return toSlug(`${name}@${realm}`);
+      });
+
+      await this.redisService.sadd(LFG.NOW, characterFilter);
+
+      await lastValueFrom(from(characters).pipe(
         mergeMap(async (character, i) => {
 
-          if (!character.Character && !character.Realm) return;
+          if (!!character.name && !!character.realm) return;
           index++
 
           const
-            name = character.Character.trim(),
-            realm = character.Realm.split('-')[1].trim(),
+            name = character.name.trim(),
+            realm = character.realm.split('-')[1].trim(),
             _id = toSlug(`${name}@${realm}`),
             jobId = `${_id}:${nanoid(10)}`,
             forceUpdate = randomInt(3600000, 7200000);
 
-          await this.queueCharacters.add(
+          // TODO probably store at REDIS
+
+/*          await this.queueCharacters.add(
             jobId,
             {
               _id,
@@ -266,16 +287,16 @@ export class WowprogressService implements OnApplicationBootstrap {
               jobId,
               priority: 2,
             }
-          );
+          );*/
 
           this.logger.log(`Added to character queue: ${_id}`);
           if (i >= keys.length) index = 0;
         }, 1),
-      ).toPromise();
+      ));
 
       await delay(120);
       const charactersNow = await this.CharacterModel.find({ looking_for_guild: LFG.NOW });
-      this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${wpCharacters.length} PREV: ${charactersPrev.length}`);
+      this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${characters.length} PREV: ${charactersPrev.length}`);
 
       const charactersNew = differenceBy(charactersNow, charactersPrev, '_id');
       const charactersLeave = differenceBy(charactersPrev, charactersNow, '_id');
@@ -286,6 +307,31 @@ export class WowprogressService implements OnApplicationBootstrap {
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NEW} set to ${charactersNew.length} characters`);
     } catch (errorException) {
       this.logger.error(`indexLookingForGuild: ${errorException}`)
+    }
+  }
+
+  private async getWowProgressLfg(url: string): Promise<ICharacterWpLfg[]> {
+    try {
+      const charactersInQueue: ICharacterWpLfg[] = [];
+      const response = await lastValueFrom(this.httpService.get(url));
+      const page = cheerio.load(response.data);
+
+      const lfgPage = page.html('table.rating tbody tr');
+
+      page(lfgPage).map(async (x, node) => {
+        const td = page(node).find('td');
+        const name = page(td[0]).text();
+        const guild = page(td[1]).text();
+        const raid = page(td[2]).text();
+        const realm = page(td[3]).text();
+        const ilvl = page(td[4]).text();
+        const timestamp = page(td[5]).text();
+        if (!!name) charactersInQueue.push({ name, guild, raid, realm, ilvl, timestamp })
+      });
+
+      return charactersInQueue;
+    } catch (e) {
+      this.logger.error(e);
     }
   }
 }

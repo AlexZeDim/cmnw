@@ -380,3 +380,12 @@ export interface IGuildSummary {
   status_code: number,
   last_modified: Date,
 }
+
+export interface ICharacterWpLfg {
+  readonly name: string,
+  readonly guild: string,
+  readonly raid: string,
+  readonly realm: string,
+  readonly ilvl: string,
+  readonly timestamp: string;
+}

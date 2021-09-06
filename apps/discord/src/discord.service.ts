@@ -98,7 +98,7 @@ export class DiscordService implements OnApplicationBootstrap {
       ])
       .cursor({ batchSize: 10 })
       .exec()
-      .eachAsync(async subscription => {
+      .eachAsync(async (subscription) => {
         try {
           const channel = this.client.channels.cache.get(subscription.channel_id);
           /**
@@ -107,7 +107,9 @@ export class DiscordService implements OnApplicationBootstrap {
           if (!channel || channel.type !== "text") {
             if (subscription.tolerance > 100) {
               this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance} remove: true`);
-              await this.SubscriptionModel.findOneAndRemove({ discord_id: subscription.disconnect, channel_id: subscription.channel_id });
+              await this.SubscriptionModel.findOneAndRemove(
+              { discord_id: subscription.disconnect, channel_id: subscription.channel_id }
+              );
             } else {
               this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance}+1`);
               await this.SubscriptionModel.findOneAndUpdate(
@@ -131,7 +133,7 @@ export class DiscordService implements OnApplicationBootstrap {
             if (subscription.character_class.length) Object.assign(query, { character_class : { '$in': subscription.character_class } });
             if (subscription.wcl_percentile) Object.assign(query, { wcl_percentile: { '$gte': subscription.wcl_percentile } });
             if (subscription.languages.length) Object.assign(query, { languages : { '$in': subscription.languages } });
-            subscription.realms.map(async realm => {
+            subscription.realms.map(async (realm) => {
               Object.assign(query, { realm: realm.slug });
               const characters = await this.CharacterModel.find(query).lean();
               if (characters.length) {
@@ -142,7 +144,10 @@ export class DiscordService implements OnApplicationBootstrap {
               }
             });
           }
-          await this.SubscriptionModel.findOneAndUpdate({ discord_id: subscription.discord_id, channel_id: subscription.channel_id }, { timestamp: new Date().getTime() });
+          await this.SubscriptionModel.findOneAndUpdate(
+          { discord_id: subscription.discord_id, channel_id: subscription.channel_id },
+          { timestamp: new Date().getTime() }
+          );
         } catch (errorException) {
           this.logger.error(`subscriptions: ${errorException}`);
         }

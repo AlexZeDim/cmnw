@@ -4,10 +4,10 @@ import { Gold, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { FACTION, FunPayGoldInterface } from '@app/core';
-import cheerio from 'cheerio';
-import { from } from 'rxjs';
+import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
+import cheerio from 'cheerio';
 
 @Injectable()
 export class GoldService {
@@ -26,7 +26,7 @@ export class GoldService {
   @Cron(CronExpression.EVERY_HOUR)
   private async indexGold(): Promise<void> {
     try {
-      const response = await this.httpService.get('https://funpay.ru/chips/2/').toPromise();
+      const response = await lastValueFrom(this.httpService.get('https://funpay.ru/chips/2/'));
 
       const funPayHTML = cheerio.load(response.data);
       const listingHTML = funPayHTML
@@ -47,7 +47,7 @@ export class GoldService {
         listing.push({ realm, faction, status, quantity, owner, price });
       });
 
-      await from(listing).pipe(
+      await lastValueFrom(from(listing).pipe(
         mergeMap(async (order) => {
           try {
             const realm: LeanDocument<Realm> = await this.RealmModel
@@ -85,7 +85,7 @@ export class GoldService {
             this.logger.error(`indexGold: error ${error}`);
           }
         }, 5)
-      ).toPromise();
+      ));
 
       if (!orders.length) {
         this.logger.warn(`indexGold: ${orders.length} found`);

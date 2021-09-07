@@ -154,77 +154,73 @@ export class CharactersWorker {
   }
 
   private async checkExistOrCreate(character: CharacterQI): Promise<Character> {
-    try {
-      const forceUpdate: number = character.forceUpdate || 86400 * 1000;
-      const name_slug: string = toSlug(character.name);
-      const now: number = new Date().getTime();
+    const forceUpdate: number = character.forceUpdate || 86400 * 1000;
+    const name_slug: string = toSlug(character.name);
+    const now: number = new Date().getTime();
 
-      const realm = await this.RealmModel
-        .findOne(
-          { $text: { $search: character.realm } },
-          { score: { $meta: 'textScore' } },
-        )
-        .sort({ score: { $meta: 'textScore' } })
-        .lean();
+    const realm = await this.RealmModel
+      .findOne(
+        { $text: { $search: character.realm } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean();
 
-      if (!realm) {
-        throw new NotFoundException(`realm ${character.realm} not found`);
-      }
-
-      const characterExist = await this.CharacterModel.findById(character._id);
-
-      if (!characterExist) {
-        const characterNew = new this.CharacterModel({
-          _id: character._id,
-          name: capitalize(name_slug),
-          status_code: 100,
-          realm: realm.slug,
-          realm_id: realm._id,
-          realm_name: realm.name
-        });
-
-        /**
-         * Assign values from queue
-         * only if they were passed
-         */
-        if (character.guild) characterNew.guild = character.guild;
-        if (character.guild_guid) characterNew.guild_guid = character.guild_guid;
-        if (character.guild_id) characterNew.guild_id = character.guild_id;
-        if (character.created_by) characterNew.created_by = character.created_by;
-
-        return characterNew;
-      }
-
-      /**
-       * Update LFG status immediately
-       * if it was passed from queue
-       */
-      if (character.looking_for_guild) {
-        characterExist.looking_for_guild = character.looking_for_guild;
-        this.logger.log(`LFG: ${characterExist._id},looking for guild: ${character.looking_for_guild}`);
-        await characterExist.save();
-      }
-
-      /**
-       * If character exists
-       * and createOnlyUnique initiated
-       */
-      if (character.createOnlyUnique) {
-        throw new BadRequestException(`${(character.iteration) ? (character.iteration + ':') : ('')}${character._id},createOnlyUnique: ${character.createOnlyUnique}`);
-      }
-      /**
-       * ...or character was updated recently
-       */
-      if ((now - forceUpdate) < characterExist.updatedAt.getTime()) {
-        throw new GatewayTimeoutException(`${(character.iteration) ? (character.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);
-      }
-
-      characterExist.status_code = 100;
-
-      return characterExist;
-    } catch (errorException) {
-      this.logger.error(`checkExistCreate: ${errorException}`);
+    if (!realm) {
+      throw new NotFoundException(`realm ${character.realm} not found`);
     }
+
+    const characterExist = await this.CharacterModel.findById(character._id);
+
+    if (!characterExist) {
+      const characterNew = new this.CharacterModel({
+        _id: character._id,
+        name: capitalize(name_slug),
+        status_code: 100,
+        realm: realm.slug,
+        realm_id: realm._id,
+        realm_name: realm.name
+      });
+
+      /**
+       * Assign values from queue
+       * only if they were passed
+       */
+      if (character.guild) characterNew.guild = character.guild;
+      if (character.guild_guid) characterNew.guild_guid = character.guild_guid;
+      if (character.guild_id) characterNew.guild_id = character.guild_id;
+      if (character.created_by) characterNew.created_by = character.created_by;
+
+      return characterNew;
+    }
+
+    /**
+     * Update LFG status immediately
+     * if it was passed from queue
+     */
+    if (character.looking_for_guild) {
+      characterExist.looking_for_guild = character.looking_for_guild;
+      this.logger.log(`LFG: ${characterExist._id},looking for guild: ${character.looking_for_guild}`);
+      await characterExist.save();
+    }
+
+    /**
+     * If character exists
+     * and createOnlyUnique initiated
+     */
+    if (character.createOnlyUnique) {
+      throw new BadRequestException(`${(character.iteration) ? (character.iteration + ':') : ('')}${character._id},createOnlyUnique: ${character.createOnlyUnique}`);
+    }
+    /**
+     * ...or character was updated recently
+     */
+    if ((now - forceUpdate) < characterExist.updatedAt.getTime()) {
+      throw new GatewayTimeoutException(`${(character.iteration) ? (character.iteration + ':') : ('')}${character._id},forceUpdate: ${forceUpdate}`);
+    }
+
+    characterExist.status_code = 100;
+
+    return characterExist;
   }
 
   private async checkStatus(
@@ -282,6 +278,7 @@ export class CharactersWorker {
       return media;
     } catch (errorException) {
       this.logger.error(`media: ${name_slug}@${realm_slug}:${errorException}`);
+      return media;
     }
   }
 

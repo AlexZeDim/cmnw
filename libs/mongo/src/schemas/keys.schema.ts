@@ -3,16 +3,16 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class Key extends Document {
-  @Prop()
+  @Prop({ type: String })
   _id: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   secret: string;
 
-  @Prop()
+  @Prop({ type: String })
   token: string;
 
-  @Prop()
+  @Prop({ type: Number })
   expired_in: number;
 
   @Prop({ type: [String] })

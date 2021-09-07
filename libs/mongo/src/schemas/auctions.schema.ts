@@ -34,10 +34,10 @@ export class Auction extends Document {
   @Prop({ type: String })
   time_left: string;
 
-  @Prop()
+  @Prop({ type: Date })
   updatedAt: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   createdAt: Date;
 }
 

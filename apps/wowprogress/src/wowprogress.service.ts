@@ -272,8 +272,6 @@ export class WowprogressService implements OnApplicationBootstrap {
         from(charactersDiffNew).pipe(
           mergeMap(async (character_id, i) => {
 
-            index++
-
             const [name, realm] = character_id.split('@');
 
             await this.queueCharacters.add(
@@ -301,6 +299,7 @@ export class WowprogressService implements OnApplicationBootstrap {
               }
             );
 
+            index++
             this.logger.log(`Added to character queue: ${character_id}`);
             if (i >= keys.length) index = 0;
           })

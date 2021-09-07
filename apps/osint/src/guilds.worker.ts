@@ -208,6 +208,9 @@ export class GuildsWorker {
                     && characterExist.last_modified
                     && guild.last_modified.getTime() > characterExist.last_modified.getTime()
                   ) {
+                    characterExist.realm = guild.realm;
+                    characterExist.realm_id = guild.realm_id;
+                    characterExist.realm_name = guild.realm_name;
                     characterExist.guild_id = guild._id;
                     characterExist.guild = guild.name;
                     characterExist.guild_guid = guild.id;
@@ -624,60 +627,56 @@ export class GuildsWorker {
   }
 
   private async checkExistOrCreate(guild: GuildQI): Promise<Guild> {
-    try {
-      const forceUpdate: number = guild.forceUpdate || 1000 * 60 * 60 * 4;
-      const name_slug: string = toSlug(guild.name);
-      const now: number = new Date().getTime();
+    const forceUpdate: number = guild.forceUpdate || 1000 * 60 * 60 * 4;
+    const name_slug: string = toSlug(guild.name);
+    const now: number = new Date().getTime();
 
-      const realm = await this.RealmModel
-        .findOne(
-          { $text: { $search: guild.realm } },
-          { score: { $meta: 'textScore' } },
-        )
-        .sort({ score: { $meta: 'textScore' } })
-        .lean();
+    const realm = await this.RealmModel
+      .findOne(
+        { $text: { $search: guild.realm } },
+        { score: { $meta: 'textScore' } },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .lean();
 
-      if (!realm) {
-        throw new NotFoundException(`realm ${guild.realm} not found`);
-      }
-
-      const guildExist = await this.GuildModel.findById(`${name_slug}@${realm.slug}`);
-
-      if (!guildExist) {
-        const guildNew = new this.GuildModel({
-          _id: `${name_slug}@${realm.slug}`,
-          name: capitalize(guild.name),
-          status_code: 100,
-          realm: realm.slug,
-          realm_id: realm._id,
-          realm_name: realm.name,
-          created_by: OSINT_SOURCE.GETGUILD,
-          updated_by: OSINT_SOURCE.GETGUILD,
-        });
-
-        if (guild.created_by) guildNew.created_by = guild.created_by;
-
-        return guildNew;
-      }
-
-      /**
-       * If guild exists
-       * and createOnlyUnique initiated
-       */
-      if (guild.createOnlyUnique) {
-        throw new BadRequestException(`${(guild.iteration) ? (guild.iteration + ':') : ('')}${guild._id},createOnlyUnique: ${guild.createOnlyUnique}`);
-      }
-      /**
-       * ...or guild was updated recently
-       */
-      if ((now - forceUpdate) < guildExist.updatedAt.getTime()) {
-        throw new GatewayTimeoutException(`${(guild.iteration) ? (guild.iteration + ':') : ('')}${guild._id},forceUpdate: ${forceUpdate}`);
-      }
-
-      return guildExist;
-    } catch (errorException) {
-      this.logger.error(`checkExistCreate: ${errorException}`);
+    if (!realm) {
+      throw new NotFoundException(`realm ${guild.realm} not found`);
     }
+
+    const guildExist = await this.GuildModel.findById(`${name_slug}@${realm.slug}`);
+
+    if (!guildExist) {
+      const guildNew = new this.GuildModel({
+        _id: `${name_slug}@${realm.slug}`,
+        name: capitalize(guild.name),
+        status_code: 100,
+        realm: realm.slug,
+        realm_id: realm._id,
+        realm_name: realm.name,
+        created_by: OSINT_SOURCE.GETGUILD,
+        updated_by: OSINT_SOURCE.GETGUILD,
+      });
+
+      if (guild.created_by) guildNew.created_by = guild.created_by;
+
+      return guildNew;
+    }
+
+    /**
+     * If guild exists
+     * and createOnlyUnique initiated
+     */
+    if (guild.createOnlyUnique) {
+      throw new BadRequestException(`${(guild.iteration) ? (guild.iteration + ':') : ('')}${guild._id},createOnlyUnique: ${guild.createOnlyUnique}`);
+    }
+    /**
+     * ...or guild was updated recently
+     */
+    if ((now - forceUpdate) < guildExist.updatedAt.getTime()) {
+      throw new GatewayTimeoutException(`${(guild.iteration) ? (guild.iteration + ':') : ('')}${guild._id},forceUpdate: ${forceUpdate}`);
+    }
+
+    return guildExist;
   }
 
   private async checkDiffs(original: LeanDocument<Guild>, updated: Guild): Promise<void> {

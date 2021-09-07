@@ -300,6 +300,9 @@ export class WowprogressService implements OnApplicationBootstrap {
                 priority: 2,
               }
             );
+
+            this.logger.log(`Added to character queue: ${character_id}`);
+            if (i >= keys.length) index = 0;
           })
         )
       );

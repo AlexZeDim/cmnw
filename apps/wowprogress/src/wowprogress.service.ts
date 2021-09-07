@@ -8,10 +8,9 @@ import { guildsQueue } from '@app/core/queues/guilds.queue';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
-import { differenceBy, union } from 'lodash';
+import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { delay } from '@app/core/utils/converters';
-import { nanoid } from 'nanoid';
 import { wowprogressConfig } from '@app/configuration';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
@@ -217,19 +216,12 @@ export class WowprogressService implements OnApplicationBootstrap {
         { looking_for_guild: LFG.PREV }
         );
 
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} and ${LFG.NEW} revoked from ${charactersRevoked.nModified} characters to ${LFG.PREV}`);
-      const charactersPrev = await this.CharacterModel.find({ looking_for_guild: LFG.PREV });
+      this.logger.debug(`indexLookingForGuild: status LFG revoke from ${charactersRevoked.nModified} characters`);
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
         throw new NotFoundException(`indexLookingForGuild: ${keys.length} keys found`)
       }
-
-      let index: number = 0;
-
-      // TODO refactor
-
-      const t = await this.redisService.get(LFG.PREV);
 
       const [firstPage, secondPage] = await Promise.all([
         await this.getWowProgressLfg('https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts'),
@@ -238,7 +230,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       const characters: ICharacterWpLfg[] = union(firstPage, secondPage);
 
-      const characterFilter: string[] = characters.map((character) => {
+      const charactersFilter: string[] = characters.map((character) => {
         const
           name = character.name.trim(),
           realm = character.realm.split('-')[1].trim();
@@ -246,65 +238,80 @@ export class WowprogressService implements OnApplicationBootstrap {
         return toSlug(`${name}@${realm}`);
       });
 
-      await this.redisService.sadd(LFG.NOW, characterFilter);
+      /**
+       * If WowProgress result > 0
+       * overwrite LFG.NOW
+       */
+      if (charactersFilter.length > 0) {
+        await this.redisService.del(LFG.NOW);
+        await this.redisService.sadd(LFG.NOW, charactersFilter);
+      }
 
-      await lastValueFrom(from(characters).pipe(
-        mergeMap(async (character, i) => {
+      /**
+       * If LFG.PREV not found
+       * then write NOW to PREV
+       */
+      const OLD_PREV = await this.redisService.smembers(LFG.PREV);
+      if (OLD_PREV.length === 0) {
+        await this.redisService.sadd(LFG.PREV, charactersFilter);
+      }
 
-          if (!!character.name && !!character.realm) return;
-          index++
+      const NOW = await this.redisService.smembers(LFG.NOW);
+      const PREV = await this.redisService.smembers(LFG.PREV);
 
-          const
-            name = character.name.trim(),
-            realm = character.realm.split('-')[1].trim(),
-            _id = toSlug(`${name}@${realm}`),
-            jobId = `${_id}:${nanoid(10)}`,
-            forceUpdate = randomInt(3600000, 7200000);
+      const charactersDiffLeave = difference(PREV, NOW);
+      const charactersDiffNew = difference(NOW, PREV);
 
-          // TODO probably store at REDIS
+      if (PREV.length > 0) {
+        await this.redisService.sadd(LFG.PREV, charactersFilter);
+      }
 
-/*          await this.queueCharacters.add(
-            jobId,
-            {
-              _id,
-              name,
-              realm,
-              region: 'eu',
-              clientId: keys[index]._id,
-              clientSecret: keys[index].secret,
-              accessToken: keys[index].token,
-              created_by: OSINT_SOURCE.WOWPROGRESSLFG,
-              updated_by: OSINT_SOURCE.WOWPROGRESSLFG,
-              looking_for_guild: LFG.NOW,
-              guildRank: false,
-              createOnlyUnique: false,
-              updateRIO: true,
-              updateWCL: true,
-              updateWP: true,
-              forceUpdate,
-              iteration: i,
-            }, {
-              jobId,
-              priority: 2,
-            }
-          );*/
+      let index: number = 0;
 
-          this.logger.log(`Added to character queue: ${_id}`);
-          if (i >= keys.length) index = 0;
-        }, 1),
-      ));
+      await lastValueFrom(
+        from(charactersDiffNew).pipe(
+          mergeMap(async (character_id, i) => {
 
-      await delay(120);
-      const charactersNow = await this.CharacterModel.find({ looking_for_guild: LFG.NOW });
-      this.logger.debug(`indexLookingForGuild: NOW: ${charactersNow.length} SOURCE: ${characters.length} PREV: ${charactersPrev.length}`);
+            index++
 
-      const charactersNew = differenceBy(charactersNow, charactersPrev, '_id');
-      const charactersLeave = differenceBy(charactersPrev, charactersNow, '_id');
-      const charactersUnset = await this.CharacterModel.updateMany({ _id: { $in: charactersLeave.map(c => c._id) } }, { $unset: { looking_for_guild: 1 } });
+            const [name, realm] = character_id.split('@');
+
+            await this.queueCharacters.add(
+              character_id,
+              {
+                _id: character_id,
+                name,
+                realm,
+                region: 'eu',
+                clientId: keys[index]._id,
+                clientSecret: keys[index].secret,
+                accessToken: keys[index].token,
+                created_by: OSINT_SOURCE.WOWPROGRESSLFG,
+                updated_by: OSINT_SOURCE.WOWPROGRESSLFG,
+                guildRank: false,
+                createOnlyUnique: false,
+                updateRIO: true,
+                updateWCL: true,
+                updateWP: true,
+                forceUpdate: randomInt(1000 * 60 * 30, 1000 * 60 * 60),
+                iteration: i,
+              }, {
+                jobId: character_id,
+                priority: 2,
+              }
+            );
+          })
+        )
+      );
+
+      const charactersUnset = await this.CharacterModel.updateMany({ _id: { $in: charactersDiffLeave } }, { $unset: { looking_for_guild: 1 } });
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.nModified} characters`);
 
-      await this.CharacterModel.updateMany({ _id: { $in: charactersNew.map(c => c._id) } }, { looking_for_guild: LFG.NEW });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NEW} set to ${charactersNew.length} characters`);
+      await this.CharacterModel.updateMany({ _id: { $in: NOW } }, { looking_for_guild: LFG.NOW });
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} set to ${NOW} characters`);
+
+      await this.CharacterModel.updateMany({ _id: { $in: charactersDiffNew } }, { looking_for_guild: LFG.NEW });
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NEW} set to ${charactersDiffNew.length} characters`);
     } catch (errorException) {
       this.logger.error(`indexLookingForGuild: ${errorException}`)
     }

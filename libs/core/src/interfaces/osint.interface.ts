@@ -356,8 +356,8 @@ export interface IWarcraftLogs {
 
 export interface IWarcraftLogsConfig {
   readonly raid_tier: number
-  readonly pages_from: number,
-  readonly pages_to: number,
+  readonly from: number,
+  readonly to: number,
   readonly page: number,
   readonly logs: number,
 }

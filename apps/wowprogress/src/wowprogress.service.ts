@@ -1,10 +1,9 @@
-import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { guildsQueue } from '@app/core/queues/guilds.queue';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
@@ -21,7 +20,7 @@ import {
   CharacterQI,
   charactersQueue,
   GLOBAL_KEY,
-  GuildQI,
+  GuildQI, guildsQueue,
   ICharacterWpLfg,
   LFG,
   OSINT_SOURCE,
@@ -60,8 +59,7 @@ export class WowprogressService implements OnApplicationBootstrap {
     try {
 
       if (!init) {
-        this.logger.log(`indexWowProgress: init: ${init}`);
-        return;
+        throw new BadRequestException(`init: ${init}`);
       }
 
       const
@@ -69,8 +67,7 @@ export class WowprogressService implements OnApplicationBootstrap {
         key = await this.KeyModel.findOne({ tags: clearance });
 
       if (!key || !key.token) {
-        this.logger.error(`indexWowProgress: clearance: ${clearance} key not found`);
-        return
+        throw new NotFoundException(`clearance: ${clearance} key not found`);
       }
 
       const dir: string = path.join(__dirname, '..', '..', 'files', 'wowprogress');
@@ -87,16 +84,16 @@ export class WowprogressService implements OnApplicationBootstrap {
 
           const
             download: string = encodeURI(decodeURI(url)),
-            file_name: string = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1)),
-            match = file_name.match(/(?<=_)(.*?)(?=_)/g);
+            fileName: string = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1)),
+            match = fileName.match(/(?<=_)(.*?)(?=_)/g);
 
           if (!match || !match.length) return;
 
           const
-            [realm_query] = match,
+            [realmQuery] = match,
             realm = await this.RealmModel
               .findOne(
-                { $text: { $search: realm_query } },
+                { $text: { $search: realmQuery } },
                 { score: { $meta: 'textScore' } },
                 { projection: { slug_locale: 1 } }
               )
@@ -105,16 +102,17 @@ export class WowprogressService implements OnApplicationBootstrap {
 
           if (!realm) return;
 
-          await this.httpService
-            .request({
-              url: download,
-              responseType: 'stream',
-             })
-            .toPromise()
+          await lastValueFrom(
+            this.httpService
+              .request({
+                url: download,
+                responseType: 'stream',
+               })
+            )
             .then(
               async response => response.data
                 .pipe(
-                  fs.createWriteStream(`${dir}/${file_name}`)
+                  fs.createWriteStream(`${dir}/${fileName}`)
                 )
             );
         }
@@ -139,10 +137,10 @@ export class WowprogressService implements OnApplicationBootstrap {
             }
 
             const
-              [realm_query] = match,
+              [realmQuery] = match,
               realm = await this.RealmModel
                 .findOne(
-                  { $text: { $search: realm_query } },
+                  { $text: { $search: realmQuery } },
                   { score: { $meta: 'textScore' } },
                   { projection: { slug: 1 } }
                 )
@@ -150,7 +148,7 @@ export class WowprogressService implements OnApplicationBootstrap {
                 .lean();
 
             if (!realm) {
-              this.logger.warn(`indexWowProgress: realm ${realm_query} not found!`);
+              this.logger.warn(`indexWowProgress: realm ${realmQuery} not found!`);
               return;
             }
 
@@ -161,27 +159,29 @@ export class WowprogressService implements OnApplicationBootstrap {
 
             if (json && Array.isArray(json) && json.length) {
               for (const guild of json) {
+
                 if (!guild.name || guild.name.includes('[Raid]')) {
                  this.logger.log(`indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`);
                  continue;
                 }
+
                 const _id: string = toSlug(`${guild.name}@${realm.slug}`);
-                // TODO refactor
+
                 await this.queueGuilds.add(
                   _id,
                   {
-                    guildRank: false,
-                    createOnlyUnique: false,
                     _id: _id,
                     name: guild.name,
                     realm: realm.slug,
                     forceUpdate: 1000 * 60 * 60 * 4,
-                    region: 'eu',
                     created_by: OSINT_SOURCE.WOWPROGRESS,
                     updated_by: OSINT_SOURCE.WOWPROGRESS,
+                    region: 'eu',
                     clientId: key._id,
                     clientSecret: key.secret,
-                    accessToken: key.token
+                    accessToken: key.token,
+                    guildRank: false,
+                    createOnlyUnique: false,
                   },
                   {
                     jobId: _id,
@@ -220,7 +220,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
-        throw new NotFoundException(`indexLookingForGuild: ${keys.length} keys found`)
+        throw new NotFoundException(`${keys.length} keys found`)
       }
 
       const [firstPage, secondPage] = await Promise.all([

@@ -21,6 +21,7 @@ import {
   round2,
   VALUATION_TYPE,
   valuationsQueue,
+  IQItem,
 } from '@app/core';
 
 
@@ -50,7 +51,7 @@ export class ValuationsWorker {
     @BullQueueInject(valuationsQueue.name)
     private readonly queueValuations: Queue<IQItemValuation, number>,
     @BullQueueInject(itemsQueue.name)
-    private readonly queueItems: Queue,
+    private readonly queueItems: Queue<IQItem, number>,
   ) {}
 
   @BullWorkerProcess(valuationsQueue.workerOptions)

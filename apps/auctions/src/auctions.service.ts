@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { delay } from '@app/core/utils/converters';
 import { Queue } from 'bullmq';
-import { GLOBAL_DMA_KEY, auctionsQueue } from '@app/core';
+import { GLOBAL_DMA_KEY, auctionsQueue, IQAuction } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
 
@@ -21,7 +21,7 @@ export class AuctionsService implements OnApplicationBootstrap {
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
     @BullQueueInject(auctionsQueue.name)
-    private readonly queue: Queue,
+    private readonly queue: Queue<IQAuction, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {

@@ -1,6 +1,7 @@
 import { LeanDocument } from 'mongoose';
-import { Auction, Contract, Item } from '@app/mongo';
+import { Auction, Contract } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
+import { BattleNetOptions } from 'blizzapi';
 
 class ItemNames {
   en_US: string;
@@ -19,6 +20,30 @@ export interface IQItemValuation {
   last_modified: number,
   connected_realm_id: number,
   iteration: number,
+}
+
+export class IQItem implements  BattleNetOptions {
+  readonly _id: number;
+
+  readonly region: string;
+
+  readonly clientId: string;
+
+  readonly clientSecret: string;
+
+  readonly accessToken: string;
+}
+
+export class IQAuction implements BattleNetOptions {
+  readonly connected_realm_id: number;
+
+  readonly region: string;
+
+  readonly clientId: string;
+
+  readonly clientSecret: string;
+
+  readonly accessToken: string;
 }
 
 /**

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Item, Key } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { EXPANSION_TICKER_ID, GLOBAL_KEY, itemsQueue } from '@app/core';
+import { EXPANSION_TICKER_ID, GLOBAL_KEY, IQItem, itemsQueue } from '@app/core';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { itemsConfig } from '@app/configuration';
@@ -23,7 +23,7 @@ export class ItemsService implements OnApplicationBootstrap  {
     @InjectModel(Item.name)
     private readonly ItemModel: Model<Item>,
     @BullQueueInject(itemsQueue.name)
-    private readonly queue: Queue,
+    private readonly queue: Queue<IQItem, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -53,7 +53,8 @@ export class ItemsService implements OnApplicationBootstrap  {
               region: 'eu',
               clientId: key._id,
               clientSecret: key.secret,
-              accessToken: key.token },
+              accessToken: key.token
+            },
             {
               jobId: `${i}`
             }

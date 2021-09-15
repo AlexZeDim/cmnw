@@ -79,6 +79,7 @@ export class GuildsWorker {
 
       if (roster.members.length > 0) Object.assign(guild, roster);
       await job.updateProgress(50);
+
       if (guild.isNew) {
         /** Check was guild renamed */
         const rename = await this.GuildModel.findOne({ id: guild.id, realm: guild.realm });
@@ -110,6 +111,7 @@ export class GuildsWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });
+
       if (!response || typeof response !== 'object') return summary;
 
       const keys: string[] = ['id', 'name', 'achievement_points', 'member_count', 'created_timestamp'];
@@ -154,6 +156,8 @@ export class GuildsWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });
+
+      if (!members || members.length === 0) return roster;
 
       await lastValueFrom(
         from(members).pipe(
@@ -633,7 +637,7 @@ export class GuildsWorker {
 
   private async checkExistOrCreate(guild: IQGuild): Promise<Guild> {
     const forceUpdate: number = guild.forceUpdate || 1000 * 60 * 60 * 4;
-    const name_slug: string = toSlug(guild.name);
+    const nameSlug: string = toSlug(guild.name);
     const now: number = new Date().getTime();
 
     const realm = await this.RealmModel
@@ -648,11 +652,11 @@ export class GuildsWorker {
       throw new NotFoundException(`realm ${guild.realm} not found`);
     }
 
-    const guildExist = await this.GuildModel.findById(`${name_slug}@${realm.slug}`);
+    const guildExist = await this.GuildModel.findById(`${nameSlug}@${realm.slug}`);
 
     if (!guildExist) {
       const guildNew = new this.GuildModel({
-        _id: `${name_slug}@${realm.slug}`,
+        _id: `${nameSlug}@${realm.slug}`,
         name: capitalize(guild.name),
         status_code: 100,
         realm: realm.slug,

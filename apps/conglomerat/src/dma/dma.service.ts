@@ -15,11 +15,15 @@ import {
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { ItemValuationsDto } from './dto/item-valuations.dto';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
 export class DmaService {
 
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectModel(Token.name)
     private readonly TokenModel: Model<Token>,
     @InjectModel(Realm.name)
@@ -58,9 +62,9 @@ export class DmaService {
 
     const valuations: LeanDocument<Valuations>[] = [];
 
-    await Promise.all(
-      realm.map(
-        async (connected_realm: IARealm) => {
+    await lastValueFrom(
+      from(realm).pipe(
+        mergeMap(async (connected_realm: IARealm) => {
           const timestamp = is_gold ? connected_realm.golds : connected_realm.auctions;
 
           const item_valuations = await this.ValuationsModel
@@ -88,9 +92,9 @@ export class DmaService {
             );
             is_evaluating = is_evaluating + 1;
           }
-        }
+        })
       )
-    );
+    )
 
     return { valuations, is_evaluating };
   }
@@ -110,54 +114,56 @@ export class DmaService {
     const xAxis: (string | number | Date)[] = [];
     const dataset: IChartOrder[] = [];
 
-    await Promise.all(
-      realm.map(async(connected_realm: IARealm, i: number) => {
-        if (is_commdty) {
-          if (is_xrs) {
-            /** Build X axis */
-            xAxis[i] = connected_realm.realms.join(', ');
-            /** Build Cluster from Orders */
-            if (is_gold) {
-              const orderDataset = await this.goldXRS(yAxis, connected_realm.connected_realm_id, connected_realm.golds, i);
-              if (orderDataset && orderDataset.length) {
-                dataset.push(...orderDataset);
+    await lastValueFrom(
+      from(realm).pipe(
+        mergeMap(async (connected_realm, i) => {
+          if (is_commdty) {
+            if (is_xrs) {
+              /** Build X axis */
+              xAxis[i] = connected_realm.realms.join(', ');
+              /** Build Cluster from Orders */
+              if (is_gold) {
+                const orderDataset = await this.goldXRS(yAxis, connected_realm.connected_realm_id, connected_realm.golds, i);
+                if (orderDataset && orderDataset.length) {
+                  dataset.push(...orderDataset);
+                }
+              }
+
+              if (!is_gold) {
+                const orderDataset = await this.commdtyXRS(yAxis, item._id, connected_realm.connected_realm_id, connected_realm.auctions, i);
+                if (orderDataset && orderDataset.length) {
+                  dataset.push(...orderDataset);
+                }
               }
             }
 
-            if (!is_gold) {
-              const orderDataset = await this.commdtyXRS(yAxis, item._id, connected_realm.connected_realm_id, connected_realm.auctions, i);
-              if (orderDataset && orderDataset.length) {
-                dataset.push(...orderDataset);
+            if (!is_xrs) {
+              /** Build Cluster by Timestamp */
+              if (is_gold) {
+                const { chart, timestamps } = await this.goldIntraDay(yAxis, connected_realm.connected_realm_id);
+                if (chart && timestamps) {
+                  dataset.push(...chart);
+                  xAxis.push(...timestamps);
+                }
+              }
+
+              if (!is_gold) {
+                const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, connected_realm.connected_realm_id);
+                if (chart && timestamps) {
+                  dataset.push(...chart);
+                  xAxis.push(...timestamps);
+                }
               }
             }
           }
-
-          if (!is_xrs) {
-            /** Build Cluster by Timestamp */
-            if (is_gold) {
-              const { chart, timestamps } = await this.goldIntraDay(yAxis, connected_realm.connected_realm_id);
-              if (chart && timestamps) {
-                dataset.push(...chart);
-                xAxis.push(...timestamps);
-              }
-            }
-
-            if (!is_gold) {
-              const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, connected_realm.connected_realm_id);
-              if (chart && timestamps) {
-                dataset.push(...chart);
-                xAxis.push(...timestamps);
-              }
-            }
-          }
-        }
-      })
-    );
+        })
+      )
+    )
 
     return { yAxis, xAxis, dataset };
   }
 
-  priceRange(
+  private priceRange(
     quotes: number[],
     blocks: number,
   ): number[] {
@@ -231,7 +237,7 @@ export class DmaService {
   ): Promise<IChartOrder[]> {
     if (!yAxis.length) return [];
 
-    const orders: IOrderXrs[] = await this.GoldModel
+    const orders = await this.GoldModel
       .aggregate<IOrderXrs>([
         {
           $match: {
@@ -270,7 +276,7 @@ export class DmaService {
   ): Promise<IChartOrder[]> {
     if (!yAxis.length) return [];
 
-    const orders: IOrderXrs[] = await this.AuctionModel
+    const orders = await this.AuctionModel
       .aggregate<IOrderXrs>([
         {
           $match: {
@@ -311,72 +317,73 @@ export class DmaService {
 
     timestamps.sort((a, b) => a - b);
 
-    await Promise.all(timestamps.map(
-      async (timestamp, i) => {
-        await this.GoldModel
-          .aggregate([
-            {
-              $match: {
-                status: 'Online',
-                connected_realm_id: connected_realm_id,
-                last_modified: timestamp
-              }
-            },
-            {
-              $bucket: {
-                groupBy: '$price',
-                boundaries: yAxis,
-                default: 'Other',
-                output: {
-                  orders: { $sum: 1 },
-                  value: { $sum: '$quantity' },
-                  price: { $first: '$price' },
-                  oi: {
-                    $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] } ] },
+    await lastValueFrom(
+      from(timestamps).pipe(
+        mergeMap(async (timestamp, i) => {
+          await this.GoldModel
+            .aggregate([
+              {
+                $match: {
+                  status: 'Online',
+                  connected_realm_id: connected_realm_id,
+                  last_modified: timestamp
+                }
+              },
+              {
+                $bucket: {
+                  groupBy: '$price',
+                  boundaries: yAxis,
+                  default: 'Other',
+                  output: {
+                    orders: { $sum: 1 },
+                    value: { $sum: '$quantity' },
+                    price: { $first: '$price' },
+                    oi: {
+                      $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] } ] },
+                    }
                   }
                 }
+              },
+              {
+                $addFields: { xIndex: i }
               }
-            },
-            {
-              $addFields: { xIndex: i }
-            }
-          ])
-          .allowDiskUse(true)
-          .cursor()
-          .exec()
-          .eachAsync((order: IOrderXrs) => {
-            console.log(order);
-            const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
-            if (yIndex !== -1) {
-              chart.push({
-                x:  order.xIndex,
-                y: yIndex,
-                orders: order.orders,
-                value: order.value,
-                oi: parseInt(order.oi.toFixed(0), 10)
-              });
-            } else if (order._id === 'Other') {
-              if (order.price > yAxis[yAxis.length-1]) {
+            ])
+            .allowDiskUse(true)
+            .cursor()
+            .exec()
+            .eachAsync((order: IOrderXrs) => {
+              const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
+              if (yIndex !== -1) {
                 chart.push({
-                  x: order.xIndex,
-                  y: yAxis.length-1,
+                  x:  order.xIndex,
+                  y: yIndex,
                   orders: order.orders,
                   value: order.value,
                   oi: parseInt(order.oi.toFixed(0), 10)
                 });
-              } else {
-                chart.push({
-                  x: order.xIndex,
-                  y: 0,
-                  orders: order.orders,
-                  value: order.value,
-                  oi: parseInt(order.oi.toFixed(0), 10)
-                });
+              } else if (order._id === 'Other') {
+                if (order.price > yAxis[yAxis.length-1]) {
+                  chart.push({
+                    x: order.xIndex,
+                    y: yAxis.length-1,
+                    orders: order.orders,
+                    value: order.value,
+                    oi: parseInt(order.oi.toFixed(0), 10)
+                  });
+                } else {
+                  chart.push({
+                    x: order.xIndex,
+                    y: 0,
+                    orders: order.orders,
+                    value: order.value,
+                    oi: parseInt(order.oi.toFixed(0), 10)
+                  });
+                }
               }
-            }
-          }, { parallel: 20 });
-      })
-    );
+            }, { parallel: 20 });
+        })
+      )
+    )
 
     return { chart, timestamps };
   }
@@ -392,9 +399,9 @@ export class DmaService {
 
     timestamps.sort((a, b) => a - b);
 
-    await Promise.all(
-      timestamps.map(
-        async (timestamp, i) => {
+    await lastValueFrom(
+      from(timestamps).pipe(
+        mergeMap(async (timestamp, i) => {
           await this.AuctionModel
             .aggregate([
               {
@@ -457,14 +464,14 @@ export class DmaService {
                 }
               }
             }, { parallel: 20 });
-        }
+        })
       )
-    );
+    )
 
     return { chart, timestamps };
   }
 
-  buildDataset(yAxis: number[], orders: IOrderXrs[], xIndex: number): IChartOrder[] {
+  private buildDataset(yAxis: number[], orders: IOrderXrs[], xIndex: number): IChartOrder[] {
     return orders.map(order => {
       const yIndex = yAxis.findIndex((pQ) => pQ === order._id);
       if (yIndex !== -1) {
@@ -509,9 +516,9 @@ export class DmaService {
 
     const quotes: IOrderQuotes[] = [];
 
-    await Promise.all(
-      realm.map(
-        async (connected_realm) => {
+    await lastValueFrom(
+      from(realm).pipe(
+        mergeMap(async (connected_realm) => {
           if (!is_xrs) {
             /** NOT XRS && NOT GOLD */
             if (!is_gold) {
@@ -615,9 +622,10 @@ export class DmaService {
               quotes.push(...orderQuotes);
             }
           }
-        }
+        })
       )
-    );
+    )
+
     return { quotes };
   }
 
@@ -634,9 +642,10 @@ export class DmaService {
     const feed: LeanDocument<Auction>[] = [];
 
     if (!is_commdty) {
-      await Promise.all(
-        realm.map(
-          async (connected_realm) => {
+
+      await lastValueFrom(
+        from(realm).pipe(
+          mergeMap(async (connected_realm, i) => {
             const orderFeed = await this.AuctionModel.find({
               connected_realm_id: connected_realm._id,
               'item.id': item._id,
@@ -644,9 +653,9 @@ export class DmaService {
             }).lean();
             // TODO possible eachAsync cursor;
             feed.push(...orderFeed);
-          }
+          })
         )
-      );
+      )
     }
 
     return { feed };
@@ -657,7 +666,7 @@ export class DmaService {
       item: LeanDocument<Item>,
       realm: IARealm[];
 
-    const [ queryItem, queryRealm ] = input.split('@');
+    const [queryItem, queryRealm] = input.split('@');
     const realmArrayString = queryRealm
       .split(';')
       .filter(Boolean);

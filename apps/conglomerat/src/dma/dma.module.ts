@@ -19,6 +19,7 @@ import {
   ValuationsSchema,
 } from '@app/mongo';
 import { valuationsQueue } from '@app/core';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
@@ -31,6 +32,12 @@ import { valuationsQueue } from '@app/core';
       { name: Auction.name, schema: AuctionsSchema },
       { name: Valuations.name, schema: ValuationsSchema },
     ]),
+    RedisModule.forRoot({
+      config: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
+    }),
     BullModule.forRoot({
       options: {
         connection: {

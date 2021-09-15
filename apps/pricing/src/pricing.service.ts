@@ -49,6 +49,7 @@ export class PricingService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     await this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.pricing_init);
     await this.buildPricing(pricingConfig.build_init);
+    await this.libPricing(pricingConfig.lib_pricing, ['prospect', 'disenchant', 'milling']);
   }
 
   async libPricing(init: boolean = true, libs: string[] = ['prospect', 'disenchant', 'milling']): Promise<void> {

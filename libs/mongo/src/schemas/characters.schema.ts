@@ -1,6 +1,6 @@
 import { Document, Schema as MongooseSchema, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LFG } from '@app/core';
+import { LFG, OSINT_SOURCE } from '@app/core';
 import { Guild } from '@app/mongo/schemas/guilds.schema';
 import { Realm } from '@app/mongo/schemas/realms.schema';
 
@@ -147,10 +147,10 @@ export class Character extends Document {
   @Prop({ default: Date.now() })
   last_modified: Date;
 
-  @Prop({ type: String })
+  @Prop({ type: String, enum: OSINT_SOURCE })
   created_by: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, enum: OSINT_SOURCE })
   updated_by: string;
 
   @Prop({ type: String })

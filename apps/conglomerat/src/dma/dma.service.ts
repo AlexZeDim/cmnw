@@ -41,7 +41,11 @@ export class DmaService {
   ) { }
 
   async getItem(input: ItemCrossRealmDto): Promise<GetItemDto> {
-    return await this.validateTransformDmaQuery(input._id);
+    const { item, realm } = await this.validateTransformDmaQuery(input._id);
+    if (!item || !realm || !realm.length) {
+      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
+    }
+    return { item, realm };
   }
 
   async getItemValuations(input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
@@ -78,15 +82,15 @@ export class DmaService {
           if (itemValuations.length > 0) {
             valuations.push(...itemValuations);
           } else {
-            const _id = `${item._id}@${connectedRealm._id}:${timestamp}`;
+            const jobId = `${item._id}@${connectedRealm._id}:${timestamp}`;
             await this.queueValuations.add(
-              _id,{
+              jobId,{
                 _id: item._id,
                 last_modified: timestamp,
                 connected_realm_id: connectedRealm._id,
                 iteration: 0
               }, {
-                jobId: _id,
+                jobId,
                 priority: 1,
               }
             );

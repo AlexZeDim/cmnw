@@ -1,6 +1,7 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Realm } from '@app/mongo/schemas/realms.schema';
+import { OSINT_SOURCE } from '@app/core';
 
 @Schema()
 class GuildMember {
@@ -21,31 +22,31 @@ export class Guild extends Document {
   @Prop({ type: String, required: true, lowercase: true })
   _id: string;
 
-  @Prop()
+  @Prop({ type: Number })
   id: number;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   realm: string;
 
   @Prop({ required: true, type: Number, ref: 'Realm' })
   realm_id: number | Realm;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   realm_name: string;
 
-  @Prop()
+  @Prop({ type: String })
   faction: string;
 
   @Prop({ type: [GuildMembersSchema] })
   members: Types.Array<GuildMember>
 
-  @Prop()
+  @Prop({ type: Number })
   achievement_points: number;
 
-  @Prop()
+  @Prop({ type: Number })
   member_count: number;
 
   @Prop({ type: Date, default: Date.now() })
@@ -54,19 +55,19 @@ export class Guild extends Document {
   @Prop({ type: Date })
   created_timestamp: Date;
 
-  @Prop()
+  @Prop({ type: Number })
   status_code: number;
 
-  @Prop()
+  @Prop({ type: String, enum: OSINT_SOURCE })
   created_by: string;
 
-  @Prop()
+  @Prop({ type: String, enum: OSINT_SOURCE })
   updated_by: string;
 
-  @Prop({ index: true })
+  @Prop({ type: Date, index: true })
   updatedAt: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   createdAt: Date;
 }
 

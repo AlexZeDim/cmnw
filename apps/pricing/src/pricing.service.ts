@@ -10,7 +10,7 @@ import {
   GLOBAL_DMA_KEY,
   PRICING_TYPE,
   pricingQueue,
-  VALUATION_TYPE,
+  IQPricing,
 } from '@app/core';
 import { BlizzAPI } from 'blizzapi';
 import { Queue } from 'bullmq';
@@ -43,7 +43,7 @@ export class PricingService implements OnApplicationBootstrap {
     @InjectModel(Pricing.name)
     private readonly PricingModel: Model<Pricing>,
     @BullQueueInject(pricingQueue.name)
-    private readonly queue: Queue,
+    private readonly queue: Queue<IQPricing, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -176,6 +176,7 @@ export class PricingService implements OnApplicationBootstrap {
           headers: { 'Battlenet-Namespace': 'static-eu' }
         });
         if (!skill_tiers) continue;
+
         for (let tier of skill_tiers) {
           let expansion: string = 'CLSC';
           Array.from(EXPANSION_TICKER.entries()).some(([k, v]) => {
@@ -186,9 +187,11 @@ export class PricingService implements OnApplicationBootstrap {
             headers: { 'Battlenet-Namespace': 'static-eu' }
           });
           if (!categories) continue;
+
           for (let category of categories) {
             const { recipes } = category;
             if (!recipes) continue;
+
             for (let recipe of recipes) {
               await this.queue.add(
                 `${recipe.id}`,

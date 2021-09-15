@@ -22,7 +22,23 @@ export interface IQItemValuation {
   iteration: number,
 }
 
-export class IQItem implements  BattleNetOptions {
+export class IQPricing implements BattleNetOptions {
+  readonly recipe_id: string | number;
+
+  readonly profession: string | number;
+
+  readonly expansion: string;
+
+  readonly region: string;
+
+  readonly clientId: string;
+
+  readonly clientSecret: string;
+
+  readonly accessToken: string;
+}
+
+export class IQItem implements BattleNetOptions {
   readonly _id: number;
 
   readonly region: string;

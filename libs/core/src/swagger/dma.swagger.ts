@@ -1,8 +1,8 @@
 import { ApiProperty, ApiPropertyOptions, getSchemaPath } from '@nestjs/swagger';
 import { Auction, Valuations } from '@app/mongo';
-import { OrderQuotesInterface } from '@app/core/interfaces';
+import { IOrderQuotes } from '@app/core/interfaces';
 
-class OrderQuotes implements OrderQuotesInterface {
+class OrderQuotes implements IOrderQuotes {
   readonly id: number;
 
   readonly price: number;

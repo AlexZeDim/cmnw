@@ -5,7 +5,7 @@ import { Model } from "mongoose";
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
-import { GLOBAL_OSINT_KEY, GuildQI, OSINT_SOURCE } from '@app/core';
+import { GLOBAL_OSINT_KEY, IQGuild, OSINT_SOURCE } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class GuildsService {
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(guildsQueue.name)
-    private readonly queue: Queue<GuildQI, number>,
+    private readonly queue: Queue<IQGuild, number>,
   ) { }
 
   @Cron(CronExpression.EVERY_4_HOURS)

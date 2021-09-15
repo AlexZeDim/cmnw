@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Gold, Realm } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { FACTION, FunPayGoldInterface } from '@app/core';
+import { FACTION, IFunPayGold } from '@app/core';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
@@ -32,7 +32,7 @@ export class GoldService {
       const listingHTML = funPayHTML
         .html('a.tc-item');
 
-      const listing: Partial<FunPayGoldInterface>[] = [];
+      const listing: Partial<IFunPayGold>[] = [];
       const orders: Gold[] = [];
       const realms: Set<number> = new Set<number>();
       const now: number = new Date().getTime();

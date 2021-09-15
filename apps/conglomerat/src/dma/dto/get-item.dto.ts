@@ -1,6 +1,6 @@
 import { LeanDocument } from 'mongoose';
 import { Item } from '@app/mongo';
-import { RealmAInterface } from '@app/core';
+import { IARealm } from '@app/core';
 
 class ItemLocaleNames {
   en_US: string;
@@ -73,5 +73,5 @@ class ItemEmbedDto implements Omit<LeanDocument<Item>, 'asset_class' | 'tags'> {
 export class GetItemDto {
   readonly item: LeanDocument<Item>
 
-  readonly realm: RealmAInterface[]
+  readonly realm: IARealm[]
 }

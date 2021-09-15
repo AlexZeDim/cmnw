@@ -17,12 +17,12 @@ import {
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
   PLAYABLE_CLASS,
-  toSlug, GuildQI,
-  GuildRosterI,
+  toSlug, IQGuild,
+  IRGuildRoster,
   IGuildRoster,
   EVENT_LOG,
   charactersQueue,
-  CharacterQI,
+  IQCharacter,
 } from '@app/core';
 
 @BullWorker({ queueName: guildsQueue.name })
@@ -43,13 +43,13 @@ export class GuildsWorker {
     @InjectModel(Log.name)
     private readonly LogModel: Model<Log>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queue: Queue<CharacterQI, number>,
+    private readonly queue: Queue<IQCharacter, number>,
   ) { }
 
   @BullWorkerProcess(guildsQueue.workerOptions)
-  public async process(job: Job<GuildQI, number>): Promise<number> {
+  public async process(job: Job<IQGuild, number>): Promise<number> {
     try {
-      const args: GuildQI = { ...job.data };
+      const args: IQGuild = { ...job.data };
 
       const guild = await this.checkExistOrCreate(args);
       const original = { ...guild.toObject() };
@@ -142,14 +142,14 @@ export class GuildsWorker {
     }
   }
 
-  private async roster(guild: GuildQI, BNet: BlizzAPI): Promise<IGuildRoster> {
+  private async roster(guild: IQGuild, BNet: BlizzAPI): Promise<IGuildRoster> {
     const roster: IGuildRoster = { members: [] };
     const characters: Character[] = [];
     try {
       const guild_slug = toSlug(guild.name);
       let iteration: number = 0;
 
-      const { members }: Partial<GuildRosterI> = await BNet.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
+      const { members }: Partial<IRGuildRoster> = await BNet.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
         timeout: OSINT_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' }
@@ -626,7 +626,7 @@ export class GuildsWorker {
     }
   }
 
-  private async checkExistOrCreate(guild: GuildQI): Promise<Guild> {
+  private async checkExistOrCreate(guild: IQGuild): Promise<Guild> {
     const forceUpdate: number = guild.forceUpdate || 1000 * 60 * 60 * 4;
     const name_slug: string = toSlug(guild.name);
     const now: number = new Date().getTime();

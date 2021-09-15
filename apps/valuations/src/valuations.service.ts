@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Item, Key, Pricing, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import {
-  ASSET_EVALUATION_PRIORITY, AuctionsVAInterface,
-  ItemValuationQI, RealmVAInterface,
+  ASSET_EVALUATION_PRIORITY, IVAAuctions,
+  IQItemValuation, IVARealm,
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
@@ -32,7 +32,7 @@ export class ValuationsService implements OnApplicationBootstrap {
     @InjectModel(Auction.name)
     private readonly AuctionsModel: Model<Auction>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queue: Queue<ItemValuationQI, number>,
+    private readonly queue: Queue<IQItemValuation, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -48,7 +48,7 @@ export class ValuationsService implements OnApplicationBootstrap {
   async initValuations(): Promise<void> {
     try {
       await this.RealmModel
-        .aggregate<RealmVAInterface>([
+        .aggregate<IVARealm>([
           {
             $group: {
               _id: '$connected_realm_id',
@@ -59,7 +59,7 @@ export class ValuationsService implements OnApplicationBootstrap {
         ])
         .cursor({ batchSize: 1 })
         .exec()
-        .eachAsync(async ({ _id, auctions, valuations }: RealmVAInterface) => {
+        .eachAsync(async ({ _id, auctions, valuations }: IVARealm) => {
           /** Update valuations with new auctions data */
           if (auctions <= valuations) return;
           await this.buildValuations(_id, auctions);
@@ -146,7 +146,7 @@ export class ValuationsService implements OnApplicationBootstrap {
        */
       if (args.includes('auctions')) {
         this.logger.debug('auctions stage started');
-        await this.AuctionsModel.aggregate<AuctionsVAInterface>([
+        await this.AuctionsModel.aggregate<IVAAuctions>([
           {
             $group: {
               _id: '$item_id',
@@ -157,7 +157,7 @@ export class ValuationsService implements OnApplicationBootstrap {
           .allowDiskUse(true)
           .cursor({})
           .exec()
-          .eachAsync(async (itemAuction: AuctionsVAInterface) => {
+          .eachAsync(async (itemAuction: IVAAuctions) => {
             const item = await this.ItemModel.findById(itemAuction._id)
             if (item) {
               item.asset_class.addToSet(VALUATION_TYPE.MARKET);

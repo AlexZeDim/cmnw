@@ -2,7 +2,7 @@ import { LFG, OSINT_SOURCE } from '@app/core/constants';
 import { BattleNetOptions } from 'blizzapi';
 import { Guild } from '@app/mongo';
 
-export class OsintIndexQOI {
+export class IQOptionsOsintIndex {
   readonly forceUpdate: number;
 
   readonly createOnlyUnique: boolean;
@@ -16,7 +16,7 @@ export class OsintIndexQOI {
   readonly updated_by: OSINT_SOURCE;
 }
 
-export interface SelfKeyHrefI {
+export interface ISelfKeyHref {
   readonly href: string;
 }
 
@@ -33,19 +33,19 @@ export class IGuildMember {
 }
 
 
-export interface GuildRosterI {
+export interface IRGuildRoster {
   readonly _links: {
-    readonly self: SelfKeyHrefI
+    readonly self: ISelfKeyHref
   }
 
   readonly guild: {
-    readonly key: SelfKeyHrefI
+    readonly key: ISelfKeyHref
     readonly name: string;
 
     readonly id: number;
 
     readonly realm: {
-      readonly key: SelfKeyHrefI
+      readonly key: ISelfKeyHref
 
       readonly name: string;
       readonly id: number;
@@ -60,25 +60,25 @@ export interface GuildRosterI {
 
   readonly members: Array<{
     readonly character: {
-      readonly key: SelfKeyHrefI
+      readonly key: ISelfKeyHref
 
       readonly name: string;
       readonly id: number;
       readonly realm: {
-        readonly key: SelfKeyHrefI
+        readonly key: ISelfKeyHref
 
         readonly id: number;
         readonly slug: string;
       };
       readonly level: number;
       readonly playable_class: {
-        readonly key: SelfKeyHrefI
+        readonly key: ISelfKeyHref
 
         readonly id: number;
       }
 
       readonly playable_race: {
-        readonly key: SelfKeyHrefI
+        readonly key: ISelfKeyHref
 
         readonly id: number;
       }
@@ -88,7 +88,7 @@ export interface GuildRosterI {
   }>
 }
 
-export class GuildQI implements Pick<Guild, '_id' | 'name'>, OsintIndexQOI, BattleNetOptions {
+export class IQGuild implements Pick<Guild, '_id' | 'name'>, IQOptionsOsintIndex, BattleNetOptions {
   readonly _id: string;
 
   readonly id?: number;
@@ -126,7 +126,7 @@ export class GuildQI implements Pick<Guild, '_id' | 'name'>, OsintIndexQOI, Batt
   readonly guildRank: boolean;
 }
 
-export class CharacterQI implements BattleNetOptions, OsintIndexQOI {
+export class IQCharacter implements BattleNetOptions, IQOptionsOsintIndex {
   readonly _id: string;
 
   readonly name: string;

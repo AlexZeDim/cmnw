@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_TIMEOUT_TOLERANCE, ItemInterface, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
+import { DMA_TIMEOUT_TOLERANCE, IItem, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { Job } from 'bullmq';
@@ -57,7 +57,7 @@ export class ItemsWorker {
       if (getItemSummary.status === 'fulfilled' && getItemSummary.value) {
         /** Schema fields */
         const
-          requested_item: Partial<ItemInterface> = {},
+          requested_item: Partial<IItem> = {},
           fields: string[] = [
             'quality',
             'item_class',

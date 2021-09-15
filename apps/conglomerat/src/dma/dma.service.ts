@@ -4,11 +4,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import {
-  ChartOrderInterface,
-  ItemValuationQI,
-  OrderQuotesInterface,
-  OrderXrsInterface,
-  RealmAInterface,
+  IChartOrder,
+  IQItemValuation,
+  IOrderQuotes,
+  IOrderXrs,
+  IARealm,
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
@@ -33,7 +33,7 @@ export class DmaService {
     @InjectModel(Valuations.name)
     private readonly ValuationsModel: Model<Valuations>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queueValuations: Queue<ItemValuationQI, number>,
+    private readonly queueValuations: Queue<IQItemValuation, number>,
   ) { }
 
   async getItem(input: ItemCrossRealmDto): Promise<GetItemDto> {
@@ -60,7 +60,7 @@ export class DmaService {
 
     await Promise.all(
       realm.map(
-        async (connected_realm: RealmAInterface) => {
+        async (connected_realm: IARealm) => {
           const timestamp = is_gold ? connected_realm.golds : connected_realm.auctions;
 
           const item_valuations = await this.ValuationsModel
@@ -108,10 +108,10 @@ export class DmaService {
     const connected_realms_id = realm.map(connected_realm => connected_realm._id);
     const yAxis = await this.buildYAxis(item._id, connected_realms_id, is_commdty, is_xrs, is_gold);
     const xAxis: (string | number | Date)[] = [];
-    const dataset: ChartOrderInterface[] = [];
+    const dataset: IChartOrder[] = [];
 
     await Promise.all(
-      realm.map(async(connected_realm: RealmAInterface, i: number) => {
+      realm.map(async(connected_realm: IARealm, i: number) => {
         if (is_commdty) {
           if (is_xrs) {
             /** Build X axis */
@@ -228,11 +228,11 @@ export class DmaService {
     connected_realm_id: number,
     golds: number,
     xIndex: number
-  ): Promise<ChartOrderInterface[]> {
+  ): Promise<IChartOrder[]> {
     if (!yAxis.length) return [];
 
-    const orders: OrderXrsInterface[] = await this.GoldModel
-      .aggregate<OrderXrsInterface>([
+    const orders: IOrderXrs[] = await this.GoldModel
+      .aggregate<IOrderXrs>([
         {
           $match: {
             status: 'Online',
@@ -267,11 +267,11 @@ export class DmaService {
     connected_realm_id: number,
     auctions: number,
     xIndex: number
-  ): Promise<ChartOrderInterface[]> {
+  ): Promise<IChartOrder[]> {
     if (!yAxis.length) return [];
 
-    const orders: OrderXrsInterface[] = await this.AuctionModel
-      .aggregate<OrderXrsInterface>([
+    const orders: IOrderXrs[] = await this.AuctionModel
+      .aggregate<IOrderXrs>([
         {
           $match: {
             connected_realm_id: connected_realm_id,
@@ -301,7 +301,7 @@ export class DmaService {
   }
 
   async goldIntraDay(yAxis: number[], connected_realm_id: number) {
-    const chart: ChartOrderInterface[] = [];
+    const chart: IChartOrder[] = [];
     if (!yAxis.length) return { chart };
     if (!connected_realm_id) return { chart };
     /** Find distinct timestamps for each realm */
@@ -344,7 +344,7 @@ export class DmaService {
           .allowDiskUse(true)
           .cursor()
           .exec()
-          .eachAsync((order: OrderXrsInterface) => {
+          .eachAsync((order: IOrderXrs) => {
             console.log(order);
             const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
             if (yIndex !== -1) {
@@ -382,7 +382,7 @@ export class DmaService {
   }
 
   async commdtyIntraDay(yAxis: number[], item_id: number, connected_realm_id: number) {
-    const chart: ChartOrderInterface[] = [];
+    const chart: IChartOrder[] = [];
     if (!yAxis.length) return { chart };
     if (!connected_realm_id) return { chart };
     /** Find distinct timestamps for each realm */
@@ -427,7 +427,7 @@ export class DmaService {
             .allowDiskUse(true)
             .cursor()
             .exec()
-            .eachAsync((order: OrderXrsInterface) => {
+            .eachAsync((order: IOrderXrs) => {
               const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
               if (yIndex !== -1) {
                 chart.push({
@@ -464,7 +464,7 @@ export class DmaService {
     return { chart, timestamps };
   }
 
-  buildDataset(yAxis: number[], orders: OrderXrsInterface[], xIndex: number): ChartOrderInterface[] {
+  buildDataset(yAxis: number[], orders: IOrderXrs[], xIndex: number): IChartOrder[] {
     return orders.map(order => {
       const yIndex = yAxis.findIndex((pQ) => pQ === order._id);
       if (yIndex !== -1) {
@@ -507,7 +507,7 @@ export class DmaService {
     const is_xrs = realm.length > 1;
     const is_gold = item._id === 1;
 
-    const quotes: OrderQuotesInterface[] = [];
+    const quotes: IOrderQuotes[] = [];
 
     await Promise.all(
       realm.map(
@@ -515,7 +515,7 @@ export class DmaService {
           if (!is_xrs) {
             /** NOT XRS && NOT GOLD */
             if (!is_gold) {
-              const orderQuotes: OrderQuotesInterface[] = await this.AuctionModel.aggregate([
+              const orderQuotes: IOrderQuotes[] = await this.AuctionModel.aggregate([
                 {
                   $match: {
                     connected_realm_id: connected_realm._id,
@@ -564,7 +564,7 @@ export class DmaService {
             }
             /** NOT XRS but GOLD */
             if (is_gold) {
-              const orderQuotes: OrderQuotesInterface[] = await this.GoldModel.aggregate([
+              const orderQuotes: IOrderQuotes[] = await this.GoldModel.aggregate([
                 {
                   $match: {
                     status: 'Online',
@@ -655,7 +655,7 @@ export class DmaService {
   async validateTransformDmaQuery(input: string) {
     let
       item: LeanDocument<Item>,
-      realm: RealmAInterface[];
+      realm: IARealm[];
 
     const [ queryItem, queryRealm ] = input.split('@');
     const realmArrayString = queryRealm
@@ -697,7 +697,7 @@ export class DmaService {
       if (isNaN(Number(queryRealm))) {
         /** if string */
         realm = await this.RealmModel
-          .aggregate<RealmAInterface>([
+          .aggregate<IARealm>([
             { $match: { $text: { $search: queryRealm } } },
             projectStage,
             sortStage,
@@ -707,7 +707,7 @@ export class DmaService {
       } else {
         /** if number */
         realm = await this.RealmModel
-          .aggregate<RealmAInterface>([
+          .aggregate<IARealm>([
             { $match: { connected_realm_id: parseInt(queryRealm) } },
             projectStage,
             sortStage,
@@ -718,7 +718,7 @@ export class DmaService {
     } else {
       const queryRealms = realmArrayString.toString().replace(';', ' ');
       realm = await this.RealmModel
-        .aggregate<RealmAInterface>([
+        .aggregate<IARealm>([
           { $match: { $text: { $search: queryRealms } } },
           projectStage,
           sortStage,

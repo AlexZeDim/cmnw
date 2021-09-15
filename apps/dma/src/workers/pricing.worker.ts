@@ -6,7 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
 import { Job } from 'bullmq';
-import { PricingInterface, PricingMethods } from '@app/core/interfaces/dma.interface';
+import { IPricing, IPricingMethods } from '@app/core/interfaces/dma.interface';
 import { PROFESSION_TICKER } from '@app/core/constants/dma.constants';
 
 @BullWorker({ queueName: pricingQueue.name })
@@ -31,9 +31,9 @@ export class PricingWorker {
   @BullWorkerProcess(pricingQueue.workerOptions)
   public async process(job: Job): Promise<number> {
     try {
-      const writeConcerns: PricingMethods[] = [];
+      const writeConcerns: IPricingMethods[] = [];
 
-      const args: BattleNetOptions & PricingInterface = { ...job.data };
+      const args: BattleNetOptions & IPricing = { ...job.data };
       await job.updateProgress(1);
 
       this.BNet = new BlizzAPI({

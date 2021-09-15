@@ -24,7 +24,7 @@ import {
   toSlug, capitalize,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
-  CharacterQI,
+  IQCharacter,
 } from '@app/core';
 
 @BullWorker({ queueName: charactersQueue.name })
@@ -46,9 +46,9 @@ export class CharactersWorker {
   ) {}
 
   @BullWorkerProcess(charactersQueue.workerOptions)
-  public async process(job: Job<CharacterQI, number>): Promise<number> {
+  public async process(job: Job<IQCharacter, number>): Promise<number> {
     try {
-      const args: CharacterQI = { ...job.data };
+      const args: IQCharacter = { ...job.data };
 
       const character = await this.checkExistOrCreate(args);
       const original = { ...character.toObject() };
@@ -153,7 +153,7 @@ export class CharactersWorker {
     }
   }
 
-  private async checkExistOrCreate(character: CharacterQI): Promise<Character> {
+  private async checkExistOrCreate(character: IQCharacter): Promise<Character> {
     const forceUpdate: number = character.forceUpdate || 86400 * 1000;
     const name_slug: string = toSlug(character.name);
     const now: number = new Date().getTime();

@@ -4,7 +4,7 @@ import { Key, Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo'
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import {
-  csvReagents,
+  ICsvReagents,
   DMA_SOURCE,
   EXPANSION_TICKER,
   GLOBAL_DMA_KEY,
@@ -286,7 +286,7 @@ export class PricingService implements OnApplicationBootstrap {
               reagentsKeyIndex: number[] = [2, 3, 4, 5, 6, 7, 8, 9],
               quantityIndex: number[] = [10, 11, 12, 13, 14, 15, 16, 17],
               row_value: any[] = Object.values(row),
-              reagents: Array<csvReagents> = [];
+              reagents: Array<ICsvReagents> = [];
 
             reagentsKeyIndex.map((n, i) => {
               if (row_value[n] !== 0) {

@@ -14,7 +14,7 @@ class ItemNames {
   ru_RU: string;
 }
 
-export interface ItemValuationQI {
+export interface IQItemValuation {
   _id: number,
   last_modified: number,
   connected_realm_id: number,
@@ -25,7 +25,7 @@ export interface ItemValuationQI {
  * Value Adjustable Class
  * argument for evaluation functions
  */
-export class ItemVAI implements ItemValuationQI {
+export class IVAItem implements IQItemValuation {
   readonly _id: number;
 
   readonly name: ItemNames;
@@ -77,7 +77,7 @@ export class ItemVAI implements ItemValuationQI {
   readonly iteration: number;
 }
 
-export interface ItemInterface {
+export interface IItem {
   quality: string,
   item_class: string,
   item_subclass: string,
@@ -88,13 +88,13 @@ export interface ItemInterface {
   loot_type: string
 }
 
-export interface PricingInterface {
+export interface IPricing {
   recipe_id: number,
   expansion: string,
   profession: number,
 }
 
-export interface PricingMethods {
+export interface IPricingMethods {
   faction?: string,
   recipe_id: number,
   reagents: Record<string, any>[],
@@ -103,7 +103,7 @@ export interface PricingMethods {
   item_quantity: number,
 }
 
-export interface ChartOrderInterface {
+export interface IChartOrder {
   x: number,
   y: number,
   orders: number,
@@ -111,7 +111,7 @@ export interface ChartOrderInterface {
   oi: number,
 }
 
-export interface OrderQuotesInterface {
+export interface IOrderQuotes {
   readonly id: number,
   readonly price: number,
   readonly quantity: number,
@@ -119,7 +119,7 @@ export interface OrderQuotesInterface {
   readonly size: number,
 }
 
-export interface OrderXrsInterface {
+export interface IOrderXrs {
   _id: string | number;
   xIndex: number;
   orders: number;
@@ -128,7 +128,7 @@ export interface OrderXrsInterface {
   price: number;
 }
 
-export interface RealmAInterface {
+export interface IARealm {
   readonly _id: number,
   readonly realms: string[],
   readonly slug: string,
@@ -138,18 +138,18 @@ export interface RealmAInterface {
   readonly valuations: number;
 }
 
-export interface RealmVAInterface {
+export interface IVARealm {
   readonly _id: number;
   readonly auctions: number;
   readonly valuations: number;
 }
 
-export interface AuctionsVAInterface {
+export interface IVAAuctions {
   readonly _id: number;
   readonly data: LeanDocument<Auction>;
 }
 
-export interface FunPayGoldInterface {
+export interface IFunPayGold {
   readonly realm: string;
   readonly faction: string;
   readonly status: boolean;
@@ -162,7 +162,7 @@ export interface FunPayGoldInterface {
  * Market Data Response from aggregation
  * for Auction Valuation Adjustable
  */
-export interface MarketDataInterface {
+export interface IMarketData {
   _id: number,
   quantity: number,
   open_interest: number,
@@ -193,7 +193,7 @@ export interface ContractAggregation extends LeanDocument<Contract> {
  * Reagent Item Interface
  * extends Item & Pricing(Q) & implement value: number(0)
  */
-export class ReagentItemI implements ItemPricing {
+export class IReagentItem implements ItemPricing {
   readonly _id: number;
 
   readonly contracts: boolean;
@@ -243,7 +243,7 @@ export class ReagentItemI implements ItemPricing {
   value: number;
 }
 
-export interface csvReagents {
+export interface ICsvReagents {
   readonly _id: number;
   readonly quantity: number;
 }
@@ -265,11 +265,11 @@ export class MethodEvaluation {
 
   derivative_quantity_sum: number;
 
-  premium_items: ReagentItemI[];
+  premium_items: IReagentItem[];
 
-  reagent_items: ReagentItemI[];
+  reagent_items: IReagentItem[];
 
-  unsorted_items: ReagentItemI[];
+  unsorted_items: IReagentItem[];
 
   single_derivative: boolean;
 

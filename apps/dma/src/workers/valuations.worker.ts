@@ -12,12 +12,12 @@ import {
   FLAG_TYPE,
   GLOBAL_DMA_KEY,
   itemsQueue,
-  ItemVAI,
-  ItemValuationQI,
-  MarketDataInterface,
+  IVAItem,
+  IQItemValuation,
+  IMarketData,
   MethodEvaluation,
   PRICING_TYPE,
-  ReagentItemI,
+  IReagentItem,
   round2,
   VALUATION_TYPE,
   valuationsQueue,
@@ -48,13 +48,13 @@ export class ValuationsWorker {
     @InjectModel(Item.name)
     private readonly ItemModel: Model<Item>,
     @BullQueueInject(valuationsQueue.name)
-    private readonly queueValuations: Queue<ItemValuationQI, number>,
+    private readonly queueValuations: Queue<IQItemValuation, number>,
     @BullQueueInject(itemsQueue.name)
     private readonly queueItems: Queue,
   ) {}
 
   @BullWorkerProcess(valuationsQueue.workerOptions)
-  public async process(job: Job<ItemValuationQI, number>): Promise<number> {
+  public async process(job: Job<IQItemValuation, number>): Promise<number> {
     try {
       const item = await this.ItemModel.findById(job.data._id).lean();
 
@@ -63,7 +63,7 @@ export class ValuationsWorker {
         return 404;
       }
 
-      const itemVA: ItemVAI = { ...item, ...job.data };
+      const itemVA: IVAItem = { ...item, ...job.data };
 
       if (itemVA.iteration > 50) {
         this.logger.error(`item: ${item._id} iteration > ${itemVA.iteration}`);
@@ -186,7 +186,7 @@ export class ValuationsWorker {
     );
   }
 
-  private async addValuationToQueue(args: ItemValuationQI): Promise<void> {
+  private async addValuationToQueue(args: IQItemValuation): Promise<void> {
     const jobId = `${args._id}@${args.connected_realm_id}:${args.last_modified}`;
     const jobRemove: number = await this.queueValuations.remove(jobId);
 
@@ -207,7 +207,7 @@ export class ValuationsWorker {
     );
   };
 
-  private async getCVA <T extends ItemVAI>(args: T): Promise<void> {
+  private async getCVA <T extends IVAItem>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.GOLD);
       /** Request timestamp for gold */
@@ -331,7 +331,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getVVA <T extends ItemVAI>(args: T): Promise<void> {
+  private async getVVA <T extends IVAItem>(args: T): Promise<void> {
     try {
       if (args.asset_class.includes(VALUATION_TYPE.VENDOR)) {
         const vendor = await this.ValuationsModel.findOne({
@@ -376,7 +376,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getTVA <T extends ItemVAI>(args: T): Promise<void> {
+  private async getTVA <T extends IVAItem>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.WOWTOKEN);
       /** CONSTANT AMOUNT */
@@ -489,7 +489,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getAVA <T extends ItemVAI>(args: T): Promise<void> {
+  private async getAVA <T extends IVAItem>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.MARKET);
 
@@ -502,7 +502,7 @@ export class ValuationsWorker {
 
       if (!ava) {
         /** Request for Quotes */
-        const [market_data] = await this.AuctionsModel.aggregate<MarketDataInterface>([
+        const [market_data] = await this.AuctionsModel.aggregate<IMarketData>([
           {
             $match: {
               connected_realm_id: args.connected_realm_id,
@@ -574,7 +574,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getPMVA(args: ItemVAI): Promise<void> {
+  private async getPMVA(args: IVAItem): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.DERIVATIVE);
 
@@ -677,7 +677,7 @@ export class ValuationsWorker {
   }
 
   private async getRVA(
-    args: ItemVAI,
+    args: IVAItem,
     price_method: LeanDocument<Pricing>,
     methodEvaluation: MethodEvaluation
   ): Promise<MethodEvaluation> {
@@ -688,7 +688,7 @@ export class ValuationsWorker {
           // TODO exception
         }
 
-        const reagentItem: ReagentItemI = Object.assign(
+        const reagentItem: IReagentItem = Object.assign(
           { quantity: reagent.quantity, value: 0 },
           item
         );
@@ -773,7 +773,7 @@ export class ValuationsWorker {
   }
 
   private async getPRVA(
-    args: ItemVAI,
+    args: IVAItem,
     price_method: LeanDocument<Pricing>,
     methodEvaluation: MethodEvaluation
   ): Promise<MethodEvaluation> {
@@ -881,7 +881,7 @@ export class ValuationsWorker {
   }
 
   private async getDVA(
-    args: ItemVAI,
+    args: IVAItem,
     price_method: LeanDocument<Pricing>,
     methodEvaluation: MethodEvaluation
   ): Promise<MethodEvaluation> {

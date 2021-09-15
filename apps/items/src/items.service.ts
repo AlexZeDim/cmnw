@@ -32,9 +32,15 @@ export class ItemsService implements OnApplicationBootstrap  {
   }
 
   @Cron(CronExpression.EVERY_WEEK)
-  async indexItems(clearance: string = GLOBAL_KEY, min: number = 0, max: number = 200000, updateForce: boolean = true, init: boolean = true): Promise<void> {
+  async indexItems(
+    clearance: string = GLOBAL_KEY,
+    min: number = 0,
+    max: number = 200000,
+    updateForce: boolean = true,
+    init: boolean = true
+  ): Promise<void> {
     try {
-      this.logger.log(`indexItems: init: ${init}`);
+      this.logger.log(`indexItems: init: ${init}, updateForce: ${updateForce}`);
       if (!init) {
         return;
       }

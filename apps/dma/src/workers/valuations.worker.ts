@@ -8,7 +8,6 @@ import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { delay } from '@app/core/utils/converters';
-import { nanoid } from 'nanoid';
 import {
   FLAG_TYPE,
   GLOBAL_DMA_KEY,
@@ -189,7 +188,7 @@ export class ValuationsWorker {
   }
 
   private async addValuationToQueue(args: IQItemValuation): Promise<void> {
-    const jobId = `${args._id}@${args.connected_realm_id}:${args.last_modified}:${nanoid(6)}`;
+    const jobId = `${args._id}@${args.connected_realm_id}:${args.last_modified}}`;
     const jobRemove: number = await this.queueValuations.remove(jobId);
 
     this.logger.warn(`addValuationToQueue: ${jobId}, remove job: ${jobRemove}`);
@@ -952,7 +951,7 @@ export class ValuationsWorker {
       }
 
       if (
-        price_method.type === PRICING_TYPE.DERIVATIVE
+        price_method.type === PRICING_TYPE.PRIMARY
         && methodEvaluation.single_derivative === true
       ) {
         const [singleDerivative] = price_method.derivatives;

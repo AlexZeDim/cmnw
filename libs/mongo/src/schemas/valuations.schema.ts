@@ -204,10 +204,10 @@ export class Valuations extends Document {
   @Prop()
   name: string;
 
-  @Prop({ enum: FLAG_TYPE })
+  @Prop({ enum: FLAG_TYPE, uppercase: true })
   flag: string;
 
-  @Prop({ enum: VALUATION_TYPE })
+  @Prop({ enum: VALUATION_TYPE, lowercase: true })
   type: string;
 
   @Prop({ type: Details })
@@ -216,5 +216,11 @@ export class Valuations extends Document {
 
 export const ValuationsSchema = SchemaFactory.createForClass(Valuations);
 
-
-//TODO to lowercase or uppercase asset classes, flag and types
+ValuationsSchema.index({
+  item_id: 1,
+  last_modified: 1,
+  connected_realm_id: 1,
+  type: 1.
+}, {
+  name: 'SQ'
+})

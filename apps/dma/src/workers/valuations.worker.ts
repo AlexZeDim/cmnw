@@ -8,6 +8,7 @@ import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { delay } from '@app/core/utils/converters';
+import { nanoid } from 'nanoid';
 import {
   FLAG_TYPE,
   GLOBAL_DMA_KEY,
@@ -188,7 +189,7 @@ export class ValuationsWorker {
   }
 
   private async addValuationToQueue(args: IQItemValuation): Promise<void> {
-    const jobId = `${args._id}@${args.connected_realm_id}:${args.last_modified}`;
+    const jobId = `${args._id}@${args.connected_realm_id}:${args.last_modified}:${nanoid(6)}`;
     const jobRemove: number = await this.queueValuations.remove(jobId);
 
     this.logger.warn(`addValuationToQueue: ${jobId}, remove job: ${jobRemove}`);
@@ -613,11 +614,14 @@ export class ValuationsWorker {
           item_id: args._id,
           last_modified: args.last_modified,
           connected_realm_id: args.connected_realm_id,
-          name: `${price_method.ticker}`, // FIXME
           type: VALUATION_TYPE.DERIVATIVE,
+          name: price_method._id.toString(),
         });
 
-        if (dva) continue;
+        if (dva) {
+          this.logger.warn(`getPMVA: item ${args._id} pricing method: ${price_method._id} already have valuation`);
+          continue;
+        }
 
         const sumReagentsQuantity: number = price_method.reagents.reduce((accum, reagent ) => accum + reagent.quantity, 0);
         const sumDerivativesQuantity: number = price_method.derivatives.reduce((accum, derivative ) => accum + derivative.quantity, 0);
@@ -686,7 +690,14 @@ export class ValuationsWorker {
       for (const reagent of price_method.reagents) {
         const item = await this.ItemModel.findById(reagent._id).lean();
         if (!item) {
-          // TODO exception
+          await this.addMissingItemToQueue(reagent._id);
+          await this.addValuationToQueue({
+            _id: args._id,
+            last_modified: args.last_modified,
+            connected_realm_id: args.connected_realm_id,
+            iteration: args.iteration,
+          });
+          throw new ServiceUnavailableException(`getRVA: ${args._id} recursive`);
         }
 
         const reagentItem: IReagentItem = Object.assign(
@@ -734,7 +745,7 @@ export class ValuationsWorker {
               connected_realm_id: args.connected_realm_id,
               iteration: args.iteration,
             });
-            throw new ServiceUnavailableException(`getPMVA: ${args._id} recursive`);
+            throw new ServiceUnavailableException(`getRVA: ${args._id} recursive`);
           }
 
           if (
@@ -902,7 +913,8 @@ export class ValuationsWorker {
         const [reagentItem] = methodEvaluation.reagent_items;
 
         for (const derivative of price_method.derivatives) {
-          const derivativeItemName = `DR:${derivative._id}:${price_method.spell_id}:${reagentItem._id}`;
+          //`DR:${derivative._id}:${price_method.spell_id}:${reagentItem._id}`
+          const derivativeItemName = price_method._id.toString();
           const derivativeItemShare = round2(derivative.quantity / methodEvaluation.derivative_quantity_sum);
           const derivativeValuationShare = round2(methodEvaluation.queue_cost * derivativeItemShare);
           const derivativeItemValuation = derivative.quantity < 1
@@ -944,7 +956,8 @@ export class ValuationsWorker {
         && methodEvaluation.single_derivative === true
       ) {
         const [singleDerivative] = price_method.derivatives;
-        const derivativeItemName = `DP:${singleDerivative._id}:${price_method.spell_id}`;
+        // `DP:${singleDerivative._id}:${price_method.spell_id}`
+        const derivativeItemName = price_method._id.toString();
         methodEvaluation.nominal_value = round2(methodEvaluation.queue_cost / singleDerivative.quantity);
 
         // TODO proc chance

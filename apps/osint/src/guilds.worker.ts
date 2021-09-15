@@ -262,7 +262,10 @@ export class GuildsWorker {
         )
       );
 
-      await this.CharacterModel.insertMany(characters, { rawResult: false });
+      if (characters.length > 0) {
+        await this.CharacterModel.insertMany(characters, { rawResult: false });
+        this.logger.log(`roster: ${characters.length} added`);
+      }
 
       return roster;
     } catch (errorException) {
@@ -417,8 +420,10 @@ export class GuildsWorker {
         )
       );
 
-      await this.LogModel.insertMany(block, { rawResult: false });
-      this.logger.log(`logs: ${updated._id} updated`);
+      if (block.length > 0) {
+        await this.LogModel.insertMany(block, { rawResult: false });
+        this.logger.log(`logs: ${updated._id} updated`);
+      }
     } catch (errorException) {
       this.logger.error(`logs: ${updated._id}:${errorException}`)
     }

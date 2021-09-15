@@ -110,20 +110,20 @@ export class CharactersWorker {
        * by request from args
        */
       if (args.updateRIO) {
-        const raider_io = await this.raiderio(character.name, character.realm);
-        Object.assign(character, raider_io);
+        const raiderIo = await this.raiderio(character.name, character.realm);
+        Object.assign(character, raiderIo);
         await job.updateProgress(60);
       }
 
       if (args.updateWCL) {
-        const raider_io = await this.warcraftlogs(character.name, character.realm);
-        Object.assign(character, raider_io);
+        const warcraftLogs = await this.warcraftlogs(character.name, character.realm);
+        Object.assign(character, warcraftLogs);
         await job.updateProgress(70);
       }
 
       if (args.updateWP) {
-        const wow_progress = await this.wowprogress(character.name, character.realm);
-        Object.assign(character, wow_progress);
+        const wowProgress = await this.wowprogress(character.name, character.realm);
+        Object.assign(character, wowProgress);
         await job.updateProgress(80);
       }
 
@@ -133,7 +133,7 @@ export class CharactersWorker {
        * only if original
        */
       if (!character.isNew) {
-        if (original.guild_id !== character.guild_id) {
+        if (original.guild_guid !== character.guild_guid) {
           if (!character.guild_id) {
             character.guild_id = undefined;
             character.guild = undefined;

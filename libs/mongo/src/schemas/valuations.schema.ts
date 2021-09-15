@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
 import { Item } from '@app/mongo/schemas/items.schema';
@@ -6,31 +6,31 @@ import { Realm } from '@app/mongo/schemas/realms.schema';
 
 @Schema()
 class ItemNames {
-  @Prop()
+  @Prop({ type: String })
   en_US: string;
 
-  @Prop()
+  @Prop({ type: String })
   es_MX: string;
 
-  @Prop()
+  @Prop({ type: String })
   pt_BR: string;
 
-  @Prop()
+  @Prop({ type: String })
   de_DE: string;
 
-  @Prop()
+  @Prop({ type: String })
   en_GB: string;
 
-  @Prop()
+  @Prop({ type: String })
   es_ES: string;
 
-  @Prop()
+  @Prop({ type: String })
   fr_FR: string;
 
-  @Prop()
+  @Prop({ type: String })
   it_IT: string;
 
-  @Prop()
+  @Prop({ type: String })
   ru_RU: string;
 }
 
@@ -39,49 +39,49 @@ export class ItemValuations extends Item {
   @Prop({ type: Number, required: true })
   _id: number;
 
-  @Prop({ _id: false, timestamps: false })
+  @Prop({ _id: false, type: ItemNames, timestamps: false })
   name: ItemNames;
 
-  @Prop()
+  @Prop({ type: String })
   quality: string;
 
-  @Prop()
+  @Prop({ type: Number })
   ilvl: number;
 
-  @Prop()
+  @Prop({ type: Number })
   level: number;
 
-  @Prop()
+  @Prop({ type: String })
   icon: string;
 
-  @Prop()
+  @Prop({ type: String })
   item_class: string;
 
-  @Prop()
+  @Prop({ type: String })
   item_subclass: string;
 
-  @Prop()
+  @Prop({ type: Number })
   purchase_price: number;
 
-  @Prop()
+  @Prop({ type: Number })
   purchase_quantity: number;
 
-  @Prop()
+  @Prop({ type: Number })
   sell_price: number;
 
-  @Prop()
+  @Prop({ type: Boolean })
   is_equippable: boolean;
 
-  @Prop()
+  @Prop({ type: Boolean })
   is_stackable: boolean;
 
-  @Prop()
+  @Prop({ type: String })
   inventory_type: string;
 
-  @Prop()
+  @Prop({ type: String })
   loot_type: string;
 
-  @Prop({ required: true, default: false })
+  @Prop({ type: Boolean, required: true, default: false })
   contracts: boolean;
   /** add via indexAssetClass - csv import */
 
@@ -89,26 +89,26 @@ export class ItemValuations extends Item {
   asset_class: Types.Array<String>;
   /** add via importTaxonomy_CSV('itemsparse') */
 
-  @Prop()
+  @Prop({ type: String })
   expansion: string;
 
-  @Prop()
+  @Prop({ type: Number })
   stackable: number;
   /** add via importTaxonomy_CSV('taxonomy') */
 
-  @Prop()
+  @Prop({ type: String })
   profession_class: string;
 
-  @Prop()
+  @Prop({ type: String })
   ticker: string;
 
   @Prop({ default: [], type: [String] })
   tags: Types.Array<String>;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   value: number;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   quantity: number;
 }
 
@@ -120,61 +120,61 @@ class Details {
    * PRVA
    * (weight index)
    */
-  @Prop()
+  @Prop({ type: Number })
   wi: number;
 
   /**
    * CVA
    */
-  @Prop()
+  @Prop({ type: Number })
   lot_size: number;
 
-  @Prop()
+  @Prop({ type: Number })
   minimal_settlement_amount: number;
 
   /**
    * CVA || TVA
    */
-  @Prop()
+  @Prop({ type: String })
   quotation: string;
 
-  @Prop()
+  @Prop({ type: String })
   description: string;
 
   /**
    * TVA
    */
-  @Prop()
+  @Prop({ type: String })
   swap_type: string;
 
   /**
    * AVA
    */
-  @Prop()
+  @Prop({ type: Number })
   min_price: number;
 
-  @Prop()
+  @Prop({ type: Number })
   quantity: number;
 
-  @Prop()
+  @Prop({ type: Number })
   open_interest: number;
 
-  @Prop()
+  @Prop({ type: [Number] })
   orders: number[];
 
   /**
    * DVA
    */
-  @Prop()
+  @Prop({ type: Number })
   rank: number;
 
-  @Prop()
+  @Prop({ type: Number })
   queue_cost: number;
 
-  @Prop()
+  @Prop({ type: Number })
   queue_quantity: number;
 
-  @Prop()
+  @Prop({ type: Number })
   derivatives_cost: number;
 
   @Prop({ default: [], type: [ItemValuationsSchema], ref: 'Item' })
@@ -195,19 +195,22 @@ export class Valuations extends Document {
   @Prop({ required: true, type: Number, ref: 'Realm' })
   connected_realm_id: number | Realm;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   last_modified: number;
 
-  @Prop({ required: true })
+  @Prop({ type: Types._ObjectId })
+  pricing_method: ObjectId
+
+  @Prop({ type: Number, required: true })
   value: number;
 
-  @Prop()
+  @Prop({ type: String })
   name: string;
 
-  @Prop({ enum: FLAG_TYPE, uppercase: true })
+  @Prop({ type: String, enum: FLAG_TYPE, uppercase: true })
   flag: string;
 
-  @Prop({ enum: VALUATION_TYPE, lowercase: true })
+  @Prop({ type: String, enum: VALUATION_TYPE, lowercase: true })
   type: string;
 
   @Prop({ type: Details })

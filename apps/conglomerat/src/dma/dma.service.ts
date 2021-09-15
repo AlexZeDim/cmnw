@@ -50,11 +50,11 @@ export class DmaService {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
-    let is_gold = false;
+    let isGold = false;
 
-    if (item._id === 1 || item.asset_class.includes(VALUATION_TYPE.WOWTOKEN)) is_gold = true;
+    if (item._id === 1 || item.asset_class.includes(VALUATION_TYPE.WOWTOKEN)) isGold = true;
 
-    let is_evaluating: number = 0;
+    let isEvaluating: number = 0;
 
     if (item.asset_class.length === 0) {
       throw new BadRequestException('Required item cannot be evaluated');
@@ -64,39 +64,39 @@ export class DmaService {
 
     await lastValueFrom(
       from(realm).pipe(
-        mergeMap(async (connected_realm: IARealm) => {
-          const timestamp = is_gold ? connected_realm.golds : connected_realm.auctions;
+        mergeMap(async (connectedRealm: IARealm) => {
+          const timestamp = isGold ? connectedRealm.golds : connectedRealm.auctions;
 
-          const item_valuations = await this.ValuationsModel
+          const itemValuations = await this.ValuationsModel
             .find({
               item_id: item.asset_class.includes(VALUATION_TYPE.WOWTOKEN) ? { $in: [122284, 122270] } : item._id,
               last_modified: timestamp,
-              connected_realm_id: connected_realm._id
+              connected_realm_id: connectedRealm._id
             })
             .lean();
 
-          if (item_valuations.length > 0) {
-            valuations.push(...item_valuations);
+          if (itemValuations.length > 0) {
+            valuations.push(...itemValuations);
           } else {
-            const _id = `${item._id}@${connected_realm._id}:${timestamp}`;
+            const _id = `${item._id}@${connectedRealm._id}:${timestamp}`;
             await this.queueValuations.add(
               _id,{
                 _id: item._id,
                 last_modified: timestamp,
-                connected_realm_id: connected_realm._id,
+                connected_realm_id: connectedRealm._id,
                 iteration: 0
               }, {
                 jobId: _id,
                 priority: 1,
               }
             );
-            is_evaluating = is_evaluating + 1;
+            isEvaluating = isEvaluating + 1;
           }
         })
       )
     )
 
-    return { valuations, is_evaluating };
+    return { valuations, is_evaluating: isEvaluating };
   }
 
   async getItemChart(input: ItemCrossRealmDto): Promise<ItemChartDto> {
@@ -105,50 +105,70 @@ export class DmaService {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
     }
 
-    const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
-    const is_gold = item._id === 1;
-    const is_xrs = realm.length > 1;
+    const isCommdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
+    const isGold = item._id === 1;
+    const isXrs = realm.length > 1;
 
-    const connected_realms_id = realm.map(connected_realm => connected_realm._id);
-    const yAxis = await this.buildYAxis(item._id, connected_realms_id, is_commdty, is_xrs, is_gold);
+    /**
+     * Return from cache
+     * only nonXRS chart
+     */
+    let redisItemKey: string | undefined = undefined;
+    if (!isXrs) {
+      const realmCompoundKey = realm
+        .sort((a, b) => b._id - a._id)
+        .map(connectedRealm => isGold ? `${connectedRealm._id}:${connectedRealm.golds}` : `${connectedRealm._id}:${connectedRealm.auctions}`)
+        .join(':');
+
+      redisItemKey = `${item._id}:${realmCompoundKey}`;
+
+      const itemChartDto = await this.redisService.get(redisItemKey);
+      if (itemChartDto) {
+        return JSON.parse(itemChartDto) as ItemChartDto;
+      }
+    }
+
+
+    const connectedRealmsIDs = realm.map(connectedRealm => connectedRealm._id);
+    const yAxis = await this.buildYAxis(item._id, connectedRealmsIDs, isCommdty, isXrs, isGold);
     const xAxis: (string | number | Date)[] = [];
     const dataset: IChartOrder[] = [];
 
     await lastValueFrom(
       from(realm).pipe(
-        mergeMap(async (connected_realm, i) => {
-          if (is_commdty) {
-            if (is_xrs) {
+        mergeMap(async (connectedRealm, i) => {
+          if (isCommdty) {
+            if (isXrs) {
               /** Build X axis */
-              xAxis[i] = connected_realm.realms.join(', ');
+              xAxis[i] = connectedRealm.realms.join(', ');
               /** Build Cluster from Orders */
-              if (is_gold) {
-                const orderDataset = await this.goldXRS(yAxis, connected_realm.connected_realm_id, connected_realm.golds, i);
+              if (isGold) {
+                const orderDataset = await this.goldXRS(yAxis, connectedRealm.connected_realm_id, connectedRealm.golds, i);
                 if (orderDataset && orderDataset.length) {
                   dataset.push(...orderDataset);
                 }
               }
 
-              if (!is_gold) {
-                const orderDataset = await this.commdtyXRS(yAxis, item._id, connected_realm.connected_realm_id, connected_realm.auctions, i);
+              if (!isGold) {
+                const orderDataset = await this.commdtyXRS(yAxis, item._id, connectedRealm.connected_realm_id, connectedRealm.auctions, i);
                 if (orderDataset && orderDataset.length) {
                   dataset.push(...orderDataset);
                 }
               }
             }
 
-            if (!is_xrs) {
+            if (!isXrs) {
               /** Build Cluster by Timestamp */
-              if (is_gold) {
-                const { chart, timestamps } = await this.goldIntraDay(yAxis, connected_realm.connected_realm_id);
+              if (isGold) {
+                const { chart, timestamps } = await this.goldIntraDay(yAxis, connectedRealm.connected_realm_id);
                 if (chart && timestamps) {
                   dataset.push(...chart);
                   xAxis.push(...timestamps);
                 }
               }
 
-              if (!is_gold) {
-                const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, connected_realm.connected_realm_id);
+              if (!isGold) {
+                const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, connectedRealm.connected_realm_id);
                 if (chart && timestamps) {
                   dataset.push(...chart);
                   xAxis.push(...timestamps);
@@ -159,6 +179,13 @@ export class DmaService {
         })
       )
     )
+
+    /**
+     * Cache result in Redis
+     */
+    if (!isXrs && redisItemKey) {
+      await this.redisService.set(redisItemKey, JSON.stringify({ yAxis, xAxis, dataset }), 'EX', 3600);
+    }
 
     return { yAxis, xAxis, dataset };
   }
@@ -182,47 +209,49 @@ export class DmaService {
   }
 
   async buildYAxis(
-    item_id: number,
-    connected_realms_id: number[],
-    is_commdty: boolean = false,
-    is_xrs: boolean = false,
-    is_gold: boolean = false
+    itemId: number,
+    connectedRealmIDs: number[],
+    isCommdty: boolean = false,
+    isXrs: boolean = false,
+    isGold: boolean = false
   ): Promise<number[]> {
     /**
      * Control price level
      * if XRS => 40
      * else => 20
      */
-    const blocks: number = is_xrs ? 40 : 20;
+    const blocks: number = isXrs ? 40 : 20;
 
     /** Request oldest from latest timestamp */
-    if (is_gold && is_xrs) {
-      const { golds } = await this.RealmModel.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('golds').sort({ 'golds': 1 });
-      const quotes: number[] = await this.GoldModel.find({ last_modified: { $gte: golds }, connected_realm_id: { $in: connected_realms_id } }, 'price').distinct('price');
+    if (isGold && isXrs) {
+      const { golds } = await this.RealmModel.findOne({ connected_realm_id: { $in: connectedRealmIDs } }).lean().select('golds').sort({ 'golds': 1 });
+      const quotes: number[] = await this.GoldModel.find({ last_modified: { $gte: golds }, connected_realm_id: { $in: connectedRealmIDs } }, 'price').distinct('price');
       return this.priceRange(quotes, blocks);
     }
 
-    if (is_gold && !is_xrs) {
-      const quotes: number[] = await this.GoldModel.find({ connected_realm_id: { $in: connected_realms_id } }, 'price').distinct('price');
+    if (isGold && !isXrs) {
+      const quotes: number[] = await this.GoldModel.find({ connected_realm_id: { $in: connectedRealmIDs } }, 'price').distinct('price');
       return this.priceRange(quotes, blocks);
     }
 
-    if (!is_gold && is_xrs) {
-      const { auctions } = await this.RealmModel.findOne({ connected_realm_id: { $in: connected_realms_id } }).lean().select('auctions').sort({ 'auctions': 1 });
+    if (!isGold && isXrs) {
+      const { auctions } = await this.RealmModel.findOne({ connected_realm_id: { $in: connectedRealmIDs } }).lean().select('auctions').sort({ 'auctions': 1 });
       /** Find distinct prices for each realm */
       const quotes: number[] = await this.AuctionModel
-        .find({ connected_realm_id: { $in: connected_realms_id }, 'item.id': item_id, last_modified: { $gte: auctions }, }, 'price')
+        .find({ connected_realm_id: { $in: connectedRealmIDs }, 'item.id': itemId, last_modified: { $gte: auctions }, }, 'price')
         .hint({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 })
         .distinct('price');
+
       return this.priceRange(quotes, blocks);
     }
 
-    if (!is_gold && !is_xrs) {
+    if (!isGold && !isXrs) {
       /** Find distinct prices for one */
       const quotes = await this.AuctionModel
-        .find({ connected_realm_id: { $in: connected_realms_id }, 'item.id': item_id }, 'price')
+        .find({ connected_realm_id: { $in: connectedRealmIDs }, 'item.id': itemId }, 'price')
         .hint({ 'connected_realm_id': -1, 'item_id': -1, 'last_modified': -1, })
         .distinct('price');
+
       return this.priceRange(quotes, blocks);
     }
 
@@ -231,7 +260,7 @@ export class DmaService {
 
   async goldXRS(
     yAxis: number[],
-    connected_realm_id: number,
+    connectedRealmIDs: number,
     golds: number,
     xIndex: number
   ): Promise<IChartOrder[]> {
@@ -242,7 +271,7 @@ export class DmaService {
         {
           $match: {
             status: 'Online',
-            connected_realm_id: connected_realm_id,
+            connected_realm_id: connectedRealmIDs,
             last_modified: { $eq: golds },
           },
         },
@@ -269,8 +298,8 @@ export class DmaService {
 
   async commdtyXRS(
     yAxis: number[],
-    item_id: number,
-    connected_realm_id: number,
+    itemId: number,
+    connectedRealmIDs: number,
     auctions: number,
     xIndex: number
   ): Promise<IChartOrder[]> {
@@ -280,8 +309,8 @@ export class DmaService {
       .aggregate<IOrderXrs>([
         {
           $match: {
-            connected_realm_id: connected_realm_id,
-            'item.id': item_id,
+            connected_realm_id: connectedRealmIDs,
+            'item.id': itemId,
             last_modified: { $eq: auctions },
           },
         },
@@ -306,13 +335,13 @@ export class DmaService {
     return this.buildDataset(yAxis, orders, xIndex);
   }
 
-  async goldIntraDay(yAxis: number[], connected_realm_id: number) {
+  async goldIntraDay(yAxis: number[], connectedRealmId: number) {
     const chart: IChartOrder[] = [];
     if (!yAxis.length) return { chart };
-    if (!connected_realm_id) return { chart };
+    if (!connectedRealmId) return { chart };
     /** Find distinct timestamps for each realm */
     const timestamps: number[] = await this.GoldModel
-      .find({ connected_realm_id: connected_realm_id }, 'last_modified')
+      .find({ connected_realm_id: connectedRealmId }, 'last_modified')
       .distinct('last_modified');
 
     timestamps.sort((a, b) => a - b);
@@ -325,7 +354,7 @@ export class DmaService {
               {
                 $match: {
                   status: 'Online',
-                  connected_realm_id: connected_realm_id,
+                  connected_realm_id: connectedRealmId,
                   last_modified: timestamp
                 }
               },
@@ -388,13 +417,13 @@ export class DmaService {
     return { chart, timestamps };
   }
 
-  async commdtyIntraDay(yAxis: number[], item_id: number, connected_realm_id: number) {
+  async commdtyIntraDay(yAxis: number[], itemId: number, connectedRealmID: number) {
     const chart: IChartOrder[] = [];
     if (!yAxis.length) return { chart };
-    if (!connected_realm_id) return { chart };
+    if (!connectedRealmID) return { chart };
     /** Find distinct timestamps for each realm */
     const timestamps: number[] = await this.AuctionModel
-      .find({ connected_realm_id: connected_realm_id, 'item.id': item_id }, 'last_modified')
+      .find({ connected_realm_id: connectedRealmID, 'item.id': itemId }, 'last_modified')
       .distinct('last_modified');
 
     timestamps.sort((a, b) => a - b);
@@ -406,8 +435,8 @@ export class DmaService {
             .aggregate([
               {
                 $match: {
-                  connected_realm_id: connected_realm_id,
-                  'item.id': item_id,
+                  connected_realm_id: connectedRealmID,
+                  'item.id': itemId,
                   last_modified: timestamp,
                 }
               },
@@ -645,7 +674,7 @@ export class DmaService {
 
       await lastValueFrom(
         from(realm).pipe(
-          mergeMap(async (connected_realm, i) => {
+          mergeMap(async (connected_realm) => {
             const orderFeed = await this.AuctionModel.find({
               connected_realm_id: connected_realm._id,
               'item.id': item._id,

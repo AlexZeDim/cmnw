@@ -10,6 +10,7 @@ import { itemsConfig } from '@app/configuration';
 import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
 export class ItemsService implements OnApplicationBootstrap  {
@@ -106,14 +107,17 @@ export class ItemsService implements OnApplicationBootstrap  {
         if (file === 'items.json') {
           const itemsJson = await fs.readFile(path.join(dir, file), 'utf-8');
           const { items }: { items: Partial<LeanDocument<Item>>[] } = JSON.parse(itemsJson);
-          await Promise.all(
-            items.map(async (item) => {
-              const itemExist = await this.ItemModel.findById(item._id);
-              if (!itemExist) {
-                await this.ItemModel.create(item);
-                this.logger.log(`Created: item(${item._id})`);
-              }
-            }),
+
+          await lastValueFrom(
+            from(items).pipe(
+              mergeMap(async (item) => {
+                const itemExist = await this.ItemModel.findById(item._id);
+                if (!itemExist) {
+                  await this.ItemModel.create(item);
+                  this.logger.log(`Created: item(${item._id})`);
+                }
+              })
+            )
           );
         }
 

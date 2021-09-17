@@ -58,7 +58,6 @@ export class ValuationsService implements OnApplicationBootstrap {
           }
         ])
         .cursor({ batchSize: 1 })
-        .exec()
         .eachAsync(async ({ _id, auctions, valuations }: IVARealm) => {
           /** Update valuations with new auctions data */
           if (auctions <= valuations) return;
@@ -156,7 +155,6 @@ export class ValuationsService implements OnApplicationBootstrap {
         ])
           .allowDiskUse(true)
           .cursor({})
-          .exec()
           .eachAsync(async (itemAuction: IVAAuctions) => {
             const item = await this.ItemModel.findById(itemAuction._id)
             if (item) {

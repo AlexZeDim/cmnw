@@ -383,7 +383,6 @@ export class DmaService {
             ])
             .allowDiskUse(true)
             .cursor()
-            .exec()
             .eachAsync((order: IOrderXrs) => {
               const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
               if (yIndex !== -1) {
@@ -466,7 +465,6 @@ export class DmaService {
             ])
             .allowDiskUse(true)
             .cursor()
-            .exec()
             .eachAsync((order: IOrderXrs) => {
               const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
               if (yIndex !== -1) {

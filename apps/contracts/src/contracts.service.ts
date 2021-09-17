@@ -204,7 +204,6 @@ export class ContractsService {
             ])
             .allowDiskUse(true)
             .cursor()
-            .exec()
             .eachAsync(async (contract: ContractAggregation) => {
               const contractExists = await this.ContractModel.findById(contract._id);
               if (!!contractExists) await this.ContractModel.create(contract);

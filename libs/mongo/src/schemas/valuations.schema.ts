@@ -198,7 +198,7 @@ export class Valuations extends Document {
   @Prop({ type: Number, required: true })
   last_modified: number;
 
-  @Prop({ type: Types._ObjectId })
+  @Prop({ type: Types.ObjectId })
   pricing_method: ObjectId
 
   @Prop({ type: Number, required: true })

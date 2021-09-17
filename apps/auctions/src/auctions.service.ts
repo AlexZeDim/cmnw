@@ -60,7 +60,6 @@ export class AuctionsService implements OnApplicationBootstrap {
           },
         ])
         .cursor({ batchSize: 5 })
-        .exec()
         .eachAsync(async (realm: { _id: { connected_realm_id: number, auctions: number }, name: string }) => {
           await this.queue.add(
             `${realm.name}`,

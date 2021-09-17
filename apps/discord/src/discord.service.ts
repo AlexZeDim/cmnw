@@ -1,21 +1,55 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import * as Discord from 'discord.js';
 import { discordConfig } from '@app/configuration';
 import fs from 'fs-extra';
-import path from "path";
+import path from 'path';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Subscription } from '@app/mongo';
-import { Model } from "mongoose";
+import { Model } from 'mongoose';
 import { LFG, NOTIFICATIONS } from '@app/core';
 import { CandidateEmbedMessage } from './embeds';
-import { TextChannel } from 'discord.js';
+import Discord, { Intents, TextChannel } from 'discord.js';
+import { REST } from '@discordjs/rest';
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { Routes } from 'discord-api-types/v9';
 
 @Injectable()
 export class DiscordService implements OnApplicationBootstrap {
   private client: Discord.Client
 
   private commands: Discord.Collection<string, any>
+
+  private readonly rest = new REST({ version: '9' }).setToken('token');
+
+  private commandList = [
+    new SlashCommandBuilder()
+      .setName('character')
+      .setDescription('Return information about specific character.')
+      .addStringOption((option) =>
+        option.setName('id')
+          .setDescription('блюрателла@гордунни')
+          .setRequired(true)),
+    new SlashCommandBuilder()
+      .setName('hash')
+      .setDescription('Allows you to find no more than 20 (*available*) alternative characters (twinks) in OSINT-DB across different realms.')
+      .addStringOption((option) =>
+        option.setName('hash')
+          .setDescription('a@a99becec48b29ff')
+          .setRequired(true)),
+    new SlashCommandBuilder()
+      .setName('say')
+      .setDescription('Join the voice room channel, where the author of this command is and pronounce provided text phrase out loud.')
+      .addStringOption((option) =>
+        option.setName('text')
+          .setDescription('сказать фразу громко')
+          .setRequired(true)),
+    new SlashCommandBuilder()
+      .setName('subscribe')
+      .setDescription('Initiate the subscription process for selected channel which allows you to receive notifications'),
+    new SlashCommandBuilder()
+      .setName('whoami')
+      .setDescription('Prints the effective username and ID of the current user. Check this [article](https://en.wikipedia.org/wiki/Whoami) for more info.'),
+  ];
 
   private readonly logger = new Logger(
     DiscordService.name, { timestamp: true },
@@ -29,16 +63,29 @@ export class DiscordService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    this.client = new Discord.Client();
+
+    this.logger.log('Started refreshing application (/) commands.');
+
+    await this.rest.put(
+      Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
+      { body: this.commandList },
+    );
+
+    this.logger.log('Successfully reloaded application (/) commands.');
+    this.client = new Discord.Client({ intents:
+      [
+        Intents.FLAGS.GUILDS
+      ]
+    });
     this.commands = new Discord.Collection();
-    this.loadCommands()
+    this.loadCommands();
     await this.client.login(discordConfig.token);
     this.bot()
   }
 
   private bot(): void {
     this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`))
-    this.client.on('message', async message => {
+    this.client.on('messageCreate', async (message) => {
       if (message.author.bot) return;
 
       const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
@@ -49,12 +96,12 @@ export class DiscordService implements OnApplicationBootstrap {
 
       if (!command) return;
 
-      if (command.guildOnly && message.channel.type !== 'text') {
-        return message.reply("I can't execute that command at this channel");
+      if (command.guildOnly && message.channel.type !== 'GUILD_TEXT') {
+        await message.reply("I can't execute that command at this channel");
       }
 
       try {
-        command.execute(message, args, this.client);
+        await command.execute(message, args, this.client);
       } catch (error) {
         this.logger.error(error);
         await message.reply('There was an error trying to execute that command!');
@@ -66,6 +113,7 @@ export class DiscordService implements OnApplicationBootstrap {
     const commandFiles = fs
       .readdirSync(path.join(`${__dirname}`, '..', '..', '..', 'apps/discord/src/commands/'))
       .filter(file => file.endsWith('.ts'));
+
     for (const file of commandFiles) {
       const command = require(`./commands/${file}`);
       this.commands.set(command.name, command);
@@ -97,14 +145,13 @@ export class DiscordService implements OnApplicationBootstrap {
         },
       ])
       .cursor({ batchSize: 10 })
-      .exec()
       .eachAsync(async (subscription) => {
         try {
           const channel = this.client.channels.cache.get(subscription.channel_id);
           /**
            * Fault Tolerance
            */
-          if (!channel || channel.type !== "text") {
+          if (!channel || channel.type !== "GUILD_TEXT") {
             if (subscription.tolerance > 100) {
               this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance} remove: true`);
               await this.SubscriptionModel.findOneAndRemove(
@@ -139,7 +186,7 @@ export class DiscordService implements OnApplicationBootstrap {
               if (characters.length) {
                 characters.map(character => {
                   const candidate = CandidateEmbedMessage(character, realm);
-                  (channel as TextChannel).send(candidate);
+                  (channel as TextChannel).send({ embeds: [candidate] });
                 });
               }
             });

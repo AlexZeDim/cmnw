@@ -7,7 +7,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>, realm:
   const embed = new MessageEmbed();
   try {
     embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm}/${character.name})\n`)
-    embed.setFooter(`WOWPROGRESS | OSINT-LFG | Сакросантус & Форжспирит`);
+    embed.setFooter(`WOWPROGRESS | [CMNW](https://cmnw.me/who-we-are)`);
     const realm_title: string = realm.name_locale ? realm.name_locale : realm.name;
     embed.setAuthor(`${character.name}@${realm_title}`.toUpperCase());
     if (character.guild) {
@@ -39,7 +39,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>, realm:
     if (character.hash_f) embed.addField('Hash A', character.hash_f, true);
     if (character.chosen_covenant && character.renown_level) embed.addField('Covenant', `${character.chosen_covenant} // ${character.renown_level}`, true);
     if (character.role) embed.addField('Role', character.role.toString().replace(/\./g, '\n').toUpperCase(), true);
-    if (character.rio_score) embed.addField('RIO', character.rio_score, true);
+    if (character.rio_score) embed.addField('RIO', character.rio_score.toString(), true);
     if (character.languages) embed.addField('Language', character.languages.toString(), true);
     if (character.wcl_percentile) embed.addField('WCL Best.Perf.Avg', `${character.wcl_percentile} Mythic`, true);
     if (character.days_from && character.days_to) embed.addField('RT days', `${character.days_from} - ${character.days_to}`, true);

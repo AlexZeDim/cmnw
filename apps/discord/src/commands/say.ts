@@ -5,7 +5,7 @@ import { yandexConfig } from '@app/configuration';
 module.exports = {
   name: 'say',
   description:
-    'Join the voice room channel, where the author of this command is',
+    'Return information about specific character. Example usage: `character блюрателла@гордунни`',
   aliases: ['say'],
   args: true,
   async execute(message, args, client) {

@@ -32,6 +32,7 @@ RUN nest build conglomerat \
   && nest build realms \
   && nest build pricing \
   && nest build auctions \
+  && nest build contracts \
   && nest build discord \
   && nest build wowtoken \
   && nest build valuations \

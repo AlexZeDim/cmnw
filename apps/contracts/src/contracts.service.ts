@@ -42,9 +42,9 @@ export class ContractsService {
       y: moment().get('year'),
     };
 
-    const YTD = moment.utc().subtract(1, 'day').toDate();
+    const YTD: Date = moment.utc().subtract(1, 'day').toDate();
 
-    const T = auctions - (1000 * 60 * 60 * 8);
+    const T: number = auctions - (1000 * 60 * 60 * 8);
 
     await this.ItemModel
       .find({ contracts: true })

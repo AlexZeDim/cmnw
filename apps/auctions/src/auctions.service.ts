@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { delay } from '@app/core/utils/converters';
 import { Queue } from 'bullmq';
-import { GLOBAL_DMA_KEY, auctionsQueue, IQAuction } from '@app/core';
+import { GLOBAL_DMA_KEY, auctionsQueue, IQAuction, IAARealm } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import moment from 'moment';
 
@@ -60,7 +60,7 @@ export class AuctionsService implements OnApplicationBootstrap {
           },
         ])
         .cursor({ batchSize: 5 })
-        .eachAsync(async (realm: { _id: { connected_realm_id: number, auctions: number }, name: string }) => {
+        .eachAsync(async (realm: IAARealm) => {
           await this.queue.add(
             `${realm.name}`,
             {

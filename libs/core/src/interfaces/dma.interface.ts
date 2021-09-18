@@ -179,6 +179,14 @@ export interface IARealm {
   readonly valuations: number;
 }
 
+export interface IAARealm {
+  readonly _id: {
+    readonly connected_realm_id: number,
+    readonly auctions: number,
+  };
+  readonly name: string;
+}
+
 export interface IVARealm {
   readonly _id: number;
   readonly auctions: number;

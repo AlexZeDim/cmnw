@@ -67,16 +67,19 @@ export class DiscordService implements OnApplicationBootstrap {
     this.logger.log('Started refreshing application (/) commands.');
 
     await this.rest.put(
+      // FIXME guildId
       Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
       { body: this.commandList },
     );
 
     this.logger.log('Successfully reloaded application (/) commands.');
+
     this.client = new Discord.Client({ intents:
       [
         Intents.FLAGS.GUILDS
       ]
     });
+
     this.commands = new Discord.Collection();
     this.loadCommands();
     await this.client.login(discordConfig.token);
@@ -84,7 +87,8 @@ export class DiscordService implements OnApplicationBootstrap {
   }
 
   private bot(): void {
-    this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`))
+    this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`));
+
     this.client.on('messageCreate', async (message) => {
       if (message.author.bot) return;
 
@@ -105,6 +109,21 @@ export class DiscordService implements OnApplicationBootstrap {
       } catch (error) {
         this.logger.error(error);
         await message.reply('There was an error trying to execute that command!');
+      }
+    });
+
+    this.client.on('interactionCreate', async (interaction) => {
+      if (!interaction.isCommand()) return;
+
+      const command = this.client.commands.get(interaction.commandName);
+
+      if (!command) return;
+
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
       }
     })
   }

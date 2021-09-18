@@ -17,9 +17,11 @@ import { Routes } from 'discord-api-types/v9';
 export class DiscordService implements OnApplicationBootstrap {
   private client: Discord.Client
 
+  private intents = new Intents(32767);
+
   private commands: Discord.Collection<string, any>
 
-  private readonly rest = new REST({ version: '9' }).setToken('token');
+  private readonly rest = new REST({ version: '9' }).setToken(discordConfig.token);
 
   private commandList = [
     new SlashCommandBuilder()
@@ -31,14 +33,14 @@ export class DiscordService implements OnApplicationBootstrap {
           .setRequired(true)),
     new SlashCommandBuilder()
       .setName('hash')
-      .setDescription('Allows you to find no more than 20 (*available*) alternative characters (twinks) in OSINT-DB across different realms.')
+      .setDescription('Allows you to find no more than 20 twinks in OSINT-DB across different realms.')
       .addStringOption((option) =>
         option.setName('hash')
           .setDescription('a@a99becec48b29ff')
           .setRequired(true)),
     new SlashCommandBuilder()
       .setName('say')
-      .setDescription('Join the voice room channel, where the author of this command is and pronounce provided text phrase out loud.')
+      .setDescription('Joins author\'s voice after this command nd pronounce provided text phrase out loud.')
       .addStringOption((option) =>
         option.setName('text')
           .setDescription('сказать фразу громко')
@@ -48,7 +50,7 @@ export class DiscordService implements OnApplicationBootstrap {
       .setDescription('Initiate the subscription process for selected channel which allows you to receive notifications'),
     new SlashCommandBuilder()
       .setName('whoami')
-      .setDescription('Prints the effective username and ID of the current user. Check this [article](https://en.wikipedia.org/wiki/Whoami) for more info.'),
+      .setDescription('Prints the effective username and ID of the current user.'),
   ];
 
   private readonly logger = new Logger(
@@ -68,17 +70,13 @@ export class DiscordService implements OnApplicationBootstrap {
 
     await this.rest.put(
       // FIXME guildId
-      Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
+      Routes.applicationGuildCommands(discordConfig.id, '762712723037225011'),
       { body: this.commandList },
     );
 
     this.logger.log('Successfully reloaded application (/) commands.');
 
-    this.client = new Discord.Client({ intents:
-      [
-        Intents.FLAGS.GUILDS
-      ]
-    });
+    this.client = new Discord.Client({ intents: this.intents });
 
     this.commands = new Discord.Collection();
     this.loadCommands();
@@ -91,6 +89,7 @@ export class DiscordService implements OnApplicationBootstrap {
 
     this.client.on('messageCreate', async (message) => {
       if (message.author.bot) return;
+      console.log(message);
 
       const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
 
@@ -113,16 +112,17 @@ export class DiscordService implements OnApplicationBootstrap {
     });
 
     this.client.on('interactionCreate', async (interaction) => {
+
       if (!interaction.isCommand()) return;
 
-      const command = this.client.commands.get(interaction.commandName);
+      const command = this.commands.get(interaction.commandName);
 
       if (!command) return;
 
       try {
         await command.execute(interaction);
       } catch (error) {
-        console.error(error);
+        this.logger.error(error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
       }
     })

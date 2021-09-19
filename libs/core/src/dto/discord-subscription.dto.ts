@@ -2,7 +2,7 @@ import {
   FACTION,
   LANG,
   NOTIFICATIONS,
-  RealmConnected,
+  IRealmConnected,
   SWAGGER_CHARACTER_AVGILVL,
   SWAGGER_CHARACTER_CLASSES,
   SWAGGER_CHARACTER_DAYS_FROM,
@@ -64,7 +64,7 @@ export class DiscordSubscriptionDto {
 
   @ApiProperty(SWAGGER_REALMS_CONNECTED_SHORT)
   @IsArray()
-  readonly realms: RealmConnected[];
+  readonly realms: IRealmConnected[];
 
   @ApiProperty(SWAGGER_CHARACTER_CLASSES)
   @IsOptional()

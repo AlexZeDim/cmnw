@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Express } from 'express'
 import { OsintService } from './osint.service';
-import { LeanDocument } from "mongoose";
+import { LeanDocument } from 'mongoose';
 import { Character, Guild, Log, Realm, Subscription } from '@app/mongo';
 import {
   ApiOperation,
@@ -30,9 +30,8 @@ import {
   CharactersLfgDto,
   DiscordSubscriptionDto,
   DiscordUidSubscriptionDto,
-  GuildIdDto,
-} from './dto';
-import { RealmDto } from './dto/realm.dto';
+  GuildIdDto, RealmDto,
+} from '@app/core';
 import { FileInterceptor } from '@nestjs/platform-express';
 import path from 'path';
 

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto } from './dto';
+import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto, ItemValuationsDto } from '@app/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
@@ -14,7 +14,6 @@ import {
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { ItemValuationsDto } from './dto/item-valuations.dto';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 

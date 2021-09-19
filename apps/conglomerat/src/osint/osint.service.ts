@@ -15,12 +15,11 @@ import {
   CharactersLfgDto,
   DiscordSubscriptionDto,
   DiscordUidSubscriptionDto,
-  GuildIdDto,
-} from './dto';
+  GuildIdDto, RealmDto
+} from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE, toSlug } from '@app/core';
 import { Queue } from 'bullmq';
-import { RealmDto } from './dto/realm.dto';
 
 @Injectable()
 export class OsintService {

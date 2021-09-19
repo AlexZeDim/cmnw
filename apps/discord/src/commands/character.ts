@@ -15,8 +15,12 @@ module.exports = {
     .setName('character')
     .setDescription('Return information about specific character.')
     .addStringOption((option) =>
-      option.setName('query')
-        .setDescription('блюрателла@гордунни')
+      option.setName('name')
+        .setDescription('блюрателла')
+        .setRequired(true))
+    .addStringOption((option) =>
+      option.setName('realm')
+        .setDescription('gordunni')
         .setRequired(true)),
 
   async executeMessage(message: Message, args: string): Promise<void> {
@@ -28,8 +32,9 @@ module.exports = {
   async executeInteraction(interaction: Interaction): Promise<void> {
     if (!interaction.isCommand()) return;
 
-    const id = interaction.options.getString('query');
-    const { data: character } = await axios.get<Partial<CharacterDto>>(encodeURI(`${discordConfig.basename}/api/osint/character?_id=${id}`));
+    const name = interaction.options.getString('name');
+    const realm = interaction.options.getString('realm');
+    const { data: character } = await axios.get<Partial<CharacterDto>>(encodeURI(`${discordConfig.basename}/api/osint/character?_id=${name}@${realm}`));
     const embed = CharacterEmbedMessage(character);
     await interaction.reply({ embeds: [ embed ] });
   }

@@ -28,22 +28,34 @@ export class DiscordService implements OnApplicationBootstrap {
       .setName('character')
       .setDescription('Return information about specific character.')
       .addStringOption((option) =>
-        option.setName('query')
-          .setDescription('блюрателла@гордунни')
+        option.setName('name')
+          .setDescription('блюрателла')
+          .setRequired(true))
+      .addStringOption((option) =>
+        option.setName('realm')
+          .setDescription('gordunni')
           .setRequired(true)),
     new SlashCommandBuilder()
       .setName('hash')
       .setDescription('Allows you to find no more than 20 twinks in OSINT-DB across different realms.')
       .addStringOption((option) =>
+        option.setName('type')
+          .setDescription('a | b')
+          .setRequired(true))
+      .addStringOption((option) =>
         option.setName('hash')
-          .setDescription('a@a99becec48b29ff')
+          .setDescription('99becec48b29ff')
           .setRequired(true)),
     new SlashCommandBuilder()
       .setName('say')
-      .setDescription('Joins author\'s voice after this command nd pronounce provided text phrase out loud.')
+      .setDescription('Joins author\'s voice channel and pronounce provided cyrrilic text.')
       .addStringOption((option) =>
         option.setName('text')
-          .setDescription('сказать фразу громко')
+          .setDescription('Any text phrase (сказать громко)')
+          .setRequired(true))
+      .addChannelOption((option) =>
+        option.setName('destination')
+          .setDescription('Select a channel')
           .setRequired(true)),
     new SlashCommandBuilder()
       .setName('subscribe')
@@ -71,7 +83,7 @@ export class DiscordService implements OnApplicationBootstrap {
 
     await this.rest.put(
       // FIXME guildId
-      Routes.applicationGuildCommands(discordConfig.id, '762712723037225011'),
+      Routes.applicationGuildCommands(discordConfig.id, '488316026631618571'),
       { body: this.commandList },
     );
 
@@ -86,9 +98,9 @@ export class DiscordService implements OnApplicationBootstrap {
   }
 
   private bot(): void {
-    this.client.on('ready', () => this.logger.log(`Logged in as ${this.client.user.tag}!`));
+    this.client.on('ready', (): void => this.logger.log(`Logged in as ${this.client.user.tag}!`));
 
-    this.client.on('messageCreate', async (message) => {
+    this.client.on('messageCreate', async (message): Promise<void> => {
       if (message.author.bot) return;
 
       const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
@@ -111,7 +123,7 @@ export class DiscordService implements OnApplicationBootstrap {
       }
     });
 
-    this.client.on('interactionCreate', async (interaction: Interaction) => {
+    this.client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
       if (!interaction.isCommand()) return;
 
       const command = this.commands.get(interaction.commandName);

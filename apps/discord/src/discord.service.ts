@@ -8,7 +8,7 @@ import { Character, Subscription } from '@app/mongo';
 import { Model } from 'mongoose';
 import { LFG, NOTIFICATIONS } from '@app/core';
 import { CandidateEmbedMessage } from './embeds';
-import Discord, { Intents, TextChannel } from 'discord.js';
+import Discord, { Intents, Interaction, TextChannel } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Routes } from 'discord-api-types/v9';
@@ -50,7 +50,8 @@ export class DiscordService implements OnApplicationBootstrap {
       .setDescription('Initiate the subscription process for selected channel which allows you to receive notifications'),
     new SlashCommandBuilder()
       .setName('whoami')
-      .setDescription('Prints the effective username and ID of the current user.'),
+      .setDescription('Prints the effective username and ID of the current user.')
+      .addUserOption(option => option.setName('target').setDescription('Select a user').setRequired(true)),
   ];
 
   private readonly logger = new Logger(
@@ -110,12 +111,10 @@ export class DiscordService implements OnApplicationBootstrap {
       }
     });
 
-    this.client.on('interactionCreate', async (interaction) => {
-
+    this.client.on('interactionCreate', async (interaction: Interaction) => {
       if (!interaction.isCommand()) return;
 
       const command = this.commands.get(interaction.commandName);
-
       if (!command) return;
 
       try {

@@ -28,7 +28,7 @@ export class DiscordService implements OnApplicationBootstrap {
       .setName('character')
       .setDescription('Return information about specific character.')
       .addStringOption((option) =>
-        option.setName('id')
+        option.setName('query')
           .setDescription('блюрателла@гордунни')
           .setRequired(true)),
     new SlashCommandBuilder()
@@ -89,7 +89,6 @@ export class DiscordService implements OnApplicationBootstrap {
 
     this.client.on('messageCreate', async (message) => {
       if (message.author.bot) return;
-      console.log(message);
 
       const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
 
@@ -104,7 +103,7 @@ export class DiscordService implements OnApplicationBootstrap {
       }
 
       try {
-        await command.execute(message, args, this.client);
+        await command.executeMessage(message, args, this.client);
       } catch (error) {
         this.logger.error(error);
         await message.reply('There was an error trying to execute that command!');
@@ -120,7 +119,7 @@ export class DiscordService implements OnApplicationBootstrap {
       if (!command) return;
 
       try {
-        await command.execute(interaction);
+        await command.executeInteraction(interaction);
       } catch (error) {
         this.logger.error(error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });

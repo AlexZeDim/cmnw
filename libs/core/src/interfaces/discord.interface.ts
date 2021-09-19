@@ -1,19 +1,19 @@
 import { FACTION, LANG, NOTIFICATIONS } from '@app/core/constants';
 
-export interface DiscordRoute {
+export interface IDiscordRoute {
   recruiting: number[],
   market: number[],
   orders: number[]
 }
 
-export interface RealmConnected {
+export interface IRealmConnected {
   readonly _id: number,
   readonly auctions: number,
   readonly golds: number,
   readonly valuations: number,
 }
 
-export interface DiscordInterface {
+export interface IDiscord {
   readonly discord_id: string,
   readonly discord_name: string,
   readonly channel_id: string,
@@ -22,7 +22,7 @@ export interface DiscordInterface {
   readonly author_name: string,
   readonly messages: number,
   readonly time: number,
-  readonly route: DiscordRoute,
+  readonly route: IDiscordRoute,
   readonly actions: Record<string, string[]>
   type?: NOTIFICATIONS,
   language: LANG,
@@ -33,7 +33,7 @@ export interface DiscordInterface {
   reply?: string,
   question?: string,
   items?: number[],
-  realms?: RealmConnected[],
+  realms?: IRealmConnected[],
   character_class?: string[],
   days_from?: number,
   days_to?: number,
@@ -44,7 +44,7 @@ export interface DiscordInterface {
   languages?: string[]
 }
 
-export interface QuestionInterface {
+export interface IDiscordQuestion {
   readonly id: number;
   readonly language: LANG;
   readonly question: string;

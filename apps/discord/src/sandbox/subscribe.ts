@@ -1,4 +1,4 @@
-import { DiscordInterface, LANG, SUBSCRIPTION_REMOVE } from '@app/core';
+import { IDiscord, LANG, SUBSCRIPTION_REMOVE } from '@app/core';
 import {
   collectionClose,
   collectionSuccess,
@@ -20,7 +20,7 @@ module.exports = {
   args: true,
   guildOnly: true,
   async execute(message, args) {
-    const config: DiscordInterface = {
+    const config: IDiscord = {
       discord_id: message.channel.guild.id,
       discord_name: message.channel.guild.name,
       channel_id: message.channel.id,

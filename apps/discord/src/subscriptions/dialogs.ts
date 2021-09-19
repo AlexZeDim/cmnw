@@ -2,7 +2,7 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import {
   CHARACTER_CLASS,
-  DiscordInterface,
+  IDiscord,
   ERROR_REALM,
   FACTION,
   LANG,
@@ -21,7 +21,7 @@ export function seriousError(language: LANG): string {
   return 'This looks like a serious error. Please contact @AlexZeDim#2645 about it'
 }
 
-export function collectionSuccess(subscription: Partial<DiscordInterface>, isExists: boolean): string {
+export function collectionSuccess(subscription: Partial<IDiscord>, isExists: boolean): string {
   let success: string = 'That\'s all! The message below will show you a subscription status.\n'
   if (subscription.language === LANG.RU) success = 'Ну вот и всё! Сообщение об успешно созданной подписки можно будет найти ниже.\n';
   const string = Object.entries(subscription).map(([key, value]) => `${key}: ${(key === 'realms') ? ((value as any).map(r => r._id).join(', ')) : (value)} \n`).join('');
@@ -54,7 +54,7 @@ export function saySuccess(language: LANG): string {
   return 'That\'s all! The message below will show you a subscription status.'
 }
 
-export function subscriptionScene({ current, reply, language, route, index, next, type, actions }: DiscordInterface): Partial<DiscordInterface> {
+export function subscriptionScene({ current, reply, language, route, index, next, type, actions }: IDiscord): Partial<IDiscord> {
   switch (current) {
     case 0:
       if (reply === 'русский') {

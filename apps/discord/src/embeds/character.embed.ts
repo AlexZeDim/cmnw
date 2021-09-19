@@ -1,9 +1,11 @@
 import { MessageEmbed } from "discord.js";
 import { FACTION } from '@app/core';
+import { discordConfig } from '@app/configuration';
 
 export function CharacterEmbedMessage(character: any): MessageEmbed {
   const embed = new MessageEmbed();
   try {
+    console.log(character);
     if (character.guild) {
       let guild: string = character.guild;
       if (character.guild_rank && parseInt(character.guild_rank) === 0)  {
@@ -12,7 +14,7 @@ export function CharacterEmbedMessage(character: any): MessageEmbed {
         guild = guild.concat(` // R${character.guild_rank}`)
       }
       embed.setTitle(guild);
-      // TODO embed.setURL(encodeURI(`https://${process.env.domain}/guild/${guild.slug}@${realm.slug}`));
+      embed.setURL(encodeURI(`https://${discordConfig.basename}/guild/${character.guild}@${character.realm}`));
     }
     embed.setAuthor(character._id.toUpperCase());
     if (character.id) embed.addField('ID', character.id, true);
@@ -42,6 +44,7 @@ export function CharacterEmbedMessage(character: any): MessageEmbed {
     if (character.created_by) embed.setFooter(`${character.created_by} | Gonikon`);
     return embed;
   } catch (errorException) {
+    console.log(errorException);
     embed.setAuthor('Oops, sorry!');
     embed.addField('Error', 'Tell the @AlexZeDim2645 that there is an error in CharacterEmbedMessage', false);
     embed.setThumbnail('https://cdn.discordapp.com/avatars/240464611562881024/d266faef37db5f6de78cf2fd687634d0.png?size=128')

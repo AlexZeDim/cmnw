@@ -1,4 +1,4 @@
-import { QuestionInterface } from '@app/core/interfaces';
+import { IDiscordQuestion } from '@app/core/interfaces';
 
 export enum NOTIFICATIONS {
   RECRUITING = 'recruiting',
@@ -24,7 +24,7 @@ export const ERROR_REALM = {
   [LANG.EN]: 'Seems like no realms have been found, try again in a different way, please.',
 }
 
-export const QUESTIONS: QuestionInterface[] = [
+export const QUESTIONS: IDiscordQuestion[] = [
   {
     id: 1,
     language: LANG.EN,

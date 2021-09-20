@@ -8,21 +8,21 @@ import {
   StreamType,
   joinVoiceChannel,
   createAudioPlayer,
-  demuxProbe,
-  VoiceConnectionStatus, AudioPlayerStatus,
+  VoiceConnectionStatus,
+  AudioPlayerStatus,
 } from '@discordjs/voice';
-import { createReadStream } from 'fs';
-import { Readable } from "stream";
 
 module.exports = {
-  name: 'say',
+  name: 'voice',
   description:
-    'Return information about specific character. Example usage: `character блюрателла@гордунни`',
-  aliases: ['say'],
+    'Pronounce specific cyrrilic text in chat',
+  aliases: ['Voice', 'VOICE'],
   args: true,
+  inDevelopment: false,
+  slashOnly: true,
   slashCommand: new SlashCommandBuilder()
-    .setName('say')
-    .setDescription('Joins author\'s voice channel and pronounce provided cyrrilic text.')
+    .setName('voice')
+    .setDescription('Joins selected voice channel and pronounce provided cyrrilic text.')
     .addStringOption((option) =>
       option.setName('text')
         .setDescription('Any text phrase (сказать громко)')
@@ -41,7 +41,7 @@ module.exports = {
 
     if (!channel || channel.type !== 'GUILD_VOICE') {
       return;
-      // channel = message.member.voice.channel
+      // TODO if member in voice chat channel = message.member.voice.channel
     }
 
     if (channel) {
@@ -107,11 +107,12 @@ module.exports = {
         channelId: channel.id,
         guildId: (channel as VoiceChannel).guildId,
         adapterCreator: (channel as VoiceChannel).guild.voiceAdapterCreator,
+        selfDeaf: false,
+        selfMute: false,
       });
 
       const player = createAudioPlayer();
       // An AudioPlayer will always emit an "error" event with a .resource property
-
 
       connection.on(VoiceConnectionStatus.Ready, (oldState, newState) => {
         console.log('Connection is in the Ready state!');

@@ -6,11 +6,10 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Subscription } from '@app/mongo';
 import { Model } from 'mongoose';
-import { LFG, NOTIFICATIONS } from '@app/core';
+import { IDiscordCommand, LFG, NOTIFICATIONS } from '@app/core';
 import { CandidateEmbedMessage } from './embeds';
-import Discord, { Intents, Interaction, TextChannel } from 'discord.js';
+import Discord, { Channel, Intents, Interaction, TextChannel } from 'discord.js';
 import { REST } from '@discordjs/rest';
-import { SlashCommandBuilder } from '@discordjs/builders';
 import { Routes } from 'discord-api-types/v9';
 
 @Injectable()
@@ -19,52 +18,11 @@ export class DiscordService implements OnApplicationBootstrap {
 
   private intents = new Intents(32767);
 
-  private commands: Discord.Collection<string, any>
+  private commandsMessage: Discord.Collection<string, IDiscordCommand> = new Discord.Collection();
+
+  private commandSlash = [];
 
   private readonly rest = new REST({ version: '9' }).setToken(discordConfig.token);
-
-  private commandList = [
-    new SlashCommandBuilder()
-      .setName('character')
-      .setDescription('Return information about specific character.')
-      .addStringOption((option) =>
-        option.setName('name')
-          .setDescription('блюрателла')
-          .setRequired(true))
-      .addStringOption((option) =>
-        option.setName('realm')
-          .setDescription('gordunni')
-          .setRequired(true)),
-    new SlashCommandBuilder()
-      .setName('hash')
-      .setDescription('Allows you to find no more than 20 twinks in OSINT-DB across different realms.')
-      .addStringOption((option) =>
-        option.setName('type')
-          .setDescription('a | b')
-          .setRequired(true))
-      .addStringOption((option) =>
-        option.setName('hash')
-          .setDescription('99becec48b29ff')
-          .setRequired(true)),
-    new SlashCommandBuilder()
-      .setName('say')
-      .setDescription('Joins author\'s voice channel and pronounce provided cyrrilic text.')
-      .addStringOption((option) =>
-        option.setName('text')
-          .setDescription('Any text phrase (сказать громко)')
-          .setRequired(true))
-      .addChannelOption((option) =>
-        option.setName('destination')
-          .setDescription('Select a channel')
-          .setRequired(true)),
-    new SlashCommandBuilder()
-      .setName('subscribe')
-      .setDescription('Initiate the subscription process for selected channel which allows you to receive notifications'),
-    new SlashCommandBuilder()
-      .setName('whoami')
-      .setDescription('Prints the effective username and ID of the current user.')
-      .addUserOption(option => option.setName('target').setDescription('Select a user').setRequired(true)),
-  ];
 
   private readonly logger = new Logger(
     DiscordService.name, { timestamp: true },
@@ -79,21 +37,19 @@ export class DiscordService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
 
-    this.logger.log('Started refreshing application (/) commands.');
-
     await this.rest.put(
-      // FIXME guildId
-      Routes.applicationGuildCommands(discordConfig.id, '488316026631618571'),
-      { body: this.commandList },
+      Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
+      { body: this.commandSlash },
     );
 
-    this.logger.log('Successfully reloaded application (/) commands.');
+    this.logger.log('Reloaded application (/) commands.');
 
     this.client = new Discord.Client({ intents: this.intents });
 
-    this.commands = new Discord.Collection();
     this.loadCommands();
+
     await this.client.login(discordConfig.token);
+
     this.bot()
   }
 
@@ -106,8 +62,8 @@ export class DiscordService implements OnApplicationBootstrap {
       const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
 
       const command =
-        this.commands.get(commandName) ||
-        this.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+        this.commandsMessage.get(commandName) ||
+        this.commandsMessage.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
       if (!command) return;
 
@@ -126,11 +82,11 @@ export class DiscordService implements OnApplicationBootstrap {
     this.client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
       if (!interaction.isCommand()) return;
 
-      const command = this.commands.get(interaction.commandName);
+      const command = this.commandsMessage.get(interaction.commandName);
       if (!command) return;
 
       try {
-        await command.executeInteraction(interaction);
+        await command.executeInteraction(interaction, this.client);
       } catch (error) {
         this.logger.error(error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
@@ -144,8 +100,9 @@ export class DiscordService implements OnApplicationBootstrap {
       .filter(file => file.endsWith('.ts'));
 
     for (const file of commandFiles) {
-      const command = require(`./commands/${file}`);
-      this.commands.set(command.name, command);
+      const command: IDiscordCommand = require(`./commands/${file}`);
+      this.commandsMessage.set(command.name, command);
+      this.commandSlash.push(command.slashCommand.toJSON());
     }
   }
 
@@ -174,13 +131,13 @@ export class DiscordService implements OnApplicationBootstrap {
         },
       ])
       .cursor({ batchSize: 10 })
-      .eachAsync(async (subscription) => {
+      .eachAsync(async (subscription): Promise<void> => {
         try {
-          const channel = this.client.channels.cache.get(subscription.channel_id);
+          const channel: Channel = this.client.channels.cache.get(subscription.channel_id);
           /**
            * Fault Tolerance
            */
-          if (!channel || channel.type !== "GUILD_TEXT") {
+          if (!channel || channel.type !== 'GUILD_TEXT') {
             if (subscription.tolerance > 100) {
               this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance} remove: true`);
               await this.SubscriptionModel.findOneAndRemove(
@@ -193,6 +150,7 @@ export class DiscordService implements OnApplicationBootstrap {
                 { tolerance: subscription.tolerance + 1 }
               );
             }
+
             return;
           }
           /**

@@ -1,9 +1,26 @@
 import { FACTION, LANG, NOTIFICATIONS } from '@app/core/constants';
+import { SlashCommandBuilder } from '@discordjs/builders';
+import { Client, Interaction, Message } from 'discord.js';
 
 export interface IDiscordRoute {
   recruiting: number[],
   market: number[],
   orders: number[]
+}
+
+export interface IDiscordCommand {
+  readonly name: string;
+  readonly description: string;
+  readonly aliases: string[];
+  readonly args: boolean;
+  readonly cooldown?: number;
+  readonly inDevelopment: boolean;
+  readonly guildOnly: boolean;
+  readonly slashOnly: false;
+  readonly slashCommand: SlashCommandBuilder;
+
+  executeMessage(message: Message, args?: string, client?: Client): Promise<void>;
+  executeInteraction(interaction: Interaction, client?: Client): Promise<void>;
 }
 
 export interface IRealmConnected {

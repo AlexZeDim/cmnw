@@ -14,6 +14,8 @@ module.exports = {
   aliases: ['Hash', 'HASH'],
   cooldown: 10,
   args: true,
+  inDevelopment: false,
+  slashOnly: false,
   slashCommand: new SlashCommandBuilder()
     .setName('hash')
     .setDescription('Allows you to find no more than 20 twinks in OSINT-DB across different realms.')

@@ -56,6 +56,7 @@ export function saySuccess(language: LANG): string {
 
 export function subscriptionScene({ current, reply, language, route, index, next, type, actions }: IDiscord): Partial<IDiscord> {
   switch (current) {
+
     case 0:
       if (reply === 'русский') {
         const { question } = QUESTIONS.find(q => q.id === 1 && q.language === LANG.RU)
@@ -66,12 +67,14 @@ export function subscriptionScene({ current, reply, language, route, index, next
         return { language: LANG.EN, next: 1, question: question }
       }
       return {}
+
     case 1:
       if (Object.values(NOTIFICATIONS).includes(reply as NOTIFICATIONS)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[reply][index+1])
         return { type: reply as NOTIFICATIONS, index: index + 1, prev: next, next: id, question: question }
       }
       return {};
+
     case 2:
       const realmsJson = readFileSync(join(__dirname, '..', '..', '..', './config/realms.json'), 'utf8');
       const { realms } = JSON.parse(realmsJson) as { realms: LeanDocument<Realm>[] };
@@ -82,6 +85,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         return { question: question, prev: next, next: id, index: index + 1, realms: connected_realms }
       }
       return { question: ERROR_REALM[language]};
+
     case 100:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -100,6 +104,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         return { languages: [reply], question: question, prev: next, next: id, index: index + 1 }
       }
       return {};
+
     case 101:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -113,6 +118,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         if (!class_filter.length) return {}
         return { character_class: class_filter, question: question, prev: next, next: id, index: index + 1 }
       }
+
     case 102:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -127,6 +133,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         return { faction: FACTION.H, question: question, prev: next, next: id, index: index + 1 }
       }
       return {}
+
     case 103:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -140,6 +147,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         }
       }
       return {}
+
     case 104:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -153,6 +161,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         }
       }
       return {}
+
     case 105:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -166,6 +175,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         }
       }
       return {}
+
     case 106:
       if (actions.skip.includes(reply)) {
         const { id, question } = QUESTIONS.find(q => q.language === language && q.id === route[type][index+1])
@@ -179,6 +189,7 @@ export function subscriptionScene({ current, reply, language, route, index, next
         }
       }
       return {}
+
     case 107:
       if (actions.skip.includes(reply)) {
         return { prev: next, next: 1000, index: index }
@@ -190,11 +201,13 @@ export function subscriptionScene({ current, reply, language, route, index, next
         }
       }
       return {}
+
     case 200:
       const items = reply.split(',').map(Number).filter(Boolean);
       if (!items.length ) return {}
       if (items.length > 10) return {}
       return { items, prev: next, next: 1000, index: index }
+
     default:
       return {}
   }

@@ -11,6 +11,9 @@ module.exports = {
     'Return information about specific character. Example usage: `character блюрателла@гордунни`',
   aliases: ['char', 'CHAR', 'CHARACTER', 'Char', 'Character'],
   args: true,
+  inDevelopment: false,
+  guildOnly: false,
+  slashOnly: false,
   slashCommand: new SlashCommandBuilder()
     .setName('character')
     .setDescription('Return information about specific character.')

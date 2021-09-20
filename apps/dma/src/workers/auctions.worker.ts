@@ -73,8 +73,8 @@ export class AuctionsWorker {
       return 200
     } catch (errorException) {
       await job.log(errorException);
-      this.logger.error(`${AuctionsWorker.name}: ${errorException}`)
-      return 500
+      this.logger.error(`${AuctionsWorker.name}: ${errorException}`);
+      return 500;
     }
   }
 

@@ -149,7 +149,9 @@ export class CharactersWorker {
       await job.updateProgress(100);
       return character.status_code;
     } catch (errorException) {
-      this.logger.error(`${CharactersWorker.name}: ${errorException}`)
+      await job.log(errorException);
+      this.logger.error(`${CharactersWorker.name}: ${errorException}`);
+      return 500;
     }
   }
 

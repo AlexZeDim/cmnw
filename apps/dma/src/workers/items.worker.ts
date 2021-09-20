@@ -105,6 +105,7 @@ export class ItemsWorker {
       }
       return 404
     } catch (errorException) {
+      await job.log(errorException);
       this.logger.error(`${ItemsWorker.name}: ${errorException}`);
       return 500;
     }

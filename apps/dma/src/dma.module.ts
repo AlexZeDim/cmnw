@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@anchan828/nest-bullmq';
+import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
+import { AuctionsWorker, ItemsWorker, PricingWorker, ValuationsWorker } from './workers';
+
 import {
   Auction,
   AuctionsSchema,
@@ -24,9 +28,6 @@ import {
   Valuations,
   ValuationsSchema,
 } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
-import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
-import { AuctionsWorker, ItemsWorker, PricingWorker, ValuationsWorker } from './workers';
 
 @Module({
   imports: [

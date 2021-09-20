@@ -99,7 +99,9 @@ export class GuildsWorker {
 
       return guild.status_code;
     } catch (errorException) {
+      await job.log(errorException);
       this.logger.error(`${GuildsWorker.name}, ${errorException}`);
+      return 500;
     }
   }
 

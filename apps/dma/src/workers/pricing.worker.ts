@@ -180,8 +180,9 @@ export class PricingWorker {
       await job.updateProgress(100);
       return 200
     } catch (errorException) {
-      this.logger.error(`${PricingWorker.name}: ${errorException}`)
-      return 500
+      await job.log(errorException);
+      this.logger.error(`${PricingWorker.name}: ${errorException}`);
+      return 500;
     }
   }
 }

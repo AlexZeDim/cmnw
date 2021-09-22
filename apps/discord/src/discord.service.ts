@@ -37,16 +37,16 @@ export class DiscordService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
 
+    this.loadCommands();
+
     await this.rest.put(
-      Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
+      Routes.applicationGuildCommands(discordConfig.id, '274967675640217601'),
       { body: this.commandSlash },
     );
 
     this.logger.log('Reloaded application (/) commands.');
 
     this.client = new Discord.Client({ intents: this.intents });
-
-    this.loadCommands();
 
     await this.client.login(discordConfig.token);
 
@@ -67,8 +67,11 @@ export class DiscordService implements OnApplicationBootstrap {
 
       if (!command) return;
 
+      if (command.slashOnly || command.inDevelopment) return;
+
       if (command.guildOnly && message.channel.type !== 'GUILD_TEXT') {
-        await message.reply("I can't execute that command at this channel");
+        await message.reply('This command can be executed only in guild channel');
+        return;
       }
 
       try {
@@ -84,6 +87,11 @@ export class DiscordService implements OnApplicationBootstrap {
 
       const command = this.commandsMessage.get(interaction.commandName);
       if (!command) return;
+
+      if (command.inDevelopment) {
+        await interaction.reply({ content: 'This command is still in development mode or disabled', ephemeral: true });
+        return;
+      }
 
       try {
         await command.executeInteraction(interaction, this.client);

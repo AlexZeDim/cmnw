@@ -14,68 +14,90 @@ import { discordConfig } from '@app/configuration';
 import { SlashCommandBuilder } from '@discordjs/builders';
 
 module.exports = {
-  name: 'subscribe',
+  name: 'search',
   description: 'Initiate the subscription process for selected channel which allows you to receive notifications',
-  aliases: ['subscribe', 'SUBSCRIBE', 'Subscribe', 'sub', 'SUB', 'Sub'],
+  aliases: ['search', 'SEARCH', 'Search'],
   cooldown: 5,
   args: true,
   guildOnly: true,
   inDevelopment: true,
   slashOnly: true,
   slashCommand: new SlashCommandBuilder()
-    .setName('subscribe')
-    .setDescription('Subscribe current channel for WowProgress LFG updates')
-    .addStringOption(option =>
-      option.setName('faction')
-        .setDescription('Select faction')
-        .addChoice('Horde', 'Horde')
-        .addChoice('Alliance', 'Alliance')
-    )
-    .addIntegerOption(option =>
-      option.setName('avg_ilvl')
-        .setDescription('Average Item level'))
-    .addIntegerOption(option =>
-      option.setName('rio')
-        .setDescription('Raider IO score (if necessary)'))
-    .addIntegerOption(option =>
-      option.setName('days_from')
-        .setDescription('Raid time days from'))
-    .addIntegerOption(option =>
-      option.setName('days_to')
-        .setDescription('Raid time days to'))
-    .addIntegerOption(option =>
-      option.setName('wcl_percentile')
-        .setDescription('Warcraft Logs Mythic Performance (if necessary)'))
-    .addStringOption(option =>
-      option.setName('character_class')
-        .setDescription('Playable Class (only one if necessary)')
-        .addChoice('Warrior', 'Warrior')
-        .addChoice('Paladin', 'Paladin')
-        .addChoice('Hunter', 'Hunter')
-        .addChoice('Rogue', 'Rogue')
-        .addChoice('Priest', 'Priest')
-        .addChoice('Death Knight', 'Death Knight')
-        .addChoice('Shaman', 'Shaman')
-        .addChoice('Mage', 'Mage')
-        .addChoice('Warlock', 'Warlock')
-        .addChoice('Monk', 'Monk')
-        .addChoice('Druid', 'Druid')
-        .addChoice('Demon Hunter', 'Demon Hunter')
-    )
-    .addStringOption(option =>
-      option.setName('languages')
-        .setDescription('Speaking Languages')
-        .addChoice('Russian', 'russian')
-        .addChoice('English', 'english')
-        .addChoice('All', 'all')
-    )
-    .addStringOption(option =>
-      option.setName('realms')
-        .setDescription('Realms')
-        .addChoice('Russian', 'ru_RU')
-        .addChoice('Гордунни', '1602')
-        .addChoice('All', 'all')
-    ),
+    .setName('search')
+    .setDescription('Subscribe current channel for updated events like')
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('candidates')
+        .setDescription('Guild candidate search from WowProgress LFG')
+        .addStringOption(option =>
+          option.setName('realms')
+            .setDescription('Realms')
+            .addChoice('Russian', 'ru_RU')
+            .addChoice('Гордунни', 'gordunni')
+            .addChoice('AHNQRJ, BLNZZR, BLDFST, CHRMGS, DGRSPN, LGHSKL, STRDHL, SNSTRD, TLNVRR, TRLLBN', 'gordunni')
+            .addChoice('All', 'all')
+            .setRequired(true)
+        )
+        .addStringOption(option =>
+          option.setName('faction')
+            .setDescription('Select faction')
+            .addChoice('Horde', 'Horde')
+            .addChoice('Alliance', 'Alliance')
+        )
+        .addIntegerOption(option =>
+          option.setName('item_level')
+            .setDescription('Average character item level must be above or equal'))
+        .addIntegerOption(option =>
+          option.setName('rio_score')
+            .setDescription('Character Raider IO Score (if necessary)'))
+        .addIntegerOption(option =>
+          option.setName('days_from')
+            .setDescription('Raid time days from'))
+        .addIntegerOption(option =>
+          option.setName('days_to')
+            .setDescription('Raid time days to'))
+        .addIntegerOption(option =>
+          option.setName('wcl_percentile')
+            .setDescription('Warcraft Logs Mythic Performance (if necessary)'))
+        .addStringOption(option =>
+          option.setName('character_class')
+            .setDescription('Playable Class (only one if necessary)')
+            .addChoice('Warrior', 'Warrior')
+            .addChoice('Paladin', 'Paladin')
+            .addChoice('Hunter', 'Hunter')
+            .addChoice('Rogue', 'Rogue')
+            .addChoice('Priest', 'Priest')
+            .addChoice('Death Knight', 'Death Knight')
+            .addChoice('Shaman', 'Shaman')
+            .addChoice('Mage', 'Mage')
+            .addChoice('Warlock', 'Warlock')
+            .addChoice('Monk', 'Monk')
+            .addChoice('Druid', 'Druid')
+            .addChoice('Demon Hunter', 'Demon Hunter')
+        )
+        .addStringOption(option =>
+          option.setName('languages')
+            .setDescription('Speaking Languages')
+            .addChoice('Russian', 'russian')
+            .addChoice('English', 'english')
+            .addChoice('All', 'all')
+        ))
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('items')
+        .setDescription('Appearing selected item on auction house')
+        .addIntegerOption(option =>
+          option.setName('item_id')
+            .setDescription('Item ID number')
+            .setRequired(true))
+        .addStringOption(option =>
+          option.setName('realms')
+            .setDescription('Realms')
+            .addChoice('Russian', 'ru_RU')
+            .addChoice('Гордунни', 'gordunni')
+            .addChoice('AHNQRJ, BLNZZR, BLDFST, CHRMGS, DGRSPN, LGHSKL, STRDHL, SNSTRD, TLNVRR, TRLLBN', 'gordunni')
+            .addChoice('All', 'all')
+        )),
 
   async execute(message, args) {
     const config: IDiscord = {

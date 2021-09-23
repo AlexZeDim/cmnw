@@ -4,6 +4,8 @@ import qs from 'qs';
 import { discordConfig } from '@app/configuration';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, GuildMember, Interaction } from 'discord.js';
+import { LeanDocument } from "mongoose";
+import { Subscription } from '@app/mongo';
 
 module.exports = {
   name: 'search',
@@ -131,14 +133,14 @@ module.exports = {
       const item_id = interaction.options.getString('item_id');
       const connected_realm_id = interaction.options.getInteger('connected_realm_id');
 
-      const subscription: IDiscordSubscription = {
+      const querySubscription: IDiscordSubscription = {
         discord_id: interaction.guildId,
         discord_name: interaction.guild.name,
         channel_id: interaction.channelId,
         channel_name: interaction.member instanceof GuildMember ? interaction.member.guild.name : null,
         author_id: interaction.user.id,
         author_name: interaction.user.username,
-        type: interaction.commandName as NOTIFICATIONS,
+        type: interaction.options.getSubcommand() as NOTIFICATIONS,
         realms,
         faction,
         character_class,
@@ -147,35 +149,41 @@ module.exports = {
         rio_score,
         days_from,
         days_to,
+
         wcl_percentile,
         item_id,
         connected_realm_id,
       };
 
-      if (subscription.type === NOTIFICATIONS.ORDERS) {
-        await axios({
-          method: 'PUT',
-          url: `${discordConfig.basename}/api/osint/discord/unsubscribe`,
+      if (querySubscription.type === NOTIFICATIONS.CANCEL) {
+
+        const { data: removedSubscription } = await axios.put<LeanDocument<Subscription>>(`http://localhost:8000/api/osint/discord/unsubscribe`,
+          { discord_id: querySubscription.discord_id, channel_id: querySubscription.channel_id },
+          {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          data: qs.stringify({ discord_id: subscription.discord_id, channel_id: subscription.channel_id }),
+          }
         });
 
+        console.log(removedSubscription);
         // TODO return;
+        return;
       }
 
-      if (subscription.type === NOTIFICATIONS.INFO) {
-        const { data: discord } = await axios.get(encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${subscription.discord_id}&channel_id=${subscription.channel_id}`));
+      if (querySubscription.type === NOTIFICATIONS.INFO) {
+        const { data: currentSubscription } = await axios.get<LeanDocument<Subscription>>(
+          encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${querySubscription.discord_id}&channel_id=${querySubscription.channel_id}`)
+        );
 
         // TODO reply current settings and return
+        return;
       }
 
-      await axios({
+      const { data: createdSubscription } = await axios.request<LeanDocument<Subscription>>({
         method: 'POST',
         url: `${discordConfig.basename}/api/osint/discord/subscribe`,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        data: qs.stringify(subscription, { skipNulls: true }),
+        data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 
       // TODO receive ansfer from endpoint and feel free to go

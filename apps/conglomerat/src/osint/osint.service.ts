@@ -317,7 +317,7 @@ export class OsintService {
     }, input as unknown, { upsert: true, new: true, setDefaultsOnInsert: true }).lean();
   }
 
-  async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<void> {
-    await this.SubscriptionModel.findOneAndDelete(input);
+  async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
+    return this.SubscriptionModel.findOneAndDelete(input).lean();
   }
 }

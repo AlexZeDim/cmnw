@@ -213,7 +213,7 @@ export class OsintController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Put('/discord/unsubscribe')
-  async unsubscribeDiscord(@Body() input: DiscordUidSubscriptionDto): Promise<void> {
+  async unsubscribeDiscord(@Body() input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
     return this.osintService.unsubscribeDiscord(input)
   }
 }

@@ -30,6 +30,29 @@ export interface IRealmConnected {
   readonly valuations: number,
 }
 
+export class IDiscordSubscription {
+  readonly discord_id: string;
+  readonly discord_name: string;
+  readonly channel_id: string;
+  readonly channel_name: string;
+  readonly author_id: string;
+  readonly author_name: string;
+  readonly type: NOTIFICATIONS;
+
+  readonly realms?: string;
+  readonly faction?: string;
+  readonly character_class?: string;
+  readonly languages?: string;
+  readonly item_level?: number;
+  readonly rio_score?: number;
+  readonly days_from?: number;
+  readonly days_to?: number;
+  readonly wcl_percentile?: number;
+
+  readonly item_id?: string;
+  readonly connected_realm_id?: number;
+}
+
 export interface IDiscord {
   readonly discord_id: string,
   readonly discord_name: string,

@@ -1,9 +1,11 @@
 import { IDiscordQuestion } from '@app/core/interfaces';
 
 export enum NOTIFICATIONS {
-  RECRUITING = 'recruiting',
+  CANDIDATES = 'candidates',
   ORDERS = 'orders',
   MARKET = 'market',
+  INFO = 'info',
+  CANCEL = 'cancel',
 }
 
 export enum LANG {

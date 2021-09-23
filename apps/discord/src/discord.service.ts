@@ -40,7 +40,7 @@ export class DiscordService implements OnApplicationBootstrap {
     this.loadCommands();
 
     await this.rest.put(
-      Routes.applicationGuildCommands(discordConfig.id, '274967675640217601'),
+      Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
       { body: this.commandSlash },
     );
 
@@ -139,60 +139,5 @@ export class DiscordService implements OnApplicationBootstrap {
         },
       ])
       .cursor({ batchSize: 10 })
-      .eachAsync(async (subscription): Promise<void> => {
-        try {
-          const channel: Channel = this.client.channels.cache.get(subscription.channel_id);
-          /**
-           * Fault Tolerance
-           */
-          if (!channel || channel.type !== 'GUILD_TEXT') {
-            if (subscription.tolerance > 100) {
-              this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance} remove: true`);
-              await this.SubscriptionModel.findOneAndRemove(
-              { discord_id: subscription.disconnect, channel_id: subscription.channel_id }
-              );
-            } else {
-              this.logger.warn(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) tolerance: ${subscription.tolerance}+1`);
-              await this.SubscriptionModel.findOneAndUpdate(
-                { discord_id: subscription.disconnect, channel_id: subscription.channel_id },
-                { tolerance: subscription.tolerance + 1 }
-              );
-            }
-
-            return;
-          }
-          /**
-           * Recruiting
-           */
-          if (subscription.type === NOTIFICATIONS.RECRUITING) {
-            this.logger.log(`subscriptions: discord ${subscription.discord_name}(${subscription.discord_id}) recruiting`);
-            const query = { looking_for_guild: LFG.NEW };
-            if (subscription.faction) Object.assign(query, { faction: subscription.faction });
-            if (subscription.average_item_level) Object.assign(query, { average_item_level: { '$gte': subscription.average_item_level } });
-            if (subscription.rio_score) Object.assign(query, { rio_score: { '$gte': subscription.rio_score } });
-            if (subscription.days_from) Object.assign(query, { days_from: { '$gte': subscription.days_from } });
-            if (subscription.days_to) Object.assign(query, { days_to: { '$lte': subscription.days_to } });
-            if (subscription.character_class.length) Object.assign(query, { character_class : { '$in': subscription.character_class } });
-            if (subscription.wcl_percentile) Object.assign(query, { wcl_percentile: { '$gte': subscription.wcl_percentile } });
-            if (subscription.languages.length) Object.assign(query, { languages : { '$in': subscription.languages } });
-            subscription.realms.map(async (realm) => {
-              Object.assign(query, { realm: realm.slug });
-              const characters = await this.CharacterModel.find(query).lean();
-              if (characters.length) {
-                characters.map(character => {
-                  const candidate = CandidateEmbedMessage(character, realm);
-                  (channel as TextChannel).send({ embeds: [candidate] });
-                });
-              }
-            });
-          }
-          await this.SubscriptionModel.findOneAndUpdate(
-          { discord_id: subscription.discord_id, channel_id: subscription.channel_id },
-          { timestamp: new Date().getTime() }
-          );
-        } catch (errorException) {
-          this.logger.error(`subscriptions: ${errorException}`);
-        }
-      });
   }
 }

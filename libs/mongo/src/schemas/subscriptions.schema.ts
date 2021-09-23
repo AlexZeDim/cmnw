@@ -43,47 +43,47 @@ export class Subscription extends Document {
   @Prop({ type: String, required: true, enum: NOTIFICATIONS })
   type: NOTIFICATIONS;
 
-  @Prop({ type: String, enum: LANG })
-  language: LANG;
-
   @Prop({ type: Number, default: 0 })
   tolerance: number;
 
   @Prop({ type: Number, default: 0 })
   timestamp: number;
-
   /**
-   * Subscription FILTERS
+   * Subscription
+   * CANDIDATES
    */
-  @Prop({ default: [], type: [Number], ref: 'Item' })
-  items: number[] | Item[];
+  @Prop({ type: String })
+  character_class: string;
 
-  @Prop({ type: [RealmConnectedSchema], ref: 'Realm' })
-  realms: MongooseSchema.Types.Array;
-
-  @Prop({ type: [String], default: [] })
-  character_class: MongooseSchema.Types.Array;
-
-  @Prop()
+  @Prop({ type: Number })
   days_from: number;
 
-  @Prop()
+  @Prop({ type: Number })
   days_to: number;
 
-  @Prop()
-  average_item_level: number;
+  @Prop({ type: Number })
+  item_level: number;
 
-  @Prop()
+  @Prop({ type: Number })
   rio_score: number;
 
-  @Prop()
+  @Prop({ type: Number })
   wcl_percentile: number;
 
   @Prop({ type: String, enum: FACTION })
   faction: FACTION;
 
-  @Prop({ type: [String] })
-  languages: MongooseSchema.Types.Array;
+  @Prop({ type: String })
+  languages: string;
+  /**
+   * Subscription
+   * MARKET & ORDERS
+   */
+  @Prop({ default: [], type: [Number], ref: 'Item' })
+  items: number[] | Item[];
+
+  @Prop({ type: Number, ref: 'Realm' })
+  realms: number; // TODO both ways
 }
 
 export const SubscriptionsSchema = SchemaFactory.createForClass(Subscription);

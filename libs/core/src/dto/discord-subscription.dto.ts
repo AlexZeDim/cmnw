@@ -1,10 +1,9 @@
+import { IsEnum, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   FACTION,
-  LANG,
   NOTIFICATIONS,
-  IRealmConnected,
-  SWAGGER_CHARACTER_AVGILVL,
-  SWAGGER_CHARACTER_CLASSES,
+  IDiscordSubscription,
   SWAGGER_CHARACTER_DAYS_FROM,
   SWAGGER_CHARACTER_DAYS_TO,
   SWAGGER_CHARACTER_FACTION,
@@ -15,18 +14,16 @@ import {
   SWAGGER_DISCORD_AUTHOR_NAME,
   SWAGGER_DISCORD_CHANNEL_ID,
   SWAGGER_DISCORD_CHANNEL_NAME,
-  SWAGGER_DISCORD_LANG,
   SWAGGER_DISCORD_SERVER_ID,
   SWAGGER_DISCORD_SERVER_NAME,
-  SWAGGER_DISCORD_TIMESTAMP,
   SWAGGER_DISCORD_TYPE,
-  SWAGGER_ITEM_IDS,
-  SWAGGER_REALMS_CONNECTED_SHORT,
+  SWAGGER_ITEM,
+  SWAGGER_CHARACTER_CLASS,
+  SWAGGER_CONNECTED_REALM_ID,
+  SWAGGER_CHARACTER_ILVL,
 } from '@app/core';
-import { IsArray, IsEnum, IsOptional } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 
-export class DiscordSubscriptionDto {
+export class DiscordSubscriptionDto implements IDiscordSubscription{
   @ApiProperty(SWAGGER_DISCORD_SERVER_ID)
   readonly discord_id: string;
 
@@ -49,26 +46,9 @@ export class DiscordSubscriptionDto {
   @IsEnum(NOTIFICATIONS)
   readonly type: NOTIFICATIONS;
 
-  @ApiProperty(SWAGGER_DISCORD_TIMESTAMP)
+  @ApiProperty(SWAGGER_CHARACTER_CLASS)
   @IsOptional()
-  readonly timestamp: number;
-
-  @ApiProperty(SWAGGER_DISCORD_LANG)
-  @IsEnum(LANG)
-  readonly language: LANG;
-
-  @ApiProperty(SWAGGER_ITEM_IDS)
-  @IsArray()
-  @IsOptional()
-  readonly items: number[];
-
-  @ApiProperty(SWAGGER_REALMS_CONNECTED_SHORT)
-  @IsArray()
-  readonly realms: IRealmConnected[];
-
-  @ApiProperty(SWAGGER_CHARACTER_CLASSES)
-  @IsOptional()
-  readonly character_class: string[];
+  readonly character_class: string;
 
   @ApiProperty(SWAGGER_CHARACTER_DAYS_FROM)
   @IsOptional()
@@ -78,9 +58,9 @@ export class DiscordSubscriptionDto {
   @IsOptional()
   readonly days_to: number;
 
-  @ApiProperty(SWAGGER_CHARACTER_AVGILVL)
+  @ApiProperty(SWAGGER_CHARACTER_ILVL)
   @IsOptional()
-  readonly average_item_level: number;
+  readonly item_level: number;
 
   @ApiProperty(SWAGGER_CHARACTER_RIO)
   @IsOptional()
@@ -90,16 +70,20 @@ export class DiscordSubscriptionDto {
   @IsOptional()
   readonly wcl_percentile: number;
 
-  @IsOptional()
-  readonly tolerance: number;
-
   @ApiProperty(SWAGGER_CHARACTER_FACTION)
   @IsEnum(FACTION)
   @IsOptional()
   readonly faction: FACTION;
 
   @ApiProperty(SWAGGER_CHARACTER_LANGUAGES)
-  @IsArray()
   @IsOptional()
-  readonly languages: string[];
+  readonly languages: string;
+
+  @ApiProperty(SWAGGER_ITEM)
+  @IsOptional()
+  readonly item: string;
+
+  @ApiProperty(SWAGGER_CONNECTED_REALM_ID)
+  @IsOptional()
+  readonly connected_realm_id: number;
 }

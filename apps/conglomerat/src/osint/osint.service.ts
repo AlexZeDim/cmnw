@@ -13,12 +13,19 @@ import {
   CharacterHashDto,
   CharacterIdDto,
   CharactersLfgDto,
+  charactersQueue,
   DiscordSubscriptionDto,
   DiscordUidSubscriptionDto,
-  GuildIdDto, RealmDto
+  GLOBAL_OSINT_KEY,
+  GuildIdDto,
+  guildsQueue,
+  LFG,
+  NOTIFICATIONS,
+  OSINT_SOURCE,
+  RealmDto,
+  toSlug,
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { charactersQueue, GLOBAL_OSINT_KEY, guildsQueue, LFG, OSINT_SOURCE, toSlug } from '@app/core';
 import { Queue } from 'bullmq';
 
 @Injectable()
@@ -311,6 +318,23 @@ export class OsintService {
   }
 
   async subscribeDiscord(input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
+
+    switch (input.type) {
+      case NOTIFICATIONS.CANDIDATES:
+        // TODO we need realms both ways in one field, so here is array from locales
+        console.log('Oranges are $0.59 a pound.');
+        break;
+      case NOTIFICATIONS.MARKET:
+      case NOTIFICATIONS.ORDERS:
+        // TODO connected_realm_id for one realm
+        console.log('Mangoes and papayas are $2.79 a pound.');
+        // expected output: "Mangoes and papayas are $2.79 a pound."
+        break;
+      default:
+        console.log(`Sorry, we are out of ${input.type}.`);
+    }
+
+
     return this.SubscriptionModel.findOneAndUpdate({
       discord_id: input.discord_id,
       channel_id: input.channel_id

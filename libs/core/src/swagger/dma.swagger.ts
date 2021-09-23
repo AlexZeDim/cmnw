@@ -129,36 +129,19 @@ export const SWAGGER_ITEM_CROSS_REALM: ApiPropertyOptions = {
   example: '171276@gordunni',
 }
 
-export const SWAGGER_ITEM_IDS: ApiPropertyOptions = {
-  name: 'items',
-  description: 'Array of unique items IDs',
+export const SWAGGER_ITEM: ApiPropertyOptions = {
+  name: 'item',
+  description: 'Item ID, name or asset class of item group ',
   required: false,
-  type: [Number],
-  isArray: true,
-  example: [153403, 174305]
+  type: String,
+  example: '174305 || Windowblossom || HRBS'
 }
 
-class RealmConnected {
-  readonly _id: number;
-
-  readonly auctions: number;
-
-  readonly golds: number;
-
-  readonly valuations: number;
-}
-
-export const SWAGGER_REALMS_CONNECTED_SHORT: ApiPropertyOptions = {
-  name: 'realms',
-  description: 'Array of connected realms with timestamps',
-  type: () => RealmConnected,
-  isArray: true,
-  example: [{
-    _id: 1602,
-    auctions: 0,
-    golds: 0,
-    valuations: 0
-  }]
+export const SWAGGER_CONNECTED_REALM_ID: ApiPropertyOptions = {
+  name: 'connected_realm_id',
+  description: 'Connected realm ID for group of realms with common players and AH',
+  type: Number,
+  example: 1602
 }
 
 export const SWAGGER_VALUATIONS_EVALUATIONS: ApiPropertyOptions = {

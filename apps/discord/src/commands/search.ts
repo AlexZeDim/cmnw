@@ -74,7 +74,7 @@ module.exports = {
         )
         .addStringOption(option =>
           option.setName('languages')
-            .setDescription('(OPTIONAL) Speaking Languages')
+            .setDescription('(OPTIONAL) Speaking Language')
             .addChoice('Russian', 'russian')
             .addChoice('English', 'english')
             .addChoice('All', 'all')
@@ -84,7 +84,7 @@ module.exports = {
         .setName(NOTIFICATIONS.ORDERS)
         .setDescription('Full order log for the selected item or group')
         .addStringOption(option =>
-          option.setName('item_id')
+          option.setName('item')
             .setDescription('Item ID, name or asset class ticker for item group')
             .setRequired(true))
         .addIntegerOption(option =>
@@ -97,7 +97,7 @@ module.exports = {
         .setName(NOTIFICATIONS.MARKET)
         .setDescription('Difference result for the selected item')
         .addStringOption(option =>
-          option.setName('item_id')
+          option.setName('item')
             .setDescription('Item ID, name or asset class ticker for item group')
             .setRequired(true))
         .addIntegerOption(option =>
@@ -141,6 +141,7 @@ module.exports = {
         author_id: interaction.user.id,
         author_name: interaction.user.username,
         type: interaction.options.getSubcommand() as NOTIFICATIONS,
+
         realms,
         faction,
         character_class,
@@ -149,8 +150,8 @@ module.exports = {
         rio_score,
         days_from,
         days_to,
-
         wcl_percentile,
+
         item_id,
         connected_realm_id,
       };
@@ -175,6 +176,7 @@ module.exports = {
           encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${querySubscription.discord_id}&channel_id=${querySubscription.channel_id}`)
         );
 
+        console.log(currentSubscription);
         // TODO reply current settings and return
         return;
       }
@@ -186,6 +188,7 @@ module.exports = {
         data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 
+      console.log(createdSubscription);
       // TODO receive ansfer from endpoint and feel free to go
     } catch (errorOrException) {
 

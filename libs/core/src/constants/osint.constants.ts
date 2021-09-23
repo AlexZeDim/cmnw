@@ -31,7 +31,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Sunstrider', 'SNSTRD'],
   ['Talnivarr', 'TLNVRR'],
   ['Trollbane', 'TRLLBN'],
-  ['Al\'Akir', 'ALAJUR'],
+  ['Al\'Akir', 'ALAKIR'],
   ['Burning Legion', 'BRNLGN'],
   ['Skullcrusher', 'SKLLCRSH'],
   ['Xavius', 'XAVIUS'],

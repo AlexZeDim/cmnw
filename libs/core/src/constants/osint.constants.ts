@@ -321,6 +321,7 @@ export enum ACTION_LOG {
   DEMOTE = 'demote',
   JOIN = 'join',
   LEAVE = 'leave',
+  INHERIT = 'inherit',
   OWNERSHIP = 'ownership',
   TITLE = 'title',
 }

@@ -22,7 +22,7 @@ import {
   IGuildRoster,
   EVENT_LOG,
   charactersQueue,
-  IQCharacter,
+  IQCharacter, ACTION_LOG,
 } from '@app/core';
 
 @BullWorker({ queueName: guildsQueue.name })
@@ -311,7 +311,7 @@ export class GuildsWorker {
                 original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
                 updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
                 event: EVENT_LOG.CHARACTER,
-                action: 'demote',
+                action: ACTION_LOG.DEMOTE,
                 t0: original.last_modified || now,
                 t1: updated.last_modified || now,
               });
@@ -322,7 +322,7 @@ export class GuildsWorker {
                 original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
                 updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
                 event: EVENT_LOG.GUILD,
-                action: 'demote',
+                action: ACTION_LOG.DEMOTE,
                 t0: original.last_modified || now,
                 t1: updated.last_modified || now,
               });
@@ -337,7 +337,7 @@ export class GuildsWorker {
                 original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
                 updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
                 event: EVENT_LOG.CHARACTER,
-                action: 'promote',
+                action: ACTION_LOG.PROMOTE,
                 t0: original.last_modified || now,
                 t1: updated.last_modified || now,
               });
@@ -348,7 +348,7 @@ export class GuildsWorker {
                 original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
                 updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
                 event: EVENT_LOG.GUILD,
-                action: 'promote',
+                action: ACTION_LOG.PROMOTE,
                 t0: original.last_modified || now,
                 t1: updated.last_modified || now,
               });
@@ -367,7 +367,7 @@ export class GuildsWorker {
           original: ' ',
           updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
           event: EVENT_LOG.CHARACTER,
-          action: 'join',
+          action: ACTION_LOG.JOIN,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -378,7 +378,7 @@ export class GuildsWorker {
           original: ' ',
           updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
           event: EVENT_LOG.GUILD,
-          action: 'join',
+          action: ACTION_LOG.JOIN,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -402,7 +402,7 @@ export class GuildsWorker {
                 original: ' ',
                 updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
                 event: EVENT_LOG.GUILD,
-                action: 'left',
+                action: ACTION_LOG.LEAVE,
                 t0: original.last_modified || new Date(),
                 t1: updated.last_modified || new Date(),
               });
@@ -413,7 +413,7 @@ export class GuildsWorker {
                 original: ' ',
                 updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
                 event: EVENT_LOG.CHARACTER,
-                action: 'left',
+                action: ACTION_LOG.LEAVE,
                 t0: original.last_modified || new Date(),
                 t1: updated.last_modified || new Date(),
               });
@@ -458,7 +458,7 @@ export class GuildsWorker {
           // GM title claimed by
           updated: `${member_new._id}:${member_old.id}`,
           event: EVENT_LOG.GUILD,
-          action: 'title',
+          action: ACTION_LOG.TITLE,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -470,7 +470,7 @@ export class GuildsWorker {
           // GM title withdraw from
           updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`,
           event: EVENT_LOG.CHARACTER,
-          action: 'title',
+          action: ACTION_LOG.TITLE,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -482,7 +482,7 @@ export class GuildsWorker {
           original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`,
           updated: ' ',
           event: EVENT_LOG.CHARACTER,
-          action: 'title',
+          action: ACTION_LOG.TITLE,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -506,7 +506,7 @@ export class GuildsWorker {
           // GM title claimed by
           updated: `${member_new._id}:${member_old.id}`,
           event: EVENT_LOG.GUILD,
-          action: 'title',
+          action: ACTION_LOG.TITLE,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -517,7 +517,7 @@ export class GuildsWorker {
           original: ' ',
           updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
           event: EVENT_LOG.CHARACTER,
-          action: 'title',
+          action: ACTION_LOG.TITLE,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -528,7 +528,7 @@ export class GuildsWorker {
           original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
           updated: ' ',
           event: EVENT_LOG.CHARACTER,
-          action: 'title',
+          action: ACTION_LOG.TITLE,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -552,7 +552,7 @@ export class GuildsWorker {
           // GM Title transferred to
           updated: `${member_new._id}:${member_new.id}`,
           event: EVENT_LOG.GUILD,
-          action: 'inherit',
+          action: ACTION_LOG.INHERIT,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -564,7 +564,7 @@ export class GuildsWorker {
           // GM Title received from
           updated: `${updated._id}:${updated.id}//${member_old._id}:${member_old.id}`,
           event: EVENT_LOG.CHARACTER,
-          action: 'inherit',
+          action: ACTION_LOG.INHERIT,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -576,7 +576,7 @@ export class GuildsWorker {
           original: `${updated._id}:${updated.id}//${member_new._id}:${member_new.id}`,
           updated: ' ',
           event: EVENT_LOG.CHARACTER,
-          action: 'inherit',
+          action: ACTION_LOG.INHERIT,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -597,7 +597,7 @@ export class GuildsWorker {
           original: `${member_old._id}:${member_old.id}`, // GM ownership withdraw from
           updated: `${member_new._id}:${member_old.id}`, //GM ownership claimed by
           event: EVENT_LOG.GUILD,
-          action: 'ownership',
+          action: ACTION_LOG.OWNERSHIP,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -608,7 +608,7 @@ export class GuildsWorker {
           original: ' ',
           updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM ownership withdraw from
           event: EVENT_LOG.CHARACTER,
-          action: 'ownership',
+          action: ACTION_LOG.OWNERSHIP,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });
@@ -619,7 +619,7 @@ export class GuildsWorker {
           original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM ownership claimed by
           updated: ' ',
           event: EVENT_LOG.CHARACTER,
-          action: 'ownership',
+          action: ACTION_LOG.OWNERSHIP,
           t0: original.last_modified || now,
           t1: updated.last_modified || now,
         });

@@ -1,7 +1,6 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  FACTION,
   NOTIFICATIONS,
   IDiscordSubscription,
   SWAGGER_CHARACTER_DAYS_FROM,
@@ -21,9 +20,13 @@ import {
   SWAGGER_CHARACTER_CLASS,
   SWAGGER_CONNECTED_REALM_ID,
   SWAGGER_CHARACTER_ILVL,
+  SWAGGER_REALMS_LOCALE,
 } from '@app/core';
 
 export class DiscordSubscriptionDto implements IDiscordSubscription{
+  @ApiProperty(SWAGGER_DISCORD_SERVER_ID)
+  readonly _id: string;
+
   @ApiProperty(SWAGGER_DISCORD_SERVER_ID)
   readonly discord_id: string;
 
@@ -43,8 +46,11 @@ export class DiscordSubscriptionDto implements IDiscordSubscription{
   readonly author_name: string;
 
   @ApiProperty(SWAGGER_DISCORD_TYPE)
-  @IsEnum(NOTIFICATIONS)
   readonly type: NOTIFICATIONS;
+
+  @ApiProperty(SWAGGER_REALMS_LOCALE)
+  @IsOptional()
+  readonly realms: string;
 
   @ApiProperty(SWAGGER_CHARACTER_CLASS)
   @IsOptional()
@@ -71,9 +77,8 @@ export class DiscordSubscriptionDto implements IDiscordSubscription{
   readonly wcl_percentile: number;
 
   @ApiProperty(SWAGGER_CHARACTER_FACTION)
-  @IsEnum(FACTION)
   @IsOptional()
-  readonly faction: FACTION;
+  readonly faction: string;
 
   @ApiProperty(SWAGGER_CHARACTER_LANGUAGES)
   @IsOptional()

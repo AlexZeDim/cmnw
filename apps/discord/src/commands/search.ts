@@ -6,6 +6,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { Client, GuildMember, Interaction } from 'discord.js';
 import { LeanDocument } from "mongoose";
 import { Subscription } from '@app/mongo';
+import { SearchEmbedMessage } from '../embeds';
 
 module.exports = {
   name: 'search',
@@ -25,7 +26,7 @@ module.exports = {
         .setDescription('Guild candidate search from WowProgress LFG')
         .addStringOption(option =>
           option.setName('realms')
-            .setDescription('Realms')
+            .setDescription('Realms and Locale')
             .addChoice('Русские', 'ru_RU')
             .addChoice('Deutsch', 'de_DE')
             .addChoice('English', 'en_GB')
@@ -117,9 +118,8 @@ module.exports = {
     ),
 
   async executeInteraction(interaction: Interaction, client: Client): Promise<void> {
+    if (!interaction.isCommand()) return;
     try {
-      if (!interaction.isCommand()) return;
-
       const realms = interaction.options.getString('realms');
       const faction = interaction.options.getString('faction');
       const character_class = interaction.options.getString('character_class');
@@ -130,10 +130,11 @@ module.exports = {
       const days_to = interaction.options.getInteger('days_to');
       const wcl_percentile = interaction.options.getInteger('wcl_percentile');
 
-      const item_id = interaction.options.getString('item_id');
+      const item = interaction.options.getString('item');
       const connected_realm_id = interaction.options.getInteger('connected_realm_id');
 
       const querySubscription: IDiscordSubscription = {
+        _id: `${interaction.guildId}${interaction.channelId}`,
         discord_id: interaction.guildId,
         discord_name: interaction.guild.name,
         channel_id: interaction.channelId,
@@ -152,13 +153,13 @@ module.exports = {
         days_to,
         wcl_percentile,
 
-        item_id,
+        item,
         connected_realm_id,
       };
 
       if (querySubscription.type === NOTIFICATIONS.CANCEL) {
 
-        const { data: removedSubscription } = await axios.put<LeanDocument<Subscription>>(`http://localhost:8000/api/osint/discord/unsubscribe`,
+        const { data: removedSubscription } = await axios.put<LeanDocument<Subscription>>(`${discordConfig.basename}/api/osint/discord/unsubscribe`,
           { discord_id: querySubscription.discord_id, channel_id: querySubscription.channel_id },
           {
           headers: {
@@ -166,8 +167,12 @@ module.exports = {
           }
         });
 
-        console.log(removedSubscription);
-        // TODO return;
+        if (!removedSubscription) {
+          throw new Error(`It seems that channel ${querySubscription.channel_id} doesn't have subscribed search for removal.`);
+        }
+
+        const embed = SearchEmbedMessage(removedSubscription);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         return;
       }
 
@@ -176,8 +181,12 @@ module.exports = {
           encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${querySubscription.discord_id}&channel_id=${querySubscription.channel_id}`)
         );
 
-        console.log(currentSubscription);
-        // TODO reply current settings and return
+        if (!currentSubscription) {
+          throw new Error(`It seems that channel ${querySubscription.channel_id} doesn't have subscribed search at all. Feel free to subscribe!`);
+        }
+
+        const embed = SearchEmbedMessage(currentSubscription);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
         return;
       }
 
@@ -188,10 +197,15 @@ module.exports = {
         data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 
-      console.log(createdSubscription);
-      // TODO receive ansfer from endpoint and feel free to go
-    } catch (errorOrException) {
+      if (!createdSubscription) {
+        throw new Error(`Probably something goes wrong. Please report directly to AlexZeDim#2645 with #search error.`);
+      }
 
+      const embed = SearchEmbedMessage(createdSubscription);
+      await interaction.reply({ embeds: [embed], ephemeral: true });
+    } catch (errorOrException) {
+      console.error(errorOrException);
+      await interaction.reply({ content: errorOrException.message, ephemeral: true });
     }
   }
 }

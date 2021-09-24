@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Key, Log, Realm, Subscription } from '@app/mongo';
-import { LeanDocument, Model } from 'mongoose';
+import { FilterQuery, LeanDocument, Model } from 'mongoose';
 import {
   CharacterHashDto,
   CharacterIdDto,
@@ -314,34 +314,43 @@ export class OsintService {
   }
 
   async checkDiscord(input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return this.SubscriptionModel.findOne({ discord_id: input.discord_id, channel_id: input.channel_id }).lean();
+    return this.SubscriptionModel.findById(`${input.discord_id}${input.channel_id}`).lean();
   }
 
   async subscribeDiscord(input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
 
-    switch (input.type) {
-      case NOTIFICATIONS.CANDIDATES:
-        // TODO we need realms both ways in one field, so here is array from locales
-        console.log('Oranges are $0.59 a pound.');
-        break;
-      case NOTIFICATIONS.MARKET:
-      case NOTIFICATIONS.ORDERS:
-        // TODO connected_realm_id for one realm
-        console.log('Mangoes and papayas are $2.79 a pound.');
-        // expected output: "Mangoes and papayas are $2.79 a pound."
-        break;
-      default:
-        console.log(`Sorry, we are out of ${input.type}.`);
+    const query: FilterQuery<Realm> = input.type === NOTIFICATIONS.CANDIDATES
+      ? { locale: input.realms }
+      : { connected_realm_id: input.connected_realm_id };
+
+    const realmsFilter = await this.RealmModel.find(query);
+
+    const subscription = new this.SubscriptionModel(input);
+
+    if (realmsFilter.length > 0) {
+      realmsFilter.map((realm) => {
+        subscription.realms_connected.addToSet({
+          _id: realm._id,
+          name: realm.name,
+          slug: realm.slug,
+          connected_realm_id: realm.connected_realm_id,
+          name_locale: realm.name_locale,
+          locale: realm.locale,
+          region: realm.region,
+          auctions: realm.auctions,
+          golds: realm.golds,
+        });
+      })
     }
 
-
-    return this.SubscriptionModel.findOneAndUpdate({
-      discord_id: input.discord_id,
-      channel_id: input.channel_id
-    }, input as unknown, { upsert: true, new: true, setDefaultsOnInsert: true }).lean();
+    return this.SubscriptionModel.findOneAndReplace(
+      { _id: `${input.discord_id}${input.channel_id}` },
+      subscription,
+      { new: true }
+      ).lean();
   }
 
   async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return this.SubscriptionModel.findOneAndDelete(input).lean();
+    return this.SubscriptionModel.findByIdAndDelete(`${input.discord_id}${input.channel_id}`).lean();
   }
 }

@@ -31,6 +31,8 @@ export interface IRealmConnected {
 }
 
 export class IDiscordSubscription {
+  readonly _id: string;
+
   readonly discord_id: string;
   readonly discord_name: string;
   readonly channel_id: string;
@@ -49,7 +51,7 @@ export class IDiscordSubscription {
   readonly days_to?: number;
   readonly wcl_percentile?: number;
 
-  readonly item_id?: string;
+  readonly item?: string;
   readonly connected_realm_id?: number;
 }
 

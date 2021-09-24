@@ -1,6 +1,15 @@
 import { ApiPropertyOptions } from '@nestjs/swagger';
 import { LANG, NOTIFICATIONS } from '@app/core/constants';
 
+export const SWAGGER_DISCORD_ID: ApiPropertyOptions = {
+  name: '_id',
+  description: 'Unique combination of Discord server ID and channel',
+  type: String,
+  required: true,
+  nullable: false,
+  example: '734001595049705534838698784439009300',
+};
+
 export const SWAGGER_DISCORD_SERVER_ID: ApiPropertyOptions = {
   name: 'discord_id',
   description: 'Discord server id',

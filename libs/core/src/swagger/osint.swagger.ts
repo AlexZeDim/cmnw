@@ -13,7 +13,7 @@ export const SWAGGER_CHARACTER_ID: ApiPropertyOptions = {
 export const SWAGGER_CHARACTER_FACTION: ApiPropertyOptions = {
   name: 'faction',
   description: 'Character faction: Horde, Alliance or Neutral',
-  type: FACTION,
+  type: String,
   enum: FACTION,
   required: false,
   example: FACTION.A
@@ -80,6 +80,14 @@ export const SWAGGER_CHARACTER_LANGUAGES: ApiPropertyOptions = {
   isArray: true,
   required: false,
   example: ['russian']
+};
+
+export const SWAGGER_REALMS_LOCALE: ApiPropertyOptions = {
+  name: 'realms',
+  description: 'Locale realm group string',
+  type: String,
+  required: false,
+  example: 'en_GB'
 };
 
 export const SWAGGER_CHARACTER_REALMS: ApiPropertyOptions = {

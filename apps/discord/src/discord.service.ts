@@ -6,9 +6,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Subscription } from '@app/mongo';
 import { Model } from 'mongoose';
-import { IDiscordCommand, LFG, NOTIFICATIONS } from '@app/core';
-import { CandidateEmbedMessage } from './embeds';
-import Discord, { Channel, Intents, Interaction, TextChannel } from 'discord.js';
+import { IDiscordCommand } from '@app/core';
+import Discord, { Intents, Interaction } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 

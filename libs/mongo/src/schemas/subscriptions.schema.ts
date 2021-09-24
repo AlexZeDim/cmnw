@@ -1,27 +1,46 @@
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FACTION, LANG, NOTIFICATIONS } from '@app/core';
+import { FACTION, NOTIFICATIONS } from '@app/core';
 import { Item } from '@app/mongo/schemas/items.schema';
+import { Realm } from '@app/mongo/schemas/realms.schema';
 
 @Schema()
 export class RealmConnected extends Document {
-  @Prop()
+  @Prop({ type: Number })
   _id: number;
 
-  @Prop()
+  @Prop({ type: String })
+  name: string;
+
+  @Prop({ type: String })
+  slug: string;
+
+  @Prop({ type: Number })
+  connected_realm_id: number;
+
+  @Prop({ type: String })
+  name_locale: string;
+
+  @Prop({ type: String })
+  locale: string;
+
+  @Prop({ type: String })
+  region: string;
+
+  @Prop({ type: Number, default: 0 })
   auctions: number;
 
-  @Prop()
+  @Prop({ type: Number, default: 0 })
   golds: number;
-
-  @Prop()
-  valuations: number;
 }
 
 export const RealmConnectedSchema = SchemaFactory.createForClass(RealmConnected);
 
 @Schema({ timestamps: true })
 export class Subscription extends Document {
+  @Prop({ type: String, required: true })
+  _id: string;
+
   @Prop({ type: String, required: true })
   discord_id: string;
 
@@ -46,8 +65,11 @@ export class Subscription extends Document {
   @Prop({ type: Number, default: 0 })
   tolerance: number;
 
-  @Prop({ type: Number, default: 0 })
+  @Prop({ type: Number, default: new Date().getTime() })
   timestamp: number;
+
+  @Prop({ type: [RealmConnectedSchema], ref: 'Realm' })
+  realms_connected: Types.Array<RealmConnected>;
   /**
    * Subscription
    * CANDIDATES
@@ -81,9 +103,6 @@ export class Subscription extends Document {
    */
   @Prop({ default: [], type: [Number], ref: 'Item' })
   items: number[] | Item[];
-
-  @Prop({ type: Number, ref: 'Realm' })
-  realms: number; // TODO both ways
 }
 
 export const SubscriptionsSchema = SchemaFactory.createForClass(Subscription);

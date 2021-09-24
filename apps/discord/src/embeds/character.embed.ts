@@ -68,7 +68,7 @@ export function CharacterEmbedMessage(character: Partial<CharacterDto>): Message
     return embed;
   } catch (errorException) {
     embed.setAuthor('Oops, sorry!');
-    embed.addField('Error', 'Tell the @AlexZeDim2645 that there is an error in CharacterEmbedMessage', false);
+    embed.addField('Error', 'Tell @AlexZeDim2645 that there is an error in CharacterEmbedMessage', false);
     embed.setThumbnail('https://i.imgur.com/vraz5ML.png');
     return embed;
   }

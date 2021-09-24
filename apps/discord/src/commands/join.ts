@@ -10,6 +10,7 @@ module.exports = {
   aliases: ['Voice', 'VOICE'],
   inDevelopment: true,
   args: true,
+  slashOnly: true,
   slashCommand: new SlashCommandBuilder()
     .setName('join')
     .setDescription('Joins selected voice channel')

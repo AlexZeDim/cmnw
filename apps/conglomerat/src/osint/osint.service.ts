@@ -7,7 +7,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, Guild, Key, Log, Realm, Subscription } from '@app/mongo';
+import { Character, Guild, Item, Key, Log, Realm, Subscription } from '@app/mongo';
 import { FilterQuery, LeanDocument, Model } from 'mongoose';
 import {
   CharacterHashDto,
@@ -46,6 +46,8 @@ export class OsintService {
     private readonly KeyModel: Model<Key>,
     @InjectModel(Subscription.name)
     private readonly SubscriptionModel: Model<Subscription>,
+    @InjectModel(Item.name)
+    private readonly ItemModel: Model<Item>,
     @BullQueueInject(charactersQueue.name)
     private readonly queueCharacter: Queue,
     @BullQueueInject(guildsQueue.name)
@@ -341,6 +343,23 @@ export class OsintService {
           golds: realm.golds,
         });
       })
+    }
+
+    if (input.type === NOTIFICATIONS.MARKET || input.type === NOTIFICATIONS.CANDIDATES) {
+      if (Number.isNaN(parseInt(input.item))) {
+        subscription.items = await this.ItemModel
+          .findOne(
+            { $text: { $search: input.item } },
+            { score: { $meta: 'textScore' } },
+          )
+          .sort({ score: { $meta: 'textScore' } })
+          .limit(25)
+          .distinct('_id');
+      } else {
+        subscription.items = await this.ItemModel
+          .findById(parseInt(input.item))
+          .distinct('_id');
+      }
     }
 
     return this.SubscriptionModel.findOneAndReplace(

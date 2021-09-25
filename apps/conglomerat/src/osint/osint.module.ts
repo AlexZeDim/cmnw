@@ -9,6 +9,8 @@ import {
   CharactersSchema,
   Guild,
   GuildsSchema,
+  Item,
+  ItemsSchema,
   Key,
   KeysSchema,
   Log,
@@ -30,6 +32,7 @@ import { charactersQueue, guildsQueue } from '@app/core';
       { name: Character.name, schema: CharactersSchema },
       { name: Guild.name, schema: GuildsSchema },
       { name: Subscription.name, schema: SubscriptionsSchema },
+      { name: Item.name, schema: ItemsSchema },
     ]),
     BullModule.forRoot({
       options: {

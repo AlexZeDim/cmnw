@@ -88,7 +88,7 @@ export class DiscordService implements OnApplicationBootstrap {
       if (!command) return;
 
       if (command.inDevelopment) {
-        await interaction.reply({ content: 'This command is still in development mode or disabled', ephemeral: true });
+        await interaction.reply({ content: 'This command is still in development mode & disabled', ephemeral: true });
         return;
       }
 
@@ -122,14 +122,6 @@ export class DiscordService implements OnApplicationBootstrap {
         },
         {
           $lookup: {
-            from: 'realms',
-            localField: 'realms._id',
-            foreignField: 'connected_realm_id',
-            as: 'realms',
-          },
-        },
-        {
-          $lookup: {
             from: 'items',
             localField: 'items',
             foreignField: '_id',
@@ -138,5 +130,8 @@ export class DiscordService implements OnApplicationBootstrap {
         },
       ])
       .cursor({ batchSize: 10 })
+      .eachAsync(async (subscription) => {
+
+      })
   }
 }

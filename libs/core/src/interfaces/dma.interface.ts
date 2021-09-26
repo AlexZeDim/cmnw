@@ -22,6 +22,26 @@ export interface IQItemValuation {
   iteration: number,
 }
 
+export interface IAAuctionOrder {
+  readonly id: number;
+
+  readonly quantity: number;
+
+  readonly price?: number;
+
+  readonly bid?: number;
+
+  readonly buyout?: number;
+}
+
+export interface IAAuctionOrders {
+  readonly _id: number;
+
+  readonly orders_t0: IAAuctionOrder[];
+
+  readonly orders_t1: IAAuctionOrder[];
+}
+
 export class IQPricing implements BattleNetOptions {
   readonly recipe_id: string | number;
 

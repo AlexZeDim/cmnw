@@ -68,7 +68,7 @@ export class Subscription extends Document {
   @Prop({ type: Number, default: new Date().getTime() })
   timestamp: number;
 
-  @Prop({ type: [RealmConnectedSchema], ref: 'Realm' })
+  @Prop({ type: [RealmConnectedSchema] })
   realms_connected: Types.Array<RealmConnected>;
   /**
    * Subscription

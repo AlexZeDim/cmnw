@@ -145,7 +145,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         .cursor({ batchSize: 1 })
         .eachAsync(async (log: WarcraftLogs) => {
           try {
-            const response = await lastValueFrom(this.httpService.get<{ exportedCharacters: ICharactersExported[] }>(`https://www.warcraftlogs.com:443/v1/report/fights/${log._id}?api_key=${keyWCL.token}`));
+            const response = await lastValueFrom(this.httpService.get<{ exportedCharacters: ICharactersExported[] }>(`https://www.warcraftlogs.com/v1/report/fights/${log._id}?api_key=${keyWCL.token}`));
 
             const result = await this.exportedCharactersToQueue(response.data.exportedCharacters, keys);
             if (result) {

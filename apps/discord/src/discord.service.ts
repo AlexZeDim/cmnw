@@ -50,7 +50,7 @@ export class DiscordService implements OnApplicationBootstrap {
     this.loadCommands();
 
     await this.rest.put(
-      Routes.applicationGuildCommands(discordConfig.id, '734001595049705534'),
+      Routes.applicationCommands(discordConfig.id),
       { body: this.commandSlash },
     );
 

@@ -3,7 +3,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { discordConfig } from '@app/configuration';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, GuildMember, Interaction } from 'discord.js';
+import { GuildMember, Interaction } from 'discord.js';
 import { LeanDocument } from "mongoose";
 import { Subscription } from '@app/mongo';
 import { SearchEmbedMessage } from '../embeds';
@@ -117,7 +117,7 @@ module.exports = {
         .setDescription('Cancel any kind of subscription for the selected channel')
     ),
 
-  async executeInteraction(interaction: Interaction, client: Client): Promise<void> {
+  async executeInteraction(interaction: Interaction): Promise<void> {
     if (!interaction.isCommand()) return;
     try {
       const realms = interaction.options.getString('realms');

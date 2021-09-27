@@ -216,7 +216,7 @@ export class WowprogressService implements OnApplicationBootstrap {
         { looking_for_guild: LFG.PREV }
         );
 
-      this.logger.debug(`indexLookingForGuild: status LFG revoke from ${charactersRevoked.nModified} characters`);
+      this.logger.debug(`indexLookingForGuild: status LFG revoke from ${charactersRevoked.modifiedCount} characters`);
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
@@ -307,7 +307,7 @@ export class WowprogressService implements OnApplicationBootstrap {
       );
 
       const charactersUnset = await this.CharacterModel.updateMany({ _id: { $in: charactersDiffLeave } }, { $unset: { looking_for_guild: 1 } });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.nModified} characters`);
+      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.modifiedCount} characters`);
 
       await this.CharacterModel.updateMany({ _id: { $in: NOW } }, { looking_for_guild: LFG.NOW });
       this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} set to ${NOW} characters`);

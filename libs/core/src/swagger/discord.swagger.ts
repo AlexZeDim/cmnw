@@ -1,5 +1,5 @@
 import { ApiPropertyOptions } from '@nestjs/swagger';
-import { LANG, NOTIFICATIONS } from '@app/core/constants';
+import { NOTIFICATIONS } from '@app/core/constants';
 
 export const SWAGGER_DISCORD_ID: ApiPropertyOptions = {
   name: '_id',
@@ -80,13 +80,4 @@ export const SWAGGER_DISCORD_TYPE: ApiPropertyOptions = {
   enum: NOTIFICATIONS,
   required: false,
   example: NOTIFICATIONS.CANDIDATES,
-}
-
-export const SWAGGER_DISCORD_LANG: ApiPropertyOptions = {
-  name: 'language',
-  description: 'Discord bot language',
-  type: LANG,
-  enum: LANG,
-  required: false,
-  example: LANG.RU,
 }

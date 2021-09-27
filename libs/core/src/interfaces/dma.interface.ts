@@ -22,7 +22,7 @@ export interface IQItemValuation {
   iteration: number,
 }
 
-export interface IAAuctionOrder {
+export class IAAuctionOrder {
   readonly id: number;
 
   readonly quantity: number;
@@ -34,7 +34,7 @@ export interface IAAuctionOrder {
   readonly buyout?: number;
 }
 
-export interface IAAuctionOrders {
+export class IAAuctionOrders {
   readonly _id: number;
 
   readonly orders_t0: IAAuctionOrder[];

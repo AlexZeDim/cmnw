@@ -21,10 +21,11 @@ import {
   SWAGGER_CONNECTED_REALM_ID,
   SWAGGER_CHARACTER_ILVL,
   SWAGGER_REALMS_LOCALE,
+  SWAGGER_DISCORD_ID,
 } from '@app/core';
 
 export class DiscordSubscriptionDto implements IDiscordSubscription{
-  @ApiProperty(SWAGGER_DISCORD_SERVER_ID)
+  @ApiProperty(SWAGGER_DISCORD_ID)
   readonly _id: string;
 
   @ApiProperty(SWAGGER_DISCORD_SERVER_ID)

@@ -5,13 +5,16 @@ import path from 'path';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Character, Item, Realm, Subscription } from '@app/mongo';
-import { FilterQuery, Model, Schema } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { IAAuctionOrders, IDiscordCommand, LFG, NOTIFICATIONS } from '@app/core';
 import Discord, { Intents, Interaction, TextChannel } from 'discord.js';
 import { differenceBy } from 'lodash';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { CandidateEmbedMessage } from './embeds';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { createMessageLine } from './utils/createMessageLine';
+import { MarketEmbed } from './embeds/market.embed';
 
 @Injectable()
 export class DiscordService implements OnApplicationBootstrap {
@@ -135,6 +138,10 @@ export class DiscordService implements OnApplicationBootstrap {
           if (!channel || channel.type !== 'GUILD_TEXT') throw new Error(`Unable to fetch channel: ${subscription.channel_id} guild: ${subscription.discord_name}`);
 
           switch (subscription.type) {
+            case NOTIFICATIONS.INFO:
+              break;
+            case NOTIFICATIONS.CANCEL:
+              break;
             case NOTIFICATIONS.CANDIDATES:
 
               const query: FilterQuery<Character> = { looking_for_guild: LFG.NEW };
@@ -167,8 +174,7 @@ export class DiscordService implements OnApplicationBootstrap {
             case NOTIFICATIONS.ORDERS:
 
               if (subscription.items.length === 0) {
-                // TODO no items
-                return;
+                throw new Error('No items detected');
               }
 
               const [connectedRealmHub] = subscription.realms_connected;
@@ -178,105 +184,144 @@ export class DiscordService implements OnApplicationBootstrap {
                 .sort({ auctions: -1 });
 
               if (realm && realm.auctions > connectedRealmHub.auctions) {
-                // TODO only this case OK
-              }
+                const itemsIDs: number[] = subscription.items.map(item => item instanceof Item ? item._id : item);
 
-              const itemsIDs: number[] = subscription.items.map(item => item instanceof Item ? item._id : item);
-
-              await this.AuctionModel
-                .aggregate<IAAuctionOrders>([
-                  {
-                    $match: {
-                      connected_realm_id: connectedRealmHub.connected_realm_id,
-                      item_id: { $in: itemsIDs },
-                      last_modified: { $in: [ connectedRealmHub.auctions, realm.auctions ] },
-                    }
-                  },
-                  {
-                    $group: {
-                      _id: '$item_id',
-                      orders_t0: {
-                        $push: {
-                          $cond: {
-                            if: {
-                              $eq: [ "$last_modified", connectedRealmHub.auctions ]
-                            },
-                            then: {
-                              id: "$id",
-                              quantity: "$quantity",
-                              price: "$price",
-                              bid: "$bid",
-                              buyout: "$buyout",
-                            },
-                            else: "$$REMOVE"
+                await this.AuctionModel
+                  .aggregate<IAAuctionOrders>([
+                    {
+                      $match: {
+                        connected_realm_id: connectedRealmHub.connected_realm_id,
+                        item_id: { $in: itemsIDs },
+                        last_modified: { $in: [ connectedRealmHub.auctions, realm.auctions ] },
+                      }
+                    },
+                    {
+                      $group: {
+                        _id: '$item_id',
+                        orders_t0: {
+                          $push: {
+                            $cond: {
+                              if: {
+                                $eq: [ "$last_modified", connectedRealmHub.auctions ]
+                              },
+                              then: {
+                                id: "$id",
+                                quantity: "$quantity",
+                                price: "$price",
+                                bid: "$bid",
+                                buyout: "$buyout",
+                              },
+                              else: "$$REMOVE"
+                            }
                           }
-                        }
-                      },
-                      orders_t1: {
-                        $push: {
-                          $cond: {
-                            if: {
-                              $eq: [ "$last_modified", realm.auctions ]
-                            },
-                            then: {
-                              id: "$id",
-                              quantity: "$quantity",
-                              price: "$price",
-                              bid: "$bid",
-                              buyout: "$buyout",
-                            },
-                            else: "$$REMOVE"
+                        },
+                        orders_t1: {
+                          $push: {
+                            $cond: {
+                              if: {
+                                $eq: [ "$last_modified", realm.auctions ]
+                              },
+                              then: {
+                                id: "$id",
+                                quantity: "$quantity",
+                                price: "$price",
+                                bid: "$bid",
+                                buyout: "$buyout",
+                              },
+                              else: "$$REMOVE"
+                            }
                           }
                         }
                       }
                     }
-                  }
-                ])
-                .allowDiskUse(true)
-                .cursor()
-                .eachAsync(async (auctionsOrders: IAAuctionOrders) => {
-                  if (subscription.type === NOTIFICATIONS.ORDERS) {
+                  ])
+                  .allowDiskUse(true)
+                  .cursor()
+                  .eachAsync(async (auctionsOrders: IAAuctionOrders) => {
+
                     const created = differenceBy(auctionsOrders.orders_t0, auctionsOrders.orders_t1, 'id');
                     const removed = differenceBy(auctionsOrders.orders_t1, auctionsOrders.orders_t0, 'id');
 
-                    if (created.length) {
-                      created.map((order) => {
+                    const items = [...subscription.items];
 
-                      })
+                    let item = items.find(item => item instanceof Item ? item._id === auctionsOrders._id : item === auctionsOrders._id);
+
+                    if (typeof item === 'number') {
+                      item = await this.ItemModel.findById(auctionsOrders._id);
                     }
 
-                    if (removed.length) {
-                      removed.map((order) => {
+                    if (subscription.type === NOTIFICATIONS.ORDERS) {
 
-                      })
+                      let message: string = '';
+                      let tradeHub: string = `${connectedRealmHub.connected_realm_id}`;
+
+                      if (subscription.realms_connected.length < 3) {
+                        tradeHub = Array.from(subscription.realms_connected).map(r => r.name_locale).join(', ');
+                      }
+
+                      if (created.length) {
+                        await lastValueFrom(from(created).pipe(
+                          mergeMap(async (order) => {
+                            const line = createMessageLine(order, tradeHub, item);
+
+                            if ((message.length + line.length) > 1999) {
+                              await (channel as TextChannel).send({ content: message });
+                              message = line;
+                            } else {
+                              message = message + line;
+                            }
+                          })
+                        ));
+                      }
+
+                      if (removed.length) {
+                        await lastValueFrom(from(removed).pipe(
+                          mergeMap(async (order) => {
+                            const line = createMessageLine(order, tradeHub, item);
+
+                            if ((message.length + line.length) > 1999) {
+                              await (channel as TextChannel).send({ content: message });
+                              message = line;
+                            } else {
+                              message = message + line;
+                            }
+                          })
+                        ));
+                      }
+
+                      if (message.length) await (channel as TextChannel).send({ content: message })
                     }
-                  }
 
-                  if (subscription.type === NOTIFICATIONS.MARKET) {
+                    if (subscription.type === NOTIFICATIONS.MARKET) {
+                      const marketEmbed = MarketEmbed(created, removed, connectedRealmHub, item);
+                      await (channel as TextChannel).send({ embeds: [marketEmbed ]});
+                    }
+                  });
 
-                  }
-                })
+                subscription.realms_connected.map((connected_realm) => {
+                  connected_realm.golds = realm.golds;
+                  connected_realm.auctions = realm.auctions;
+                  return connected_realm;
+                });
 
+                subscription.markModified('realms_connected');
+              }
 
-
-              subscription.markModified('realms_connected');
-
-              console.log('Mangoes and papayas are $2.79 a pound.');
-              // expected output: "Mangoes and papayas are $2.79 a pound."
               break;
-            default:
-              console.log(`Sorry, we are out of`);
           }
 
           subscription.timestamp = new Date().getTime();
           await subscription.save();
-        } catch (e) {
-          subscription.tolerance === 100
-            ? await this.SubscriptionModel.findByIdAndRemove(subscription._id)
-            : subscription.tolerance = subscription.tolerance + 1;
+        } catch (errorOrException) {
 
-          await subscription.save();
-          // TODO error
+          if (subscription.tolerance === 100) {
+            await this.SubscriptionModel.findByIdAndRemove(subscription._id);
+          } else {
+            subscription.tolerance = subscription.tolerance + 1;
+            await subscription.save();
+          }
+
+          this.logger.error(`subscriptions: ${errorOrException}`);
         }
       }, { parallel: 10 });
   }

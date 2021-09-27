@@ -22,6 +22,12 @@ export enum VALUATION_TYPE {
   GOLD = 'gold',
 }
 
+export enum ORDER_FLOW {
+  C = 'created',
+  R = 'removed'
+}
+
+
 export enum FLAG_TYPE {
   B = 'BUY',
   S = 'SELL',

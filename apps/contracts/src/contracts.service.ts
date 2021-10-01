@@ -205,13 +205,17 @@ export class ContractsService {
             .allowDiskUse(true)
             .cursor()
             .eachAsync(async (contract: ContractAggregation) => {
-              const contractExists = await this.ContractModel.findById(contract._id);
-              if (!!contractExists) await this.ContractModel.create(contract);
+              try {
+                const contractExists = await this.ContractModel.findById(contract._id);
+                if (!contractExists) await this.ContractModel.create(contract);
 
-              const flag = !!contractExists ? 'errorException' : 'C';
-              const contract_name = item.ticker ? item.ticker : item.name.en_GB;
+                const flag = !!contractExists ? 'errorException' : 'C';
+                const contractName = item.ticker ? item.ticker : item.name.en_GB;
 
-              this.logger.log(`buildContract: ${flag} | ${contract_name} |${contract._id}`);
+                this.logger.log(`buildContract: ${flag} | ${contractName} | ${contract._id}`);
+              } catch (errorOrException) {
+                this.logger.error(`buildContract: fail to create contract for item: ${item._id}`);
+              }
             }, { parallel: 4 });
         } catch (errorException) {
           this.logger.error(`buildContract: fail to create contract for item: ${item._id}`);

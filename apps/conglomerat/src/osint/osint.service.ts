@@ -345,7 +345,7 @@ export class OsintService {
       })
     }
 
-    if (input.type === NOTIFICATIONS.MARKET || input.type === NOTIFICATIONS.CANDIDATES) {
+    if (input.type === NOTIFICATIONS.MARKET || input.type === NOTIFICATIONS.ORDERS) {
       if (Number.isNaN(parseInt(input.item))) {
         subscription.items = await this.ItemModel
           .findOne(

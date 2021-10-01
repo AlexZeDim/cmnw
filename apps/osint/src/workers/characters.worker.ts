@@ -110,19 +110,19 @@ export class CharactersWorker {
        * by request from args
        */
       if (args.updateRIO) {
-        const raiderIo = await this.raiderio(character.name, character.realm);
+        const raiderIo = await this.raiderIO(character.name, character.realm);
         Object.assign(character, raiderIo);
         await job.updateProgress(60);
       }
 
       if (args.updateWCL) {
-        const warcraftLogs = await this.warcraftlogs(character.name, character.realm);
+        const warcraftLogs = await this.warcraftLogs(character.name, character.realm);
         Object.assign(character, warcraftLogs);
         await job.updateProgress(70);
       }
 
       if (args.updateWP) {
-        const wowProgress = await this.wowprogress(character.name, character.realm);
+        const wowProgress = await this.wowProgress(character.name, character.realm);
         Object.assign(character, wowProgress);
         await job.updateProgress(80);
       }
@@ -517,7 +517,7 @@ export class CharactersWorker {
     }
   }
 
-  private async raiderio(
+  private async raiderIO(
     name: string,
     realm_slug: string
   ): Promise<Partial<IRaiderIO>> {
@@ -559,7 +559,7 @@ export class CharactersWorker {
     }
   }
 
-  private async wowprogress(
+  private async wowProgress(
     name: string,
     realm_slug: string
   ): Promise<Partial<IWowProgress>> {
@@ -596,11 +596,11 @@ export class CharactersWorker {
     }
   }
 
-  private async warcraftlogs(
+  private async warcraftLogs(
     name: string,
     realm_slug: string
   ): Promise<Partial<IWarcraftLogs>> {
-    const warcraft_logs: Partial<IWarcraftLogs> = {};
+    const warcraftLogs: Partial<IWarcraftLogs> = {};
     try {
       const browser = await puppeteer.launch({ args: [ '--no-sandbox', '--disable-setuid-sandbox' ] });
       const page = await browser.newPage();
@@ -610,16 +610,16 @@ export class CharactersWorker {
       if (getXpath) {
         const bestPrefAvg = await page.evaluate(name => name['innerText'], getXpath);
         if (bestPrefAvg && bestPrefAvg !== '-') {
-          warcraft_logs.wcl_percentile = parseFloat(bestPrefAvg)
+          warcraftLogs.wcl_percentile = parseFloat(bestPrefAvg)
         }
       }
 
       await browser.close();
 
-      return warcraft_logs;
+      return warcraftLogs;
     } catch (errorException) {
       this.logger.error(`warcraftlogs: ${name}@${realm_slug}:${errorException}`);
-      return warcraft_logs;
+      return warcraftLogs;
     }
   }
 

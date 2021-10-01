@@ -2,6 +2,14 @@ import { LFG, OSINT_SOURCE } from '@app/core/constants';
 import { BattleNetOptions } from 'blizzapi';
 import { Guild } from '@app/mongo';
 
+export interface IWarcraftLogsToken {
+  readonly token_type: string;
+
+  readonly expires_in: number;
+
+  readonly access_token: string;
+}
+
 export class IQOptionsOsintIndex {
   readonly forceUpdate: number;
 

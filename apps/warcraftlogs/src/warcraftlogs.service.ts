@@ -9,7 +9,7 @@ import {
   IWarcraftLogsConfig,
   OSINT_SOURCE,
   toSlug,
-  GLOBAL_OSINT_KEY,
+  GLOBAL_OSINT_KEY, IWarcraftLogsActors,
 } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -56,7 +56,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     }
   }
 
-  async indexPage(config: IWarcraftLogsConfig, realm: Realm) {
+  async indexPage(config: IWarcraftLogsConfig, realm: Realm): Promise<void> {
     try {
       let logExists = 0;
       for (let page = config.from; page < config.to; page++) {
@@ -130,27 +130,75 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
   async indexLogs(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       await delay(30);
-      const keyWCL = await this.KeyModel.findOne({ tags: GLOBAL_WCL_KEY });
-      if (!keyWCL || !keyWCL.token) {
-        throw new NotFoundException(`clearance: WCL key not found`);
+      const keysWCL = await this.KeyModel.find({ tags: { $in: [GLOBAL_WCL_KEY, 'v2'] } });
+      if (!keysWCL.length) {
+        throw new NotFoundException(`clearance ${GLOBAL_WCL_KEY} ${keysWCL.length} keys have been found`);
       }
 
-      const keys = await this.KeyModel.find({ tags: clearance });
-      if (!keys.length) {
-        throw new NotFoundException(`clearance ${clearance} ${keys.length} have been found`);
+      const keysBnet = await this.KeyModel.find({ tags: clearance });
+      if (!keysBnet.length) {
+        throw new NotFoundException(`clearance ${clearance} ${keysBnet.length} have been found`);
       }
+
+      let i: number = 0;
 
       await this.WarcraftLogsModel
         .find({ status: false })
         .cursor({ batchSize: 1 })
-        .eachAsync(async (log: WarcraftLogs) => {
+        .eachAsync(async (log) => {
           try {
-            const response = await lastValueFrom(this.httpService.get<{ exportedCharacters: ICharactersExported[] }>(`https://www.warcraftlogs.com/v1/report/fights/${log._id}?api_key=${keyWCL.token}`));
+            const response = await lastValueFrom(
+              this.httpService.request({
+                method: 'post',
+                url: 'https://www.warcraftlogs.com/api/v2/client',
+                headers: { Authorization: `Bearer ${keysWCL[i].token}` },
+                data: {
+                  query: `
+                    query {
+                      reportData {
+                        report (code: "QJxpjgL7ZnvVkFzT") {
+                          rankedCharacters {
+                            id
+                            name
+                            guildRank
+                            server {
+                              id
+                              name
+                              normalizedName
+                              slug
+                            }
+                          }
+                          masterData {
+                            actors {
+                              type
+                              name
+                              server
+                            }
+                          }
+                        }
+                      }
+                    }`
+                }
+              })
+            );
 
-            const result = await this.exportedCharactersToQueue(response.data.exportedCharacters, keys);
-            if (result) {
-              log.status = true;
-              await log.save();
+            i++;
+            if (i >= keysWCL.length) i = 0;
+
+            if (!!response?.data?.data?.reportData?.report) {
+              const warcraftLog = response?.data?.data?.reportData?.report;
+
+              if (warcraftLog.masterData?.actors) {
+                const actors: IWarcraftLogsActors[] = warcraftLog.masterData?.actors;
+                const players = actors.filter(actor => actor.type === 'Player');
+                if (players.length) {
+                  const result = await this.charactersToQueue(players, keysBnet);
+                  if (result) {
+                    log.status = true;
+                    await log.save();
+                  }
+                }
+              }
             }
 
             this.logger.log(`Log: ${log._id}, status: ${log.status}`);
@@ -163,7 +211,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     }
   }
 
-  async exportedCharactersToQueue(exportedCharacters: ICharactersExported[], keys: Key[]): Promise<boolean> {
+  async charactersToQueue(exportedCharacters: IWarcraftLogsActors[], keys: Key[]): Promise<boolean> {
     try {
       let iteration = 0;
 

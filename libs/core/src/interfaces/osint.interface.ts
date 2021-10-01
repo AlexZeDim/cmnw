@@ -2,6 +2,14 @@ import { LFG, OSINT_SOURCE } from '@app/core/constants';
 import { BattleNetOptions } from 'blizzapi';
 import { Guild } from '@app/mongo';
 
+export interface IWarcraftLogsActors {
+  readonly type: 'NPC' | 'Player' | 'Pet';
+
+  readonly name: string;
+
+  readonly server: string | null;
+}
+
 export interface IWarcraftLogsToken {
   readonly token_type: string;
 

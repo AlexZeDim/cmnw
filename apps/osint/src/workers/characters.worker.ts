@@ -87,7 +87,7 @@ export class CharactersWorker {
 
       await job.updateProgress(20);
 
-      if ('is_valid' in status && status.is_valid === true) {
+      if (status.is_valid === true) {
 
         const [summary, pets_collection, mount_collection, professions, media] = await Promise.allSettled([
           this.summary(name_slug, character.realm, this.BNet),
@@ -233,7 +233,7 @@ export class CharactersWorker {
   ): Promise<Partial<ICharacterStatus>> {
     const characterStatus: Partial<ICharacterStatus> = {};
     try {
-      const character_status = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/status`, {
+      const statusResponse = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/status`, {
         params: {
           locale: 'en_GB',
           timeout: OSINT_TIMEOUT_TOLERANCE
@@ -241,9 +241,12 @@ export class CharactersWorker {
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });
 
-      if (characterStatus.id) characterStatus.id = character_status.id;
-      if ('is_valid' in characterStatus) characterStatus.is_valid = character_status.is_valid;
-      if ('last_modified' in characterStatus) characterStatus.last_modified = character_status.lastModified;
+      characterStatus.is_valid = false;
+
+      if (statusResponse.id) characterStatus.id = statusResponse.id;
+      if (statusResponse.is_valid) characterStatus.is_valid = statusResponse.is_valid;
+      if (statusResponse.lastModified) characterStatus.last_modified = statusResponse.lastModified;
+
       characterStatus.status_code = 201;
 
       return characterStatus;

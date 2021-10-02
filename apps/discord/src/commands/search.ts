@@ -194,7 +194,7 @@ module.exports = {
         method: 'POST',
         url: `${discordConfig.basename}/api/osint/discord/subscribe`,
         headers: { 'Content-Type': 'application/json' },
-        data: qs.stringify(querySubscription, { skipNulls: true }),
+        data: JSON.stringify(querySubscription),
       });
 
       if (!createdSubscription) {

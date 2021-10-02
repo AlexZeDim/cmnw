@@ -362,11 +362,18 @@ export class OsintService {
       }
     }
 
-    return this.SubscriptionModel.findOneAndReplace(
-      { _id: `${input.discord_id}${input.channel_id}` },
-      subscription.toObject(),
-      { new: true, lean: true }
-      )
+    const subscriptionExists = await this.SubscriptionModel.findById(`${input.discord_id}${input.channel_id}`);
+
+    if (subscriptionExists) {
+      return this.SubscriptionModel.findOneAndReplace(
+        { _id: `${input.discord_id}${input.channel_id}` },
+        subscription.toObject(),
+        { new: true, lean: true }
+      );
+    } else {
+      const subscriptionCreated = await this.SubscriptionModel.create(subscription);
+      return subscriptionCreated.toObject();
+    }
   }
 
   async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {

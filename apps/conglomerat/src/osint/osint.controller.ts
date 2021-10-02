@@ -186,7 +186,7 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Get('/discord')
   async checkDiscord(@Query() input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return this.osintService.checkDiscord(input);
+    return await this.osintService.checkDiscord(input);
   }
 
   @ApiOperation({ description: 'Create or update subscription' })
@@ -200,7 +200,7 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Post('/discord/subscribe')
   async subscribeDiscord(@Body() input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return this.osintService.subscribeDiscord(input)
+    return await this.osintService.subscribeDiscord(input)
   }
 
   @ApiOperation({ description: 'Unsubscribes discord server and channel from notifications' })
@@ -214,6 +214,6 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Put('/discord/unsubscribe')
   async unsubscribeDiscord(@Body() input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return this.osintService.unsubscribeDiscord(input)
+    return await this.osintService.unsubscribeDiscord(input)
   }
 }

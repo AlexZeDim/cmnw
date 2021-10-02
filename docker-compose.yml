@@ -40,7 +40,7 @@ services:
     ports:
       - '5000:8000'
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -57,7 +57,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -74,7 +74,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/discord/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -91,7 +91,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -108,7 +108,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/characters/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -125,7 +125,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/osint/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -142,7 +142,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/osint/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -159,7 +159,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/osint/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -176,7 +176,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/osint/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -193,7 +193,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/osint/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -210,7 +210,7 @@ services:
       - redis
     command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -227,7 +227,7 @@ services:
       - redis
     command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -244,7 +244,7 @@ services:
       - redis
     command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -261,7 +261,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/guilds/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -278,7 +278,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/auctions/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -295,7 +295,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/contracts/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -312,7 +312,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/valuations/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -329,7 +329,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/gold/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -346,7 +346,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/wowprogress/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -363,7 +363,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -380,7 +380,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/items/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -397,7 +397,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/pricing/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
@@ -414,7 +414,7 @@ services:
       - redis
     command: [ 'node', 'dist/apps/wowtoken/main.js' ]
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis

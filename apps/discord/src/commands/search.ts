@@ -197,7 +197,7 @@ module.exports = {
         data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 
-      this.logger.log(createdSubscription);
+      console.log(createdSubscription);
       if (!createdSubscription) {
         throw new Error(`Probably something goes wrong. Please report directly to AlexZeDim#2645 with #search error.`);
       }

@@ -190,19 +190,19 @@ module.exports = {
         return;
       }
 
-      const { data: createdSubscription } = await axios.request<LeanDocument<Subscription>>({
+      const t = await axios.request<LeanDocument<Subscription>>({
         method: 'POST',
         url: `${discordConfig.basename}/api/osint/discord/subscribe`,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 
-      console.log(createdSubscription);
-      if (!createdSubscription) {
+      console.log(t);
+/*      if (!createdSubscription) {
         throw new Error(`Probably something goes wrong. Please report directly to AlexZeDim#2645 with #search error.`);
-      }
+      }*/
 
-      const embed = SearchEmbedMessage(createdSubscription);
+      const embed = SearchEmbedMessage(t.data);
       await interaction.reply({ embeds: [embed], ephemeral: true });
     } catch (errorOrException) {
       console.error(errorOrException);

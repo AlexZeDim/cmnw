@@ -105,7 +105,7 @@ module.exports = {
           option.setName('connected_realm_id')
             .setDescription('To know ID of your realm use /realm command')
             .setRequired(true))
-      )
+    )
     .addSubcommand(subcommand =>
       subcommand
         .setName(NOTIFICATIONS.INFO)
@@ -142,30 +142,30 @@ module.exports = {
         author_id: interaction.user.id,
         author_name: interaction.user.username,
         type: interaction.options.getSubcommand() as NOTIFICATIONS,
+
+        realms,
+        faction,
+        character_class,
+        languages,
+        item_level,
+        rio_score,
+        days_from,
+        days_to,
+        wcl_percentile,
+
+        item,
+        connected_realm_id,
       };
-
-      if (realms) Object.assign(querySubscription, { realms });
-      if (faction) Object.assign(querySubscription, { faction });
-      if (character_class) Object.assign(querySubscription, { character_class });
-      if (languages) Object.assign(querySubscription, { languages });
-      if (item_level) Object.assign(querySubscription, { item_level });
-      if (rio_score) Object.assign(querySubscription, { rio_score });
-      if (days_from) Object.assign(querySubscription, { days_from });
-      if (days_to) Object.assign(querySubscription, { days_to });
-      if (wcl_percentile) Object.assign(querySubscription, { wcl_percentile });
-
-      if (item) Object.assign(querySubscription, { item });
-      if (connected_realm_id) Object.assign(querySubscription, { connected_realm_id });
 
       if (querySubscription.type === NOTIFICATIONS.CANCEL) {
 
         const { data: removedSubscription } = await axios.put<LeanDocument<Subscription>>(`${discordConfig.basename}/api/osint/discord/unsubscribe`,
           { discord_id: querySubscription.discord_id, channel_id: querySubscription.channel_id },
           {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        });
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          });
 
         if (!removedSubscription) {
           throw new Error(`It seems that channel ${querySubscription.channel_id} doesn't have subscribed search for removal.`);
@@ -193,10 +193,11 @@ module.exports = {
       const { data: createdSubscription } = await axios.request<LeanDocument<Subscription>>({
         method: 'POST',
         url: `${discordConfig.basename}/api/osint/discord/subscribe`,
-        headers: { 'Content-Type': 'application/json' },
-        data: JSON.stringify(querySubscription),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 
+      this.logger.log(createdSubscription);
       if (!createdSubscription) {
         throw new Error(`Probably something goes wrong. Please report directly to AlexZeDim#2645 with #search error.`);
       }

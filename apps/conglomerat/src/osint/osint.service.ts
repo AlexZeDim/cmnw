@@ -364,9 +364,9 @@ export class OsintService {
 
     return this.SubscriptionModel.findOneAndReplace(
       { _id: `${input.discord_id}${input.channel_id}` },
-      subscription,
-      { new: true }
-      ).lean();
+      subscription.toObject(),
+      { new: true, lean: true }
+      )
   }
 
   async unsubscribeDiscord(input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {

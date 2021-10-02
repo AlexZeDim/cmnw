@@ -193,7 +193,7 @@ module.exports = {
       const { data: createdSubscription } = await axios.request<LeanDocument<Subscription>>({
         method: 'POST',
         url: `${discordConfig.basename}/api/osint/discord/subscribe`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { 'Content-Type': 'application/json' },
         data: qs.stringify(querySubscription, { skipNulls: true }),
       });
 

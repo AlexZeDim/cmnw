@@ -214,11 +214,12 @@ export class ContractsService {
 
                 this.logger.log(`buildContract: ${flag} | ${contractName} | ${contract._id}`);
               } catch (errorOrException) {
+                this.logger.error(errorOrException);
                 this.logger.error(`buildContract: fail to create contract for item: ${item._id}`);
               }
             }, { parallel: 4 });
         } catch (errorException) {
-          this.logger.error(`buildContract: fail to create contract for item: ${item._id}`);
+          this.logger.error(errorException);
         }
       })
   }

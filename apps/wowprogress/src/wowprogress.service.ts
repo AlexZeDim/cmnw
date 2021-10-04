@@ -254,7 +254,7 @@ export class WowprogressService implements OnApplicationBootstrap {
        * then write NOW to PREV
        */
       const OLD_PREV = await this.redisService.smembers(LFG.PREV);
-      this.logger.log(`indexLookingForGuild: ${OLD_PREV.length} characters fround for LFG-${LFG.PREV}`);
+      this.logger.log(`indexLookingForGuild: ${OLD_PREV.length} characters found for LFG-${LFG.PREV}`);
       if (OLD_PREV.length === 0) {
         await this.redisService.sadd(LFG.PREV, charactersFilter);
       }

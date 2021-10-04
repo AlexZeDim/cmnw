@@ -116,9 +116,7 @@ export class ContractsService {
                 }
               },
               orders: {
-                $push: {
-                  id: '$id',
-                },
+                $push: '$id',
               },
             }
           };

@@ -353,6 +353,6 @@ export enum OSINT_SOURCE {
 
 export enum LFG {
   NEW = 'NEW',
-  NOW = 'T',
-  PREV = 'T-1'
+  NOW = 'NOW',
+  PREV = 'PREV'
 }

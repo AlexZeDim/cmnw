@@ -206,6 +206,7 @@ export class WowprogressService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async indexWowProgressLfg(clearance: string = GLOBAL_KEY): Promise<void> {
     try {
+      this.logger.log(`————————————————————————————————————`);
       /**
        * Revoke characters status from old NOW => to PREV
        */
@@ -242,8 +243,8 @@ export class WowprogressService implements OnApplicationBootstrap {
        * If WowProgress result > 0
        * overwrite LFG.NOW
        */
+      this.logger.log(`indexLookingForGuild: ${charactersFilter.length} characters found in LFG-${LFG.NOW}`);
       if (charactersFilter.length > 0) {
-        this.logger.log(`indexLookingForGuild: ${charactersFilter.length} characters found in LFG-${LFG.NOW}`);
         await this.redisService.del(LFG.NOW);
         await this.redisService.sadd(LFG.NOW, charactersFilter);
       }
@@ -253,8 +254,8 @@ export class WowprogressService implements OnApplicationBootstrap {
        * then write NOW to PREV
        */
       const OLD_PREV = await this.redisService.smembers(LFG.PREV);
+      this.logger.log(`indexLookingForGuild: ${OLD_PREV.length} characters fround for LFG-${LFG.PREV}`);
       if (OLD_PREV.length === 0) {
-        this.logger.log(`indexLookingForGuild: ${OLD_PREV.length} characters fround for LFG-${LFG.PREV}`);
         await this.redisService.sadd(LFG.PREV, charactersFilter);
       }
 
@@ -264,16 +265,16 @@ export class WowprogressService implements OnApplicationBootstrap {
       const charactersDiffLeave = difference(PREV, NOW);
       const charactersDiffNew = difference(NOW, PREV);
 
+      this.logger.log(`indexLookingForGuild: ${PREV.length} characters removed from LFG-${LFG.PREV}`);
       if (PREV.length > 0) {
-        this.logger.log(`indexLookingForGuild: ${PREV.length} characters removed from LFG-${LFG.PREV}`);
         await this.redisService.del(LFG.PREV);
         await this.redisService.sadd(LFG.PREV, charactersFilter);
       }
 
       let index: number = 0;
 
+      this.logger.log(`indexLookingForGuild: ${charactersDiffNew.length} characters added to queue with LFG-${LFG.NOW}`);
       if (charactersDiffNew.length > 0) {
-        this.logger.log(`indexLookingForGuild: ${charactersDiffNew.length} characters added to queue with LFG-${LFG.NOW}`);
         await lastValueFrom(
           from(charactersDiffNew).pipe(
             mergeMap(async (character_id, i) => {
@@ -306,7 +307,7 @@ export class WowprogressService implements OnApplicationBootstrap {
               );
 
               index++
-              this.logger.log(`Added to character queue: ${character_id}`);
+              this.logger.log(`indexLookingForGuild: Added to character queue: ${character_id}`);
               if (i >= keys.length) index = 0;
             })
           )
@@ -314,13 +315,15 @@ export class WowprogressService implements OnApplicationBootstrap {
       }
 
       const charactersUnset = await this.CharacterModel.updateMany({ _id: { $in: charactersDiffLeave } }, { $unset: { looking_for_guild: 1 } });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.PREV} unset from ${charactersUnset.modifiedCount} characters`);
+      this.logger.debug(`indexLookingForGuild: status LFG-${LFG.PREV} unset from ${charactersUnset.modifiedCount} characters`);
 
       await this.CharacterModel.updateMany({ _id: { $in: NOW } }, { looking_for_guild: LFG.NOW });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NOW} set to ${NOW} characters`);
+      this.logger.debug(`indexLookingForGuild: status LFG-${LFG.NOW} set to ${NOW} characters`);
 
       await this.CharacterModel.updateMany({ _id: { $in: charactersDiffNew } }, { looking_for_guild: LFG.NEW });
-      this.logger.debug(`indexLookingForGuild: status LFG: ${LFG.NEW} set to ${charactersDiffNew.length} characters`);
+      this.logger.debug(`indexLookingForGuild: status LFG-${LFG.NEW} set to ${charactersDiffNew.length} characters`);
+
+      this.logger.log(`————————————————————————————————————`);
     } catch (errorException) {
       this.logger.error(`indexLookingForGuild: ${errorException}`)
     }

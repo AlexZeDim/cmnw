@@ -118,7 +118,6 @@ export class ContractsService {
               orders: {
                 $push: {
                   id: '$id',
-                  time_left: '$time_left',
                 },
               },
             }

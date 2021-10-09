@@ -9,7 +9,7 @@ import { KeyInterface } from '@app/configuration/interfaces/key.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { GLOBAL_BLIZZARD_KEY, IWarcraftLogsToken } from '@app/core';
 import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
 export class KeysService implements OnApplicationBootstrap {
@@ -31,14 +31,17 @@ export class KeysService implements OnApplicationBootstrap {
   private async initKeys(): Promise<void> {
     const keysJson = readFileSync(join(__dirname, '..', '..', '..', keysConfig.path), 'utf8');
     const { keys } = JSON.parse(keysJson);
-    await Promise.all(
-      keys.map(async (key: KeyInterface) => {
-        const keyExists = await this.KeysModel.findById(key._id);
-        if (!keyExists) {
-          await this.KeysModel.create(key);
-          this.logger.log(`Created: key(${key._id})`);
-        }
-      }),
+
+    await lastValueFrom(
+      from(keys).pipe(
+        mergeMap(async (key: KeyInterface) => {
+          const keyExists = await this.KeysModel.findById(key._id);
+          if (!keyExists) {
+            await this.KeysModel.create(key);
+            this.logger.log(`Created: key(${key._id})`);
+          }
+        }, 5)
+      )
     );
   }
 

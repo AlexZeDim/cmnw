@@ -1,14 +1,15 @@
 import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
-import { NlpManager } from 'node-nlp';
+/*import { NlpManager } from 'node-nlp';
 import path from 'path';
-import fs from 'fs-extra';
+import fs from 'fs-extra';*/
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Message } from '@app/mongo';
 import { EXIT_CODES } from '@app/core';
 
+
 // @ts-ignore
-import Discord from 'discord-agent';
+import Discord from 'v11-discord.js';
 
 
 @Injectable()
@@ -17,11 +18,12 @@ export class OracleService implements OnApplicationBootstrap {
 
   private commands: Discord.Collection<string, any>
 
+  /*
   private manager = new NlpManager({
     languages: ['ru'],
     threshold: 0.8,
     builtinWhitelist: []
-  });
+  });*/
 
   constructor(
     @InjectModel(Key.name)
@@ -35,7 +37,7 @@ export class OracleService implements OnApplicationBootstrap {
   );
 
   async onApplicationBootstrap(): Promise<void> {
-    const dir = path.join(__dirname, '..', '..', '..', 'files');
+/*    const dir = path.join(__dirname, '..', '..', '..', 'files');
     await fs.ensureDir(dir);
 
     const file = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
@@ -47,7 +49,10 @@ export class OracleService implements OnApplicationBootstrap {
 
     const corpus = fs.readFileSync(file, 'utf8');
 
-    await this.manager.import(corpus);
+    await this.manager.import(corpus);*/
+    // TODO account from env
+    const t = process.env.ACCOUNT;
+    console.log(t);
 
     this.client = new Discord.Client({
       ws: {
@@ -56,27 +61,28 @@ export class OracleService implements OnApplicationBootstrap {
       }
     });
 
-    const key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'free' ] } });
-    if (!key) {
-      throw new ServiceUnavailableException('Available keys not found!');
-    }
+    const key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'free', t ] } });
+    if (!key) throw new ServiceUnavailableException('Available keys not found!');
 
     key.tags.pull('free');
     key.tags.addToSet('taken');
 
     await key.save();
+
     await this.client.login(key.token);
     this.commands = new Discord.Collection();
 
     this.logger.warn(`Key ${key.token} has been taken!`);
 
-    EXIT_CODES.forEach((eventType) => process.on(eventType,  async () => {
-      key.tags.pull('taken');
-      key.tags.addToSet('free');
+    EXIT_CODES.forEach((eventType) =>
+      process.on(eventType,  async () => {
+        key.tags.pull('taken');
+        key.tags.addToSet('free');
 
-      await key.save();
-      this.logger.warn(`Key ${key.token} has been released!`);
-    }));
+        await key.save();
+        this.logger.warn(`Key ${key.token} has been released!`);
+      })
+    );
 
     await this.bot();
   }
@@ -94,8 +100,8 @@ export class OracleService implements OnApplicationBootstrap {
           console.log(message.author);
           // TODO execute command only for clearance personal
           // if (message.author.id === '240464611562881024') await message.send('My watch is eternal');
-          const match = await this.manager.extractEntities('ru', message.content);
-          console.log(match)
+          // const match = await this.manager.extractEntities('ru', message.content);
+          // console.log(match)
         } catch (errorException) {
           this.logger.error(`Error: ${errorException}`);
         }

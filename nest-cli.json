@@ -214,6 +214,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/bench/tsconfig.app.json"
       }
+    },
+    "gatekeeper": {
+      "type": "application",
+      "root": "apps/gatekeeper",
+      "entryFile": "main",
+      "sourceRoot": "apps/gatekeeper/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/gatekeeper/tsconfig.app.json"
+      }
     }
   }
 }

@@ -18,6 +18,7 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class RealmsService implements OnApplicationBootstrap {
@@ -57,7 +58,7 @@ export class RealmsService implements OnApplicationBootstrap {
         return
       }
 
-      await this.queue.drain(true)
+      await this.queue.drain(true);
 
       this.BNet = new BlizzAPI({
         region: 'eu',
@@ -105,7 +106,9 @@ export class RealmsService implements OnApplicationBootstrap {
       if (start < 1) start = 1;
       const wcl_ids: number[] = range(start, end + 1, 1);
       for (const wcl_id of wcl_ids) {
-        const response = await this.httpService.get(`https://www.warcraftlogs.com/server/id/${wcl_id}`).toPromise();
+        const response = await lastValueFrom(
+          this.httpService.get(`https://www.warcraftlogs.com/server/id/${wcl_id}`)
+        );
         const wclHTML = cheerio.load(response.data);
         const serverElement = wclHTML.html('.server-name');
         const realmName = wclHTML(serverElement).text();

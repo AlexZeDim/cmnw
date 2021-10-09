@@ -200,6 +200,24 @@ services:
     networks:
       - conglomerat-network
 
+  oracle-1:
+    build: ./
+    image: conglomerat
+    restart: always
+    container_name: oracle-1
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=MarieTessieAshpool
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   dma-1:
     build: ./
     image: conglomerat

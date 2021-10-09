@@ -1,6 +1,7 @@
 import { NOTIFICATIONS } from '@app/core/constants';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, Interaction, Message } from 'discord.js';
+import { Client, Interaction, Message, TextChannel } from 'discord.js';
+import { Redis } from '@nestjs-modules/ioredis';
 
 export interface IDiscordRoute {
   recruiting: number[],
@@ -21,6 +22,25 @@ export interface IDiscordCommand {
 
   executeMessage(message: Message, args?: string, client?: Client): Promise<void>;
   executeInteraction(interaction: Interaction, client?: Client): Promise<void>;
+}
+
+export interface IDiscordChannelLogs {
+  ingress: TextChannel,
+  egress: TextChannel,
+  regress: TextChannel,
+}
+
+export interface ISlashCommandArgs {
+  readonly interaction: Interaction,
+  readonly client?: Client,
+  readonly redis?: Redis,
+}
+
+export interface IDiscordSlashCommand {
+  readonly name: string;
+  readonly slashCommand: SlashCommandBuilder;
+
+  executeInteraction(interactionArgs): Promise<void>;
 }
 
 export interface IRealmConnected {

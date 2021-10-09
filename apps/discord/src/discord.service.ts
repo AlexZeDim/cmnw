@@ -60,7 +60,7 @@ export class DiscordService implements OnApplicationBootstrap {
 
     await this.client.login(discordConfig.token);
 
-    this.bot()
+    this.bot();
   }
 
   private bot(): void {

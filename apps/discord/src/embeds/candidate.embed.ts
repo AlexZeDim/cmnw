@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 import { Character } from '@app/mongo';
-import { capitalize, FACTION } from '@app/core';
+import { FACTION, fromSlug } from '@app/core';
 import { LeanDocument } from 'mongoose';
 import { discordConfig } from '@app/configuration';
 
@@ -43,8 +43,8 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>): Messa
     if (character.average_item_level && character.equipped_item_level) embed.addField('Item Level', `${character.equipped_item_level} || ${character.average_item_level}`, true);
     if (character.character_class) embed.addField('Class', character.character_class, true);
     if (character.active_spec) embed.addField('Active Spec', character.active_spec, true);
-    if (character.hash_a) embed.addField('Hash A', character.hash_a, true);
-    if (character.hash_b) embed.addField('Hash B', character.hash_b, true);
+    if (character.hash_a) embed.addField('Hash A', `[${character.hash_a}](${discordConfig.basename}/hash/a@${character.hash_a})`, true);
+    if (character.hash_b) embed.addField('Hash B',`[${character.hash_b}](${discordConfig.basename}/hash/b@${character.hash_b})`, true);
     if (character.chosen_covenant && character.renown_level) embed.addField('Covenant', `${character.chosen_covenant} || ${character.renown_level}`, true);
     if (character.role) embed.addField('Role', character.role.toString().replace(/\./g, '\n').toUpperCase(), true);
     if (character.rio_score) embed.addField('RIO', character.rio_score.toString(), true);
@@ -61,7 +61,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>): Messa
 
     if (character.raid_progress.length) {
       character.raid_progress.map((raid) => {
-        embed.addField(capitalize(raid._id), raid.progress, true);
+        embed.addField(fromSlug(raid._id), raid.progress, true);
       })
     }
 

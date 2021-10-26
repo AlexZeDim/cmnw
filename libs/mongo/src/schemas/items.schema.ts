@@ -113,7 +113,6 @@ ItemsSchema.index(
     'tags': 'text'
   },
   {
-    // @ts-ignore
     weights:
       {
         'ticker': 2,

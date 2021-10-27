@@ -43,7 +43,6 @@ export class OsintController {
     private readonly osintService: OsintService
   ) {}
 
-
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

@@ -118,29 +118,29 @@ export class OsintService {
 
     const _id: string = `${name_slug}@${realm.slug}`;
     const character = await this.CharacterModel.findById(_id).lean();
+    const key = await this.KeyModel.findOne({ tags: this.clearance });
+    await this.queueCharacter.add(
+      _id,
+      {
+        _id: _id,
+        name: name_slug,
+        realm: realm.slug,
+        region: 'eu',
+        clientId: key._id,
+        clientSecret: key.secret,
+        accessToken: key.token,
+        created_by: OSINT_SOURCE.REQUESTCHARACTER,
+        updated_by: OSINT_SOURCE.REQUESTCHARACTER,
+        guildRank: false,
+        createOnlyUnique: false,
+        forceUpdate: 3600000,
+      },
+      {
+        jobId: _id,
+        priority: 1
+      }
+    );
     if (!character) {
-      const key = await this.KeyModel.findOne({ tags: this.clearance });
-      await this.queueCharacter.add(
-        _id,
-        {
-          _id: _id,
-          name: name_slug,
-          realm: realm.slug,
-          region: 'eu',
-          clientId: key._id,
-          clientSecret: key.secret,
-          accessToken: key.token,
-          created_by: OSINT_SOURCE.REQUESTCHARACTER,
-          updated_by: OSINT_SOURCE.REQUESTCHARACTER,
-          guildRank: false,
-          createOnlyUnique: false,
-          forceUpdate: 60000,
-        },
-        {
-          jobId: _id,
-          priority: 1
-        }
-      );
       throw new NotFoundException(`Character: ${_id} not found, but will be added to OSINT-DB on existence shortly`);
     }
     return character;

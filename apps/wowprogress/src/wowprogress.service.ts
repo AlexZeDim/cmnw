@@ -277,16 +277,31 @@ export class WowprogressService implements OnApplicationBootstrap {
       if (charactersDiffNew.length > 0) {
         await lastValueFrom(
           from(charactersDiffNew).pipe(
-            mergeMap(async (character_id, i) => {
+            mergeMap(async (character, i) => {
 
-              const [name, realm] = character_id.split('@');
+              const [name, realmQuery] = character.split('@');
+
+              const realm = await this.RealmModel
+                .findOne(
+                  { $text: { $search: realmQuery } },
+                  { score: { $meta: 'textScore' } },
+                  { projection: { slug: 1 } }
+                )
+                .sort({ score: { $meta: 'textScore' } })
+                .lean();
+
+              if (!realm) {
+                throw new NotFoundException(`Realm: ${realmQuery} not found`);
+              }
+
+              const characterId = `${name}@${realm.slug}`;
 
               await this.queueCharacters.add(
-                character_id,
+                characterId,
                 {
-                  _id: character_id,
+                  _id: characterId,
                   name,
-                  realm,
+                  realm: realm.slug,
                   region: 'eu',
                   clientId: keys[index]._id,
                   clientSecret: keys[index].secret,
@@ -301,13 +316,13 @@ export class WowprogressService implements OnApplicationBootstrap {
                   forceUpdate: randomInt(1000 * 60 * 30, 1000 * 60 * 60),
                   iteration: i,
                 }, {
-                  jobId: character_id,
+                  jobId: characterId,
                   priority: 2,
                 }
               );
 
               index++
-              this.logger.log(`indexLookingForGuild: Added to character queue: ${character_id}`);
+              this.logger.log(`indexLookingForGuild: Added to character queue: ${characterId}`);
               if (i >= keys.length) index = 0;
             })
           )

@@ -41,7 +41,7 @@ export const toSlug = (s: string): string => {
 
 
 /**
- * @description Return force lowercased with underscore format string
+ * @description Return force lowercase with underscore format string
  * @param s {string}
  * @return {string}
  */
@@ -52,16 +52,34 @@ export const toKey = (s: string): string => {
     .toLowerCase();
 }
 
+/**
+ * @description Delay for the selected amount of time in seconds
+ * @param seconds {number}
+ */
 export const delay = (seconds: number = 5): Promise<void> => {
   return new Promise((resolve) => { setTimeout(resolve, seconds * 1000); });
 }
 
+/**
+ * @description Return array of unique strings from object keys or enum.
+ * @param obj
+ */
 export const enumKeys = <O extends object, K extends keyof O = keyof O>(obj: O): K[] => {
   return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
 }
 
+/**
+ * @description Return random integer between minimum and maximum value.
+ * @param min {number}
+ * @param max {number}
+ */
 export const randomInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1) + min)
 
+/**
+ * Filtering function for parsing CSV EntitiesList file.
+ * @param value {string | number}
+ * @param context {ICastingContext}
+ */
 export const parseEntityDelimiters = (value: string | number, context: ICastingContext) => {
   if (context.lines === 1) return value;
   if (context.column === 'languages' && typeof value === 'string') {
@@ -71,3 +89,21 @@ export const parseEntityDelimiters = (value: string | number, context: ICastingC
   }
   return value;
 };
+
+/**
+ * Filtering function for parsing CSV AccountList file.
+ * @param value {string | number}
+ * @param context {ICastingContext}
+ */
+export const parseAccountDelimiters = (value: string | number, context: ICastingContext) => {
+  if (context.lines === 1) return value;
+  if (context.column === 'tags' && typeof value === 'string') {
+    return value.split(',').filter(word => word.trim().length > 0);
+  } else if (context.column === 'clearance' && typeof value === 'string') {
+    return value.split(',').filter(word => word.trim().length > 0);
+  }
+  if (context.column === 'is_index') {
+    return value === 'TRUE';
+  }
+  return value;
+}

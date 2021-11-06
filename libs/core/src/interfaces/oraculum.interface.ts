@@ -1,20 +1,18 @@
 import { Account, Entity } from '@app/mongo';
 import { ENTITY_NAME } from '@app/core/constants';
 
-export class IAccount implements Pick<Account, 'characters_id' | 'discord_id' | 'battle_tag' | 'cryptonym'> {
-  readonly characters_id: string[];
-
+export class IAccount implements Pick<Account, 'discord_id' | 'battle_tag' | 'cryptonym' | 'clearance' | 'is_index'> {
   readonly discord_id: string[];
 
   readonly battle_tag: string[];
 
   readonly tags: string[];
 
-  readonly cryptonym: string;
-}
+  readonly clearance: string[];
 
-export interface IAccounts {
-  readonly accounts: IAccount[]
+  readonly cryptonym: string;
+
+  readonly is_index: boolean;
 }
 
 export class IEntity implements Pick<Entity, 'entity' | 'name' | 'languages' | 'tags'> {

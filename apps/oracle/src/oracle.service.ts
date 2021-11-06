@@ -1,12 +1,12 @@
 import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
-/*import { NlpManager } from 'node-nlp';
+import { NlpManager } from 'node-nlp';
 import path from 'path';
-import fs from 'fs-extra';*/
+import fs from 'fs-extra';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Message } from '@app/mongo';
-import { DISCORD_CHANNEL_LOGS, DISCORD_CORE, EXIT_CODES } from '@app/core';
-
+import { DISCORD_CHANNEL_LOGS, DISCORD_CHANNEL_PARENTS, DISCORD_CORE, EXIT_CODES } from '@app/core';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
@@ -24,14 +24,14 @@ export class OracleService implements OnApplicationBootstrap {
 
   private channel: Discord.Channel;
 
-  /*
   private manager = new NlpManager({
-    languages: ['ru'],
+    languages: ['ru', 'en'],
     threshold: 0.8,
-    builtinWhitelist: []
-  });*/
+  });
 
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectModel(Key.name)
     private readonly KeysModel: Model<Key>,
     @InjectModel(Message.name)
@@ -43,22 +43,6 @@ export class OracleService implements OnApplicationBootstrap {
   );
 
   async onApplicationBootstrap(): Promise<void> {
-/*    const dir = path.join(__dirname, '..', '..', '..', 'files');
-    await fs.ensureDir(dir);
-
-    const file = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
-    const fileExist = fs.existsSync(file);
-
-    if (!fileExist) {
-      throw new ServiceUnavailableException(`Corpus from: ${file} not found!`);
-    }
-
-    const corpus = fs.readFileSync(file, 'utf8');
-
-    await this.manager.import(corpus);*/
-    // TODO account from env
-    let account = process.env.ACCOUNT;
-    if (!account) account = 'free';
 
     this.client = new Discord.Client({
       ws: {
@@ -67,36 +51,20 @@ export class OracleService implements OnApplicationBootstrap {
       }
     });
 
-    this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', account ] } });
-    if (!this.key) throw new ServiceUnavailableException('Available keys not found!');
+    let account = process.env.ACCOUNT;
+    if (!account) account = 'free';
 
-    this.key.tags.pull('free');
-    this.key.tags.addToSet('taken');
+    await this.getKey(account);
 
-    await this.key.save();
+    await this.loadNerEngine(Array.from(this.key.tags).includes('oracle'));
 
     await this.client.login(this.key.token);
 
-    this.hexID = BigInt(this.key._id).toString(16);
-
     this.commands = new Discord.Collection();
 
-    this.channel = await this.client.channels.find(
-      (channel: Discord.Channel) =>
-        channel.name && channel.guild.id === DISCORD_CORE
-        && channel.name === this.hexID
-    );
+    await this.getManagementChannel();
 
-    if(!this.channel) {
-      const guild = await this.client.guilds.get(DISCORD_CORE);
-      this.channel = await guild.createChannel(this.hexID, {
-        type: 'text'
-      });
-      this.channel.setParent(DISCORD_CHANNEL_LOGS.oraculum);
-      console.log(this.channel);
-    }
-
-    this.logger.warn(`Key ${this.key.token} has been taken!`);
+    this.logger.warn(`Key ${this.key.token} from ${account} has been taken!`);
 
     EXIT_CODES.forEach((eventType) =>
       process.on(eventType,  async () => {
@@ -104,11 +72,61 @@ export class OracleService implements OnApplicationBootstrap {
         this.key.tags.addToSet('free');
 
         await this.key.save();
-        this.logger.warn(`Key ${this.key.token} has been released!`);
+        this.logger.warn(`Key ${this.key.token} from ${account} has been released!`);
       })
     );
 
     await this.bot();
+  }
+
+  private async getKey(account: string): Promise<void> {
+    this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', account ] } });
+    if (!this.key) throw new ServiceUnavailableException('Available keys not found!');
+
+    this.hexID = BigInt(this.key._id).toString(16);
+
+    this.key.tags.pull('free');
+    this.key.tags.addToSet('taken');
+
+    await this.key.save();
+  }
+
+  private async getManagementChannel(): Promise<void> {
+    this.channel = await this.client.channels.find(
+      (channel: Discord.Channel) =>
+        channel.name && channel.guild.id === DISCORD_CORE
+        && channel.name === this.hexID
+    );
+
+    if (!this.channel) {
+      const guild = await this.client.guilds.get(DISCORD_CORE);
+      const channel = await guild.createChannel(this.hexID, {
+        type: 'text'
+        // TODO permissions
+      });
+      channel.setParent(DISCORD_CHANNEL_PARENTS.oraculum);
+      this.channel = channel;
+    }
+  }
+
+  private async loadNerEngine(init: boolean = false): Promise<void> {
+    try {
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
+
+      const corpusPath = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
+      const corpusExists = fs.existsSync(corpusPath);
+
+      if (!corpusExists) {
+        throw new ServiceUnavailableException(`Corpus from: ${corpusPath} not found!`);
+      }
+
+      const corpus = fs.readFileSync(corpusPath, 'utf8');
+
+      await this.manager.load(corpus);
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
+    }
   }
 
   private async bot(): Promise<void> {
@@ -122,7 +140,7 @@ export class OracleService implements OnApplicationBootstrap {
 
         try {
           // TODO repost done, them management clearance
-          if (message.channel.parentID === DISCORD_CHANNEL_LOGS.files) {
+          if (message.channel.parentID === DISCORD_CHANNEL_PARENTS.files) {
             await message.delete();
             await message.channel.send(message.content);
           }
@@ -153,11 +171,5 @@ export class OracleService implements OnApplicationBootstrap {
     } catch (errorException) {
       this.logger.error(errorException);
     }
-
-
-/*    for (const user of this.client.users) {
-      console.log(user)
-    }*/
-
   }
 }

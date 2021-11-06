@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { OraculumService } from './oraculum.service';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import {
   Account,
   AccountsSchema,
@@ -10,9 +12,9 @@ import {
   EntitySchema,
   Guild,
   GuildsSchema,
+  Key,
+  KeysSchema,
 } from '@app/mongo';
-import { OraculumService } from './oraculum.service';
-import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       { name: Character.name, schema: CharactersSchema },
       { name: Guild.name, schema: GuildsSchema },
       { name: Entity.name, schema: EntitySchema },
+      { name: Key.name, schema: KeysSchema },
     ]),
   ],
   controllers: [],

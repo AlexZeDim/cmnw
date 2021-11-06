@@ -1,12 +1,13 @@
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Snowflake } from 'discord.js';
 
 @Schema({ timestamps: true })
 export class Account extends Document {
-  @Prop({ type: String, required: true, default: 'Anonymous', index: true })
+  @Prop({ type: String, required: true, default: 'Anonymous' })
   nickname: string;
 
-  @Prop({ type: String, required: true, default: 'Anonymous', index: true })
+  @Prop({ type: String, default: 'Anonymous' })
   cryptonym: string;
 
   @Prop({ type: [String] })
@@ -15,16 +16,28 @@ export class Account extends Document {
   @Prop({ type: [String] })
   tags: string[];
 
-  @Prop({ type: [String], index: true })
-  discord_id: string[];
+  @Prop({ type: [String] })
+  discord_id: Snowflake[];
 
-  @Prop({ type: [String], index: true })
+  @Prop({ type: [String] })
   battle_tag: string[];
 
   @Prop({ type: [String] })
   characters_id: string[];
+
+  @Prop({ type: Boolean, default: false, index: true })
+  is_index: boolean;
 }
 
 export const AccountsSchema = SchemaFactory.createForClass(Account);
-AccountsSchema.index({ discord: 1, battlenet: 1 }, { name: 'Aliases' })
+AccountsSchema.index(
+  {
+    discord_id: 1,
+    battle_tag: 1,
+    nickname: 1,
+    cryptonym: 1,
+    tags: 1
+  },
+  { name: 'Aliases' }
+)
 

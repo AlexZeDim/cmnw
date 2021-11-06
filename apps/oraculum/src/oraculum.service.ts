@@ -14,21 +14,37 @@ import crypto from 'crypto';
 import RussianNouns from 'russian-nouns-js';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { REST } from '@discordjs/rest';
-import { Client, Collection, Intents, Interaction, Invite, MessageEmbed, TextChannel } from 'discord.js';
+import {
+  Client,
+  Collection,
+  Intents,
+  Interaction,
+  Invite,
+  MessageEmbed,
+  Snowflake,
+  TextChannel,
+  Guild as DiscordGuild,
+  GuildChannelCreateOptions,
+} from 'discord.js';
 import ms from 'ms';
 import csv from 'async-csv';
 import { Routes } from 'discord-api-types';
-import { Account, Character, Entity, Guild } from '@app/mongo';
+import { Account, Character, Entity, Guild, Key } from '@app/mongo';
+import { ChannelTypes } from 'discord.js/typings/enums';
 import {
-  IAccounts,
   IEntities,
   ENTITY_NAME,
   IDiscordChannelLogs,
   IDiscordSlashCommand,
   DISCORD_CHANNEL_LOGS,
   DISCORD_CORE, IEntity,
-  parseEntityDelimiters
+  parseEntityDelimiters,
+  DISCORD_UNIT7, IAccount,
+  DISCORD_CHANNEL_PARENTS,
+  parseAccountDelimiters,
+  capitalize,
 } from '@app/core';
+
 
 @Injectable()
 export class OraculumService implements OnApplicationBootstrap {
@@ -45,9 +61,11 @@ export class OraculumService implements OnApplicationBootstrap {
     builtinWhitelist: []
   });
 
-  private client: Client
+  private client: Client;
 
-  private readonly rest = new REST({ version: '9' }).setToken('ODk1NzY2ODAxOTY1Nzg1MTM4.YV9V2A.Hp3oGeleAr6HE-F9sMxUhqJPlPQ');
+  private key: Key;
+
+  private readonly rest = new REST({ version: '9' });
 
   private commandSlash = [];
 
@@ -66,6 +84,8 @@ export class OraculumService implements OnApplicationBootstrap {
     private readonly GuildModel: Model<Guild>,
     @InjectModel(Entity.name)
     private readonly EntityModel: Model<Entity>,
+    @InjectModel(Key.name)
+    private readonly KeysModel: Model<Key>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -74,8 +94,13 @@ export class OraculumService implements OnApplicationBootstrap {
 
       this.loadCommands();
 
+      this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'unit7' ] } });
+      if (!this.key) throw new ServiceUnavailableException('Available key not found!');
+
+      this.rest.setToken(this.key.token);
+
       await this.rest.put(
-        Routes.applicationGuildCommands('895766801965785138', DISCORD_CORE),
+        Routes.applicationGuildCommands(DISCORD_UNIT7, DISCORD_CORE),
         { body: this.commandSlash },
       );
 
@@ -96,7 +121,7 @@ export class OraculumService implements OnApplicationBootstrap {
         }
       });
 
-      await this.client.login('ODk1NzY2ODAxOTY1Nzg1MTM4.YV9V2A.Hp3oGeleAr6HE-F9sMxUhqJPlPQ');
+      await this.client.login(this.key.token);
 
       this.bot();
     } catch (errorOrException) {
@@ -114,12 +139,11 @@ export class OraculumService implements OnApplicationBootstrap {
       if (init) {
         this.logger.log(`initAccounts: ${initAccounts ? 'true' : 'false'}`);
         if (initAccounts) {
-          await this.buildAccountsFromFile();
+          await this.buildAccountsFromCsvFile();
         }
 
         this.logger.log(`initEntities: ${initEntities ? 'true' : 'false'}`);
         if (initEntities) {
-          await this.buildEntitiesFromJsonFile();
           await this.buildEntitiesFromCsvFile();
           await this.buildEntitiesFromAccounts();
         }
@@ -131,43 +155,70 @@ export class OraculumService implements OnApplicationBootstrap {
     }
   }
 
-  private async buildAccountsFromFile(): Promise<void> {
+  private async buildAccountsFromCsvFile(): Promise<void> {
     try {
-      this.logger.debug('Ensure mock account data');
-      const dir = path.join(__dirname, '..', '..', '..', 'files');
-      await fs.ensureDir(dir);
-
-      const files: string[] = await fs.readdir(dir);
-      const file = files.find(f => f === 'accounts.json');
-
-      const accountsMock = await fs.readFile(path.join(dir, file), 'utf-8');
-      const { accounts } = JSON.parse(accountsMock) as IAccounts;
-
-      this.logger.debug(`File found: ${accounts.length} account(s)`);
-      for (const account of accounts) {
-        const accountExists = await this.AccountModel.findOne({ $or: [
-            { discord_id: account.discord_id },
-            { battle_tag: account.battle_tag },
-            { cryptonym: account.cryptonym },
-          ]
-        });
-        if (!accountExists) await this.AccountModel.create(account);
-      }
-    } catch (errorOrException) {
-      this.logger.error(errorOrException);
-    }
-  }
-
-  private async buildEntitiesFromJsonFile(): Promise<void> {
-    try {
+      this.logger.debug('buildAccountsFromCsvFile');
       const dirPath = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dirPath);
 
-      const filePath = path.join(__dirname, '..', '..', '..', 'files', 'entities.json');
+      const files = fs.readdirSync(dirPath)
+        .filter(fileName => fileName.startsWith('AccountList'));
+
+      if (files.length === 0) throw new NotFoundException('CSV Entities files not found!');
+
+      for (const file of files) {
+        const csvString = await fs.readFile(path.join(dirPath, file), 'utf-8');
+
+        const accounts: IAccount[] = await csv.parse(csvString, {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+          cast: parseAccountDelimiters
+        });
+
+        this.logger.debug(`File found: ${accounts.length} account(s)`);
+
+        for (const account of accounts) {
+          const accountExists = await this.AccountModel.findOne({ $or: [
+              { discord_id: account.discord_id },
+              { battle_tag: account.battle_tag },
+              { cryptonym: account.cryptonym },
+            ]
+          });
+
+          if (!accountExists) {
+            const [cryptonym] = account.tags;
+            const [nickname] = account.tags;
+
+            await this.AccountModel.create({
+              cryptonym: capitalize(cryptonym),
+              nickname: capitalize(nickname),
+              clearance: account.clearance,
+              discord_id: account.discord_id,
+              battle_tag: account.battle_tag,
+              tags: account.tags,
+              is_index: account.is_index
+            });
+          }
+        }
+      }
+    } catch (errorOrException) {
+      this.logger.error(`buildAccountsFromCsvFile: ${errorOrException}`);
+    }
+  }
+
+  private async buildEntitiesFromJsonFile(fileName: string): Promise<void> {
+    try {
+      this.logger.debug('buildEntitiesFromJsonFile');
+
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
+
+      const filePath = path.join(__dirname, '..', '..', '..', 'files', fileName);
       const fileExist = fs.existsSync(filePath);
 
       if (!fileExist) {
-        throw new ServiceUnavailableException('Entities not found');
+        throw new ServiceUnavailableException(`${fileName} not found!`);
       }
 
       const entitiesJson = fs.readFileSync(filePath, 'utf8');
@@ -178,16 +229,18 @@ export class OraculumService implements OnApplicationBootstrap {
         const entityExists = await this.EntityModel.findOne({ name: entity.name });
         if (!entityExists) {
           await this.EntityModel.create(entity);
-          this.logger.log(`Created: entity(${entity.entity}@${entity.name})`);
+          this.logger.log(`Created: ${entity.entity} | ${entity.name}`);
         }
       }
     } catch (errorOrException) {
-      this.logger.error(errorOrException);
+      this.logger.error(`buildEntitiesFromJsonFile: ${errorOrException}`);
     }
   }
 
   private async buildEntitiesFromCsvFile(): Promise<void> {
     try {
+      this.logger.debug('buildEntitiesFromCsvFile');
+
       const dirPath = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dirPath);
 
@@ -210,24 +263,25 @@ export class OraculumService implements OnApplicationBootstrap {
           const entityExists = await this.EntityModel.findOne({ name: entity.name });
           if (!entityExists) {
             await this.EntityModel.create(entity);
-            this.logger.log(`Created: entity(${entity.entity}@${entity.name})`);
+            this.logger.log(`Created: ${entity.entity} | ${entity.name}`);
           }
         }
       }
-    } catch (e) {
-      this.logger.error(e);
+    } catch (errorOrException) {
+      this.logger.error(`buildEntitiesFromCsvFile: ${errorOrException}`);
     }
   }
 
   private async buildEntitiesFromAccounts(): Promise<void> {
     try {
-      this.logger.debug(`Build entity from accounts`);
+      this.logger.debug('buildEntitiesFromAccounts');
       await this.AccountModel
-        .find()
+        .find({ is_index: true })
         .cursor()
         .eachAsync(async (account: Account) => {
           try {
-            const tags = new Set<string>();
+            const buildTags = new Set<string>();
+            const [name] = account.tags;
 
             account.tags.map(tag => {
               const lemma = RussianNouns.createLemma({
@@ -237,34 +291,30 @@ export class OraculumService implements OnApplicationBootstrap {
 
               RussianNouns.CASES.map(c =>
                 this.rne.decline(lemma, c).map(w => {
-                  tags.add(w.toLowerCase());
-                  tags.add(w);
+                  buildTags.add(w.toLowerCase());
                 })
               );
-            })
+            });
 
             account.discord_id.map(discord => {
               const [d] = discord.split('#');
-              tags.add(d.toLowerCase());
-              tags.add(d);
-            })
+              buildTags.add(d.toLowerCase());
+            });
 
             account.battle_tag.map(btag => {
               const [b] = btag.split('#');
-              tags.add(b.toLowerCase());
-              tags.add(b);
-            })
+              buildTags.add(b.toLowerCase());
+            });
 
-            const texts = Array.from(tags);
+            const tags = Array.from(buildTags);
 
             await this.EntityModel.findOneAndUpdate(
-              { name: texts[0] },
+              { name: name },
               {
-                parentId: account._id.toString(),
                 entity: ENTITY_NAME.Person,
-                name: texts[0],
                 languages: ['ru', 'en'],
-                tags: texts
+                name,
+                tags,
               }, {
                 upsert: true
               }
@@ -334,6 +384,8 @@ export class OraculumService implements OnApplicationBootstrap {
     this.client.on('ready', async (): Promise<void> => {
       this.logger.log(`Logged in as ${this.client.user.tag}!`);
 
+      await this.buildDiscordCore();
+
       this.channelsLogs.ingress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
       this.channelsLogs.egress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.egress) as TextChannel;
       this.channelsLogs.regress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.regress) as TextChannel;
@@ -386,7 +438,7 @@ export class OraculumService implements OnApplicationBootstrap {
       if (ingressUser !== guildMember.id || !ingressUser) {
         const access = await this.redisService.get(`access:${guildMember.id}`);
 
-        if (!access) {
+        if (!!access) {
           await this.redisService.set(`access:${guildMember.id}`, 1, 'EX', ms('1w'));
 
           const embed = new MessageEmbed()
@@ -401,6 +453,8 @@ export class OraculumService implements OnApplicationBootstrap {
           await guildMember.ban({ reason: 'Access Violation' });
         }
       }
+
+      // TODO roles
     });
 
     this.client.on('guildMemberRemove', async (guildMember) => {
@@ -421,11 +475,42 @@ export class OraculumService implements OnApplicationBootstrap {
     });
   }
 
-  private async buildCore(): Promise<void> {
+  private async buildDiscordCore(): Promise<void> {
     try {
+      const guild = await this.client.guilds.fetch(DISCORD_CORE);
 
-    } catch (e) {
+      if (!guild) throw new NotFoundException('Discord Core Server not found!');
 
+      const channelParentCategories: Array<[string, Snowflake]> = Object.entries(DISCORD_CHANNEL_PARENTS);
+      const channelLogs: Array<[string, Snowflake]> = Object.entries(DISCORD_CHANNEL_LOGS);
+
+      await this.buildChannels(guild, channelParentCategories);
+      await this.buildChannels(guild, channelLogs, DISCORD_CHANNEL_PARENTS.logs);
+    } catch (errorOrException) {
+      this.logger.log(`buildDiscordCore: ${errorOrException}`);
+    }
+  }
+
+  private async buildChannels(
+    guild: DiscordGuild,
+    channels: Array<[string, Snowflake]>,
+    parent?: Snowflake
+  ) {
+    try {
+      for (const [channelName, channelId] of channels) {
+        const channel = await this.client.channels.fetch(channelId);
+        if (channel) continue;
+
+        this.logger.warn(`Channel ${channelName} not found. Creating...`);
+
+        const options: GuildChannelCreateOptions = !!parent
+          ? { type: ChannelTypes.GUILD_TEXT }
+          : { type: ChannelTypes.GUILD_CATEGORY, parent };
+
+        await guild.channels.create(channelName, options);
+      }
+    } catch (errorOrException) {
+      this.logger.log(`buildChannels: ${errorOrException}`);
     }
   }
 

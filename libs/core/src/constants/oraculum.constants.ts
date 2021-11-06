@@ -1,12 +1,12 @@
 import { Snowflake } from 'discord.js';
 
 export enum ENTITY_NAME {
-  Entity = 'Entity',
-  Guild = 'Guild',
-  Persona = 'Persona',
-  Item = 'Item',
-  Class = 'Class',
-  Realm = 'Realm',
+  Entity = 'ENTITY',
+  Guild = 'GUILD',
+  Person = 'PERSON',
+  Item = 'ITEM',
+  Class = 'CLASS',
+  Realm = 'REALM',
 }
 
 export enum SOURCE_TYPE {
@@ -24,4 +24,6 @@ export enum DISCORD_CHANNEL_LOGS {
   ingress = '893610811015172156',
   egress = '893610840404668447',
   regress = '893610900471291916',
+  files = '893610349801132083',
+  oraculum = '896421319200112691',
 }

@@ -1,5 +1,6 @@
 import { NOTIFICATIONS } from '@app/core/constants';
 import { SlashCommandBuilder } from '@discordjs/builders';
+// @ts-ignore
 import { Client, Interaction, Message, TextChannel } from 'discord.js';
 import { Redis } from '@nestjs-modules/ioredis';
 
@@ -41,13 +42,6 @@ export interface IDiscordSlashCommand {
   readonly slashCommand: SlashCommandBuilder;
 
   executeInteraction(interactionArgs): Promise<void>;
-}
-
-export interface IRealmConnected {
-  readonly _id: number,
-  readonly auctions: number,
-  readonly golds: number,
-  readonly valuations: number,
 }
 
 export class IDiscordSubscription {

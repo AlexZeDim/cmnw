@@ -1,6 +1,7 @@
 import { Account, Entity } from '@app/mongo';
+import { ENTITY_NAME } from '@app/core/constants';
 
-export class AccountMock implements Pick<Account, 'characters_id' | 'discord_id' | 'battle_tag' | 'cryptonym'> {
+export class IAccount implements Pick<Account, 'characters_id' | 'discord_id' | 'battle_tag' | 'cryptonym'> {
   readonly characters_id: string[];
 
   readonly discord_id: string[];
@@ -12,14 +13,12 @@ export class AccountMock implements Pick<Account, 'characters_id' | 'discord_id'
   readonly cryptonym: string;
 }
 
-export interface AccountsMock {
-  readonly accounts: AccountMock[]
+export interface IAccounts {
+  readonly accounts: IAccount[]
 }
 
-export class EntityMock implements Pick<Entity, 'entity' | 'name' | 'languages' | 'tags'> {
-  readonly parentId: string;
-
-  readonly entity: string;
+export class IEntity implements Pick<Entity, 'entity' | 'name' | 'languages' | 'tags'> {
+  readonly entity: ENTITY_NAME;
 
   readonly name: string;
 
@@ -28,6 +27,18 @@ export class EntityMock implements Pick<Entity, 'entity' | 'name' | 'languages' 
   readonly tags: string[];
 }
 
-export interface EntityMocks {
-  readonly entities: EntityMock[]
+export interface IEntities {
+  readonly entities: IEntity[]
+}
+
+export interface ICastingContext {
+  readonly column: number | string;
+  readonly empty_lines: number;
+  readonly error: Error;
+  readonly header: boolean;
+  readonly index: number;
+  readonly quoting: boolean;
+  readonly lines: number;
+  readonly records: number;
+  readonly invalid_field_length: number;
 }

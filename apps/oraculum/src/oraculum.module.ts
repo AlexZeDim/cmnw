@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
+import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import {
   Account,
   AccountsSchema,
@@ -12,9 +12,16 @@ import {
   GuildsSchema,
 } from '@app/mongo';
 import { OraculumService } from './oraculum.service';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
+    RedisModule.forRoot({
+      config: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
+    }),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Account.name, schema: AccountsSchema },

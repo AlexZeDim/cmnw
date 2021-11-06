@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NlpManager } from 'node-nlp';
@@ -6,11 +12,27 @@ import fs from 'fs-extra';
 import path from 'path';
 import crypto from 'crypto';
 import RussianNouns from 'russian-nouns-js';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { REST } from '@discordjs/rest';
+import { Client, Collection, Intents, Interaction, Invite, MessageEmbed, TextChannel } from 'discord.js';
+import ms from 'ms';
+import csv from 'async-csv';
+import { Routes } from 'discord-api-types';
 import { Account, Character, Entity, Guild } from '@app/mongo';
-import { AccountsMock, capitalize, EntityMocks, ENTITY_NAME } from '@app/core';
+import {
+  IAccounts,
+  IEntities,
+  ENTITY_NAME,
+  IDiscordChannelLogs,
+  IDiscordSlashCommand,
+  DISCORD_CHANNEL_LOGS,
+  DISCORD_CORE, IEntity,
+} from '@app/core';
+import { parseEntityDelimiters } from '@app/core/utils/converters';
 
 @Injectable()
 export class OraculumService implements OnApplicationBootstrap {
+
   private readonly logger = new Logger(
     OraculumService.name, { timestamp: true },
   );
@@ -18,12 +40,24 @@ export class OraculumService implements OnApplicationBootstrap {
   private readonly rne = new RussianNouns.Engine();
 
   private manager = new NlpManager({
-    languages: ['ru'],
+    languages: ['ru', 'en'],
     threshold: 0.8,
     builtinWhitelist: []
   });
 
+  private client: Client
+
+  private readonly rest = new REST({ version: '9' }).setToken('ODk1NzY2ODAxOTY1Nzg1MTM4.YV9V2A.Hp3oGeleAr6HE-F9sMxUhqJPlPQ');
+
+  private commandSlash = [];
+
+  private channelsLogs: Partial<IDiscordChannelLogs>;
+
+  private commandsMessage: Collection<string, IDiscordSlashCommand> = new Collection();
+
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
     @InjectModel(Character.name)
@@ -35,23 +69,81 @@ export class OraculumService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.buildAccountsFromMocks();
-    await this.buildEntitiesFromMocks();
-    await this.buildEntitiesFromAccounts();
-    await this.trainCorpusModel();
+    try {
+      await this.buildNerEngine(false, false, false);
+
+      this.loadCommands();
+
+      await this.rest.put(
+        Routes.applicationGuildCommands('895766801965785138', DISCORD_CORE),
+        { body: this.commandSlash },
+      );
+
+      this.logger.log('Reloaded application (/) commands.');
+
+      this.client = new Client({
+        partials: ['USER', 'CHANNEL', 'GUILD_MEMBER'],
+        intents: [
+          Intents.FLAGS.GUILD_VOICE_STATES,
+          Intents.FLAGS.GUILD_BANS,
+          Intents.FLAGS.GUILDS,
+          Intents.FLAGS.GUILD_MEMBERS,
+          Intents.FLAGS.GUILD_INVITES,
+          Intents.FLAGS.GUILD_MESSAGES,
+        ],
+        presence: {
+          status: 'online'
+        }
+      });
+
+      await this.client.login('ODk1NzY2ODAxOTY1Nzg1MTM4.YV9V2A.Hp3oGeleAr6HE-F9sMxUhqJPlPQ');
+
+      this.bot();
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
+    }
   };
 
-  private async buildAccountsFromMocks(): Promise<void> {
+  private async buildNerEngine(
+    init: boolean = true,
+    initAccounts: boolean = true,
+    initEntities: boolean = true,
+  ): Promise<void> {
+    try {
+      this.logger.log(`buildNerEngine: init ${init ? 'true' : 'false'}`);
+      if (init) {
+        this.logger.log(`initAccounts: ${initAccounts ? 'true' : 'false'}`);
+        if (initAccounts) {
+          await this.buildAccountsFromFile();
+        }
+
+        this.logger.log(`initEntities: ${initEntities ? 'true' : 'false'}`);
+        if (initEntities) {
+          await this.buildEntitiesFromJsonFile();
+          await this.buildEntitiesFromCsvFile();
+          await this.buildEntitiesFromAccounts();
+        }
+
+        await this.trainCorpusModel();
+      }
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
+    }
+  }
+
+  private async buildAccountsFromFile(): Promise<void> {
     try {
       this.logger.debug('Ensure mock account data');
       const dir = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dir);
+
       const files: string[] = await fs.readdir(dir);
       const file = files.find(f => f === 'accounts.json');
-      const accountsMock = await fs.readFile(path.join(dir, file), 'utf-8');
-      const { accounts } = JSON.parse(accountsMock) as AccountsMock;
 
-      this.logger.debug(`Mock data found: ${accounts.length} account(s)`);
+      const accountsMock = await fs.readFile(path.join(dir, file), 'utf-8');
+      const { accounts } = JSON.parse(accountsMock) as IAccounts;
+
+      this.logger.debug(`File found: ${accounts.length} account(s)`);
       for (const account of accounts) {
         const accountExists = await this.AccountModel.findOne({ $or: [
             { discord_id: account.discord_id },
@@ -61,27 +153,26 @@ export class OraculumService implements OnApplicationBootstrap {
         });
         if (!accountExists) await this.AccountModel.create(account);
       }
-    } catch (error) {
-      throw new ServiceUnavailableException(error);
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
     }
   }
 
-  private async buildEntitiesFromMocks(): Promise<void> {
+  private async buildEntitiesFromJsonFile(): Promise<void> {
     try {
-      const dir = path.join(__dirname, '..', '..', '..', 'files');
-      await fs.ensureDir(dir);
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
 
-      const file = path.join(__dirname, '..', '..', '..', 'files', 'entities.json');
-      const fileExist = fs.existsSync(file);
+      const filePath = path.join(__dirname, '..', '..', '..', 'files', 'entities.json');
+      const fileExist = fs.existsSync(filePath);
 
       if (!fileExist) {
-        this.logger.log(`Entities mocks not found`);
-        return;
+        throw new ServiceUnavailableException('Entities not found');
       }
 
-      const entitiesJson = await fs.readFileSync(file, 'utf8');
+      const entitiesJson = fs.readFileSync(filePath, 'utf8');
 
-      const { entities } = JSON.parse(entitiesJson) as EntityMocks;
+      const { entities } = JSON.parse(entitiesJson) as IEntities;
 
       for (const entity of entities) {
         const entityExists = await this.EntityModel.findOne({ name: entity.name });
@@ -90,8 +181,41 @@ export class OraculumService implements OnApplicationBootstrap {
           this.logger.log(`Created: entity(${entity.entity}@${entity.name})`);
         }
       }
-    } catch (error) {
-      throw new ServiceUnavailableException(error);
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
+    }
+  }
+
+  private async buildEntitiesFromCsvFile(): Promise<void> {
+    try {
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
+
+      const files = fs.readdirSync(dirPath)
+        .filter(fileName => fileName.startsWith('EntityList'));
+
+      if (files.length === 0) throw new NotFoundException('CSV Entities files not found!');
+
+      for (const filePath of files) {
+        const csvString = await fs.readFile(path.join(dirPath, filePath), 'utf-8');
+
+        const entities: IEntity[] = await csv.parse(csvString, {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+          cast: parseEntityDelimiters
+        });
+
+        for (const entity of entities) {
+          const entityExists = await this.EntityModel.findOne({ name: entity.name });
+          if (!entityExists) {
+            await this.EntityModel.create(entity);
+            this.logger.log(`Created: entity(${entity.entity}@${entity.name})`);
+          }
+        }
+      }
+    } catch (e) {
+      this.logger.error(e);
     }
   }
 
@@ -105,62 +229,52 @@ export class OraculumService implements OnApplicationBootstrap {
           try {
             const tags = new Set<string>();
 
-            await Promise.all(
-              account.tags.map(tag => {
+            account.tags.map(tag => {
+              const lemma = RussianNouns.createLemma({
+                text: tag,
+                gender: RussianNouns.Gender.NEUTER
+              });
 
-                const lemma = RussianNouns.createLemma({
-                  text: tag,
-                  gender: RussianNouns.Gender.COMMON
-                });
+              RussianNouns.CASES.map(c =>
+                this.rne.decline(lemma, c).map(w => {
+                  tags.add(w.toLowerCase());
+                  tags.add(w);
+                })
+              );
+            })
 
-                RussianNouns.CASES.map(c =>
-                  this.rne.decline(lemma, c).map(w => {
-                    tags.add(w.toLowerCase());
-                    tags.add(w.toUpperCase());
-                    tags.add(capitalize(w));
-                    tags.add(w);
-                  })
-                );
-              })
-            );
+            account.discord_id.map(discord => {
+              const [d] = discord.split('#');
+              tags.add(d.toLowerCase());
+              tags.add(d);
+            })
 
-            await Promise.all(
-              account.discord_id.map(discord => {
-                const [d] = discord.split('#')
-                tags.add(d.toLowerCase());
-                tags.add(d.toUpperCase());
-                tags.add(capitalize(d));
-                tags.add(d);
-              })
-            );
-
-            await Promise.all(
-              account.battle_tag.map(btag => {
-                const [b] = btag.split('#')
-                tags.add(b.toLowerCase());
-                tags.add(b.toUpperCase());
-                tags.add(capitalize(b));
-                tags.add(b);
-              })
-            );
+            account.battle_tag.map(btag => {
+              const [b] = btag.split('#');
+              tags.add(b.toLowerCase());
+              tags.add(b);
+            })
 
             const texts = Array.from(tags);
 
-            await this.EntityModel.findOneAndUpdate({ name: texts[0] }, {
-              parentId: account._id.toString(),
-              entity: ENTITY_NAME.Persona,
-              name: texts[0],
-              languages: ['ru', 'en'],
-              tags: texts
-            }, {
-              upsert: true
-            });
+            await this.EntityModel.findOneAndUpdate(
+              { name: texts[0] },
+              {
+                parentId: account._id.toString(),
+                entity: ENTITY_NAME.Person,
+                name: texts[0],
+                languages: ['ru', 'en'],
+                tags: texts
+              }, {
+                upsert: true
+              }
+            );
           } catch (errorException) {
-            this.logger.error(`buildEntitiesFromAccounts: ${errorException}`)
+            this.logger.error(`${account._id}: ${errorException}`)
           }
-        })
-    } catch (error) {
-      throw new ServiceUnavailableException(error);
+        });
+    } catch (errorOrException) {
+      this.logger.error(`buildEntitiesFromAccounts: ${errorOrException}`)
     }
   }
 
@@ -182,19 +296,19 @@ export class OraculumService implements OnApplicationBootstrap {
       const corpus = await this.manager.export(false) as string;
 
       this.logger.debug(`NODE-NLP: Ensure corpus model`);
-      const dir = path.join(__dirname, '..', '..', '..', 'files');
-      await fs.ensureDir(dir);
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
 
-      const file = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
-      const fileExist = fs.existsSync(file);
+      const filePath = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
+      const fileExist = fs.existsSync(filePath);
 
       if (!fileExist) {
-        this.logger.log(`Creating new corpus: ${file}`);
-        fs.writeFileSync(file, corpus);
+        this.logger.log(`Creating new corpus: ${filePath}`);
+        fs.writeFileSync(filePath, corpus);
       }
 
       if (fileExist) {
-        const data = fs.readFileSync(file, 'utf8');
+        const data = fs.readFileSync(filePath, 'utf8');
         const existCorpus = crypto
           .createHash('md5')
           .update(data, 'utf8')
@@ -207,11 +321,100 @@ export class OraculumService implements OnApplicationBootstrap {
 
         if (existCorpus !== newCorpus) {
           this.logger.log(`Overwriting corpus hash ${existCorpus} with new: ${newCorpus}`);
-          fs.writeFileSync(file, corpus, { encoding: 'utf8', flag: 'w' });
+          fs.writeFileSync(filePath, corpus, { encoding: 'utf8', flag: 'w' });
         }
       }
-    } catch (error) {
-      throw new ServiceUnavailableException(error);
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
+    }
+  }
+
+  private bot(): void {
+
+    this.client.on('ready', async (): Promise<void> => {
+      this.logger.log(`Logged in as ${this.client.user.tag}!`);
+
+      this.channelsLogs.ingress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
+      this.channelsLogs.egress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.egress) as TextChannel;
+      this.channelsLogs.regress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.regress) as TextChannel;
+    });
+
+    this.client.on('inviteCreate', async (invite: Invite) => {
+
+      const embed = new MessageEmbed();
+
+      embed.setAuthor('VISITOR\'S PASS');
+      embed.setThumbnail('https://i.imgur.com/0uEuKxv.png');
+      embed.setColor('#bbdefb')
+
+      const temporary: string = invite.temporary === true ? 'Temporary' : 'Permanent';
+
+      embed.addField('Issued by', `${invite.inviter.username}#${invite.inviter.discriminator}`, true);
+      embed.addField('Issued by ID', invite.inviter.id, true);
+      embed.addField('Code', invite.code, true);
+      embed.addField('Access to', `#${invite.channel.name}`, true);
+      embed.addField('Access to ID', invite.inviter.id, true);
+      embed.addField('Type', temporary, true);
+
+      if (invite.maxUses > 0) embed.addField('Can be used', `${invite.maxUses} times`, true);
+      if (invite.maxAge > 0) embed.addField('Expire in', `${ms(invite.maxAge)}`, true);
+
+      const ingress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
+      if (ingress) await ingress.send({ embeds: [embed] });
+    });
+
+    this.client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
+      if (!interaction.isCommand()) return;
+
+      const command = this.commandsMessage.get(interaction.commandName);
+      if (!command) return;
+
+      try {
+        await command.executeInteraction({ interaction, redis: this.redisService });
+      } catch (error) {
+        this.logger.error(error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+      }
+    });
+
+    this.client.on('guildMemberAdd', async (guildMember) => {
+      const t = await this.redisService.get(guildMember.id);
+      if (!t) return;
+
+      if (t !== guildMember.id) {
+        await guildMember.send('content');
+        await guildMember.kick();
+      }
+    });
+
+    this.client.on('guildMemberRemove', async (guildMember) => {
+      const egress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.egress) as TextChannel;
+
+      const embed = new MessageEmbed();
+      embed.setAuthor('USER LEFT');
+
+      embed.addField('ID', guildMember.id, true);
+      embed.addField('Name', `${guildMember.user.username}#${guildMember.user.discriminator}`, true);
+
+      if (guildMember.joinedTimestamp) {
+        const now = new Date().getTime();
+        const session = now - guildMember.joinedTimestamp;
+        embed.addField('Session', `${ms(session)}`, true);
+      }
+
+      await egress.send({ embeds: [ embed ] });
+    });
+  }
+
+  private loadCommands(): void {
+    const commandFiles = fs
+      .readdirSync(path.join(`${__dirname}`, '..', '..', '..', 'apps/oraculum/src/commands/'))
+      .filter(file => file.endsWith('.ts'));
+
+    for (const file of commandFiles) {
+      const command: IDiscordSlashCommand = require(`./commands/${file}`);
+      this.commandsMessage.set(command.name, command);
+      this.commandSlash.push(command.slashCommand.toJSON());
     }
   }
 }

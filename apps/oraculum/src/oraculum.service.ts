@@ -27,8 +27,8 @@ import {
   IDiscordSlashCommand,
   DISCORD_CHANNEL_LOGS,
   DISCORD_CORE, IEntity,
+  parseEntityDelimiters
 } from '@app/core';
-import { parseEntityDelimiters } from '@app/core/utils/converters';
 
 @Injectable()
 export class OraculumService implements OnApplicationBootstrap {
@@ -82,7 +82,7 @@ export class OraculumService implements OnApplicationBootstrap {
       this.logger.log('Reloaded application (/) commands.');
 
       this.client = new Client({
-        partials: ['USER', 'CHANNEL', 'GUILD_MEMBER'],
+        partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE'],
         intents: [
           Intents.FLAGS.GUILD_VOICE_STATES,
           Intents.FLAGS.GUILD_BANS,
@@ -340,6 +340,9 @@ export class OraculumService implements OnApplicationBootstrap {
     });
 
     this.client.on('inviteCreate', async (invite: Invite) => {
+      /**
+       * TODO probably not just log but also recreate invite if invite not ORACULUM
+       */
 
       const embed = new MessageEmbed();
 
@@ -359,8 +362,7 @@ export class OraculumService implements OnApplicationBootstrap {
       if (invite.maxUses > 0) embed.addField('Can be used', `${invite.maxUses} times`, true);
       if (invite.maxAge > 0) embed.addField('Expire in', `${ms(invite.maxAge)}`, true);
 
-      const ingress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
-      if (ingress) await ingress.send({ embeds: [embed] });
+      if (this.channelsLogs.ingress) await this.channelsLogs.ingress.send({ embeds: [embed] });
     });
 
     this.client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
@@ -378,17 +380,30 @@ export class OraculumService implements OnApplicationBootstrap {
     });
 
     this.client.on('guildMemberAdd', async (guildMember) => {
-      const t = await this.redisService.get(guildMember.id);
-      if (!t) return;
+      const ingressUser = await this.redisService.get(`ingress:${guildMember.id}`);
+      // TODO if invite is compromised null it
 
-      if (t !== guildMember.id) {
-        await guildMember.send('content');
-        await guildMember.kick();
+      if (ingressUser !== guildMember.id || !ingressUser) {
+        const access = await this.redisService.get(`access:${guildMember.id}`);
+
+        if (!access) {
+          await this.redisService.set(`access:${guildMember.id}`, 1, 'EX', ms('1w'));
+
+          const embed = new MessageEmbed()
+            .setAuthor('ACCESS VIOLATION')
+            .setThumbnail('https://i.imgur.com/OEY92yP.png')
+            .setColor('#e1beff')
+            .setDescription('You don\'t have access to this section. Further bypass attempts activity will enforce restrictions on your Discord account on the selected server.')
+
+          await guildMember.send({ embeds: [embed] })
+          await guildMember.kick('Access Violation');
+        } else {
+          await guildMember.ban({ reason: 'Access Violation' });
+        }
       }
     });
 
     this.client.on('guildMemberRemove', async (guildMember) => {
-      const egress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.egress) as TextChannel;
 
       const embed = new MessageEmbed();
       embed.setAuthor('USER LEFT');
@@ -402,8 +417,16 @@ export class OraculumService implements OnApplicationBootstrap {
         embed.addField('Session', `${ms(session)}`, true);
       }
 
-      await egress.send({ embeds: [ embed ] });
+      await this.channelsLogs.egress.send({ embeds: [ embed ] });
     });
+  }
+
+  private async buildCore(): Promise<void> {
+    try {
+
+    } catch (e) {
+
+    }
   }
 
   private loadCommands(): void {

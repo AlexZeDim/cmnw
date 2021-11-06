@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Snowflake } from 'discord.js';
-import { ISlashCommandArgs } from '@app/core';
+import { Snowflake, TextChannel } from 'discord.js';
+import { DISCORD_CHANNEL_LOGS, ISlashCommandArgs } from '@app/core';
 import ms from 'ms';
 
 module.exports = {
@@ -12,6 +12,14 @@ module.exports = {
       option.setName('snowflake')
         .setDescription('895766801965785138')
         .setRequired(true)
+    )
+    .addBooleanOption(option =>
+      option.setName('temporary')
+        .setRequired(true)
+    )
+    .addStringOption((option) =>
+      option.setName('agent')
+        .setDescription('895766801965785138')
     )
     .addIntegerOption((option) =>
       option.setName('uses')
@@ -34,16 +42,35 @@ module.exports = {
   async executeInteraction({ interaction, redis }: ISlashCommandArgs): Promise<void> {
     if (!interaction.isCommand()) return;
 
-    const userId: Snowflake = interaction.options.getString('snowflake');
+    try {
+      const targetUser: Snowflake = interaction.options.getString('snowflake', true);
 
-    let uses: number | undefined = interaction.options.getInteger('uses');
-    if (uses) uses = 5;
+      const agent: Snowflake | undefined = interaction.options.getString('agent', false);
 
-    let expire: number | undefined = interaction.options.getInteger('expire');
-    if (!expire) expire = ms('1d');
+      let maxUses: number | undefined = interaction.options.getInteger('uses', false);
+      if (maxUses) maxUses = 5;
 
-    // TODO create invite
+      let maxAge: number | undefined = interaction.options.getInteger('expire', false);
+      if (!maxAge) maxAge = ms('1d');
 
-    await redis.set('test', userId, 'EX', expire);
+      const temporary: boolean = interaction.options.getBoolean('temporary', true)
+
+      if (agent === this.client.user.id) {
+        // FIXME replace channel
+        const channel = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
+        await channel.createInvite({
+          maxUses,
+          maxAge,
+          temporary,
+          targetUser,
+        });
+      } else {
+        // TODO find channel and send command
+      }
+
+      await redis.set(`ingress:${targetUser}`, 'INV_CODE', 'EX', maxAge);
+    } catch (errorOrException) {
+      console.error(`access: ${errorOrException}`);
+    }
   }
 }

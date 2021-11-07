@@ -9,12 +9,13 @@ module.exports = {
     .setName('access')
     .setDescription('Gives personal access via oracle network to specific Discord User')
     .addStringOption((option) =>
-      option.setName('snowflake')
+      option.setName('user')
         .setDescription('895766801965785138')
         .setRequired(true)
     )
     .addBooleanOption(option =>
       option.setName('temporary')
+        .setDescription('true')
         .setRequired(true)
     )
     .addStringOption((option) =>
@@ -43,7 +44,7 @@ module.exports = {
     if (!interaction.isCommand()) return;
 
     try {
-      const targetUser: Snowflake = interaction.options.getString('snowflake', true);
+      const targetUser: Snowflake = interaction.options.getString('user', true);
 
       const agent: Snowflake | undefined = interaction.options.getString('agent', false);
 
@@ -53,7 +54,7 @@ module.exports = {
       let maxAge: number | undefined = interaction.options.getInteger('expire', false);
       if (!maxAge) maxAge = ms('1d');
 
-      const temporary: boolean = interaction.options.getBoolean('temporary', true)
+      const temporary: boolean = interaction.options.getBoolean('temporary', true);
 
       if (agent === this.client.user.id) {
         // FIXME replace channel

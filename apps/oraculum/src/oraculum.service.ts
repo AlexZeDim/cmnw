@@ -28,9 +28,8 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import csv from 'async-csv';
-import { Routes } from 'discord-api-types';
+import { Routes } from 'discord-api-types/v9';
 import { Account, Character, Entity, Guild, Key } from '@app/mongo';
-import { ChannelTypes } from 'discord.js/typings/enums';
 import {
   IEntities,
   ENTITY_NAME,
@@ -42,7 +41,7 @@ import {
   DISCORD_UNIT7, IAccount,
   DISCORD_CHANNEL_PARENTS,
   parseAccountDelimiters,
-  capitalize,
+  capitalize, delay,
 } from '@app/core';
 
 
@@ -58,7 +57,8 @@ export class OraculumService implements OnApplicationBootstrap {
   private manager = new NlpManager({
     languages: ['ru', 'en'],
     threshold: 0.8,
-    builtinWhitelist: []
+    nlp: { log: true },
+    forceNER: true,
   });
 
   private client: Client;
@@ -69,7 +69,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
   private commandSlash = [];
 
-  private channelsLogs: Partial<IDiscordChannelLogs>;
+  private channelsLogs: Partial<IDiscordChannelLogs> = {};
 
   private commandsMessage: Collection<string, IDiscordSlashCommand> = new Collection();
 
@@ -90,21 +90,12 @@ export class OraculumService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     try {
-      await this.buildNerEngine(false, false, false);
-
-      this.loadCommands();
+      await this.buildNerEngine(true, true, true);
 
       this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'unit7' ] } });
       if (!this.key) throw new ServiceUnavailableException('Available key not found!');
 
-      this.rest.setToken(this.key.token);
-
-      await this.rest.put(
-        Routes.applicationGuildCommands(DISCORD_UNIT7, DISCORD_CORE),
-        { body: this.commandSlash },
-      );
-
-      this.logger.log('Reloaded application (/) commands.');
+      await this.loadCommands(this.key);
 
       this.client = new Client({
         partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE'],
@@ -182,16 +173,13 @@ export class OraculumService implements OnApplicationBootstrap {
           const accountExists = await this.AccountModel.findOne({ $or: [
               { discord_id: account.discord_id },
               { battle_tag: account.battle_tag },
-              { cryptonym: account.cryptonym },
             ]
           });
 
           if (!accountExists) {
-            const [cryptonym] = account.tags;
             const [nickname] = account.tags;
 
             await this.AccountModel.create({
-              cryptonym: capitalize(cryptonym),
               nickname: capitalize(nickname),
               clearance: account.clearance,
               discord_id: account.discord_id,
@@ -296,11 +284,6 @@ export class OraculumService implements OnApplicationBootstrap {
               );
             });
 
-            account.discord_id.map(discord => {
-              const [d] = discord.split('#');
-              buildTags.add(d.toLowerCase());
-            });
-
             account.battle_tag.map(btag => {
               const [b] = btag.split('#');
               buildTags.add(b.toLowerCase());
@@ -335,15 +318,14 @@ export class OraculumService implements OnApplicationBootstrap {
         .lean()
         .cursor()
         .eachAsync(entity => {
-          this.logger.debug(`NODE-NLP: entity ${entity.entity}@${entity.name} added`);
+          this.logger.debug(`NODE-NLP: ${entity.entity} | ${entity.name} added`);
           this.manager.addNamedEntityText(entity.entity, entity.name, entity.languages, entity.tags);
         });
 
       this.logger.debug(`NODE-NLP: Train process started`);
-      await this.manager.train();
-      this.logger.debug(`NODE-NLP: Train process ended`);
-
+      // await this.manager.train();
       const corpus = await this.manager.export(false) as string;
+      this.logger.debug(`NODE-NLP: Train process ended`);
 
       this.logger.debug(`NODE-NLP: Ensure corpus model`);
       const dirPath = path.join(__dirname, '..', '..', '..', 'files');
@@ -385,6 +367,8 @@ export class OraculumService implements OnApplicationBootstrap {
       this.logger.log(`Logged in as ${this.client.user.tag}!`);
 
       await this.buildDiscordCore();
+
+      await delay(5);
 
       this.channelsLogs.ingress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
       this.channelsLogs.egress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.egress) as TextChannel;
@@ -477,6 +461,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
   private async buildDiscordCore(): Promise<void> {
     try {
+      this.logger.debug('buildDiscordCore');
       const guild = await this.client.guilds.fetch(DISCORD_CORE);
 
       if (!guild) throw new NotFoundException('Discord Core Server not found!');
@@ -504,8 +489,8 @@ export class OraculumService implements OnApplicationBootstrap {
         this.logger.warn(`Channel ${channelName} not found. Creating...`);
 
         const options: GuildChannelCreateOptions = !!parent
-          ? { type: ChannelTypes.GUILD_TEXT }
-          : { type: ChannelTypes.GUILD_CATEGORY, parent };
+          ? { type: 'GUILD_TEXT' }
+          : { type: 'GUILD_CATEGORY', parent };
 
         await guild.channels.create(channelName, options);
       }
@@ -514,7 +499,7 @@ export class OraculumService implements OnApplicationBootstrap {
     }
   }
 
-  private loadCommands(): void {
+  private async loadCommands(key: Key): Promise<void> {
     const commandFiles = fs
       .readdirSync(path.join(`${__dirname}`, '..', '..', '..', 'apps/oraculum/src/commands/'))
       .filter(file => file.endsWith('.ts'));
@@ -524,5 +509,14 @@ export class OraculumService implements OnApplicationBootstrap {
       this.commandsMessage.set(command.name, command);
       this.commandSlash.push(command.slashCommand.toJSON());
     }
+
+    this.rest.setToken(key.token);
+
+    await this.rest.put(
+      Routes.applicationGuildCommands(DISCORD_UNIT7, DISCORD_CORE),
+      { body: this.commandSlash },
+    );
+
+    this.logger.log('Reloaded application (/) commands.');
   }
 }

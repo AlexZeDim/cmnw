@@ -1,12 +1,14 @@
 import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
-import { NlpManager } from 'node-nlp';
+import { NlpManager, Language } from 'node-nlp';
 import path from 'path';
 import fs from 'fs-extra';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key, Message } from '@app/mongo';
-import { DISCORD_CHANNEL_LOGS, DISCORD_CHANNEL_PARENTS, DISCORD_CORE, EXIT_CODES } from '@app/core';
+import { Account, Key, Message } from '@app/mongo';
+import { delay, DISCORD_CHANNEL_PARENTS, DISCORD_CORE, EXIT_CODES, IGuessLanguage, INerProcess } from '@app/core';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { removeEmojis } from '@nlpjs/emoji';
+import { Normalizer } from '@nlpjs/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
@@ -16,7 +18,7 @@ import Discord from 'v11-discord.js';
 export class OracleService implements OnApplicationBootstrap {
   private client: Discord.Client;
 
-  private commands: Discord.Collection<string, any>;
+  private commands: Discord.Collection<string, any> = new Discord.Collection();
 
   private hexID: string;
 
@@ -27,13 +29,21 @@ export class OracleService implements OnApplicationBootstrap {
   private manager = new NlpManager({
     languages: ['ru', 'en'],
     threshold: 0.8,
+    nlp: { log: true },
+    forceNER: true
   });
+
+  private normalizer = new Normalizer();
+
+  private language = new Language();
 
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
     @InjectModel(Key.name)
     private readonly KeysModel: Model<Key>,
+    @InjectModel(Account.name)
+    private readonly AccountModel: Model<Account>,
     @InjectModel(Message.name)
     private readonly MessagesModel: Model<Message>,
   ) { }
@@ -60,8 +70,6 @@ export class OracleService implements OnApplicationBootstrap {
 
     await this.client.login(this.key.token);
 
-    this.commands = new Discord.Collection();
-
     await this.getManagementChannel();
 
     this.logger.warn(`Key ${this.key.token} from ${account} has been taken!`);
@@ -76,7 +84,7 @@ export class OracleService implements OnApplicationBootstrap {
       })
     );
 
-    await this.bot();
+    await this.oracle();
   }
 
   private async getKey(account: string): Promise<void> {
@@ -121,15 +129,13 @@ export class OracleService implements OnApplicationBootstrap {
         throw new ServiceUnavailableException(`Corpus from: ${corpusPath} not found!`);
       }
 
-      const corpus = fs.readFileSync(corpusPath, 'utf8');
-
-      await this.manager.load(corpus);
+      await this.manager.load(corpusPath);
     } catch (errorOrException) {
-      this.logger.error(errorOrException);
+      this.logger.error(`loadNerEngine: ${errorOrException}`);
     }
   }
 
-  private async bot(): Promise<void> {
+  private async oracle(): Promise<void> {
     try {
 
       this.client.on('message', async (message: Discord.Message) => {
@@ -147,15 +153,14 @@ export class OracleService implements OnApplicationBootstrap {
 
           // TODO execute command only for clearance personal
           // if (message.author.id === '240464611562881024') await message.send('My watch is eternal');
-          // const match = await this.manager.extractEntities('ru', message.content);
-          // console.log(match)
+          await this.analyze(message);
         } catch (errorException) {
           this.logger.error(`Error: ${errorException}`);
         }
       });
 
       this.client.on('voiceStateUpdate', async (oldMember: Discord.GuildMember, newMember: Discord.GuildMember) => {
-        console.log(oldMember, newMember);
+        // console.log(oldMember, newMember);
       });
 
       // TODO generate invites
@@ -169,7 +174,60 @@ export class OracleService implements OnApplicationBootstrap {
         console.log(members);
       }*/
     } catch (errorException) {
-      this.logger.error(errorException);
+      this.logger.error(`bot: ${errorException}`);
+    }
+  }
+
+  private async analyze(message: Discord.Message): Promise<void> {
+    try {
+      const emojisStage: string = removeEmojis(message.content);
+      const normalizeStage: string = this.normalizer.normalize(emojisStage);
+      const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
+
+      const information: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
+      // TODO if entities do logic
+
+      /**
+       * Add every new account to database
+       * and if we had a battle net connection
+       *
+       */
+      const user = message.author;
+
+      // TODO add delay here and check db
+      const accountExists = await this.AccountModel.findOne({ discord_id: message.author.id });
+      if (!accountExists) return;
+
+      await delay(1);
+      const userProfile = await user.fetchProfile();
+
+      const account = new this.AccountModel({
+        discord_id: [message.author.id],
+        nickname: user.username,
+        tags: [user.username],
+      })
+
+      if (userProfile.connections.size > 0) {
+        for (const connection of userProfile.connections.values()) {
+          if (connection.type === 'battlenet') {
+            const battle_tag = connection.name;
+            const [beforeHashTag] = connection.name.split('#');
+            const tags: Set<string> = new Set();
+
+            tags.add(beforeHashTag);
+            tags.add(user.username);
+
+            account.battle_tag = [battle_tag];
+            account.nickname = beforeHashTag;
+            account.tags = Array.from(tags);
+          }
+        }
+      }
+
+      await account.save();
+
+    } catch (errorException) {
+      this.logger.error(`analyze ${errorException}`);
     }
   }
 }

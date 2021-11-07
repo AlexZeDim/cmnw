@@ -4,17 +4,11 @@ import { Snowflake } from 'discord.js';
 
 @Schema({ timestamps: true })
 export class Account extends Document {
-  @Prop({ type: String, required: true, default: 'Anonymous' })
+  @Prop({ type: String, default: 'Anonymous' })
   nickname: string;
 
   @Prop({ type: String, default: 'Anonymous' })
   cryptonym: string;
-
-  @Prop({ type: [String] })
-  clearance: string[];
-
-  @Prop({ type: [String] })
-  tags: string[];
 
   @Prop({ type: [String] })
   discord_id: Snowflake[];
@@ -24,6 +18,12 @@ export class Account extends Document {
 
   @Prop({ type: [String] })
   characters_id: string[];
+
+  @Prop({ type: [String] })
+  clearance: string[];
+
+  @Prop({ type: [String] })
+  tags: string[];
 
   @Prop({ type: Boolean, default: false, index: true })
   is_index: boolean;

@@ -75,7 +75,7 @@ export class GuildsWorker {
       Object.assign(guild, summary);
 
       await job.updateProgress(25);
-      const roster = await this.roster(args, this.BNet);
+      const roster = await this.roster(guild, this.BNet);
 
       if (roster.members.length > 0) Object.assign(guild, roster);
       await job.updateProgress(50);
@@ -146,7 +146,7 @@ export class GuildsWorker {
     }
   }
 
-  private async roster(guild: IQGuild, BNet: BlizzAPI): Promise<IGuildRoster> {
+  private async roster(guild: Guild, BNet: BlizzAPI): Promise<IGuildRoster> {
     const roster: IGuildRoster = { members: [] };
     const characters: Character[] = [];
     try {

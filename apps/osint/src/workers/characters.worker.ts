@@ -207,17 +207,6 @@ export class CharactersWorker {
     }
 
     /**
-     * FIXME enum fix
-     * remove later
-     */
-    if (characterExist.created_by) {
-      if (characterExist.created_by === 'OSINT-roster') {
-        characterExist.created_by = OSINT_SOURCE.INDEXGUILD;
-        await characterExist.save();
-      }
-    }
-
-    /**
      * If character exists
      * and createOnlyUnique initiated
      */

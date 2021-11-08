@@ -236,7 +236,7 @@ export class PricingService implements OnApplicationBootstrap {
         if (file === 'spellreagents.csv') Model = this.SpellReagentsModel;
 
         if (!Model) {
-          this.logger.log(`buildPricing: this model has not been found`);
+          this.logger.log(`buildPricing: for file ${file} model has not been found`);
           continue;
         }
 
@@ -313,8 +313,8 @@ export class PricingService implements OnApplicationBootstrap {
                 setDefaultsOnInsert: true,
                 lean: true,
               }
-            )
-            this.logger.log(document);
+            );
+            this.logger.log(`buildPricing: document ID:${document._id} has been updated`);
           }
         }
       }

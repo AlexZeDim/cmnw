@@ -4,14 +4,24 @@ import path from 'path';
 import fs from 'fs-extra';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account, Key, Message } from '@app/mongo';
-import { delay, DISCORD_CHANNEL_PARENTS, DISCORD_CORE, EXIT_CODES, IGuessLanguage, INerProcess } from '@app/core';
+import { Account, Key, Message, Source } from '@app/mongo';
+import {
+  CLEARANCE_LEVEL,
+  delay,
+  DISCORD_CHANNEL_PARENTS,
+  DISCORD_CORE,
+  EXIT_CODES,
+  IGuessLanguage,
+  INerProcess,
+  SOURCE_TYPE,
+} from '@app/core';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { removeEmojis } from '@nlpjs/emoji';
 import { Normalizer } from '@nlpjs/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
+
 
 
 @Injectable()
@@ -184,17 +194,50 @@ export class OracleService implements OnApplicationBootstrap {
       const normalizeStage: string = this.normalizer.normalize(emojisStage);
       const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
 
+      const user = message.author;
+
       const information: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
-      // TODO if entities do logic
+
+      if (information.entities.length > 0) {
+
+        const tags: Set<string> = new Set([
+          user.username,
+          message.channel.name
+        ]);
+
+        const source: Partial<Source> = {
+          type: SOURCE_TYPE.DiscordText,
+          discord_author: user.username,
+          discord_author_id: user.id,
+          discord_channel_id: message.channel.id,
+          discord_channel: message.channel.name
+        };
+
+        information.entities.forEach((entity) =>
+          tags.add(entity.option.toLowerCase()
+        ))
+
+        if (message.channel.guild) {
+          tags.add(message.channel.guild.name);
+          source.discord_server = message.channel.guild.name;
+          source.discord_server_id = message.channel.guild.id;
+        }
+
+        const discordMessage = new this.MessagesModel({
+          context: message.content,
+          clearance: [CLEARANCE_LEVEL.RED, CLEARANCE_LEVEL.A, CLEARANCE_LEVEL.ORACULUM],
+          source,
+          tags: Array.from(tags),
+        });
+
+        await discordMessage.save();
+      }
 
       /**
        * Add every new account to database
        * and if we had a battle net connection
        *
        */
-      const user = message.author;
-
-      // TODO add delay here and check db
       const accountExists = await this.AccountModel.findOne({ discord_id: message.author.id });
       if (!accountExists) return;
 

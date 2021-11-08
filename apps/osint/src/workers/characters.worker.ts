@@ -202,8 +202,19 @@ export class CharactersWorker {
      */
     if (character.looking_for_guild) {
       characterExist.looking_for_guild = character.looking_for_guild;
-      this.logger.log(`LFG: ${characterExist._id},looking for guild: ${character.looking_for_guild}`);
+      this.logger.log(`LFG: ${characterExist._id}, looking for guild: ${character.looking_for_guild}`);
       await characterExist.save();
+    }
+
+    /**
+     * FIXME enum fix
+     * remove later
+     */
+    if (characterExist.created_by) {
+      if (characterExist.created_by === 'OSINT-roster') {
+        characterExist.created_by = OSINT_SOURCE.INDEXGUILD;
+        await characterExist.save();
+      }
     }
 
     /**

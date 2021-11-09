@@ -3,13 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm, WarcraftLogs } from '@app/mongo';
 import { Model } from "mongoose";
 import {
-  ICharactersExported,
   GLOBAL_WCL_KEY,
   charactersQueue,
   IWarcraftLogsConfig,
   OSINT_SOURCE,
   toSlug,
-  GLOBAL_OSINT_KEY, IWarcraftLogsActors,
+  GLOBAL_OSINT_KEY,
+  IWarcraftLogsActors, randomInt,
 } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -60,7 +60,8 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
     try {
       let logExists = 0;
       for (let page = config.from; page < config.to; page++) {
-        await delay(5);
+        const random = randomInt(1, 5);
+        await delay(random);
 
         const response = await lastValueFrom(
           this.httpService.get(`https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`)

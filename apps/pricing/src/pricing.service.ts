@@ -299,7 +299,7 @@ export class PricingService implements OnApplicationBootstrap {
                   quantity: row_value[quantityIndex[i]]
                 })
               }
-            })
+            });
 
             row.reagents = reagents;
           }

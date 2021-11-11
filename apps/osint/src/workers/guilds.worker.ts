@@ -159,7 +159,9 @@ export class GuildsWorker {
         headers: { 'Battlenet-Namespace': 'profile-eu' }
       });
 
-      if (!members || members.length === 0) return roster;
+      if (!members || members.length === 0) {
+        return roster;
+      }
 
       await lastValueFrom(
         from(members).pipe(
@@ -299,132 +301,138 @@ export class GuildsWorker {
         joins = differenceBy(updated.members, original.members, 'id'),
         leaves = differenceBy(original.members, updated.members, 'id');
 
-      intersection.map((guild_member_new: IGuildMember) => {
-        const guild_member_old: IGuildMember | undefined = original.members.find(({ id }) => id === guild_member_new.id);
-        if (guild_member_old) {
-          if (guild_member_old.rank !== 0 || guild_member_new.rank !== 0) {
-            if (guild_member_new.rank > guild_member_old.rank) {
-              // Demote
-              const characterLogDemote = new this.LogModel({
-                root_id: guild_member_new._id,
-                root_history: [guild_member_new._id],
-                original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
-                updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
-                event: EVENT_LOG.CHARACTER,
-                action: ACTION_LOG.DEMOTE,
-                t0: original.last_modified || now,
-                t1: updated.last_modified || now,
-              });
+      if (intersection.length) {
+        intersection.map((guild_member_new: IGuildMember) => {
+          const guild_member_old: IGuildMember | undefined = original.members.find(({ id }) => id === guild_member_new.id);
+          if (guild_member_old) {
+            if (guild_member_old.rank !== 0 || guild_member_new.rank !== 0) {
+              if (guild_member_new.rank > guild_member_old.rank) {
+                // Demote
+                const characterLogDemote = new this.LogModel({
+                  root_id: guild_member_new._id,
+                  root_history: [guild_member_new._id],
+                  original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
+                  updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
+                  event: EVENT_LOG.CHARACTER,
+                  action: ACTION_LOG.DEMOTE,
+                  t0: original.last_modified || now,
+                  t1: updated.last_modified || now,
+                });
 
-              const guildLogDemote = new this.LogModel({
-                root_id: updated._id,
-                root_history: [updated._id],
-                original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
-                updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
-                event: EVENT_LOG.GUILD,
-                action: ACTION_LOG.DEMOTE,
-                t0: original.last_modified || now,
-                t1: updated.last_modified || now,
-              });
+                const guildLogDemote = new this.LogModel({
+                  root_id: updated._id,
+                  root_history: [updated._id],
+                  original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
+                  updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
+                  event: EVENT_LOG.GUILD,
+                  action: ACTION_LOG.DEMOTE,
+                  t0: original.last_modified || now,
+                  t1: updated.last_modified || now,
+                });
 
-              block.push(characterLogDemote, guildLogDemote);
-            }
-            if (guild_member_new.rank < guild_member_old.rank) {
-              // Promote
-              const characterLogPromote = new this.LogModel({
-                root_id: guild_member_new._id,
-                root_history: [guild_member_new._id],
-                original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
-                updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
-                event: EVENT_LOG.CHARACTER,
-                action: ACTION_LOG.PROMOTE,
-                t0: original.last_modified || now,
-                t1: updated.last_modified || now,
-              });
+                block.push(characterLogDemote, guildLogDemote);
+              }
+              if (guild_member_new.rank < guild_member_old.rank) {
+                // Promote
+                const characterLogPromote = new this.LogModel({
+                  root_id: guild_member_new._id,
+                  root_history: [guild_member_new._id],
+                  original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
+                  updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
+                  event: EVENT_LOG.CHARACTER,
+                  action: ACTION_LOG.PROMOTE,
+                  t0: original.last_modified || now,
+                  t1: updated.last_modified || now,
+                });
 
-              const guildLogPromote = new this.LogModel({
-                root_id: updated._id,
-                root_history: [updated._id],
-                original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
-                updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
-                event: EVENT_LOG.GUILD,
-                action: ACTION_LOG.PROMOTE,
-                t0: original.last_modified || now,
-                t1: updated.last_modified || now,
-              });
+                const guildLogPromote = new this.LogModel({
+                  root_id: updated._id,
+                  root_history: [updated._id],
+                  original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
+                  updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
+                  event: EVENT_LOG.GUILD,
+                  action: ACTION_LOG.PROMOTE,
+                  t0: original.last_modified || now,
+                  t1: updated.last_modified || now,
+                });
 
-              block.push(characterLogPromote, guildLogPromote);
+                block.push(characterLogPromote, guildLogPromote);
+              }
             }
           }
-        }
-      });
-
-      joins.map(guild_member => {
-        // Join
-        const characterLogJoin = new this.LogModel({
-          root_id: guild_member._id,
-          root_history: [guild_member._id],
-          original: ' ',
-          updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.JOIN,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
         });
+      }
 
-        const guildLogJoin = new this.LogModel({
-          root_id: updated._id,
-          root_history: [updated._id],
-          original: ' ',
-          updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.JOIN,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
+      if (joins.length) {
+        joins.map(guild_member => {
+          // Join
+          const characterLogJoin = new this.LogModel({
+            root_id: guild_member._id,
+            root_history: [guild_member._id],
+            original: ' ',
+            updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
+            event: EVENT_LOG.CHARACTER,
+            action: ACTION_LOG.JOIN,
+            t0: original.last_modified || now,
+            t1: updated.last_modified || now,
+          });
+
+          const guildLogJoin = new this.LogModel({
+            root_id: updated._id,
+            root_history: [updated._id],
+            original: ' ',
+            updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
+            event: EVENT_LOG.GUILD,
+            action: ACTION_LOG.JOIN,
+            t0: original.last_modified || now,
+            t1: updated.last_modified || now,
+          });
+
+          block.push(characterLogJoin, guildLogJoin);
         });
+      }
 
-        block.push(characterLogJoin, guildLogJoin);
-      });
+      if (leaves.length) {
+        await lastValueFrom(
+          from(leaves).pipe(
+            mergeMap(async guild_member => {
+              try {
+                await this.CharacterModel.findOneAndUpdate(
+                  { _id: guild_member._id, guild_id: original._id },
+                  { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } }
+                );
 
-      await lastValueFrom(
-        from(leaves).pipe(
-          mergeMap(async guild_member => {
-            try {
-              await this.CharacterModel.findOneAndUpdate(
-              { _id: guild_member._id, guild_id: original._id },
-              { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } }
-              );
+                // More operative way to update character on leave
+                const guildLogLeave = new this.LogModel({
+                  root_id: updated._id,
+                  root_history: [updated._id],
+                  original: ' ',
+                  updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
+                  event: EVENT_LOG.GUILD,
+                  action: ACTION_LOG.LEAVE,
+                  t0: original.last_modified || new Date(),
+                  t1: updated.last_modified || new Date(),
+                });
 
-              // More operative way to update character on leave
-              const guildLogLeave = new this.LogModel({
-                root_id: updated._id,
-                root_history: [updated._id],
-                original: ' ',
-                updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
-                event: EVENT_LOG.GUILD,
-                action: ACTION_LOG.LEAVE,
-                t0: original.last_modified || new Date(),
-                t1: updated.last_modified || new Date(),
-              });
+                const characterLogLeave = new this.LogModel({
+                  root_id: guild_member._id,
+                  root_history: [guild_member._id],
+                  original: ' ',
+                  updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
+                  event: EVENT_LOG.CHARACTER,
+                  action: ACTION_LOG.LEAVE,
+                  t0: original.last_modified || new Date(),
+                  t1: updated.last_modified || new Date(),
+                });
 
-              const characterLogLeave = new this.LogModel({
-                root_id: guild_member._id,
-                root_history: [guild_member._id],
-                original: ' ',
-                updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
-                event: EVENT_LOG.CHARACTER,
-                action: ACTION_LOG.LEAVE,
-                t0: original.last_modified || new Date(),
-                t1: updated.last_modified || new Date(),
-              });
-
-              block.push(characterLogLeave, guildLogLeave);
-            } catch (errorException) {
-              this.logger.error(`logs: error with ${guild_member._id} on leave`);
-            }
-          })
-        )
-      );
+                block.push(characterLogLeave, guildLogLeave);
+              } catch (errorException) {
+                this.logger.error(`logs: error with ${guild_member._id} on leave`);
+              }
+            })
+          )
+        );
+      }
 
       if (block.length > 0) {
         await this.LogModel.insertMany(block, { rawResult: false });

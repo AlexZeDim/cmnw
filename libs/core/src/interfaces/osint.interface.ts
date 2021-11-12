@@ -405,3 +405,20 @@ export interface ICharacterWpLfg {
   readonly ilvl: string,
   readonly timestamp: string;
 }
+
+export interface IExpansionSet {
+  name: string;
+  id: number;
+}
+
+export interface IExpansionList {
+  readonly CLSC: IExpansionSet;
+  readonly TBC: IExpansionSet;
+  readonly WOTLK: IExpansionSet;
+  readonly CATA: IExpansionSet;
+  readonly MOP: IExpansionSet;
+  readonly WOD: IExpansionSet;
+  readonly LGN: IExpansionSet;
+  readonly BFA: IExpansionSet;
+  readonly SHDW: IExpansionSet;
+}

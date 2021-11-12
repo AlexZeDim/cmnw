@@ -395,7 +395,7 @@ export class GuildsWorker {
       if (leaves.length) {
         await lastValueFrom(
           from(leaves).pipe(
-            mergeMap(async guild_member => {
+            mergeMap(async (guild_member) => {
               try {
                 await this.CharacterModel.findOneAndUpdate(
                   { _id: guild_member._id, guild_id: original._id },

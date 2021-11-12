@@ -278,6 +278,18 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Blackscar', 'BLKSCR'],
 ]);
 
+export const EXPANSION_LIST_ID: Map<string, string> = new Map([
+  ['Classic', 'CLSC'],
+  ['Burning', 'TBC'],
+  ['Lich King', 'WOTLK'],
+  ['Cataclysm', 'CATA'],
+  ['Pandaria', 'MOP'],
+  ['Draenor', 'WOD'],
+  ['Legion', 'LGN'],
+  ['Battle for Azeroth', 'BFA'],
+  ['Shadowlands', 'SHDW']
+]);
+
 export const PLAYABLE_CLASS: Map<number, string> = new Map([
   [1, 'Warrior'],
   [2, 'Paladin'],
@@ -342,6 +354,8 @@ export enum OSINT_SOURCE {
   REQUESTCHARACTER = 'OSINT-requestCharacter',
   GETGUILD = 'OSINT-getGuild',
   GETCHARACTER = 'OSINT-getCharacter',
+  MYTHICPLUS = 'OSINT-mythicPlus',
+  HALLOFGAME = 'OSINT-top100',
   INDEXGUILD = 'OSINT-indexGuilds',
   ROSTERGUILD = 'OSINT-rosterGuild',
   INDEXCHARACTER = 'OSINT-indexCharacters',
@@ -355,4 +369,26 @@ export enum LFG {
   NEW = 'NEW',
   NOW = 'NOW',
   PREV = 'PREV'
+}
+
+export enum EXPANSIONS {
+  Classic = 'CSLC',
+  TheBurningCrusade = 'TBC',
+  WraithOfTheLichKing = 'WOTLK',
+  Cataclysm = 'CATA',
+  MistsOfPandaria = 'MOP',
+  WarlordsOfDraenor = 'WOD',
+  Legion = 'LGN',
+  BattleForAzeroth = 'BFA',
+  Shadowlands = 'SHDW'
+}
+
+export enum MYTHIC_PLUS_SEASONS {
+  BFA_S1 = 1,
+  BFA_S2 = 2,
+  BFA_S3 = 3,
+  BFA_S4 = 4,
+  SHDW_S1 = 5,
+  SHDW_S2 = 6,
+  SHDW_S3 = 7
 }

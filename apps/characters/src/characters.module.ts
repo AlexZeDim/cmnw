@@ -6,10 +6,17 @@ import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, R
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    RedisModule.forRoot({
+      config: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
+    }),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },

@@ -82,7 +82,6 @@ RealmsSchema.index(
   },
   {
     default_language: 'english',
-    // @ts-ignore
     weights:
       {
         slug: 10,

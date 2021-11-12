@@ -1,8 +1,7 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FACTION, NOTIFICATIONS } from '@app/core';
-import { Item } from '@app/mongo/schemas/items.schema';
-import { Realm } from '@app/mongo/schemas/realms.schema';
+import { Item } from '@app/mongo';
 
 @Schema()
 export class RealmConnected extends Document {

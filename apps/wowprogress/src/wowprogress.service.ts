@@ -27,6 +27,7 @@ import {
   randomInt,
   toSlug,
 } from '@app/core';
+import ms from 'ms';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
@@ -170,10 +171,10 @@ export class WowprogressService implements OnApplicationBootstrap {
                 await this.queueGuilds.add(
                   _id,
                   {
-                    _id: _id,
+                    _id,
                     name: guild.name,
                     realm: realm.slug,
-                    forceUpdate: 1000 * 60 * 60 * 4,
+                    forceUpdate: ms('4h'),
                     created_by: OSINT_SOURCE.WOWPROGRESS,
                     updated_by: OSINT_SOURCE.WOWPROGRESS,
                     region: 'eu',

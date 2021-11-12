@@ -1,7 +1,5 @@
 import { Document, Types } from "mongoose";
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Protocol } from 'puppeteer';
-import Item = Protocol.DOMStorage.Item;
 
 /**
  *  TODO description

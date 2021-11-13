@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -12,7 +12,7 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import ms from 'ms';
 
 @Injectable()
-export class CharactersService {
+export class CharactersService implements OnApplicationBootstrap {
   private readonly logger = new Logger(
     CharactersService.name, { timestamp: true },
   );
@@ -31,6 +31,10 @@ export class CharactersService {
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue<IQCharacter, number>,
   ) { }
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.indexMythicPlusLadder(GLOBAL_OSINT_KEY, false)
+  }
 
   @Cron(CronExpression.EVERY_HOUR)
   private async indexCharacters(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
@@ -149,6 +153,8 @@ export class CharactersService {
       }
 
       const connectedRealmsIDs = await this.RealmModel.distinct('connected_realm_id');
+
+      let i: number = 0;
       let iteration = 0;
 
       for (const connectedRealmId of connectedRealmsIDs) {
@@ -176,9 +182,9 @@ export class CharactersService {
                     realm: member.profile.realm.slug,
                     forceUpdate: ms('4h'),
                     region: 'eu',
-                    clientId: key._id,
-                    clientSecret: key.secret,
-                    accessToken: key.token,
+                    clientId: keys[i]._id,
+                    clientSecret: keys[i].secret,
+                    accessToken: keys[i].token,
                     created_by: OSINT_SOURCE.MYTHICPLUS,
                     updated_by: OSINT_SOURCE.MYTHICPLUS,
                     faction,
@@ -191,6 +197,9 @@ export class CharactersService {
                     priority: 3
                   }
                 );
+
+                i++;
+                if (i >= keys.length) i = 0;
               }
             }
           }

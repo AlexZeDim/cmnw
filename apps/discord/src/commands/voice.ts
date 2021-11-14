@@ -3,6 +3,7 @@ import qs from 'qs';
 import { yandexConfig } from '@app/configuration';
 import { Client, Interaction, Message, VoiceChannel } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
+import { Readable } from 'stream';
 import {
   createAudioResource,
   StreamType,
@@ -11,7 +12,7 @@ import {
   VoiceConnectionStatus,
   AudioPlayerStatus,
 } from '@discordjs/voice';
-import { Readable } from 'stream';
+
 
 module.exports = {
   name: 'voice',

@@ -82,7 +82,7 @@ export class LadderService implements OnApplicationBootstrap {
         if (onlyLast && season.id !== seasons[seasons.length - 1].id) continue;
 
         for (const bracket of BRACKETS) {
-          const { entries } = await this.BNet.query(`data/wow/pvp-season/${season.id}/pvp-leaderboard/${bracket}`, {
+          const { entries } = await this.BNet.query(`/data/wow/pvp-season/${season.id}/pvp-leaderboard/${bracket}`, {
             timeout: 10000,
             headers: { 'Battlenet-Namespace': 'dynamic-eu' }
           });
@@ -281,8 +281,8 @@ export class LadderService implements OnApplicationBootstrap {
             headers: { 'Battlenet-Namespace': 'dynamic-eu' }
           });
 
-          for (const guild of entries) {
-            const _id: string = `${toSlug(guild.name)}@${guild.realm.slug}`;
+          for (const entry of entries) {
+            const _id: string = `${toSlug(entry.guild.name)}@${entry.guild.realm.slug}`;
 
             const faction = raidFaction === 'HORDE' ? FACTION.H : FACTION.A;
 
@@ -290,10 +290,10 @@ export class LadderService implements OnApplicationBootstrap {
               _id,
               {
                 _id,
-                name: guild.name,
-                realm: guild.realm.slug,
-                realm_id: guild.realm.id,
-                realm_name: guild.realm.name,
+                name: entry.guild.name,
+                realm: entry.guild.realm.slug,
+                realm_id: entry.guild.realm.id,
+                realm_name: entry.guild.realm.name,
                 faction,
                 created_by: OSINT_SOURCE.TOP100,
                 updated_by: OSINT_SOURCE.TOP100,
@@ -302,7 +302,7 @@ export class LadderService implements OnApplicationBootstrap {
                 clientSecret: key.secret,
                 accessToken: key.token,
                 forceUpdate: ms('1h'),
-                iteration: guild.rank,
+                iteration: entry.rank,
                 guildRank: false,
                 createOnlyUnique: false,
               },

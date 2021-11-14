@@ -11,6 +11,7 @@ import {
   VoiceConnectionStatus,
   AudioPlayerStatus,
 } from '@discordjs/voice';
+import { Readable } from 'stream';
 
 module.exports = {
   name: 'voice',
@@ -126,7 +127,7 @@ module.exports = {
         console.error('Error:', error.message, 'with track', error.resource.metadata);
       });
 
-      const resource = createAudioResource(data, { inputType: StreamType.Arbitrary });
+      const resource = createAudioResource(data as Readable, { inputType: StreamType.Arbitrary });
 
       player.play(resource);
 

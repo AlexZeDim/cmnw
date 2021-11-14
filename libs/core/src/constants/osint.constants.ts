@@ -4,6 +4,8 @@ export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
 export const REALM_LOCALES: string[] = ['ru_ru', 'en_gb', 'de_de', 'fr_fr', 'it_it', 'es_es'];
 
+export const BRACKETS: string[] = ['2v2', '3v3', 'rbg'];
+
 export const RAIDS: string[] = [
   'uldir',
   'battle-of-dazaralor',
@@ -368,6 +370,7 @@ export enum OSINT_SOURCE {
   GETGUILD = 'OSINT-getGuild',
   GETCHARACTER = 'OSINT-getCharacter',
   MYTHICPLUS = 'OSINT-mythicPlus',
+  PVPLADDER = 'OSINT-pvpLadder',
   HALLOFGAME = 'OSINT-top100',
   INDEXGUILD = 'OSINT-indexGuilds',
   ROSTERGUILD = 'OSINT-rosterGuild',

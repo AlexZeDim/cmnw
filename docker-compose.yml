@@ -64,6 +64,23 @@ services:
     networks:
       - conglomerat-network
 
+  ladder:
+    build: ./
+    image: conglomerat
+    container_name: ladder
+    restart: always
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/ladder/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
   discord:
     build: ./
     image: conglomerat

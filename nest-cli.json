@@ -214,6 +214,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/bench/tsconfig.app.json"
       }
+    },
+    "ladder": {
+      "type": "application",
+      "root": "apps/ladder",
+      "entryFile": "main",
+      "sourceRoot": "apps/ladder/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ladder/tsconfig.app.json"
+      }
     }
   }
 }

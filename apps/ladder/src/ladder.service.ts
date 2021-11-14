@@ -92,6 +92,8 @@ export class LadderService implements OnApplicationBootstrap {
             const _id: string = `${toSlug(player.character.name)}@${player.character.realm.slug}`;
             const faction = player.faction.type === 'HORDE' ? FACTION.H : FACTION.A;
 
+            this.logger.log(`indexPvpLadder: season ${season.id} | bracket ${bracket} | faction  ${faction} | iteration: ${player.rank}`);
+
             await this.queueCharacters.add(
               _id,
               {
@@ -204,7 +206,12 @@ export class LadderService implements OnApplicationBootstrap {
               headers: { 'Battlenet-Namespace': 'dynamic-eu' }
             });
 
+            if (!leading_groups || !Array.isArray(leading_groups)) continue;
+
             for (const group of leading_groups) {
+
+              this.logger.log(`indexMythicPlusLadder: realm ${connectedRealmId} | dungeon ${dungeonId} | week ${period} | group ${group.ranking} iteration: ${iteration}`);
+
               for (const member of group.members) {
 
                 const _id = `${toSlug(member.profile.name)}@${member.profile.realm.slug}`;
@@ -282,9 +289,12 @@ export class LadderService implements OnApplicationBootstrap {
           });
 
           for (const entry of entries) {
+
             const _id: string = `${toSlug(entry.guild.name)}@${entry.guild.realm.slug}`;
 
             const faction = raidFaction === 'HORDE' ? FACTION.H : FACTION.A;
+
+            this.logger.log(`indexHallOfFame: raid ${raid} | faction  ${faction} | iteration: ${entry.rank}`);
 
             await this.queueGuilds.add(
               _id,

@@ -11,6 +11,7 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import {
   BRACKETS,
   charactersQueue,
+  delay,
   FACTION,
   GLOBAL_OSINT_KEY,
   guildsQueue, IQCharacter,
@@ -82,6 +83,9 @@ export class LadderService implements OnApplicationBootstrap {
         if (onlyLast && season.id !== seasons[seasons.length - 1].id) continue;
 
         for (const bracket of BRACKETS) {
+
+          await delay(2);
+
           const { entries } = await this.BNet.query(`/data/wow/pvp-season/${season.id}/pvp-leaderboard/${bracket}`, {
             timeout: 10000,
             headers: { 'Battlenet-Namespace': 'dynamic-eu' }
@@ -172,6 +176,8 @@ export class LadderService implements OnApplicationBootstrap {
         if (mythicPlusSeason < MYTHIC_PLUS_SEASONS.SHDW_S1) continue;
         if (onlyLast && mythicPlusSeason !== lastSeason) continue;
 
+        await delay(2);
+
         const { periods } = await this.BNet.query(`/data/wow/mythic-keystone/season/${mythicPlusSeason}`, {
           timeout: 10000,
           headers: { 'Battlenet-Namespace': 'dynamic-eu' }
@@ -201,6 +207,9 @@ export class LadderService implements OnApplicationBootstrap {
           // SHDW Dungeons Breakpoint
           if (dungeonId < 375) continue;
           for (const period of mythicPlusExpansionWeeks.values()) {
+
+            await delay(2);
+
             const { leading_groups } = await this.BNet.query(`/data/wow/connected-realm/${connectedRealmId}/mythic-leaderboard/${dungeonId}/period/${period}`, {
               timeout: 10000,
               headers: { 'Battlenet-Namespace': 'dynamic-eu' }
@@ -281,6 +290,7 @@ export class LadderService implements OnApplicationBootstrap {
       for (const raid of RAIDS) {
 
         if (onlyLast && raid !== RAIDS[RAIDS.length - 1]) continue;
+        await delay(2);
 
         for (const raidFaction of RAID_FACTIONS) {
           const { entries } = await this.BNet.query(`/data/wow/leaderboard/hall-of-fame/${raid}/${raidFaction}`, {

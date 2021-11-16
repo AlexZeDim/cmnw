@@ -313,7 +313,9 @@ export class CharactersWorker {
             name: m.mount.name
           })
         }
-      })
+      });
+
+      mounts_collection.mounts_score = mounts.length;
 
       return mounts_collection;
     } catch (errorException) {
@@ -355,7 +357,9 @@ export class CharactersWorker {
         }
         if ('name' in pet) hash_b.push(pet.name);
         hash_b.push(pet.species.name, pet.level.toString());
-      })
+      });
+
+      pets_collection.pets_score = pets.length;
 
       if (hash_b.length) pets_collection.hash_b = BigInt(hash64(hash_b.toString())).toString(16);
       if (hash_a.length) pets_collection.hash_a = BigInt(hash64(hash_a.toString())).toString(16);

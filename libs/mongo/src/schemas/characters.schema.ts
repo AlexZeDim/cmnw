@@ -168,8 +168,14 @@ export class Character extends Document {
   @Prop({ type: [MountsSchema] })
   mounts: Types.Array<Mount>;
 
+  @Prop({ type: Number })
+  mounts_score: number;
+
   @Prop({ type: [PetsSchema] })
   pets:  Types.Array<Pet>;
+
+  @Prop({ type: Number })
+  pets_score: number;
 
   @Prop({ _id: false, type: [ProfessionSchema] })
   professions: Types.Array<Profession>;

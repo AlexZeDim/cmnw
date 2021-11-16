@@ -52,6 +52,7 @@ export class LadderService implements OnApplicationBootstrap {
     await this.indexPvpLadder(GLOBAL_OSINT_KEY, false);
   }
 
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
   async indexPvpLadder(
     clearance: string = GLOBAL_OSINT_KEY,
     onlyLast: boolean = true

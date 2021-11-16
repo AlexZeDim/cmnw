@@ -300,11 +300,13 @@ export interface IidName {
 }
 
 export interface IMounts {
-  mounts: IidName[]
+  mounts: IidName[],
+  mounts_score: number
 }
 
 export interface IPets {
   pets: IidName[],
+  pets_score: number,
   hash_b: string,
   hash_a: string
 }

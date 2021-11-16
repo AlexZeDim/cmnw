@@ -29,6 +29,8 @@ export class CharacterDto implements LeanDocument<Character> {
   readonly inset: string;
   readonly languages: LeanDocumentElement<Character["languages"]>;
   readonly last_modified: Date;
+  readonly mounts_score: number;
+  readonly pets_score: number;
   readonly level: number;
   readonly looking_for_guild: string;
   readonly main: string;

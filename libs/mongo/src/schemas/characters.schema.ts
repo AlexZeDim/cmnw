@@ -123,10 +123,10 @@ export class Character extends Document {
   @Prop({ type: String })
   faction: string;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, index: true })
   level: number;
 
-  @Prop({ type: Number })
+  @Prop({ type: Number, index: true })
   achievement_points: number;
 
   @Prop({ type: Number })

@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CLEARANCE_LEVEL, SOURCE_TYPE } from '@app/core';
 
 @Schema()
-class Source {
+export class Source {
   @Prop({ type: String, enum: SOURCE_TYPE })
   type: string;
 
@@ -34,7 +34,7 @@ export class Message extends Document {
   @Prop({ type: [String] })
   tags: Types.Array<String>
 
-  @Prop({ type: [String], enum: CLEARANCE_LEVEL })
+  @Prop({ type: [String], enum: CLEARANCE_LEVEL, default: [CLEARANCE_LEVEL.COMMUNITY] })
   clearance: Types.Array<String>
 
   @Prop({ type: String })

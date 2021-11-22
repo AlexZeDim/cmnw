@@ -7,8 +7,12 @@ export const GLOBAL_BLIZZARD_KEY = 'blizzard';
 export enum CLEARANCE_LEVEL {
   C = 'c',
   CONTROL = 'control',
+  ORACULUM = 'oraculum',
   CONGLOMERAT = 'conglomerat',
   COMMUNITY = 'community',
+  D = 'd',
+  A = 'a',
+  V = 'v',
   RED = 'red',
   YELLOW = 'yellow',
   GREEN = 'green',

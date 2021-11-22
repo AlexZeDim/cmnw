@@ -14,6 +14,8 @@ import {
   GuildsSchema,
   Key,
   KeysSchema,
+  Realm,
+  RealmsSchema,
 } from '@app/mongo';
 
 @Module({
@@ -29,6 +31,7 @@ import {
       { name: Account.name, schema: AccountsSchema },
       { name: Character.name, schema: CharactersSchema },
       { name: Guild.name, schema: GuildsSchema },
+      { name: Realm.name, schema: RealmsSchema },
       { name: Entity.name, schema: EntitySchema },
       { name: Key.name, schema: KeysSchema },
     ]),

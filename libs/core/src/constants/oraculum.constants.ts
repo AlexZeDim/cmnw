@@ -1,4 +1,4 @@
-import { Snowflake } from 'discord.js';
+import { Permissions, Snowflake } from 'discord.js';
 
 export enum ENTITY_NAME {
   Entity = 'ENTITY',
@@ -29,8 +29,57 @@ export enum DISCORD_CHANNEL_LOGS {
 }
 
 export enum DISCORD_CHANNEL_PARENTS {
+  communication = '734001596849192963',
   logs = '893610245161631776',
   files = '893610349801132083',
   oraculum = '896421319200112691',
   atlas = '893610514872139787',
 }
+
+export const DISCORD_TEXT_READ_ONLY = {
+  allow: [
+    Permissions.FLAGS.VIEW_CHANNEL,
+    Permissions.FLAGS.READ_MESSAGE_HISTORY,
+  ],
+  deny: [
+    Permissions.FLAGS.MANAGE_CHANNELS,
+    Permissions.FLAGS.MENTION_EVERYONE,
+    Permissions.FLAGS.MANAGE_WEBHOOKS,
+    Permissions.FLAGS.CREATE_INSTANT_INVITE,
+    Permissions.FLAGS.SEND_MESSAGES,
+    Permissions.FLAGS.MANAGE_THREADS,
+    Permissions.FLAGS.USE_PUBLIC_THREADS,
+    Permissions.FLAGS.USE_PRIVATE_THREADS,
+    Permissions.FLAGS.EMBED_LINKS,
+    Permissions.FLAGS.ATTACH_FILES,
+    Permissions.FLAGS.ADD_REACTIONS,
+    Permissions.FLAGS.USE_EXTERNAL_EMOJIS,
+    Permissions.FLAGS.MENTION_EVERYONE,
+    Permissions.FLAGS.SEND_TTS_MESSAGES,
+    Permissions.FLAGS.USE_APPLICATION_COMMANDS,
+  ],
+};
+
+export const DISCORD_TEXT_WRITE_ONLY = {
+  allow: [
+    Permissions.FLAGS.VIEW_CHANNEL,
+    Permissions.FLAGS.SEND_MESSAGES,
+    Permissions.FLAGS.EMBED_LINKS,
+    Permissions.FLAGS.ATTACH_FILES,
+    Permissions.FLAGS.READ_MESSAGE_HISTORY,
+  ],
+  deny: [
+    Permissions.FLAGS.MANAGE_CHANNELS,
+    Permissions.FLAGS.MENTION_EVERYONE,
+    Permissions.FLAGS.MANAGE_WEBHOOKS,
+    Permissions.FLAGS.CREATE_INSTANT_INVITE,
+    Permissions.FLAGS.MANAGE_THREADS,
+    Permissions.FLAGS.USE_PUBLIC_THREADS,
+    Permissions.FLAGS.USE_PRIVATE_THREADS,
+    Permissions.FLAGS.ADD_REACTIONS,
+    Permissions.FLAGS.USE_EXTERNAL_EMOJIS,
+    Permissions.FLAGS.MENTION_EVERYONE,
+    Permissions.FLAGS.SEND_TTS_MESSAGES,
+    Permissions.FLAGS.USE_APPLICATION_COMMANDS,
+  ],
+};

@@ -4,9 +4,9 @@ import { DISCORD_CHANNEL_LOGS, ISlashCommandArgs } from '@app/core';
 import ms from 'ms';
 
 module.exports = {
-  name: 'access',
+  name: 'invite',
   slashCommand: new SlashCommandBuilder()
-    .setName('access')
+    .setName('invite')
     .setDescription('Gives personal access via oracle network to specific Discord User')
     .addStringOption((option) =>
       option.setName('user')
@@ -21,6 +21,7 @@ module.exports = {
     .addStringOption((option) =>
       option.setName('agent')
         .setDescription('895766801965785138')
+        .setRequired(true)
     )
     .addIntegerOption((option) =>
       option.setName('uses')
@@ -46,7 +47,7 @@ module.exports = {
     try {
       const targetUser: Snowflake = interaction.options.getString('user', true);
 
-      const agent: Snowflake | undefined = interaction.options.getString('agent', false);
+      const agent: Snowflake = interaction.options.getString('agent', true);
 
       let maxUses: number | undefined = interaction.options.getInteger('uses', false);
       if (maxUses) maxUses = 5;
@@ -64,14 +65,22 @@ module.exports = {
           maxAge,
           temporary,
           targetUser,
+
         });
       } else {
         // TODO find channel and send command
+        let channel = this.client.channels.cache.find(agent) as TextChannel;
+        if (!channel) {
+          // TODO throw error
+          return;
+        }
+
+        await channel.send({ content: `invite ${targetUser} ${maxAge} ${maxUses} ${maxAge} ${temporary}`});
       }
 
       await redis.set(`ingress:${targetUser}`, 'INV_CODE', 'EX', maxAge);
     } catch (errorOrException) {
-      console.error(`access: ${errorOrException}`);
+      console.error(`invite: ${errorOrException}`);
     }
   }
 }

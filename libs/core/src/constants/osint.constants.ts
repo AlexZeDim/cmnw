@@ -372,6 +372,7 @@ export enum OSINT_SOURCE {
   MYTHICPLUS = 'OSINT-mythicPlus',
   PVPLADDER = 'OSINT-pvpLadder',
   HALLOFGAME = 'OSINT-top100',
+  COLLECTIONS = 'OSINT-collections',
   INDEXGUILD = 'OSINT-indexGuilds',
   ROSTERGUILD = 'OSINT-rosterGuild',
   INDEXCHARACTER = 'OSINT-indexCharacters',

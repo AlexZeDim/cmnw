@@ -1,8 +1,9 @@
 import { NOTIFICATIONS } from '@app/core/constants';
 import { SlashCommandBuilder } from '@discordjs/builders';
-// @ts-ignore
 import { Client, Interaction, Message, TextChannel } from 'discord.js';
 import { Redis } from '@nestjs-modules/ioredis';
+import { Model } from 'mongoose';
+import { Entity } from '@app/mongo';
 
 export interface IDiscordRoute {
   recruiting: number[],

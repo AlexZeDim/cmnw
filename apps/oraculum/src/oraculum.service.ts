@@ -17,31 +17,34 @@ import { REST } from '@discordjs/rest';
 import {
   Client,
   Collection,
+  Guild as DiscordGuild,
+  GuildChannelCreateOptions,
   Intents,
   Interaction,
   Invite,
   MessageEmbed,
   Snowflake,
   TextChannel,
-  Guild as DiscordGuild,
-  GuildChannelCreateOptions,
 } from 'discord.js';
 import ms from 'ms';
 import csv from 'async-csv';
 import { Routes } from 'discord-api-types/v9';
-import { Account, Character, Entity, Guild, Key } from '@app/mongo';
+import { Account, Character, Entity, Guild, Key, Realm } from '@app/mongo';
 import {
-  IEntities,
+  capitalize,
+  delay,
+  DISCORD_CHANNEL_LOGS,
+  DISCORD_CHANNEL_PARENTS,
+  DISCORD_CORE,
+  DISCORD_UNIT7,
   ENTITY_NAME,
+  IAccount,
   IDiscordChannelLogs,
   IDiscordSlashCommand,
-  DISCORD_CHANNEL_LOGS,
-  DISCORD_CORE, IEntity,
-  parseEntityDelimiters,
-  DISCORD_UNIT7, IAccount,
-  DISCORD_CHANNEL_PARENTS,
+  IEntities,
+  IEntity,
   parseAccountDelimiters,
-  capitalize, delay,
+  parseEntityDelimiters,
 } from '@app/core';
 
 
@@ -76,6 +79,8 @@ export class OraculumService implements OnApplicationBootstrap {
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
+    @InjectModel(Realm.name)
+    private readonly RealmModel: Model<Realm>,
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
     @InjectModel(Character.name)
@@ -250,8 +255,38 @@ export class OraculumService implements OnApplicationBootstrap {
         for (const entity of entities) {
           const entityExists = await this.EntityModel.findOne({ name: entity.name });
           if (!entityExists) {
-            await this.EntityModel.create(entity);
-            this.logger.log(`Created: ${entity.entity} | ${entity.name}`);
+
+            const newEntity = new this.EntityModel({
+              entity: entity.entity,
+              name: entity.name,
+              languages: entity.languages,
+              tags: entity.tags
+            });
+
+            if (entity.entity === ENTITY_NAME.Guild) {
+              const guilds = await this.GuildModel.find({ name: entity.name }).sort({ 'achievement_points': -1 });
+              if (guilds.length) {
+                const [guild] = guilds;
+                newEntity.guild_id = guild._id;
+              }
+            }
+
+            if (entity.entity === ENTITY_NAME.Realm) {
+              const realm = await this.RealmModel
+                .findOne(
+                  { $text: { $search: entity.name } },
+                  { score: { $meta: 'textScore' } },
+                )
+                .sort({ score: { $meta: 'textScore' } })
+                .lean();
+
+              if (realm) {
+                newEntity.realm_id = realm._id;
+              }
+            }
+
+            await newEntity.save();
+            this.logger.log(`Created: ${newEntity.entity} | ${newEntity.name}`);
           }
         }
       }
@@ -290,14 +325,16 @@ export class OraculumService implements OnApplicationBootstrap {
             });
 
             const tags = Array.from(buildTags);
+            const nameCapitalize = capitalize(name);
 
             await this.EntityModel.findOneAndUpdate(
-              { name: name },
+              { name: nameCapitalize },
               {
                 entity: ENTITY_NAME.Person,
                 languages: ['ru', 'en'],
-                name,
+                name: nameCapitalize,
                 tags,
+                account_id: account._id,
               }, {
                 upsert: true
               }
@@ -431,7 +468,7 @@ export class OraculumService implements OnApplicationBootstrap {
             .setColor('#e1beff')
             .setDescription('You don\'t have access to this section. Further bypass attempts activity will enforce restrictions on your Discord account on the selected server.')
 
-          await guildMember.send({ embeds: [embed] })
+          await guildMember.send({ embeds: [embed] });
           await guildMember.kick('Access Violation');
         } else {
           await guildMember.ban({ reason: 'Access Violation' });

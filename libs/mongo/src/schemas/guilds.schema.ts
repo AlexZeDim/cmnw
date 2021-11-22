@@ -25,7 +25,7 @@ export class Guild extends Document {
   @Prop({ type: Number })
   id: number;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, index: true })
   name: string;
 
   @Prop({ type: String, required: true })

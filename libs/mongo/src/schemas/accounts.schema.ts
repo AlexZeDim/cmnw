@@ -10,11 +10,14 @@ export class Account extends Document {
   @Prop({ type: String, default: 'Anonymous' })
   cryptonym: string;
 
-  @Prop({ type: [String] })
-  discord_id: Snowflake[];
+  @Prop({ type: String })
+  oraculum_id: Snowflake;
 
-  @Prop({ type: [String] })
-  battle_tag: string[];
+  @Prop({ type: String })
+  discord_id: Snowflake;
+
+  @Prop({ type: String })
+  battle_tag: string;
 
   @Prop({ type: [String] })
   characters_id: string[];

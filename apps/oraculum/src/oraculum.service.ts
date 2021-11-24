@@ -315,10 +315,8 @@ export class OraculumService implements OnApplicationBootstrap {
               );
             });
 
-            account.battle_tag.map(btag => {
-              const [b] = btag.split('#');
-              buildTags.add(b.toLowerCase());
-            });
+            const [b] = account.battle_tag.split('#');
+            buildTags.add(b.toLowerCase());
 
             const tags = Array.from(buildTags);
             const nameCapitalize = capitalize(name);
@@ -566,7 +564,45 @@ export class OraculumService implements OnApplicationBootstrap {
           throw new NotFoundException(`Channel ${channel.name} not found!`);
         }
 
-        // TODO files
+        if (guildChannel.name.toLowerCase() === 'files') {
+          await this.AccountModel
+            .find({ is_index: true })
+            .cursor()
+            .eachAsync(async (AccountFile) => {
+              try {
+
+                let fileChannel: TextChannel;
+
+                if (AccountFile.oraculum_id) {
+                  fileChannel = await guild.channels.fetch(AccountFile.oraculum_id) as TextChannel;
+                }
+
+                if (fileChannel) return;
+
+                if (!fileChannel && !AccountFile.oraculum_id) {
+                  fileChannel = await guild.channels.cache.find(file => file.name.toLowerCase() === AccountFile.discord_id) as TextChannel;
+                }
+
+                if (!fileChannel) {
+                  fileChannel = await guild.channels.create(AccountFile.discord_id, {
+                    type: 'GUILD_TEXT',
+                    parent: guildChannel.id,
+                  }) as TextChannel;
+
+                  /**
+                   * Sync with category rights
+                   * D can write A can read only
+                   */
+                  await fileChannel.lockPermissions();
+                }
+
+                AccountFile.oraculum_id = fileChannel.id;
+                await AccountFile.save();
+              } catch (errorOrException) {
+                this.logger.log(`${AccountFile.discord_id}: ${errorOrException}`);
+              }
+            })
+        }
 
         if (guildChannel.name.toLowerCase() === 'oraculum') {
           /**
@@ -576,8 +612,8 @@ export class OraculumService implements OnApplicationBootstrap {
           await this.KeysModel
             .find({ tags: 'oracle' })
             .cursor()
-            .eachAsync( async (Account) => {
-              const hex = BigInt(Account._id).toString(16).toLowerCase();
+            .eachAsync( async (Oracule) => {
+              const hex = BigInt(Oracule._id).toString(16).toLowerCase();
 
               try {
                 // TODO redis here probably
@@ -592,7 +628,7 @@ export class OraculumService implements OnApplicationBootstrap {
                   }) as TextChannel;
                 }
 
-                const user = await guild.members.fetch(Account._id);
+                const user = await guild.members.fetch(Oracule._id);
 
                 await oraculumChannel.lockPermissions();
 

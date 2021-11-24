@@ -18,6 +18,8 @@ import {
   RealmsSchema,
 } from '@app/mongo';
 
+console.log(mongoConfig.connection_string);
+
 @Module({
   imports: [
     RedisModule.forRoot({

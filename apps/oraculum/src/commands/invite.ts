@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Snowflake, TextChannel } from 'discord.js';
-import { DISCORD_CHANNEL_LOGS, ISlashCommandArgs } from '@app/core';
+import { ISlashCommandArgs } from '@app/core';
 import ms from 'ms';
 
 module.exports = {
@@ -41,7 +41,7 @@ module.exports = {
         .addChoice('24 hours', ms('1d'))
     ),
 
-  async executeInteraction({ interaction, redis }: ISlashCommandArgs): Promise<void> {
+  async executeInteraction({ interaction, redis, discordCore }: ISlashCommandArgs): Promise<void> {
     if (!interaction.isCommand()) return;
 
     try {
@@ -59,14 +59,15 @@ module.exports = {
 
       if (agent === this.client.user.id) {
         // FIXME replace channel
-        const channel = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
-        await channel.createInvite({
+        const channel = await this.client.channels.fetch(discordCore.logs.ingress.id) as TextChannel;
+        const invite = await channel.createInvite({
           maxUses,
           maxAge,
           temporary,
           targetUser,
-
         });
+
+        await redis.set(`ingress:${targetUser}`, invite.code, 'EX', maxAge);
       } else {
         // TODO find channel and send command
         let channel = this.client.channels.cache.find(agent) as TextChannel;
@@ -77,8 +78,6 @@ module.exports = {
 
         await channel.send({ content: `invite ${targetUser} ${maxAge} ${maxUses} ${maxAge} ${temporary}`});
       }
-
-      await redis.set(`ingress:${targetUser}`, 'INV_CODE', 'EX', maxAge);
     } catch (errorOrException) {
       console.error(`invite: ${errorOrException}`);
     }

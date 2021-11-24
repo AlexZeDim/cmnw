@@ -14,32 +14,28 @@ import crypto from 'crypto';
 import RussianNouns from 'russian-nouns-js';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { REST } from '@discordjs/rest';
-import {
-  Client,
-  Collection,
-  Guild as DiscordGuild,
-  GuildChannelCreateOptions,
-  Intents,
-  Interaction,
-  Invite,
-  MessageEmbed,
-  Snowflake,
-  TextChannel,
-} from 'discord.js';
 import ms from 'ms';
 import csv from 'async-csv';
 import { Routes } from 'discord-api-types/v9';
 import { Account, Character, Entity, Guild, Key, Realm } from '@app/mongo';
 import {
+  Client,
+  Collection,
+  Guild as DiscordGuild,
+  Intents,
+  Interaction,
+  Invite,
+  MessageEmbed,
+  TextChannel,
+} from 'discord.js';
+import {
   capitalize,
   delay,
-  DISCORD_CHANNEL_LOGS,
-  DISCORD_CHANNEL_PARENTS,
   DISCORD_CORE,
-  DISCORD_UNIT7,
+  DISCORD_CORE_ID,
+  DISCORD_UNIT7_ID,
   ENTITY_NAME,
   IAccount,
-  IDiscordChannelLogs,
   IDiscordSlashCommand,
   IEntities,
   IEntity,
@@ -72,7 +68,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
   private commandSlash = [];
 
-  private channelsLogs: Partial<IDiscordChannelLogs> = {};
+  private discordCore = DISCORD_CORE;
 
   private commandsMessage: Collection<string, IDiscordSlashCommand> = new Collection();
 
@@ -95,7 +91,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     try {
-      await this.buildNerEngine(true, true, true);
+      await this.buildNerEngine(false, false, false);
 
       this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'unit7' ] } });
       if (!this.key) throw new ServiceUnavailableException('Available key not found!');
@@ -401,41 +397,45 @@ export class OraculumService implements OnApplicationBootstrap {
   private bot(): void {
 
     this.client.on('ready', async (): Promise<void> => {
-      this.logger.log(`Logged in as ${this.client.user.tag}!`);
+      try {
+        this.logger.log(`Logged in as ${this.client.user.tag}!`);
 
-      await this.buildDiscordCore();
+        await this.buildDiscordCore();
 
-      await delay(5);
-
-      this.channelsLogs.ingress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.ingress) as TextChannel;
-      this.channelsLogs.egress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.egress) as TextChannel;
-      this.channelsLogs.regress = await this.client.channels.fetch(DISCORD_CHANNEL_LOGS.regress) as TextChannel;
+        await delay(5);
+      } catch (errorException) {
+        this.logger.error(`ready: ${errorException}`);
+      }
     });
 
     this.client.on('inviteCreate', async (invite: Invite) => {
-      /**
-       * TODO probably not just log but also recreate invite if invite not ORACULUM
-       */
+      try {
+        /**
+         * TODO probably not just log but also recreate invite if invite not ORACULUM
+         */
 
-      const embed = new MessageEmbed();
+        const embed = new MessageEmbed();
 
-      embed.setAuthor('VISITOR\'S PASS');
-      embed.setThumbnail('https://i.imgur.com/0uEuKxv.png');
-      embed.setColor('#bbdefb')
+        embed.setAuthor('VISITOR\'S PASS');
+        embed.setThumbnail('https://i.imgur.com/0uEuKxv.png');
+        embed.setColor('#bbdefb')
 
-      const temporary: string = invite.temporary === true ? 'Temporary' : 'Permanent';
+        const temporary: string = invite.temporary === true ? 'Temporary' : 'Permanent';
 
-      embed.addField('Issued by', `${invite.inviter.username}#${invite.inviter.discriminator}`, true);
-      embed.addField('Issued by ID', invite.inviter.id, true);
-      embed.addField('Code', invite.code, true);
-      embed.addField('Access to', `#${invite.channel.name}`, true);
-      embed.addField('Access to ID', invite.inviter.id, true);
-      embed.addField('Type', temporary, true);
+        embed.addField('Issued by', `${invite.inviter.username}#${invite.inviter.discriminator}`, true);
+        embed.addField('Issued by ID', invite.inviter.id, true);
+        embed.addField('Code', invite.code, true);
+        embed.addField('Access to', `#${invite.channel.name}`, true);
+        embed.addField('Access to ID', invite.inviter.id, true);
+        embed.addField('Type', temporary, true);
 
-      if (invite.maxUses > 0) embed.addField('Can be used', `${invite.maxUses} times`, true);
-      if (invite.maxAge > 0) embed.addField('Expire in', `${ms(invite.maxAge)}`, true);
+        if (invite.maxUses > 0) embed.addField('Can be used', `${invite.maxUses} times`, true);
+        if (invite.maxAge > 0) embed.addField('Expire in', `${ms(invite.maxAge)}`, true);
 
-      if (this.channelsLogs.ingress) await this.channelsLogs.ingress.send({ embeds: [embed] });
+        if (this.discordCore.logs.ingress) await this.discordCore.logs.ingress.send({ embeds: [embed] });
+      } catch (errorException) {
+        this.logger.log(`inviteCreate: ${errorException}`);
+      }
     });
 
     this.client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
@@ -445,94 +445,196 @@ export class OraculumService implements OnApplicationBootstrap {
       if (!command) return;
 
       try {
-        await command.executeInteraction({ interaction, redis: this.redisService });
-      } catch (error) {
-        this.logger.error(error);
+        await command.executeInteraction({ interaction, redis: this.redisService, discordCore: this.discordCore });
+      } catch (errorException) {
+        this.logger.error(errorException);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
       }
     });
 
     this.client.on('guildMemberAdd', async (guildMember) => {
-      const ingressUser = await this.redisService.get(`ingress:${guildMember.id}`);
-      // TODO if invite is compromised null it
+      try {
+        const ingressUser = await this.redisService.get(`ingress:${guildMember.id}`);
+        // If user doesn't belong to selected invitation
+        if (!ingressUser) {
+          // if user has first access violation
+          const access = await this.redisService.get(`access:${guildMember.id}`);
 
-      if (ingressUser !== guildMember.id || !ingressUser) {
-        const access = await this.redisService.get(`access:${guildMember.id}`);
+          if (!!access) {
+            await this.redisService.set(`access:${guildMember.id}`, 1, 'EX', ms('1w'));
 
-        if (!!access) {
-          await this.redisService.set(`access:${guildMember.id}`, 1, 'EX', ms('1w'));
+            const embed = new MessageEmbed()
+              .setAuthor('ACCESS VIOLATION')
+              .setThumbnail('https://i.imgur.com/OEY92yP.png')
+              .setColor('#e1beff')
+              .setDescription('You don\'t have access to this section. Further bypass attempts activity will enforce restrictions on your Discord account on the selected server.')
 
-          const embed = new MessageEmbed()
-            .setAuthor('ACCESS VIOLATION')
-            .setThumbnail('https://i.imgur.com/OEY92yP.png')
-            .setColor('#e1beff')
-            .setDescription('You don\'t have access to this section. Further bypass attempts activity will enforce restrictions on your Discord account on the selected server.')
-
-          await guildMember.send({ embeds: [embed] });
-          await guildMember.kick('Access Violation');
-        } else {
-          await guildMember.ban({ reason: 'Access Violation' });
+            await guildMember.send({ embeds: [embed] });
+            await guildMember.kick('Access Violation');
+          } else {
+            await guildMember.ban({ reason: 'Access Violation' });
+          }
+        } else if (this.discordCore.access.V) {
+          await guildMember.roles.add(this.discordCore.access.V);
         }
+      } catch (errorOrException) {
+        this.logger.error(`guildMemberAdd: ${errorOrException}`);
       }
-
-      // TODO roles
     });
 
     this.client.on('guildMemberRemove', async (guildMember) => {
+      try {
+        const embed = new MessageEmbed();
+        embed.setAuthor('USER LEFT');
 
-      const embed = new MessageEmbed();
-      embed.setAuthor('USER LEFT');
+        embed.addField('ID', guildMember.id, true);
+        embed.addField('Name', `${guildMember.user.username}#${guildMember.user.discriminator}`, true);
 
-      embed.addField('ID', guildMember.id, true);
-      embed.addField('Name', `${guildMember.user.username}#${guildMember.user.discriminator}`, true);
+        if (guildMember.joinedTimestamp) {
+          const now = new Date().getTime();
+          const session = now - guildMember.joinedTimestamp;
+          embed.addField('Session', `${ms(session)}`, true);
+        }
 
-      if (guildMember.joinedTimestamp) {
-        const now = new Date().getTime();
-        const session = now - guildMember.joinedTimestamp;
-        embed.addField('Session', `${ms(session)}`, true);
+        await this.discordCore.logs.egress.send({ embeds: [ embed ] });
+      } catch (errorOrException) {
+        this.logger.error(`guildMemberRemove: ${errorOrException}`);
       }
-
-      await this.channelsLogs.egress.send({ embeds: [ embed ] });
     });
   }
 
   private async buildDiscordCore(): Promise<void> {
     try {
       this.logger.debug('buildDiscordCore');
-      const guild = await this.client.guilds.fetch(DISCORD_CORE);
+
+      const guild: DiscordGuild | undefined = await this.client.guilds.fetch(this.discordCore.id);
+
+      // TODO also check by name & .create server
 
       if (!guild) throw new NotFoundException('Discord Core Server not found!');
 
-      const channelParentCategories: Array<[string, Snowflake]> = Object.entries(DISCORD_CHANNEL_PARENTS);
-      const channelLogs: Array<[string, Snowflake]> = Object.entries(DISCORD_CHANNEL_LOGS);
-
-      await this.buildChannels(guild, channelParentCategories);
-      await this.buildChannels(guild, channelLogs, DISCORD_CHANNEL_PARENTS.logs);
+      await this.buildRoles(guild);
+      await this.buildChannels(guild);
     } catch (errorOrException) {
-      this.logger.log(`buildDiscordCore: ${errorOrException}`);
+      this.logger.error(`buildDiscordCore: ${errorOrException}`);
+    }
+  }
+
+  private async buildRoles(
+    guild: DiscordGuild
+  ) {
+    try {
+      this.logger.debug('buildRoles');
+
+      for (const role of this.discordCore.roles) {
+        let discordRole = guild.roles.cache.find(r => r.name === role.name);
+
+        if (!discordRole) {
+          discordRole = await guild.roles.create({
+            name: role.name,
+            position: role.position,
+            mentionable: role.mentionable,
+            permissions: role.permissions.allow,
+          });
+        }
+
+        this.discordCore[role.name] = discordRole;
+      }
+    } catch (errorOrException) {
+      this.logger.log(`buildRoles: ${errorOrException}`);
     }
   }
 
   private async buildChannels(
     guild: DiscordGuild,
-    channels: Array<[string, Snowflake]>,
-    parent?: Snowflake
-  ) {
+  ): Promise<void> {
     try {
-      for (const [channelName, channelId] of channels) {
-        const channel = await this.client.channels.fetch(channelId);
-        if (channel) continue;
+      this.logger.debug('buildChannels');
 
-        this.logger.warn(`Channel ${channelName} not found. Creating...`);
+      for (const channel of this.discordCore.channels) {
+        let guildChannel = guild.channels.cache.find(c => c.name.toLowerCase() === channel.name);
 
-        const options: GuildChannelCreateOptions = !!parent
-          ? { type: 'GUILD_TEXT' }
-          : { type: 'GUILD_CATEGORY', parent };
+        if (!guildChannel) {
+          this.logger.warn(`Channel ${channel.name} not found. Creating...`);
+          // const options: GuildChannelCreateOptions = { type: channel.type };
+          guildChannel = await guild.channels.create(channel.name,
+            { type: channel.type as unknown as 'GUILD_CATEGORY' }
+          );
+        }
 
-        await guild.channels.create(channelName, options);
+        if (!guildChannel) {
+          throw new NotFoundException(`Channel ${channel.name} not found!`);
+        }
+
+        // TODO files
+
+        if (guildChannel.name.toLowerCase() === 'oraculum') {
+          /**
+           * Create channel for every user in
+           * ORACULUM network with correct access
+           */
+          await this.KeysModel
+            .find({ tags: 'oracle' })
+            .cursor()
+            .eachAsync( async (Account) => {
+              const hex = BigInt(Account._id).toString(16).toLowerCase();
+
+              try {
+                // TODO redis here probably
+                let oraculumChannel = await guild.channels.cache.find(ora => ora.name.toLowerCase() === hex) as TextChannel;
+
+                await delay(1.5);
+
+                if (!oraculumChannel) {
+                  oraculumChannel = await guild.channels.create(hex, {
+                    type: 'GUILD_TEXT',
+                    parent: guildChannel.id,
+                  }) as TextChannel;
+                }
+
+                const user = await guild.members.fetch(Account._id);
+
+                await oraculumChannel.lockPermissions();
+
+                await oraculumChannel.permissionOverwrites.edit(
+                  user, this.discordCore.clearance.write.permissionsOverwrite
+                );
+              } catch (errorOrException) {
+                this.logger.log(`${hex}: ${errorOrException}`);
+              }
+            });
+
+          continue;
+        }
+
+        if (channel.channels && channel.channels.length) {
+          for (const subChannel of channel.channels) {
+            const guildSubChannel = guild.channels.cache.find(c => c.name.toLowerCase() === subChannel.name);
+
+            if (guildChannel.name.toLowerCase() === 'logs') {
+              if (guildSubChannel.name.toLowerCase() === 'ingress') {
+                this.discordCore.logs.ingress = await this.client.channels.fetch(guildSubChannel.id) as TextChannel;
+              } else if (guildSubChannel.name.toLowerCase() === 'egress') {
+                this.discordCore.logs.egress = await this.client.channels.fetch(guildSubChannel.id) as TextChannel;
+              } else if (guildSubChannel.name.toLowerCase() === 'regress') {
+                this.discordCore.logs.regress = await this.client.channels.fetch(guildSubChannel.id) as TextChannel;
+              }
+            }
+
+            if (!guildSubChannel) {
+              this.logger.warn(`Channel ${subChannel.name} not found. Creating...`);
+
+              await guild.channels.create(subChannel.name, {
+                type: subChannel.type as unknown as 'GUILD_VOICE' | 'GUILD_TEXT',
+                parent: guildChannel.id
+              });
+            }
+          }
+        }
       }
+
     } catch (errorOrException) {
-      this.logger.log(`buildChannels: ${errorOrException}`);
+      this.logger.error(`buildChannels: ${errorOrException}`);
     }
   }
 
@@ -550,7 +652,7 @@ export class OraculumService implements OnApplicationBootstrap {
     this.rest.setToken(key.token);
 
     await this.rest.put(
-      Routes.applicationGuildCommands(DISCORD_UNIT7, DISCORD_CORE),
+      Routes.applicationGuildCommands(DISCORD_UNIT7_ID, DISCORD_CORE_ID),
       { body: this.commandSlash },
     );
 

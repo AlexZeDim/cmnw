@@ -8,7 +8,6 @@ import { Account, Key, Message, Source } from '@app/mongo';
 import {
   CLEARANCE_LEVEL,
   delay,
-  DISCORD_CHANNEL_PARENTS,
   DISCORD_CORE,
   EXIT_CODES,
   IGuessLanguage,
@@ -35,6 +34,8 @@ export class OracleService implements OnApplicationBootstrap {
   private key: Key;
 
   private channel: Discord.Channel;
+
+  private discordCore = DISCORD_CORE;
 
   private manager = new NlpManager({
     languages: ['ru', 'en'],
@@ -109,15 +110,17 @@ export class OracleService implements OnApplicationBootstrap {
     await this.key.save();
   }
 
+  // TODO remove this shit out of here, only control can have it
   private async getManagementChannel(): Promise<void> {
     this.channel = await this.client.channels.find(
       (channel: Discord.Channel) =>
-        channel.name && channel.guild.id === DISCORD_CORE
+        channel.name && channel.guild.id === this.discordCore.id
         && channel.name === this.hexID
     );
 
     if (!this.channel) {
-      const guild = await this.client.guilds.get(DISCORD_CORE);
+      // TODO error
+      const guild = await this.client.guilds.get(this.discordCore.id);
       const channel = await guild.createChannel(this.hexID, {
         type: 'text'
         // TODO permissions

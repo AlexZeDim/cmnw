@@ -1,15 +1,17 @@
 import { NOTIFICATIONS } from '@app/core/constants';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Client, Interaction, Message, TextChannel } from 'discord.js';
 import { Redis } from '@nestjs-modules/ioredis';
-import { Model } from 'mongoose';
-import { Entity } from '@app/mongo';
+import {
+  ChannelCreationOverwrites,
+  Client,
+  Interaction,
+  Message,
+  PermissionOverwriteOptions,
+  Role,
+  Snowflake,
+  TextChannel,
+} from 'discord.js';
 
-export interface IDiscordRoute {
-  recruiting: number[],
-  market: number[],
-  orders: number[]
-}
 
 export interface IDiscordCommand {
   readonly name: string;
@@ -26,14 +28,52 @@ export interface IDiscordCommand {
   executeInteraction(interaction: Interaction, client?: Client): Promise<void>;
 }
 
-export interface IDiscordChannelLogs {
+export interface IDiscordCoreLogs {
   ingress: TextChannel,
   egress: TextChannel,
   regress: TextChannel,
 }
 
+export interface IDiscordCore {
+  id: Snowflake;
+  name: string;
+  access: Partial<IDiscordCoreRoles>;
+  logs: Partial<IDiscordCoreLogs>;
+  channels: IDiscordCoreChannel[];
+  roles: IDiscordCorePermissions[];
+  clearance: IDiscordCoreClearance;
+}
+
+interface IDiscordCoreChannel {
+  id?: Snowflake;
+  name: string;
+  type: 'GUILD_TEXT' | 'GUILD_VOICE' | 'GUILD_CATEGORY';
+  channels?: IDiscordCoreChannel[];
+}
+
+interface IDiscordCorePermissions {
+  id?: Snowflake;
+  name: string;
+  mentionable?: boolean;
+  position?: number;
+  permissions: Pick<ChannelCreationOverwrites, 'allow' | 'deny'>
+}
+
+interface IDiscordCoreClearance {
+  read: Pick<ChannelCreationOverwrites, 'allow' | 'deny'> & { permissionsOverwrite: PermissionOverwriteOptions }
+  write: Pick<ChannelCreationOverwrites, 'allow' | 'deny'> & { permissionsOverwrite: PermissionOverwriteOptions }
+}
+
+interface IDiscordCoreRoles {
+  C: Role;
+  A: Role;
+  D: Role;
+  V: Role;
+}
+
 export interface ISlashCommandArgs {
   readonly interaction: Interaction,
+  readonly discordCore: IDiscordCore,
   readonly client?: Client,
   readonly redis?: Redis,
 }

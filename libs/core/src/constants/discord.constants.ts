@@ -272,6 +272,8 @@ export const DISCORD_CORE: IDiscordCore = {
   name: 'Cognito Inc',
   logs: {},
   access: {},
+  channel_tree: {},
+  personal: new Set<Snowflake>(),
   channels: [
     {
       name: 'communiсation',

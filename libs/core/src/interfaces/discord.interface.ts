@@ -34,11 +34,17 @@ export interface IDiscordCoreLogs {
   regress: TextChannel,
 }
 
+export interface IDiscordCoreChannelTree {
+  [key: string]: Snowflake
+}
+
 export interface IDiscordCore {
   id: Snowflake;
   name: string;
+  personal: Set<Snowflake>;
   access: Partial<IDiscordCoreRoles>;
   logs: Partial<IDiscordCoreLogs>;
+  channel_tree: IDiscordCoreChannelTree,
   channels: IDiscordCoreChannel[];
   roles: IDiscordCorePermissions[];
   clearance: IDiscordCoreClearance;

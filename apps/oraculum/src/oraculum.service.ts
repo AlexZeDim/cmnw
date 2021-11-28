@@ -564,7 +564,15 @@ export class OraculumService implements OnApplicationBootstrap {
           throw new NotFoundException(`Channel ${channel.name} not found!`);
         }
 
+        await this.redisService.set(`discord:channel:${guildChannel.name.toLowerCase()}`, guildChannel.id);
+
+        if (guildChannel.name.toLowerCase() === 'atlas') {
+          await this.redisService.sadd('discord:mirror', guildChannel.id);
+        }
+
         if (guildChannel.name.toLowerCase() === 'files') {
+          await this.redisService.sadd('discord:mirror', guildChannel.id);
+
           await this.AccountModel
             .find({ is_index: true })
             .cursor()
@@ -601,10 +609,11 @@ export class OraculumService implements OnApplicationBootstrap {
               } catch (errorOrException) {
                 this.logger.log(`${AccountFile.discord_id}: ${errorOrException}`);
               }
-            })
+            });
         }
 
         if (guildChannel.name.toLowerCase() === 'oraculum') {
+          await this.redisService.sadd('discord:mirror', guildChannel.id);
           /**
            * Create channel for every user in
            * ORACULUM network with correct access
@@ -616,7 +625,6 @@ export class OraculumService implements OnApplicationBootstrap {
               const hex = BigInt(Oracule._id).toString(16).toLowerCase();
 
               try {
-                // TODO redis here probably
                 let oraculumChannel = await guild.channels.cache.find(ora => ora.name.toLowerCase() === hex) as TextChannel;
 
                 await delay(1.5);
@@ -635,6 +643,8 @@ export class OraculumService implements OnApplicationBootstrap {
                 await oraculumChannel.permissionOverwrites.edit(
                   user, this.discordCore.clearance.write.permissionsOverwrite
                 );
+
+                await this.redisService.set(`discord:channel:${oraculumChannel.name.toLowerCase()}`, oraculumChannel.id);
               } catch (errorOrException) {
                 this.logger.log(`${hex}: ${errorOrException}`);
               }

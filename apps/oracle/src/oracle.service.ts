@@ -1,4 +1,10 @@
-import { Injectable, Logger, OnApplicationBootstrap, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { NlpManager, Language } from 'node-nlp';
 import path from 'path';
 import fs from 'fs-extra';
@@ -20,6 +26,7 @@ import { Normalizer } from '@nlpjs/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
+import { channel } from 'diagnostics_channel';
 
 
 
@@ -81,7 +88,11 @@ export class OracleService implements OnApplicationBootstrap {
 
     await this.client.login(this.key.token);
 
-    await this.getManagementChannel();
+    const guild: Discord.Guild | undefined = await this.client.guilds.get(this.discordCore.id);
+
+    if (!guild) throw new NotFoundException('Discord Core Server not found!');
+
+    await this.getCoreChannels(guild);
 
     this.logger.warn(`Key ${this.key.token} from ${account} has been taken!`);
 
@@ -110,27 +121,24 @@ export class OracleService implements OnApplicationBootstrap {
     await this.key.save();
   }
 
-  // TODO remove this shit out of here, only control can have it
-  private async getManagementChannel(): Promise<void> {
-    this.channel = await this.client.channels.find(
+  private async getCoreChannels(guild: Discord.Guild): Promise<void> {
+
+    this.channel = await guild.channels.find(
       (channel: Discord.Channel) =>
         channel.name && channel.guild.id === this.discordCore.id
         && channel.name === this.hexID
     );
 
-    if (!this.channel) {
-      // TODO error
-      const guild = await this.client.guilds.get(this.discordCore.id);
-      const channel = await guild.createChannel(this.hexID, {
-        type: 'text'
-        // TODO permissions
-      });
-      channel.setParent(DISCORD_CHANNEL_PARENTS.oraculum);
-      this.channel = channel;
+    for (const parentChannel of this.discordCore.channels) {
+      const parentChannelId = await this.redisService.get(`discord:channel:${parentChannel.name}`);
+      if (parentChannelId) this.discordCore.channel_tree[parentChannel.name] = parentChannelId;
     }
+
+    if (!this.channel) throw new NotFoundException(`Channel ${this.hexID} not found!`);
   }
 
   private async loadNerEngine(init: boolean = false): Promise<void> {
+    if (!init) return;
     try {
       const dirPath = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(dirPath);
@@ -153,26 +161,44 @@ export class OracleService implements OnApplicationBootstrap {
 
       this.client.on('message', async (message: Discord.Message) => {
 
-        // TODO execute command only for clearance personal
-
-        if (message.author.id === this.key._id) return;
+        if (
+          message.author.id === this.key._id
+          || message.author.bot
+        ) return;
 
         try {
-          // TODO repost done, them management clearance
-          if (message.channel.parentID === DISCORD_CHANNEL_PARENTS.files) {
-            await message.delete();
-            await message.channel.send(message.content);
-          }
 
-          // TODO execute command only for clearance personal
-          // if (message.author.id === '240464611562881024') await message.send('My watch is eternal');
-          await this.analyze(message);
+          if (message.guild.id === this.discordCore.id) {
+            // TODO execute command only for clearance personal
+
+            const account = await this.AccountModel.findOne({ discord_id: message.author.id }).lean();
+
+            if (!account) {
+              // TODO if new user grab it
+              if (!account.clearance.includes('a')) {
+                // TODO clearance commands
+              }
+            }
+
+            const mirror = await this.redisService.sismember('discord:mirror', message.channel.parentID);
+
+            if (
+              // mirror messages only for discord clearance channels and for M oracle
+              !!mirror && this.key.tags.includes('management')
+            ) {
+              await message.delete();
+              await message.channel.send(message.content);
+            }
+          } else {
+            await this.analyze(message);
+          }
         } catch (errorException) {
           this.logger.error(`Error: ${errorException}`);
         }
       });
 
       this.client.on('voiceStateUpdate', async (oldMember: Discord.GuildMember, newMember: Discord.GuildMember) => {
+        // TODO watch for voice channel statuses
         // console.log(oldMember, newMember);
       });
 
@@ -180,7 +206,7 @@ export class OracleService implements OnApplicationBootstrap {
 
       // TODO join servers
 
-    /*
+      /*
       for (const [guild_id] of this.client.guilds) {
         const guild = this.client.guilds.get(guild_id);
         const members = await guild.fetchMembers();
@@ -263,7 +289,7 @@ export class OracleService implements OnApplicationBootstrap {
             tags.add(beforeHashTag);
             tags.add(user.username);
 
-            account.battle_tag = [battle_tag];
+            account.battle_tag = battle_tag;
             account.nickname = beforeHashTag;
             account.tags = Array.from(tags);
           }

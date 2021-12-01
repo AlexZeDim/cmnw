@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { GetItemDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto, ItemValuationsDto } from '@app/core';
+import { ItemGetDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto, ItemValuationsDto } from '@app/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
@@ -39,7 +39,7 @@ export class DmaService {
     private readonly queueValuations: Queue<IQItemValuation, number>,
   ) { }
 
-  async getItem(input: ItemCrossRealmDto): Promise<GetItemDto> {
+  async getItem(input: ItemCrossRealmDto): Promise<ItemGetDto> {
     const { item, realm } = await this.validateTransformDmaQuery(input._id);
     if (!item || !realm || !realm.length) {
       throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')

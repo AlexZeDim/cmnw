@@ -70,7 +70,7 @@ class ItemEmbedDto implements Omit<LeanDocument<Item>, 'asset_class' | 'tags'> {
   readonly tags: string[];
 }
 
-export class GetItemDto {
+export class ItemGetDto {
   readonly item: LeanDocument<Item>
 
   readonly realm: IARealm[]

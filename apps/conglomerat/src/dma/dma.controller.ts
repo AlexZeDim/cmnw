@@ -21,7 +21,7 @@ import { DmaService } from './dma.service';
 import { LeanDocument } from 'mongoose'
 import { Token } from '@app/mongo';
 import {
-  GetItemDto,
+  ItemGetDto,
   ItemChartDto,
   ItemCrossRealmDto,
   ItemFeedDto,
@@ -48,7 +48,7 @@ export class DmaController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item')
-  async getItem(@Query() input: ItemCrossRealmDto): Promise<GetItemDto> {
+  async getItem(@Query() input: ItemCrossRealmDto): Promise<ItemGetDto> {
     return await this.dmaService.getItem(input);
   }
 

@@ -10,6 +10,9 @@ export class Account extends Document {
   @Prop({ type: String, default: 'Anonymous' })
   cryptonym: string;
 
+  /**
+   * Channel with file or management
+   */
   @Prop({ type: String })
   oraculum_id: Snowflake;
 
@@ -30,6 +33,12 @@ export class Account extends Document {
 
   @Prop({ type: Boolean, default: false, index: true })
   is_index: boolean;
+
+  @Prop({ type: Date })
+  updatedAt: Date;
+
+  @Prop({ type: Date })
+  createdAt: Date;
 }
 
 export const AccountsSchema = SchemaFactory.createForClass(Account);

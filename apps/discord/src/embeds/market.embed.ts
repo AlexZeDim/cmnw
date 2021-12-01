@@ -96,6 +96,9 @@ export function MarketEmbed(
 
     return embed;
   } catch (errorException) {
+    embed.setAuthor('Oops, sorry!');
+    embed.addField('Error', 'Tell the @AlexZeDim2645 that there is an error in MarketEmbed', false);
+    embed.setThumbnail('https://i.imgur.com/vraz5ML.png');
     return embed;
   }
 }

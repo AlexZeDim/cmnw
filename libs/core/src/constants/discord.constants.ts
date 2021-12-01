@@ -1,6 +1,5 @@
 import { ChannelCreationOverwrites, Permissions, Snowflake } from 'discord.js';
 import { IDiscordCore } from '@app/core/interfaces';
-import { ChannelTypes } from 'discord.js/typings/enums';
 
 export enum NOTIFICATIONS {
   CANDIDATES = 'candidates',

@@ -16,6 +16,7 @@ import {
   delay,
   DISCORD_CORE,
   EXIT_CODES,
+  IDiscordOracleCommand,
   IGuessLanguage,
   INerProcess,
   SOURCE_TYPE,
@@ -26,7 +27,6 @@ import { Normalizer } from '@nlpjs/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
-import { channel } from 'diagnostics_channel';
 
 
 
@@ -34,7 +34,7 @@ import { channel } from 'diagnostics_channel';
 export class OracleService implements OnApplicationBootstrap {
   private client: Discord.Client;
 
-  private commands: Discord.Collection<string, any> = new Discord.Collection();
+  private commands: Discord.Collection<string, IDiscordOracleCommand> = new Discord.Collection();
 
   private hexID: string;
 
@@ -85,6 +85,8 @@ export class OracleService implements OnApplicationBootstrap {
     await this.getKey(account);
 
     await this.loadNerEngine(Array.from(this.key.tags).includes('oracle'));
+
+    // TODO commands
 
     await this.client.login(this.key.token);
 
@@ -169,25 +171,31 @@ export class OracleService implements OnApplicationBootstrap {
         try {
 
           if (message.guild.id === this.discordCore.id) {
-            // TODO execute command only for clearance personal
-
-            const account = await this.AccountModel.findOne({ discord_id: message.author.id }).lean();
-
-            if (!account) {
-              // TODO if new user grab it
-              if (!account.clearance.includes('a')) {
-                // TODO clearance commands
-              }
-            }
-
             const mirror = await this.redisService.sismember('discord:mirror', message.channel.parentID);
 
-            if (
-              // mirror messages only for discord clearance channels and for M oracle
-              !!mirror && this.key.tags.includes('management')
-            ) {
+            // mirror messages only for discord clearance channels and for M oracle
+            if (!!mirror && this.key.tags.includes('management')) {
               await message.delete();
               await message.channel.send(message.content);
+            } else {
+              // command execute command only for clearance personal
+              const account = await this.AccountModel.findOne({ discord_id: message.author.id }).lean();
+
+              if (account && account.clearance.includes('a')) {
+                const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
+
+                const command: IDiscordOracleCommand =
+                  this.client.commands.get(commandName) ||
+                  this.client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+                if (!command) return;
+
+                if (command.guildOnly && message.channel.type !== 'text') {
+                  return message.reply("I can't execute that command inside DMs!");
+                }
+
+                await command.execute(message, args, this.client, this.redisService);
+              }
             }
           } else {
             await this.analyze(message);
@@ -202,16 +210,6 @@ export class OracleService implements OnApplicationBootstrap {
         // console.log(oldMember, newMember);
       });
 
-      // TODO generate invites
-
-      // TODO join servers
-
-      /*
-      for (const [guild_id] of this.client.guilds) {
-        const guild = this.client.guilds.get(guild_id);
-        const members = await guild.fetchMembers();
-        console.log(members);
-      }*/
     } catch (errorException) {
       this.logger.error(`bot: ${errorException}`);
     }
@@ -244,7 +242,7 @@ export class OracleService implements OnApplicationBootstrap {
 
         information.entities.forEach((entity) =>
           tags.add(entity.option.toLowerCase()
-        ))
+        ));
 
         if (message.channel.guild) {
           tags.add(message.channel.guild.name);
@@ -274,7 +272,7 @@ export class OracleService implements OnApplicationBootstrap {
       const userProfile = await user.fetchProfile();
 
       const account = new this.AccountModel({
-        discord_id: [message.author.id],
+        discord_id: message.author.id,
         nickname: user.username,
         tags: [user.username],
       })

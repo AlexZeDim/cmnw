@@ -43,6 +43,12 @@ export class Contract extends Document {
 
   @Prop({ default: [], type: [String] })
   sellers: Types.Array<String>;
+
+  @Prop({ type: Date })
+  updatedAt: Date;
+
+  @Prop({ type: Date })
+  createdAt: Date;
 }
 
 export const ContractsSchema = SchemaFactory.createForClass(Contract);

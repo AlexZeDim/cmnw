@@ -14,4 +14,10 @@ export enum SOURCE_TYPE {
   Text = 'text',
 }
 
+export enum ORACULUM_COMMANDS {
+  Whois = 'whois',
+  Invite = 'invite',
+  Cypher = 'cypther',
+}
+
 export const EXIT_CODES: string[] = [`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`];

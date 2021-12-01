@@ -1,6 +1,10 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { redisConfig } from '@app/configuration';
 import { BullModule, BullQueueInject } from '@anchan828/nest-bullmq';
+import { createBullBoard } from 'bull-board';
+import { BullMQAdapter } from 'bull-board/bullMQAdapter';
+import { Queue } from 'bullmq';
+import { Express } from 'express';
 import {
   auctionsQueue,
   charactersQueue,
@@ -10,10 +14,6 @@ import {
   realmsQueue,
   valuationsQueue,
 } from '@app/core';
-import { createBullBoard } from 'bull-board';
-import { BullMQAdapter } from 'bull-board/bullMQAdapter';
-import { Queue } from 'bullmq';
-import { Express } from 'express';
 
 @Module({
   imports: [

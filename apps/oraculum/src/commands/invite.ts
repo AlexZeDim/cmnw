@@ -1,12 +1,13 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Snowflake, TextChannel } from 'discord.js';
-import { ISlashCommandArgs } from '@app/core';
+import { Snowflake, TextChannel, VoiceChannel } from 'discord.js';
+import { ISlashCommandArgs, ORACULUM_COMMANDS } from '@app/core';
+import { NotFoundException } from '@nestjs/common';
 import ms from 'ms';
 
 module.exports = {
-  name: 'invite',
+  name: ORACULUM_COMMANDS.Invite,
   slashCommand: new SlashCommandBuilder()
-    .setName('invite')
+    .setName(ORACULUM_COMMANDS.Invite)
     .setDescription('Gives personal access via oracle network to specific Discord User')
     .addStringOption((option) =>
       option.setName('user')
@@ -19,7 +20,7 @@ module.exports = {
         .setRequired(true)
     )
     .addStringOption((option) =>
-      option.setName('agent')
+      option.setName('channel')
         .setDescription('895766801965785138')
         .setRequired(true)
     )
@@ -47,7 +48,7 @@ module.exports = {
     try {
       const targetUser: Snowflake = interaction.options.getString('user', true);
 
-      const agent: Snowflake = interaction.options.getString('agent', true);
+      const channel: Snowflake = interaction.options.getString('channel', true);
 
       let maxUses: number | undefined = interaction.options.getInteger('uses', false);
       if (maxUses) maxUses = 5;
@@ -57,29 +58,23 @@ module.exports = {
 
       const temporary: boolean = interaction.options.getBoolean('temporary', true);
 
-      if (agent === this.client.user.id) {
-        // FIXME replace channel
-        const channel = await this.client.channels.fetch(discordCore.logs.ingress.id) as TextChannel;
-        const invite = await channel.createInvite({
-          maxUses,
-          maxAge,
-          temporary,
-          targetUser,
-        });
+      // FIXME replace channel for voice V
+      const channelInvite: TextChannel | VoiceChannel | undefined  = await this.client.channels.fetch(channel);
 
-        await redis.set(`ingress:${targetUser}`, invite.code, 'EX', maxAge);
-      } else {
-        // TODO find channel and send command
-        let channel = this.client.channels.cache.find(agent) as TextChannel;
-        if (!channel) {
-          // TODO throw error
-          return;
-        }
+      if (!channelInvite) throw new NotFoundException(`Channel ${channel} not found!`);
 
-        await channel.send({ content: `invite ${targetUser} ${maxAge} ${maxUses} ${maxAge} ${temporary}`});
-      }
+      const invite = await channelInvite.createInvite({
+        maxUses,
+        maxAge,
+        temporary,
+        targetUser,
+      });
+
+      const inviteJson = invite.toJSON() as string;
+      // await redis.set(`ingress:${targetUser}`, invite.code, 'EX', maxAge);
+      await redis.set(`ingress:${targetUser}`, inviteJson, 'EX', maxAge);
     } catch (errorOrException) {
-      console.error(`invite: ${errorOrException}`);
+      console.error(`${ORACULUM_COMMANDS.Invite}: ${errorOrException}`);
     }
   }
 }

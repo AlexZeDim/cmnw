@@ -3,7 +3,7 @@ export * from './item-chart.dto';
 export * from './item-feed.dto';
 export * from './item-quotes.dto';
 export * from './wowtoken.dto';
-export * from './get-item.dto';
+export * from './item-get.dto';
 export * from './item-valuations.dto';
 export * from './character-id.dto';
 export * from './character-hash.dto';

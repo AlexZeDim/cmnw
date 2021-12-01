@@ -26,7 +26,7 @@ import {
   Interaction,
   Invite,
   MessageEmbed,
-  TextChannel,
+  TextChannel, VoiceChannel,
 } from 'discord.js';
 import {
   capitalize,
@@ -91,7 +91,7 @@ export class OraculumService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     try {
-      await this.buildNerEngine(false, false, false);
+      await this.buildNerEngine(true, true, true);
 
       this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', 'unit7' ] } });
       if (!this.key) throw new ServiceUnavailableException('Available key not found!');
@@ -260,7 +260,7 @@ export class OraculumService implements OnApplicationBootstrap {
             });
 
             if (entity.entity === ENTITY_NAME.Guild) {
-              const guilds = await this.GuildModel.find({ name: entity.name }).sort({ 'achievement_points': -1 });
+              const guilds = await this.GuildModel.find({ name: entity.name }).sort({ achievement_points: -1 });
               if (guilds.length) {
                 const [guild] = guilds;
                 newEntity.guild_id = guild._id;
@@ -294,6 +294,8 @@ export class OraculumService implements OnApplicationBootstrap {
   private async buildEntitiesFromAccounts(): Promise<void> {
     try {
       this.logger.debug('buildEntitiesFromAccounts');
+      await this.EntityModel.deleteMany({ entity: ENTITY_NAME.Person });
+
       await this.AccountModel
         .find({ is_index: true })
         .cursor()
@@ -399,8 +401,6 @@ export class OraculumService implements OnApplicationBootstrap {
         this.logger.log(`Logged in as ${this.client.user.tag}!`);
 
         await this.buildDiscordCore();
-
-        await delay(5);
       } catch (errorException) {
         this.logger.error(`ready: ${errorException}`);
       }
@@ -408,29 +408,44 @@ export class OraculumService implements OnApplicationBootstrap {
 
     this.client.on('inviteCreate', async (invite: Invite) => {
       try {
-        /**
-         * TODO probably not just log but also recreate invite if invite not ORACULUM
-         */
+        if (invite.inviter.id !== this.client.user.id) {
+          await invite.delete('recreate invite');
 
-        const embed = new MessageEmbed();
+          const inviteOptions = {
+            maxUses: invite.maxUses || 5,
+            maxAge: invite.maxAge || ms('1d'),
+            temporary: invite.temporary || false,
+            targetUser: invite.targetUser.id
+          }
 
-        embed.setAuthor('VISITOR\'S PASS');
-        embed.setThumbnail('https://i.imgur.com/0uEuKxv.png');
-        embed.setColor('#bbdefb')
+          const channelInvite = await this.client.channels.fetch(invite.channel.id) as TextChannel | VoiceChannel | null;
 
-        const temporary: string = invite.temporary === true ? 'Temporary' : 'Permanent';
+          if (!channelInvite) throw new NotFoundException(`Channel ${invite.channel.id} not found!`);
 
-        embed.addField('Issued by', `${invite.inviter.username}#${invite.inviter.discriminator}`, true);
-        embed.addField('Issued by ID', invite.inviter.id, true);
-        embed.addField('Code', invite.code, true);
-        embed.addField('Access to', `#${invite.channel.name}`, true);
-        embed.addField('Access to ID', invite.inviter.id, true);
-        embed.addField('Type', temporary, true);
+          const inviteRecreate = await channelInvite.createInvite(inviteOptions);
 
-        if (invite.maxUses > 0) embed.addField('Can be used', `${invite.maxUses} times`, true);
-        if (invite.maxAge > 0) embed.addField('Expire in', `${ms(invite.maxAge)}`, true);
+          if (this.discordCore.logs.ingress) await this.discordCore.logs.ingress.send({ content: `\`invite re-create ${invite.code} => ${inviteRecreate.code}\`` });
 
-        if (this.discordCore.logs.ingress) await this.discordCore.logs.ingress.send({ embeds: [embed] });
+          const embed = new MessageEmbed();
+
+          embed.setAuthor('VISITOR\'S PASS');
+          embed.setThumbnail('https://i.imgur.com/0uEuKxv.png');
+          embed.setColor('#bbdefb')
+
+          const temporary: string = inviteRecreate.temporary === true ? 'Temporary' : 'Permanent';
+
+          embed.addField('Issued by', `${invite.inviter.username}#${invite.inviter.discriminator}`, true);
+          embed.addField('Issued by ID', invite.inviter.id, true);
+          embed.addField('Code', inviteRecreate.code, true);
+          embed.addField('Access to', `#${inviteRecreate.channel.name}`, true);
+          embed.addField('Access to ID', inviteRecreate.targetUser.id, true);
+          embed.addField('Type', temporary, true);
+
+          if (invite.maxUses > 0) embed.addField('Can be used', `${inviteRecreate.maxUses} times`, true);
+          if (invite.maxAge > 0) embed.addField('Expire in', `${ms(inviteRecreate.maxAge)}`, true);
+
+          if (this.discordCore.logs.ingress) await this.discordCore.logs.ingress.send({ embeds: [embed] });
+        }
       } catch (errorException) {
         this.logger.log(`inviteCreate: ${errorException}`);
       }

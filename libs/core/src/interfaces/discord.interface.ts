@@ -12,6 +12,16 @@ import {
   TextChannel,
 } from 'discord.js';
 
+export interface IDiscordOracleCommand {
+  readonly name: string;
+  readonly guildOnly: boolean;
+  execute(
+    message: Message,
+    args: string,
+    client: Client,
+    redis: Redis,
+  ): Promise<void>
+}
 
 export interface IDiscordCommand {
   readonly name: string;

@@ -1,9 +1,10 @@
 import {
-  Injectable,
+  Injectable, NotFoundException, Query,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account } from '@app/mongo';
-import { Model } from 'mongoose';
+import { FilterQuery, LeanDocument, Model } from 'mongoose';
+import { AccountGetDto } from '@app/core/dto/account-get.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,5 +26,21 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async getAccount(input: AccountGetDto): Promise<LeanDocument<Account>> {
+    const andArray = [];
+
+    if (input.discord_id) andArray.push({ discord_id: input.discord_id });
+    if (input.battle_tag) andArray.push({ battle_tag: input.battle_tag });
+    if (input.nickname) andArray.push({ nickname: input.nickname });
+    if (input.cryptonym) andArray.push({ cryptonym: input.cryptonym });
+
+    const query: FilterQuery<Account> = { $and: andArray };
+
+    const account = await this.AccountModel.findOne(query).lean();
+    if (!account) throw new NotFoundException('Account not found!');
+
+    return account;
   }
 }

@@ -1,14 +1,14 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { ISlashCommandArgs } from '@app/core';
+import { ISlashCommandArgs, ORACULUM_COMMANDS } from '@app/core';
 import { SHA1, SHA256, SHA512, SHA3, MD5, enc, AES } from 'crypto-js';
 
 module.exports = {
-  name: 'cypher',
+  name: ORACULUM_COMMANDS.Cypher,
   slashCommand: new SlashCommandBuilder()
-    .setName('cypher')
+    .setName(ORACULUM_COMMANDS.Cypher)
     .setDescription('Cypher or decrypt the following string via provided algorithm')
     .addStringOption(option =>
-      option.setName('cypher')
+      option.setName(ORACULUM_COMMANDS.Cypher)
         .setDescription('Select function')
         .addChoice('Hex', 'hex')
         .addChoice('Base64', 'base64')
@@ -79,7 +79,7 @@ module.exports = {
 
       await interaction.reply({ content: text, ephemeral: true });
     } catch (errorOrException) {
-      console.error(`invite: ${errorOrException}`);
+      console.error(`${ORACULUM_COMMANDS.Cypher}: ${errorOrException}`);
     }
   }
 }

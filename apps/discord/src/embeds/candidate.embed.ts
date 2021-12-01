@@ -67,6 +67,9 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>): Messa
 
     return embed;
   } catch (errorException) {
+    embed.setAuthor('Oops, sorry!');
+    embed.addField('Error', 'Tell the @AlexZeDim2645 that there is an error in CandidateEmbedMessage', false);
+    embed.setThumbnail('https://i.imgur.com/vraz5ML.png');
     return embed;
   }
 }

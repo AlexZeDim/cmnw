@@ -1,10 +1,12 @@
 import {
-  Injectable, NotFoundException, Query,
+  BadRequestException,
+  Injectable, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account } from '@app/mongo';
+import { Account, Entity } from '@app/mongo';
 import { FilterQuery, LeanDocument, Model } from 'mongoose';
 import { AccountGetDto } from '@app/core/dto/account-get.dto';
+import { ENTITY_NAME } from '@app/core';
 
 @Injectable()
 export class AuthService {
@@ -12,8 +14,12 @@ export class AuthService {
   constructor(
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
+
+    @InjectModel(Entity.name)
+    private readonly EntityModel: Model<Entity>
   ) {}
 
+  // FIXME deprecated
   async findAccountByDiscordId(discord_id: string): Promise<Account> {
     let user = await this.AccountModel.findOne({ discord_id });
 
@@ -36,11 +42,42 @@ export class AuthService {
     if (input.nickname) andArray.push({ nickname: input.nickname });
     if (input.cryptonym) andArray.push({ cryptonym: input.cryptonym });
 
+    if (!andArray.length) {
+      throw new BadRequestException('Search criteria not found! You must specify at least one.');
+    }
+
     const query: FilterQuery<Account> = { $and: andArray };
 
     const account = await this.AccountModel.findOne(query).lean();
     if (!account) throw new NotFoundException('Account not found!');
 
     return account;
+  }
+
+  async addAccountIndex(input: AccountGetDto): Promise<LeanDocument<Account>> {
+    const andArray = [];
+
+    if (input.discord_id) andArray.push({ discord_id: input.discord_id });
+    if (input.battle_tag) andArray.push({ battle_tag: input.battle_tag });
+    if (input.nickname) andArray.push({ nickname: input.nickname });
+    if (input.cryptonym) andArray.push({ cryptonym: input.cryptonym });
+
+    if (!andArray.length) {
+      throw new BadRequestException('Search criteria not found! You must specify at least one.');
+    }
+
+    const query: FilterQuery<Account> = { $and: andArray };
+
+    const updatedAccount = await this.AccountModel.findByIdAndUpdate(query, { index: true }).lean();
+    if (!updatedAccount) throw new NotFoundException('Account not found!');
+
+    return updatedAccount;
+  }
+
+  async addEntity() {
+    await this.EntityModel.create({
+      entity: ENTITY_NAME.Entity,
+      name: 'Test',
+    })
   }
 }

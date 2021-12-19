@@ -37,16 +37,16 @@ export class WowtokenService {
         accessToken: key.token
       });
 
-      //TODO it is capable to implement if-modified-since header
+      // TODO it is capable to implement if-modified-since header
       const { last_updated_timestamp, price, lastModified } = await this.BNet.query(`/data/wow/token/index`, {
         timeout: 10000,
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'dynamic-eu' }
       })
 
-      const wowtoken = await this.TokenModel.findById(last_updated_timestamp);
+      const wowToken = await this.TokenModel.findById(last_updated_timestamp);
 
-      if (!wowtoken) {
+      if (!wowToken) {
         await this.TokenModel.create({
           _id: last_updated_timestamp,
           region: 'eu',

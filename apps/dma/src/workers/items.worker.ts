@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_TIMEOUT_TOLERANCE, IItem, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
+import { DMA_TIMEOUT_TOLERANCE, IItem, IQItem, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { Job } from 'bullmq';
@@ -21,9 +21,9 @@ export class ItemsWorker {
   ) {}
 
   @BullWorkerProcess(itemsQueue.workerOptions)
-  public async process(job: Job): Promise<number> {
+  public async process(job: Job<IQItem, number>): Promise<number> {
     try {
-      const args: { _id: number } & BattleNetOptions = { ...job.data }
+      const args: IQItem = { ...job.data }
 
       /** Check is exits */
       let item = await this.ItemModel.findById(args._id);

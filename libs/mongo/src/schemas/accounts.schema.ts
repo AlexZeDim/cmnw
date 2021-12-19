@@ -52,4 +52,3 @@ AccountsSchema.index(
   },
   { name: 'Aliases' }
 )
-

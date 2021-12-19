@@ -182,7 +182,7 @@ export class ContractsService {
                   },
                 ],
               },
-              item_id: 1,
+              item_id: item._id,
               date: {
                 day: date.d,
                 week: date.w,

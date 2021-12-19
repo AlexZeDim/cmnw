@@ -1,14 +1,14 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, round2 } from '@app/core';
+import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, IQAuction, round2 } from '@app/core';
 import { Logger } from '@nestjs/common';
-import { BlizzAPI, BattleNetOptions } from 'blizzapi';
+import { BlizzAPI } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Auction, Realm } from '@app/mongo';
 import { Job } from 'bullmq';
 import moment from 'moment';
 import { Model } from 'mongoose';
 import { bufferCount, concatMap } from 'rxjs/operators';
-import { from } from 'rxjs';
+import { from, lastValueFrom } from 'rxjs';
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
@@ -26,22 +26,20 @@ export class AuctionsWorker {
   ) {}
 
   @BullWorkerProcess(auctionsQueue.workerOptions)
-  public async process(job: Job): Promise<number> {
+  public async process(job: Job<IQAuction, number>): Promise<number> {
     try {
-      const args: { connected_realm_id: number, auctions?: number } & BattleNetOptions = { ...job.data };
+      const args: IQAuction = { ...job.data };
       await job.updateProgress(5);
 
       if (!args.auctions || args.auctions === 0) {
         const realm = await this.RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
-        if (realm) {
-          args.auctions = realm.auctions;
-        } else {
-          args.auctions = 0;
-        }
+
+        realm ? args.auctions = realm.auctions : args.auctions = 0;
+
         await job.updateProgress(10);
       }
 
-      const if_modified_since: string = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+      const ifModifiedSince: string = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
 
       this.BNet = new BlizzAPI({
         region: args.region,
@@ -55,7 +53,7 @@ export class AuctionsWorker {
         params: { locale: 'en_GB' },
         headers: {
           'Battlenet-Namespace': 'dynamic-eu',
-          'If-Modified-Since': if_modified_since
+          'If-Modified-Since': ifModifiedSince
         }
       });
 
@@ -98,15 +96,17 @@ export class AuctionsWorker {
   private async writeBulkOrders(orders: any[], connected_realm_id: number, last_modified: number): Promise<number> {
     let iterator: number = 0;
     try {
-      await from(orders).pipe(
-        bufferCount(10000),
-        concatMap(async (ordersBulk) => {
-          const ordersBulkAuctions = this.transformOrders(ordersBulk, connected_realm_id, last_modified);
-          await this.AuctionModel.insertMany(ordersBulkAuctions, { rawResult: false, lean: true });
-          iterator += ordersBulkAuctions.length;
-          this.logger.debug(`writeBulkOrders: ${connected_realm_id}:${iterator}`);
-        }),
-      ).toPromise();
+      await lastValueFrom(
+        from(orders).pipe(
+          bufferCount(10000),
+          concatMap(async (ordersBulk) => {
+            const ordersBulkAuctions = this.transformOrders(ordersBulk, connected_realm_id, last_modified);
+            await this.AuctionModel.insertMany(ordersBulkAuctions, { rawResult: false, lean: true });
+            iterator += ordersBulkAuctions.length;
+            this.logger.debug(`writeBulkOrders: ${connected_realm_id}:${iterator}`);
+          }),
+        )
+      );
       return iterator;
     } catch (errorException) {
       this.logger.error(`writeBulkOrders: ${errorException}`);

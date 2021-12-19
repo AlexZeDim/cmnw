@@ -54,4 +54,8 @@ export class AuthController {
   async getAccount(@Query() input: AccountGetDto): Promise<LeanDocument<Account>> {
     return await this.authService.getAccount(input);
   }
+
+  async addAccountIndex(@Query() input: AccountGetDto) {
+    return await this.authService.addAccountIndex(input);
+  }
 }

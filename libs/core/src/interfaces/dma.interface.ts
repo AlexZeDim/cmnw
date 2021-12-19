@@ -43,7 +43,7 @@ export class IAAuctionOrders {
 }
 
 export class IQPricing implements BattleNetOptions {
-  readonly recipe_id: string | number;
+  readonly recipe_id: number;
 
   readonly profession: string | number;
 
@@ -72,6 +72,8 @@ export class IQItem implements BattleNetOptions {
 
 export class IQAuction implements BattleNetOptions {
   readonly connected_realm_id: number;
+
+  auctions?: number;
 
   readonly region: string;
 

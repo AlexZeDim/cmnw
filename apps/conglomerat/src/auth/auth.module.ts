@@ -5,7 +5,7 @@ import { Account, AccountsSchema } from '@app/mongo';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { DiscordStrategy } from './strategies/discord.strategy';
-import { BattlenetStrategy } from './strategies/battlenet.strategy';
+import { BattleNetStrategy } from './strategies/battle-net.strategy';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
@@ -16,7 +16,7 @@ import { HttpModule } from '@nestjs/axios';
       { name: Account.name, schema: AccountsSchema }
     ]),
   ],
-  providers: [AuthService, DiscordStrategy, BattlenetStrategy],
+  providers: [AuthService, DiscordStrategy, BattleNetStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

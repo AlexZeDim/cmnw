@@ -6,7 +6,7 @@ import { SWAGGER_CHARACTER_HASH } from '@app/core/swagger/osint.swagger';
 
 export class CharacterHashDto {
   @ApiProperty(SWAGGER_CHARACTER_HASH)
-  @IsNotEmpty({ message: 'hash is required' })
+  @IsNotEmpty({ message: 'Hash is required' })
   @IsString()
   @Validate(AtSignExists)
   @Transform(({ value: hash }) => hash.toLowerCase())

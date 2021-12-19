@@ -13,7 +13,7 @@ import { lastValueFrom } from 'rxjs';
  */
 
 @Injectable()
-export class BattlenetStrategy extends PassportStrategy(Strategy, 'battlenet') {
+export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
   constructor(
     private authService: AuthService,
     private httpService: HttpService,

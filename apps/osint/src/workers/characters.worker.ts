@@ -27,7 +27,7 @@ import {
   IQCharacter,
 } from '@app/core';
 
-@BullWorker({ queueName: charactersQueue.name })
+@BullWorker({ queueName: charactersQueue.name, options: charactersQueue.workerOptions })
 export class CharactersWorker {
   private readonly logger = new Logger(
     CharactersWorker.name, { timestamp: true },

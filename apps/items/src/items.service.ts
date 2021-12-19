@@ -129,6 +129,7 @@ export class ItemsService implements OnApplicationBootstrap  {
             skip_empty_lines: true,
             cast: (value: number | string) => (Number.isNaN(Number(value)) ? value : Number(value))
           });
+
           switch (file) {
             case 'taxonomy.csv':
               for (const row of rows) {

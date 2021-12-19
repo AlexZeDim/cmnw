@@ -43,7 +43,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       const offsetTime: number = parseInt(moment().subtract(30, 'minutes').format('x'));
 
       await this.RealmModel
-        .aggregate([
+        .aggregate<IAARealm>([
           {
             $match: {
               auctions: { $lt: offsetTime }

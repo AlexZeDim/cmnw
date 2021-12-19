@@ -138,7 +138,8 @@ export class RealmsService implements OnApplicationBootstrap {
 
   private async population(realm: Realm): Promise<void> {
     try {
-      this.logger.log(`population: ${realm._id} started`)
+      this.logger.log(`population: ${realm._id} started`);
+
       const population: Partial<IPopulationRealm> = {
         realm_id: realm._id,
         characters_classes: {

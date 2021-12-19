@@ -1,27 +1,8 @@
 import { NOTIFICATIONS } from '@app/core/constants';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Redis } from '@nestjs-modules/ioredis';
-import {
-  ChannelCreationOverwrites,
-  Client,
-  Interaction,
-  Message,
-  PermissionOverwriteOptions,
-  Role,
-  Snowflake,
-  TextChannel,
-} from 'discord.js';
-
-export interface IDiscordOracleCommand {
-  readonly name: string;
-  readonly guildOnly: boolean;
-  execute(
-    message: Message,
-    args: string,
-    client: Client,
-    redis: Redis,
-  ): Promise<void>
-}
+import { Client, Message, Interaction } from 'discord.js';
+import { OraculumCore } from '@app/core/interfaces/oraculum.interface';
 
 export interface IDiscordCommand {
   readonly name: string;
@@ -38,58 +19,9 @@ export interface IDiscordCommand {
   executeInteraction(interaction: Interaction, client?: Client): Promise<void>;
 }
 
-export interface IDiscordCoreLogs {
-  ingress: TextChannel,
-  egress: TextChannel,
-  regress: TextChannel,
-}
-
-export interface IDiscordCoreChannelTree {
-  [key: string]: Snowflake
-}
-
-export interface IDiscordCore {
-  id: Snowflake;
-  name: string;
-  personal: Set<Snowflake>;
-  access: Partial<IDiscordCoreRoles>;
-  logs: Partial<IDiscordCoreLogs>;
-  channel_tree: IDiscordCoreChannelTree,
-  channels: IDiscordCoreChannel[];
-  roles: IDiscordCorePermissions[];
-  clearance: IDiscordCoreClearance;
-}
-
-interface IDiscordCoreChannel {
-  id?: Snowflake;
-  name: string;
-  type: 'GUILD_TEXT' | 'GUILD_VOICE' | 'GUILD_CATEGORY';
-  channels?: IDiscordCoreChannel[];
-}
-
-interface IDiscordCorePermissions {
-  id?: Snowflake;
-  name: string;
-  mentionable?: boolean;
-  position?: number;
-  permissions: Pick<ChannelCreationOverwrites, 'allow' | 'deny'>
-}
-
-interface IDiscordCoreClearance {
-  read: Pick<ChannelCreationOverwrites, 'allow' | 'deny'> & { permissionsOverwrite: PermissionOverwriteOptions }
-  write: Pick<ChannelCreationOverwrites, 'allow' | 'deny'> & { permissionsOverwrite: PermissionOverwriteOptions }
-}
-
-interface IDiscordCoreRoles {
-  C: Role;
-  A: Role;
-  D: Role;
-  V: Role;
-}
-
 export interface ISlashCommandArgs {
   readonly interaction: Interaction,
-  readonly discordCore: IDiscordCore,
+  readonly oraculumCore: OraculumCore,
   readonly client?: Client,
   readonly redis?: Redis,
 }

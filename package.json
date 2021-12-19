@@ -64,6 +64,7 @@
     "crypto-js": "4.1.1",
     "discord-api-types": "0.25.2",
     "discord.js": "13.3.1",
+    "discord.js-v11": "^12.1.1",
     "farmhash": "3.2.2",
     "fs-extra": "10.0.0",
     "ioredis": "4.28.2",

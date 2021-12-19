@@ -1,10 +1,11 @@
 // @ts-ignore
 import Discord from 'v11-discord.js';
-import { IDiscordOracleCommand } from '@app/core';
 import { Redis } from '@nestjs-modules/ioredis';
+import { OracleCommandInterface } from '../interface';
 import ms from 'ms';
 
-export const Direct: IDiscordOracleCommand = {
+
+export const Direct: OracleCommandInterface = {
   name: 'direct',
   guildOnly: true,
   async execute(

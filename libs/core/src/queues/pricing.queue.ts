@@ -7,7 +7,7 @@ const queueOptions: JobsOptions = {
 };
 
 export const pricingQueue: QueueInterface = {
-  name: 'OSINT:Pricing',
+  name: 'DMA:Pricing',
   workerOptions: { concurrency: 3 },
   options: {
     defaultJobOptions: queueOptions,

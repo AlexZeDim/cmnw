@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { Snowflake, TextChannel, VoiceChannel } from 'discord.js';
-import { ISlashCommandArgs, ORACULUM_COMMANDS } from '@app/core';
+import { DISCORD_REDIS_KEYS, ISlashCommandArgs, ORACULUM_COMMANDS } from '@app/core';
 import { NotFoundException } from '@nestjs/common';
 import ms from 'ms';
 
@@ -42,7 +42,7 @@ module.exports = {
         .addChoice('24 hours', ms('1d'))
     ),
 
-  async executeInteraction({ interaction, redis, discordCore }: ISlashCommandArgs): Promise<void> {
+  async executeInteraction({ interaction, redis }: ISlashCommandArgs): Promise<void> {
     if (!interaction.isCommand()) return;
 
     try {
@@ -58,7 +58,6 @@ module.exports = {
 
       const temporary: boolean = interaction.options.getBoolean('temporary', true);
 
-      // FIXME replace channel for voice V
       const channelInvite: TextChannel | VoiceChannel | undefined  = await this.client.channels.fetch(channel);
 
       if (!channelInvite) throw new NotFoundException(`Channel ${channel} not found!`);
@@ -71,8 +70,8 @@ module.exports = {
       });
 
       const inviteJson = invite.toJSON() as string;
-      // await redis.set(`ingress:${targetUser}`, invite.code, 'EX', maxAge);
-      await redis.set(`ingress:${targetUser}`, inviteJson, 'EX', maxAge);
+
+      await redis.set(`${DISCORD_REDIS_KEYS.INGRESS}#${targetUser}`, inviteJson, 'EX', maxAge);
     } catch (errorOrException) {
       console.error(`${ORACULUM_COMMANDS.Invite}: ${errorOrException}`);
     }

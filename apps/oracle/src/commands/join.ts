@@ -1,9 +1,9 @@
 // @ts-ignore
 import Discord from 'v11-discord.js';
-import { Redis } from '@nestjs-modules/ioredis';
+import { OracleCommandInterface } from '../interface';
 
-export const Portal = {
-  name: 'portal',
+export const Join: OracleCommandInterface = {
+  name: 'join',
   guildOnly: true,
   async execute(
     message: Discord.Message,

@@ -26,19 +26,23 @@ import {
   Interaction,
   Invite,
   MessageEmbed,
-  TextChannel, VoiceChannel,
+  PermissionFlags,
+  Permissions, PermissionString, Snowflake,
+  TextChannel,
+  VoiceChannel,
 } from 'discord.js';
 import {
   capitalize,
   delay,
-  DISCORD_CORE,
-  DISCORD_CORE_ID,
-  DISCORD_UNIT7_ID,
+  DISCORD_REDIS_KEYS,
   ENTITY_NAME,
   IAccount,
   IDiscordSlashCommand,
   IEntities,
   IEntity,
+  ORACULUM_CLEARANCE,
+  ORACULUM_CORE_ID,
+  ORACULUM_UNIT7_ID, OraculumCore,
   parseAccountDelimiters,
   parseEntityDelimiters,
 } from '@app/core';
@@ -64,13 +68,13 @@ export class OraculumService implements OnApplicationBootstrap {
 
   private key: Key;
 
-  private readonly rest = new REST({ version: '9' });
-
   private commandSlash = [];
 
-  private discordCore = DISCORD_CORE;
+  private oraculumCore = new OraculumCore({ coreId: ORACULUM_CORE_ID, coreName: 'Cognito Inc' });
 
   private commandsMessage: Collection<string, IDiscordSlashCommand> = new Collection();
+
+  private readonly rest = new REST({ version: '9' });
 
   constructor(
     @InjectRedis()
@@ -409,14 +413,14 @@ export class OraculumService implements OnApplicationBootstrap {
     this.client.on('inviteCreate', async (invite: Invite) => {
       try {
         if (invite.inviter.id !== this.client.user.id) {
-          await invite.delete('recreate invite');
+          await invite.delete('Recreate invite');
 
           const inviteOptions = {
             maxUses: invite.maxUses || 5,
             maxAge: invite.maxAge || ms('1d'),
             temporary: invite.temporary || false,
             targetUser: invite.targetUser.id
-          }
+          };
 
           const channelInvite = await this.client.channels.fetch(invite.channel.id) as TextChannel | VoiceChannel | null;
 
@@ -424,7 +428,9 @@ export class OraculumService implements OnApplicationBootstrap {
 
           const inviteRecreate = await channelInvite.createInvite(inviteOptions);
 
-          if (this.discordCore.logs.ingress) await this.discordCore.logs.ingress.send({ content: `\`invite re-create ${invite.code} => ${inviteRecreate.code}\`` });
+          if (this.oraculumCore.channels.logs?.channels.ingress?.channel) {
+            this.oraculumCore.channels.logs?.channels.ingress?.channel.send({ content: `\`invite re-create ${invite.code} => ${inviteRecreate.code}\`` });
+          }
 
           const embed = new MessageEmbed();
 
@@ -444,7 +450,9 @@ export class OraculumService implements OnApplicationBootstrap {
           if (invite.maxUses > 0) embed.addField('Can be used', `${inviteRecreate.maxUses} times`, true);
           if (invite.maxAge > 0) embed.addField('Expire in', `${ms(inviteRecreate.maxAge)}`, true);
 
-          if (this.discordCore.logs.ingress) await this.discordCore.logs.ingress.send({ embeds: [embed] });
+          if (this.oraculumCore.channels.logs?.channels.ingress?.channel) {
+            await this.oraculumCore.channels.logs?.channels.ingress?.channel.send({ embeds: [embed] });
+          }
         }
       } catch (errorException) {
         this.logger.log(`inviteCreate: ${errorException}`);
@@ -458,7 +466,7 @@ export class OraculumService implements OnApplicationBootstrap {
       if (!command) return;
 
       try {
-        await command.executeInteraction({ interaction, redis: this.redisService, discordCore: this.discordCore });
+        await command.executeInteraction({ interaction, redis: this.redisService, oraculumCore: this.oraculumCore });
       } catch (errorException) {
         this.logger.error(errorException);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
@@ -467,14 +475,14 @@ export class OraculumService implements OnApplicationBootstrap {
 
     this.client.on('guildMemberAdd', async (guildMember) => {
       try {
-        const ingressUser = await this.redisService.get(`ingress:${guildMember.id}`);
+        const ingressUser = await this.redisService.get(`${DISCORD_REDIS_KEYS.INGRESS}#${guildMember.id}`);
         // If user doesn't belong to selected invitation
         if (!ingressUser) {
-          // if user has first access violation
-          const access = await this.redisService.get(`access:${guildMember.id}`);
+          // and has first violation
+          const access = await this.redisService.get(`${DISCORD_REDIS_KEYS.JOIN}#${guildMember.id}`);
 
           if (!!access) {
-            await this.redisService.set(`access:${guildMember.id}`, 1, 'EX', ms('1w'));
+            await this.redisService.set(`${DISCORD_REDIS_KEYS.JOIN}#${guildMember.id}`, 1, 'EX', ms('1w'));
 
             const embed = new MessageEmbed()
               .setAuthor('ACCESS VIOLATION')
@@ -487,8 +495,11 @@ export class OraculumService implements OnApplicationBootstrap {
           } else {
             await guildMember.ban({ reason: 'Access Violation' });
           }
-        } else if (this.discordCore.access.V) {
-          await guildMember.roles.add(this.discordCore.access.V);
+        } else if ( this.oraculumCore.roles.V.id) {
+          const roleIdV = await this.redisService.get(`${DISCORD_REDIS_KEYS.ROLE}:${ORACULUM_CLEARANCE.V}`) as Snowflake;
+          const roleV = await guildMember.guild.roles.fetch(roleIdV);
+
+          await guildMember.roles.add(roleV);
         }
       } catch (errorOrException) {
         this.logger.error(`guildMemberAdd: ${errorOrException}`);
@@ -509,7 +520,12 @@ export class OraculumService implements OnApplicationBootstrap {
           embed.addField('Session', `${ms(session)}`, true);
         }
 
-        await this.discordCore.logs.egress.send({ embeds: [ embed ] });
+        const egressId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:${this.oraculumCore.channels.logs.channels.egress.name}`) as Snowflake;
+        const egressChannel = await guildMember.guild.channels.fetch(egressId) as TextChannel;
+
+        if (egressChannel) {
+          await egressChannel.send({ embeds: [ embed ] });
+        }
       } catch (errorOrException) {
         this.logger.error(`guildMemberRemove: ${errorOrException}`);
       }
@@ -520,17 +536,175 @@ export class OraculumService implements OnApplicationBootstrap {
     try {
       this.logger.debug('buildDiscordCore');
 
-      const guild: DiscordGuild | undefined = await this.client.guilds.fetch(this.discordCore.id);
-
-      // TODO also check by name & .create server
-
+      const guild: DiscordGuild | undefined = await this.client.guilds.fetch(ORACULUM_CORE_ID);
       if (!guild) throw new NotFoundException('Discord Core Server not found!');
 
+      // TODO also check by name & create e server
+
+      await this.buildPermissions(Permissions.FLAGS);
       await this.buildRoles(guild);
       await this.buildChannels(guild);
     } catch (errorOrException) {
       this.logger.error(`buildDiscordCore: ${errorOrException}`);
     }
+  }
+
+  private async buildPermissions(Flags: PermissionFlags) {
+    this.logger.debug('buildPermissions');
+
+    const TextReadOnly = new Permissions([
+      Flags.VIEW_CHANNEL,
+      Flags.READ_MESSAGE_HISTORY,
+    ]);
+
+    const WriteOnly = new Permissions([
+      Flags.VIEW_CHANNEL,
+      Flags.SEND_MESSAGES,
+      Flags.EMBED_LINKS,
+      Flags.ATTACH_FILES,
+      Flags.READ_MESSAGE_HISTORY,
+    ]);
+
+    const RoleC = new Permissions([
+      Flags.CREATE_INSTANT_INVITE,
+      Flags.ADMINISTRATOR,
+      Flags.VIEW_CHANNEL,
+      Flags.CHANGE_NICKNAME,
+      Flags.MANAGE_NICKNAMES,
+      Flags.KICK_MEMBERS,
+      Flags.BAN_MEMBERS,
+
+      Flags.SEND_MESSAGES,
+      Flags.MANAGE_THREADS,
+      Flags.USE_PUBLIC_THREADS,
+      Flags.USE_PRIVATE_THREADS,
+
+      Flags.EMBED_LINKS,
+      Flags.ATTACH_FILES,
+      Flags.ADD_REACTIONS,
+      Flags.USE_EXTERNAL_EMOJIS,
+      Flags.USE_EXTERNAL_STICKERS,
+
+      Flags.READ_MESSAGE_HISTORY,
+      Flags.USE_APPLICATION_COMMANDS,
+
+      Flags.CONNECT,
+      Flags.SPEAK,
+      Flags.STREAM,
+      Flags.USE_VAD,
+      Flags.MUTE_MEMBERS,
+      Flags.DEAFEN_MEMBERS,
+      Flags.MOVE_MEMBERS,
+      Flags.REQUEST_TO_SPEAK,
+      Flags.PRIORITY_SPEAKER,
+
+      Flags.MANAGE_CHANNELS,
+      Flags.MANAGE_ROLES,
+      Flags.MANAGE_EMOJIS_AND_STICKERS,
+      Flags.VIEW_AUDIT_LOG,
+      Flags.MANAGE_WEBHOOKS,
+      Flags.MANAGE_GUILD,
+
+      Flags.MENTION_EVERYONE,
+      Flags.SEND_TTS_MESSAGES,
+    ]);
+
+    const RoleA = new Permissions([
+      Flags.MANAGE_NICKNAMES,
+      Flags.VIEW_CHANNEL,
+      Flags.CHANGE_NICKNAME,
+      Flags.KICK_MEMBERS,
+      Flags.BAN_MEMBERS,
+
+      Flags.SEND_MESSAGES,
+      Flags.MANAGE_THREADS,
+      Flags.USE_PUBLIC_THREADS,
+      Flags.USE_PRIVATE_THREADS,
+
+      Flags.EMBED_LINKS,
+      Flags.ATTACH_FILES,
+      Flags.ADD_REACTIONS,
+      Flags.USE_EXTERNAL_EMOJIS,
+      Flags.USE_EXTERNAL_STICKERS,
+
+      Flags.READ_MESSAGE_HISTORY,
+      Flags.USE_APPLICATION_COMMANDS,
+
+      Flags.CONNECT,
+      Flags.SPEAK,
+      Flags.STREAM,
+      Flags.USE_VAD,
+      Flags.MUTE_MEMBERS,
+      Flags.DEAFEN_MEMBERS,
+      Flags.MOVE_MEMBERS,
+      Flags.REQUEST_TO_SPEAK,
+      Flags.PRIORITY_SPEAKER,
+    ]);
+
+    const RoleD = new Permissions([
+      Flags.VIEW_CHANNEL,
+      Flags.CHANGE_NICKNAME,
+      Flags.MANAGE_NICKNAMES,
+      Flags.KICK_MEMBERS,
+      Flags.BAN_MEMBERS,
+
+      Flags.SEND_MESSAGES,
+      Flags.MANAGE_THREADS,
+      Flags.USE_PUBLIC_THREADS,
+      Flags.USE_PRIVATE_THREADS,
+
+      Flags.EMBED_LINKS,
+      Flags.ATTACH_FILES,
+      Flags.ADD_REACTIONS,
+      Flags.USE_EXTERNAL_EMOJIS,
+      Flags.USE_EXTERNAL_STICKERS,
+
+      Flags.READ_MESSAGE_HISTORY,
+      Flags.USE_APPLICATION_COMMANDS,
+
+      Flags.CONNECT,
+      Flags.SPEAK,
+      Flags.STREAM,
+      Flags.USE_VAD,
+      Flags.MUTE_MEMBERS,
+      Flags.DEAFEN_MEMBERS,
+      Flags.MOVE_MEMBERS,
+      Flags.REQUEST_TO_SPEAK,
+      Flags.PRIORITY_SPEAKER,
+
+      Flags.MANAGE_CHANNELS,
+      Flags.MANAGE_ROLES,
+      Flags.MANAGE_EMOJIS_AND_STICKERS,
+      Flags.VIEW_AUDIT_LOG,
+      Flags.MANAGE_WEBHOOKS,
+      Flags.MANAGE_GUILD,
+
+      Flags.MENTION_EVERYONE,
+      Flags.SEND_TTS_MESSAGES,
+    ]);
+
+    const RoleV = new Permissions([
+      Flags.VIEW_CHANNEL,
+
+      Flags.READ_MESSAGE_HISTORY,
+
+      Flags.CONNECT,
+      Flags.SPEAK,
+      Flags.STREAM,
+      Flags.USE_VAD,
+    ]);
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.TextReadOnly}`, TextReadOnly.toArray());
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.TextWrite}`, WriteOnly.toArray());
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.C}`, RoleC.toArray());
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.D}`, RoleD.toArray());
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.A}`, RoleA.toArray());
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.V}`, RoleV.toArray());
   }
 
   private async buildRoles(
@@ -539,19 +713,27 @@ export class OraculumService implements OnApplicationBootstrap {
     try {
       this.logger.debug('buildRoles');
 
-      for (const role of this.discordCore.roles) {
-        let discordRole = guild.roles.cache.find(r => r.name === role.name);
-
+      for (const [roleName, role] of Object.entries(this.oraculumCore.roles)) {
+        let discordRole = guild.roles.cache.find(r => r.name === roleName);
         if (!discordRole) {
+
+          const permissions = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.ROLE}:${roleName}:allow`) as PermissionString[];
+          if (!permissions) {
+            throw new NotFoundException(`Permissions ${DISCORD_REDIS_KEYS.ROLE}:${roleName} not found!`);
+          }
+
           discordRole = await guild.roles.create({
-            name: role.name,
+            name: roleName,
             position: role.position,
             mentionable: role.mentionable,
-            permissions: role.permissions.allow,
+            permissions: new Permissions(permissions),
           });
-        }
 
-        this.discordCore[role.name] = discordRole;
+          await this.redisService.set(`${DISCORD_REDIS_KEYS.ROLE}:${roleName}`, discordRole.id);
+
+          this.oraculumCore.roles[roleName].id = discordRole.id;
+          this.oraculumCore.roles[roleName].permissions = new Permissions(permissions);
+        }
       }
     } catch (errorOrException) {
       this.logger.log(`buildRoles: ${errorOrException}`);
@@ -564,30 +746,30 @@ export class OraculumService implements OnApplicationBootstrap {
     try {
       this.logger.debug('buildChannels');
 
-      for (const channel of this.discordCore.channels) {
-        let guildChannel = guild.channels.cache.find(c => c.name.toLowerCase() === channel.name);
+      for (const [channelName, channel] of Object.entries(this.oraculumCore.channels)) {
+        let guildChannel = guild.channels.cache.find(c => c.name.toLowerCase() === channelName);
 
         if (!guildChannel) {
-          this.logger.warn(`Channel ${channel.name} not found. Creating...`);
+          this.logger.warn(`Channel ${channelName} not found. Creating...`);
           // const options: GuildChannelCreateOptions = { type: channel.type };
-          guildChannel = await guild.channels.create(channel.name,
-            { type: channel.type as unknown as 'GUILD_CATEGORY' }
+          guildChannel = await guild.channels.create(channelName,
+            { type: channel.type }
           );
         }
 
         if (!guildChannel) {
-          throw new NotFoundException(`Channel ${channel.name} not found!`);
+          throw new NotFoundException(`Channel ${channelName} not found!`);
         }
 
-        await this.redisService.set(`discord:channel:${guildChannel.name.toLowerCase()}`, guildChannel.id);
+        await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}:${channelName}`, guildChannel.id);
+        this.oraculumCore.channels[channelName].id = guildChannel.id;
+        this.oraculumCore.channels[channelName].channel = guildChannel;
 
-        if (guildChannel.name.toLowerCase() === 'atlas') {
-          await this.redisService.sadd('discord:mirror', guildChannel.id);
+        if (channel.mirror) {
+          await this.redisService.sadd(`${DISCORD_REDIS_KEYS.MIRROR}`, guildChannel.id);
         }
 
-        if (guildChannel.name.toLowerCase() === 'files') {
-          await this.redisService.sadd('discord:mirror', guildChannel.id);
-
+        if (guildChannel.name.toLowerCase() === this.oraculumCore.channels.files.name) {
           await this.AccountModel
             .find({ is_index: true })
             .cursor()
@@ -603,7 +785,8 @@ export class OraculumService implements OnApplicationBootstrap {
                 if (fileChannel) return;
 
                 if (!fileChannel && !AccountFile.oraculum_id) {
-                  fileChannel = await guild.channels.cache.find(file => file.name.toLowerCase() === AccountFile.discord_id) as TextChannel;
+                  fileChannel = await guild.channels.cache
+                    .find(file => file.name.toLowerCase() === AccountFile.discord_id) as TextChannel;
                 }
 
                 if (!fileChannel) {
@@ -627,12 +810,16 @@ export class OraculumService implements OnApplicationBootstrap {
             });
         }
 
-        if (guildChannel.name.toLowerCase() === 'oraculum') {
-          await this.redisService.sadd('discord:mirror', guildChannel.id);
+        if (guildChannel.name.toLowerCase() === this.oraculumCore.channels.oraculum?.name) {
           /**
            * Create channel for every user in
            * ORACULUM network with correct access
            */
+          const permissions = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.TextWrite}`)  as PermissionString[];
+          if (!permissions) {
+            this.logger.error(`Permissions ${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.TextWrite} for Oraculum subchannels not found!`);
+          }
+
           await this.KeysModel
             .find({ tags: 'oracle' })
             .cursor()
@@ -656,39 +843,41 @@ export class OraculumService implements OnApplicationBootstrap {
                 await oraculumChannel.lockPermissions();
 
                 await oraculumChannel.permissionOverwrites.edit(
-                  user, this.discordCore.clearance.write.permissionsOverwrite
+                  user, new Permissions(permissions).serialize()
                 );
 
-                await this.redisService.set(`discord:channel:${oraculumChannel.name.toLowerCase()}`, oraculumChannel.id);
+                await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}#${oraculumChannel.name.toLowerCase()}`, oraculumChannel.id);
               } catch (errorOrException) {
                 this.logger.log(`${hex}: ${errorOrException}`);
               }
             });
-
-          continue;
         }
 
-        if (channel.channels && channel.channels.length) {
-          for (const subChannel of channel.channels) {
-            const guildSubChannel = guild.channels.cache.find(c => c.name.toLowerCase() === subChannel.name);
+        if (channel.channels && Object.keys(channel.channels).length) {
+          for (const [subChannelName, subChannel] of Object.entries(channel.channels)) {
+            let guildSubChannel = guild.channels.cache.find(c => c.name.toLowerCase() === subChannelName);
 
-            if (guildChannel.name.toLowerCase() === 'logs') {
-              if (guildSubChannel.name.toLowerCase() === 'ingress') {
-                this.discordCore.logs.ingress = await this.client.channels.fetch(guildSubChannel.id) as TextChannel;
-              } else if (guildSubChannel.name.toLowerCase() === 'egress') {
-                this.discordCore.logs.egress = await this.client.channels.fetch(guildSubChannel.id) as TextChannel;
-              } else if (guildSubChannel.name.toLowerCase() === 'regress') {
-                this.discordCore.logs.regress = await this.client.channels.fetch(guildSubChannel.id) as TextChannel;
-              }
+            if (guildChannel.name.toLowerCase() === this.oraculumCore.channels.logs?.name) {
+              this.oraculumCore.channels.logs.channels[subChannelName].channel = await this.client.channels.fetch(guildSubChannel.id) as TextChannel
+              await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}:${subChannelName}`, guildSubChannel.id);
             }
 
             if (!guildSubChannel) {
-              this.logger.warn(`Channel ${subChannel.name} not found. Creating...`);
+              this.logger.warn(`Channel ${subChannelName} not found. Creating...`);
 
-              await guild.channels.create(subChannel.name, {
+              guildSubChannel = await guild.channels.create(subChannelName, {
                 type: subChannel.type as unknown as 'GUILD_VOICE' | 'GUILD_TEXT',
                 parent: guildChannel.id
               });
+
+              if (!guildSubChannel) {
+                this.logger.error(`Channel ${subChannelName} was not created`);
+              } else {
+                await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}#${guildSubChannel.name.toLowerCase()}`, guildSubChannel.id);
+
+                this.oraculumCore.channels[channelName].channels[subChannelName].id = guildChannel.id;
+                this.oraculumCore.channels[channelName].channels[subChannelName].channel = guildChannel;
+              }
             }
           }
         }
@@ -713,7 +902,7 @@ export class OraculumService implements OnApplicationBootstrap {
     this.rest.setToken(key.token);
 
     await this.rest.put(
-      Routes.applicationGuildCommands(DISCORD_UNIT7_ID, DISCORD_CORE_ID),
+      Routes.applicationGuildCommands(ORACULUM_UNIT7_ID, ORACULUM_CORE_ID),
       { body: this.commandSlash },
     );
 

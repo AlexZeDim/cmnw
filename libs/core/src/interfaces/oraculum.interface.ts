@@ -1,7 +1,177 @@
 import { Account, Entity } from '@app/mongo';
 import { ENTITY_NAME } from '@app/core/constants';
 
-export class IAccount implements Pick<Account, 'discord_id' | 'battle_tag' | 'cryptonym' | 'clearance' | 'is_index'> {
+export class OraculumChannel {
+  id?: string;
+  readonly name: string;
+  readonly type: 'GUILD_CATEGORY' | 'GUILD_TEXT' | 'GUILD_VOICE';
+  readonly mirror: boolean;
+  channel?: any;
+  channels?: OraculumChannels;
+}
+
+class OraculumChannels {
+  [key: string]: OraculumChannel;
+}
+
+export class OraculumCore {
+
+  coreId: string;
+
+  coreName: string;
+
+  roles = {
+    A: {
+      id: undefined,
+      name: 'A',
+      mentionable: false,
+      position: 3,
+      permissions: undefined,
+    },
+    D: {
+      id: undefined,
+      name: 'D',
+      mentionable: false,
+      position: 2,
+      permissions: undefined,
+    },
+    C: {
+      id: undefined,
+      name: 'C',
+      mentionable: false,
+      position: 1,
+      permissions: undefined,
+    },
+    V: {
+      id: undefined,
+      name: 'V',
+      mentionable: false,
+      position: 4,
+      permissions: undefined,
+    }
+  };
+
+  channels: OraculumChannels = {
+    communication: {
+      id: undefined,
+      name: 'communication',
+      type: 'GUILD_CATEGORY',
+      channel: undefined,
+      mirror: false,
+      channels: {
+        ['📞']: {
+          id: undefined,
+          name: '📞',
+          type: 'GUILD_VOICE',
+          channel: undefined,
+          mirror: false,
+        },
+        ['🏴']: {
+          id: undefined,
+          name: '🏴',
+          type: 'GUILD_VOICE',
+          channel: undefined,
+          mirror: false,
+        },
+        ['📠']: {
+          id: undefined,
+          name: '📠',
+          type: 'GUILD_VOICE',
+          channel: undefined,
+          mirror: false,
+        },
+        ['🗼']: {
+          id: undefined,
+          name: '🗼',
+          type: 'GUILD_VOICE',
+          channel: undefined,
+          mirror: false,
+        },
+      },
+    },
+    logs: {
+      id: undefined,
+      name: 'logs',
+      type: 'GUILD_CATEGORY',
+      channel: undefined,
+      mirror: false,
+      channels: {
+        ingress: {
+          id: undefined,
+          name: 'ingress',
+          type: 'GUILD_TEXT',
+          channel: undefined,
+          mirror: false,
+        },
+        egress: {
+          id: undefined,
+          name: 'egress',
+          type: 'GUILD_TEXT',
+          channel: undefined,
+          mirror: false,
+        },
+        regress: {
+          id: undefined,
+          name: 'regress',
+          type: 'GUILD_TEXT',
+          channel: undefined,
+          mirror: false,
+        }
+      },
+    },
+    files: {
+      id: undefined,
+      name: 'files',
+      type: 'GUILD_CATEGORY',
+      channel: undefined,
+      mirror: true,
+    },
+    oraculum: {
+      id: undefined,
+      name: 'oraculum',
+      type: 'GUILD_CATEGORY',
+      channel: undefined,
+      mirror: false,
+    },
+    atlas: {
+      id: undefined,
+      name: 'atlas',
+      type: 'GUILD_CATEGORY',
+      channel: undefined,
+      mirror: true,
+    },
+    operations: {
+      id: undefined,
+      name: 'operations',
+      type: 'GUILD_CATEGORY',
+      channel: undefined,
+      mirror: false,
+      channels: {
+        flow: {
+          id: undefined,
+          name: 'flow',
+          type: 'GUILD_TEXT',
+          channel: undefined,
+          mirror: false,
+        },
+        board: {
+          id: undefined,
+          name: 'board',
+          type: 'GUILD_TEXT',
+          channel: undefined,
+          mirror: false,
+        },
+      }
+    },
+  };
+
+  constructor(core: Pick<OraculumCore, 'coreId' | 'coreName'>) {
+    Object.assign(this, core);
+  }
+}
+
+export class IAccount implements
+  Pick<Account, 'discord_id' | 'battle_tag' | 'cryptonym' | 'clearance' | 'is_index'> {
   readonly discord_id: string;
 
   readonly battle_tag: string;
@@ -15,7 +185,8 @@ export class IAccount implements Pick<Account, 'discord_id' | 'battle_tag' | 'cr
   readonly is_index: boolean;
 }
 
-export class IEntity implements Pick<Entity, 'entity' | 'name' | 'languages' | 'tags'> {
+export class IEntity implements
+  Pick<Entity, 'entity' | 'name' | 'languages' | 'tags'> {
   readonly entity: ENTITY_NAME;
 
   readonly name: string;

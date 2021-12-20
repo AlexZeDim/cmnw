@@ -16,7 +16,8 @@ import { IQMessages, OracleCommandInterface } from './interface';
 import {
   DISCORD_REDIS_KEYS,
   EXIT_CODES,
-  messagesQueue, ORACULUM_CLEARANCE,
+  messagesQueue,
+  ORACULUM_CLEARANCE,
   ORACULUM_CORE_ID,
 } from '@app/core';
 
@@ -91,7 +92,8 @@ export class OracleService implements OnApplicationBootstrap {
   }
 
   @BullQueueEventProcess("completed")
-  public async process(job: Job<IQMessages, boolean>): Promise<void> {
+  public async test(job: Job<IQMessages, boolean>): Promise<void> {
+    console.log('T');
     this.logger.log(job);
   }
 

@@ -887,7 +887,6 @@ export class OraculumService implements OnApplicationBootstrap {
             if (!guildSubChannel) {
               this.logger.error(`Channel ${subChannelName} was not created`);
             } else {
-              console.log(`${DISCORD_REDIS_KEYS.CHANNEL}:${guildSubChannel.name.toLowerCase()}`, guildSubChannel.id)
               await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}:${guildSubChannel.name.toLowerCase()}`, guildSubChannel.id);
 
               this.oraculumCore.channels[channelName].channels[subChannelName].id = guildChannel.id;

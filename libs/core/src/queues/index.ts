@@ -5,4 +5,3 @@ export { itemsQueue } from './items.queue';
 export { guildsQueue } from './guilds.queue';
 export { pricingQueue } from './pricing.queue';
 export { valuationsQueue } from './valuations.queue';
-export { messagesQueue } from './messages.queue';

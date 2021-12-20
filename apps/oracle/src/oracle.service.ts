@@ -7,25 +7,32 @@ import {
 } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account, Key } from '@app/mongo';
+import { Account, Key, Message } from '@app/mongo';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { Join } from './commands/join';
-import { BullQueueEventProcess, BullQueueEvents, BullQueueInject } from '@anchan828/nest-bullmq';
-import { Job, Queue } from 'bullmq';
-import { IQMessages, OracleCommandInterface } from './interface';
+import { OracleCommandInterface } from './interface';
+import path from 'path';
+import fs from 'fs-extra';
+import { Normalizer } from '@nlpjs/core';
+import { removeEmojis } from '@nlpjs/emoji';
+import { NlpManager, Language } from 'node-nlp';
 import {
-  DISCORD_REDIS_KEYS,
+  CLEARANCE_LEVEL, delay,
+  DISCORD_REDIS_KEYS, ENTITY_NAME,
   EXIT_CODES,
-  messagesQueue,
+  IGuessLanguage,
+  INerProcess,
   ORACULUM_CLEARANCE,
   ORACULUM_CORE_ID,
+  SOURCE_TYPE,
 } from '@app/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
+
 
 @Injectable()
-@BullQueueEvents({ queueName: messagesQueue.name })
 export class OracleService implements OnApplicationBootstrap {
   private client: Discord.Client;
 
@@ -37,6 +44,17 @@ export class OracleService implements OnApplicationBootstrap {
 
   private channel: Discord.Channel;
 
+  private manager = new NlpManager({
+    languages: ['ru', 'en'],
+    threshold: 0.8,
+    nlp: { log: true },
+    forceNER: true
+  });
+
+  private normalizer = new Normalizer();
+
+  private language = new Language();
+
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
@@ -44,8 +62,8 @@ export class OracleService implements OnApplicationBootstrap {
     private readonly KeysModel: Model<Key>,
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
-    @BullQueueInject(messagesQueue.name)
-    private readonly queue: Queue<IQMessages, boolean>,
+    @InjectModel(Message.name)
+    private readonly MessagesModel: Model<Message>,
   ) { }
 
   private readonly logger = new Logger(
@@ -89,12 +107,6 @@ export class OracleService implements OnApplicationBootstrap {
     );
 
     await this.oracle();
-  }
-
-  @BullQueueEventProcess("completed")
-  public async test(job: Job<IQMessages, boolean>): Promise<void> {
-    console.log('T');
-    this.logger.log(job);
   }
 
   private async getKey(account: string): Promise<void> {
@@ -159,52 +171,10 @@ export class OracleService implements OnApplicationBootstrap {
                 await command.execute(message, args, this.client, this.redisService);
               }
             } else {
-              await this.queue.add(
-                message.id,
-                {
-                  message: message.content,
-                  author: {
-                    id: message.author.id,
-                    username: message.author.username,
-                    discriminator: message.author.discriminator,
-                  },
-                  channel: {
-                    id: message.channel.id,
-                    name: message.channel.name
-                  },
-                  guild: {
-                    id: message.guild.id,
-                    name: message.guild.name
-                  }
-                },
-                {
-                  jobId: message.id
-                }
-              );
+              await this.analyzeText(message);
             }
           } else {
-            await this.queue.add(
-              message.id,
-              {
-                message: message.content,
-                author: {
-                  id: message.author.id,
-                  username: message.author.username,
-                  discriminator: message.author.discriminator,
-                },
-                channel: {
-                  id: message.channel.id,
-                  name: message.channel.name
-                },
-                guild: {
-                  id: message.guild.id,
-                  name: message.guild.name
-                }
-              },
-              {
-                jobId: message.id
-              }
-            );
+            await this.analyzeText(message);
           }
         } catch (errorException) {
           this.logger.error(`Error: ${errorException}`);
@@ -218,6 +188,166 @@ export class OracleService implements OnApplicationBootstrap {
 
     } catch (errorException) {
       this.logger.error(`bot: ${errorException}`);
+    }
+  }
+
+  private async loadNerEngine(): Promise<void> {
+    try {
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
+
+      const corpusPath = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
+      const corpusExists = fs.existsSync(corpusPath);
+
+      if (!corpusExists) {
+        throw new ServiceUnavailableException(`Corpus from: ${corpusPath} not found!`);
+      }
+
+      await this.manager.load(corpusPath);
+    } catch (errorOrException) {
+      this.logger.error(`loadNerEngine: ${errorOrException}`);
+    }
+  }
+
+  private async analyzeText(
+    message: Discord.Message,
+  ): Promise<void> {
+    try {
+      await this.loadNerEngine();
+
+      const emojisStage: string = removeEmojis(message);
+
+      const normalizeStage: string = this.normalizer.normalize(emojisStage);
+
+      const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
+
+      const analyzeText: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
+
+      const user: Discord.User = message.author;
+
+      if (analyzeText.entities.length > 0) {
+        const context = await this.sendMarkdownText(message, analyzeText);
+
+        const discordMessage = new this.MessagesModel({
+          context,
+          clearance: [CLEARANCE_LEVEL.RED, CLEARANCE_LEVEL.A, CLEARANCE_LEVEL.ORACULUM],
+          source: {
+            message_type: SOURCE_TYPE.DiscordText,
+            discord_author: `${user.username}#${user.discriminator}`,
+            discord_author_id: user.id,
+            discord_channel_id: message.channel.id,
+            discord_channel: message.channel.name
+          },
+          tags: [
+            user.username,
+            message.channel.name
+          ],
+        });
+
+        analyzeText.entities.forEach((entity) =>
+          discordMessage.tags.addToSet(entity.option.toLowerCase())
+        );
+
+        if (message.guild) {
+          discordMessage.tags.addToSet(message.guild.name);
+          discordMessage.source.discord_server = message.guild.name;
+          discordMessage.source.discord_server_id = message.guild.id;
+        }
+
+        await discordMessage.save();
+      }
+
+      await this.createUser(user);
+    } catch (errorException) {
+      this.logger.error(`analyzeText: ${errorException}`);
+    }
+  }
+
+  private async sendMarkdownText(
+    message: Discord.Message,
+    analyzeText: INerProcess
+  ): Promise<string> {
+    try {
+      let text: string = analyzeText.utterance;
+
+      const author = `# Author: ${message.author.username}#${message.author.discriminator} (${message.author.id})\n`;
+      const channel = `# Channel: ${message.channel.name} (${message.channel.id})\n`;
+      const guild = `# Server: ${message.guild.name} (${message.guild.id})\n`;
+
+      analyzeText.entities.reverse().forEach(
+        entity => text = `${text.substring(0, entity.start)}[${entity.utteranceText}](${entity.entity})${text.substring(entity.end + 1)}`
+      );
+
+      text = `\`\`\`md\n${author}${channel}${guild}${text}\n\`\`\``;
+
+      // FIXME post message larger then
+      if (text.length < 2000) {
+        const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
+
+        if (flowId) {
+            const flowChannel = await this.client.channels.cache.get(flowId) as Discord.TextChannel;
+            if (flowChannel) await flowChannel.send(text);
+          }
+
+          await lastValueFrom(
+            from(analyzeText.entities).pipe(
+              mergeMap(async (entity) => {
+                if (entity.entity === ENTITY_NAME.Person) {
+                  const account = await this.AccountModel.findOne({ tags: entity.option });
+                  if (account && account.oraculum_id) {
+                    const fileChannel = await this.client.channels.cache.get(account.oraculum_id) as Discord.TextChannel;
+                    if (fileChannel) await fileChannel.send(text);
+                  }
+                }
+              })
+            )
+          );
+      }
+
+      return text;
+    } catch (errorException) {
+      this.logger.error(`sendMarkdownText ${errorException}`);
+    }
+  }
+
+  /**
+   * Add every new account to database
+   * and if we had a battle net connection
+   */
+  private async createUser(user: Discord.User): Promise<void> {
+    try {
+      const accountExists = await this.AccountModel.findOne({ discord_id: user.id });
+      if (!accountExists) return;
+
+      await delay(1);
+      const userProfile = await user.fetchProfile();
+
+      const account = new this.AccountModel({
+        discord_id: user.id,
+        nickname: user.username,
+        tags: [user.username],
+      });
+
+      if (userProfile.connections.size > 0) {
+        for (const connection of userProfile.connections.values()) {
+          if (connection.type === 'battlenet') {
+            const battle_tag = connection.name;
+            const [beforeHashTag] = connection.name.split('#');
+            const tags: Set<string> = new Set();
+
+            tags.add(beforeHashTag);
+            tags.add(user.username);
+
+            account.battle_tag = battle_tag;
+            account.nickname = beforeHashTag;
+            account.tags = Array.from(tags);
+          }
+        }
+      }
+
+      await account.save();
+    } catch (errorException) {
+      this.logger.error(`createUser ${errorException}`);
     }
   }
 

@@ -4,8 +4,8 @@ import { CLEARANCE_LEVEL, SOURCE_TYPE } from '@app/core';
 
 @Schema()
 export class Source {
-  @Prop({ type: String, enum: SOURCE_TYPE })
-  type: string;
+  @Prop({ type: String, enum: SOURCE_TYPE, default: SOURCE_TYPE.DiscordText })
+  message_type: SOURCE_TYPE;
 
   @Prop({ type: String })
   author: string;

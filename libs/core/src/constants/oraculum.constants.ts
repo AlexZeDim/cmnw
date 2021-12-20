@@ -23,6 +23,7 @@ export enum ORACULUM_COMMANDS {
 }
 
 export enum ORACULUM_CLEARANCE {
+  Commands = 'COMMANDS',
   TextReadOnly = 'TEXT_READ_ONLY',
   TextWrite = 'TEXT_WRITE',
   A = 'A',

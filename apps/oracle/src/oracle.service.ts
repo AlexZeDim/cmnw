@@ -10,12 +10,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Account, Key } from '@app/mongo';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { Join } from './commands/join';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { Queue } from 'bullmq';
+import { BullQueueEventProcess, BullQueueEvents, BullQueueInject } from '@anchan828/nest-bullmq';
+import { Job, Queue } from 'bullmq';
 import { IQMessages, OracleCommandInterface } from './interface';
 import {
+  DISCORD_REDIS_KEYS,
   EXIT_CODES,
-  messagesQueue,
+  messagesQueue, ORACULUM_CLEARANCE,
   ORACULUM_CORE_ID,
 } from '@app/core';
 
@@ -23,6 +24,7 @@ import {
 import Discord from 'v11-discord.js';
 
 @Injectable()
+@BullQueueEvents({ queueName: messagesQueue.name })
 export class OracleService implements OnApplicationBootstrap {
   private client: Discord.Client;
 
@@ -42,7 +44,7 @@ export class OracleService implements OnApplicationBootstrap {
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
     @BullQueueInject(messagesQueue.name)
-    private readonly queue: Queue<IQMessages, void>,
+    private readonly queue: Queue<IQMessages, boolean>,
   ) { }
 
   private readonly logger = new Logger(
@@ -88,6 +90,11 @@ export class OracleService implements OnApplicationBootstrap {
     await this.oracle();
   }
 
+  @BullQueueEventProcess("completed")
+  public async process(job: Job<IQMessages, boolean>): Promise<void> {
+    this.logger.log(job);
+  }
+
   private async getKey(account: string): Promise<void> {
     this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', account ] } });
     if (!this.key) throw new ServiceUnavailableException('Available keys not found!');
@@ -127,19 +134,19 @@ export class OracleService implements OnApplicationBootstrap {
             const mirror = await this.redisService.sismember('discord:mirror', message.channel.parentID);
 
             // mirror messages only for discord clearance channels and for M oracle
-            if (!!mirror && Array.from(this.key.tags).includes('management')) {
+            if (mirror && Array.from(this.key.tags).includes('management')) {
               await message.delete();
               await message.channel.send(message.content);
             } else if (this.channel && message.channel.id === this.channel.id) {
               // FIXME execute command only for clearance personal redis
-              const account = await this.AccountModel.findOne({ discord_id: message.author.id }).lean();
+              const commandClearance = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.Commands}`);
 
-              if (account && account.clearance.includes('a')) {
+              if (commandClearance.includes(message.author.id)) {
                 const [commandName, args] = message.content.split(/(?<=^\S+)\s/);
 
                 const command: OracleCommandInterface =
-                  this.client.commands.get(commandName) ||
-                  this.client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+                  this.commands.get(commandName) ||
+                  this.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
                 if (!command) return;
 
@@ -153,8 +160,20 @@ export class OracleService implements OnApplicationBootstrap {
               await this.queue.add(
                 message.id,
                 {
-                  client: this.client,
-                  message: message,
+                  message: message.content,
+                  author: {
+                    id: message.author.id,
+                    username: message.author.username,
+                    discriminator: message.author.discriminator,
+                  },
+                  channel: {
+                    id: message.channel.id,
+                    name: message.channel.name
+                  },
+                  guild: {
+                    id: message.guild.id,
+                    name: message.guild.name
+                  }
                 },
                 {
                   jobId: message.id
@@ -165,8 +184,20 @@ export class OracleService implements OnApplicationBootstrap {
             await this.queue.add(
               message.id,
               {
-                client: this.client,
-                message: message,
+                message: message.content,
+                author: {
+                  id: message.author.id,
+                  username: message.author.username,
+                  discriminator: message.author.discriminator,
+                },
+                channel: {
+                  id: message.channel.id,
+                  name: message.channel.name
+                },
+                guild: {
+                  id: message.guild.id,
+                  name: message.guild.name
+                }
               },
               {
                 jobId: message.id

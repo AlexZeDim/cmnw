@@ -1,7 +1,9 @@
 import { Logger, ServiceUnavailableException } from '@nestjs/common';
-import { BullWorker } from '@anchan828/nest-bullmq';
+import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import {
-  CLEARANCE_LEVEL, delay, DISCORD_REDIS_KEYS,
+  CLEARANCE_LEVEL,
+  delay,
+  DISCORD_REDIS_KEYS,
   ENTITY_NAME,
   IGuessLanguage,
   INerProcess,
@@ -50,14 +52,15 @@ export class OracleWorker {
     private readonly MessagesModel: Model<Message>,
   ) { }
 
-  private async process(job: Job<IQMessages>): Promise<void> {
+  @BullWorkerProcess(messagesQueue.workerOptions)
+  private async process(job: Job<IQMessages, boolean>): Promise<boolean> {
     try {
       await this.loadNerEngine();
       await job.updateProgress(1);
 
-      const { client, message }: IQMessages = { ...job.data };
+      const { message, author, channel, guild }: IQMessages = { ...job.data };
 
-      const emojisStage: string = removeEmojis(message.content);
+      const emojisStage: string = removeEmojis(message);
       await job.updateProgress(5);
 
       const normalizeStage: string = this.normalizer.normalize(emojisStage);
@@ -66,53 +69,47 @@ export class OracleWorker {
       const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
       await job.updateProgress(15);
 
-      const user = message.author;
-
       const analyzeText: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
       await job.updateProgress(50);
 
       if (analyzeText.entities.length > 0) {
-        const context = await this.sendMarkdownText(client, message, analyzeText);
-
-        const tags: Set<string> = new Set([
-          user.username,
-          message.channel.name
-        ]);
-
-        const source: Partial<Source> = {
-          type: SOURCE_TYPE.DiscordText,
-          discord_author: user.username,
-          discord_author_id: user.id,
-          discord_channel_id: message.channel.id,
-          discord_channel: message.channel.name
-        };
-
-        analyzeText.entities.forEach((entity) =>
-          tags.add(entity.option.toLowerCase()
-          ));
-
-        if (message.channel.guild) {
-          tags.add(message.channel.guild.name);
-          source.discord_server = message.channel.guild.name;
-          source.discord_server_id = message.channel.guild.id;
-        }
+        const context = await this.sendMarkdownText({ message, author, channel, guild }, analyzeText);
 
         const discordMessage = new this.MessagesModel({
           context,
           clearance: [CLEARANCE_LEVEL.RED, CLEARANCE_LEVEL.A, CLEARANCE_LEVEL.ORACULUM],
-          source,
-          tags: Array.from(tags),
+          source: {
+            message_type: SOURCE_TYPE.DiscordText,
+            discord_author: `${author.username}#${author.discriminator}`,
+            discord_author_id: author.id,
+            discord_channel_id: channel.id,
+            discord_channel: channel.name
+          },
+          tags: [
+            author.username,
+            channel.name
+          ],
         });
 
-        await discordMessage.save();
-        await job.updateProgress(75);
-      }
+        analyzeText.entities.forEach((entity) =>
+          discordMessage.tags.addToSet(entity.option.toLowerCase())
+        );
 
-      await this.createUser(user);
-      await job.updateProgress(100);
+        if (guild) {
+          discordMessage.tags.addToSet(guild.name);
+          discordMessage.source.discord_server = guild.name;
+          discordMessage.source.discord_server_id = guild.id;
+        }
+
+        await discordMessage.save();
+        await job.updateProgress(100);
+        return true;
+      }
+      return false;
     } catch (errorException) {
       await job.log(errorException);
       this.logger.error(`analyze ${errorException}`);
+      return false;
     }
   }
 
@@ -135,8 +132,7 @@ export class OracleWorker {
   }
 
   private async sendMarkdownText(
-    client: Discord.Client,
-    message: Discord.Message,
+    message: IQMessages,
     analyzeText: INerProcess
   ): Promise<string> {
     try {
@@ -156,7 +152,9 @@ export class OracleWorker {
       if (text.length < 2000) {
         const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
 
-        if (flowId) {
+        console.log(flowId);
+        console.log(text);
+/*        if (flowId) {
           const flowChannel = await client.channels.get(flowId) as Discord.TextChannel;
           if (flowChannel) await flowChannel.send(text);
         }
@@ -173,7 +171,7 @@ export class OracleWorker {
               }
             })
           )
-        );
+        );*/
       }
 
       return text;
@@ -184,6 +182,7 @@ export class OracleWorker {
   /**
    * Add every new account to database
    * and if we had a battle net connection
+   * TODO return on decorator
    */
   private async createUser(user: Discord.User): Promise<void> {
     try {

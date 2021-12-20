@@ -67,7 +67,7 @@ services:
     build: ./
     image: conglomerat
     restart: always
-    container_name: oracle-1
+    container_name: oracle-2
     links:
       - mongo
       - redis
@@ -85,7 +85,7 @@ services:
     build: ./
     image: conglomerat
     restart: always
-    container_name: oracle-1
+    container_name: oracle-3
     links:
       - mongo
       - redis

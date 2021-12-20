@@ -412,7 +412,9 @@ export class OraculumService implements OnApplicationBootstrap {
 
     this.client.on('inviteCreate', async (invite: Invite) => {
       try {
-        if (invite.inviter.id !== this.client.user.id) {
+        // FIXME https://discord.gg/KMqRbte
+        if (invite.inviter?.id !== this.client.user.id) {
+          this.logger.log('Recreate invite');
           await invite.delete('Recreate invite');
 
           const inviteOptions = {
@@ -705,6 +707,13 @@ export class OraculumService implements OnApplicationBootstrap {
     await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.A}`, RoleA.toArray());
 
     await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.V}`, RoleV.toArray());
+
+    const commandClearance = await this.AccountModel
+      .find({ clearance: ORACULUM_CLEARANCE.A.toLowerCase() })
+      .select('discord_id')
+      .lean();
+
+    await this.redisService.sadd(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.Commands}`, Array.from(commandClearance).map((acc) => acc.discord_id));
   }
 
   private async buildRoles(
@@ -717,7 +726,7 @@ export class OraculumService implements OnApplicationBootstrap {
         let discordRole = guild.roles.cache.find(r => r.name === roleName);
         if (!discordRole) {
 
-          const permissions = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.ROLE}:${roleName}:allow`) as PermissionString[];
+          const permissions = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.ROLE}:${roleName}`) as PermissionString[];
           if (!permissions) {
             throw new NotFoundException(`Permissions ${DISCORD_REDIS_KEYS.ROLE}:${roleName} not found!`);
           }
@@ -779,13 +788,14 @@ export class OraculumService implements OnApplicationBootstrap {
                 let fileChannel: TextChannel;
 
                 if (AccountFile.oraculum_id) {
-                  fileChannel = await guild.channels.fetch(AccountFile.oraculum_id) as TextChannel;
+                  fileChannel = await guild.channels.cache.get(AccountFile.oraculum_id) as TextChannel;
                 }
 
                 if (fileChannel) return;
 
+                // if channel nd oraculum id not found try to find by name
                 if (!fileChannel && !AccountFile.oraculum_id) {
-                  fileChannel = await guild.channels.cache
+                  fileChannel = guild.channels.cache
                     .find(file => file.name.toLowerCase() === AccountFile.discord_id) as TextChannel;
                 }
 
@@ -805,7 +815,7 @@ export class OraculumService implements OnApplicationBootstrap {
                 AccountFile.oraculum_id = fileChannel.id;
                 await AccountFile.save();
               } catch (errorOrException) {
-                this.logger.log(`${AccountFile.discord_id}: ${errorOrException}`);
+                this.logger.log(`${DISCORD_REDIS_KEYS.CHANNEL}: account ${AccountFile.discord_id} ${errorOrException}`);
               }
             });
         }
@@ -827,6 +837,11 @@ export class OraculumService implements OnApplicationBootstrap {
               const hex = BigInt(Oracule._id).toString(16).toLowerCase();
 
               try {
+                const user = await guild.members.cache.get(Oracule._id);
+                if (!user) {
+                  throw new NotFoundException("not found or haven't been invited yet");
+                }
+
                 let oraculumChannel = await guild.channels.cache.find(ora => ora.name.toLowerCase() === hex) as TextChannel;
 
                 await delay(1.5);
@@ -838,17 +853,15 @@ export class OraculumService implements OnApplicationBootstrap {
                   }) as TextChannel;
                 }
 
-                const user = await guild.members.fetch(Oracule._id);
-
                 await oraculumChannel.lockPermissions();
 
                 await oraculumChannel.permissionOverwrites.edit(
                   user, new Permissions(permissions).serialize()
                 );
 
-                await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}#${oraculumChannel.name.toLowerCase()}`, oraculumChannel.id);
+                await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}:${oraculumChannel.name.toLowerCase()}`, oraculumChannel.id);
               } catch (errorOrException) {
-                this.logger.log(`${hex}: ${errorOrException}`);
+                this.logger.log(`${DISCORD_REDIS_KEYS.CHANNEL}: oracle ${hex} ${errorOrException}`);
               }
             });
         }
@@ -869,15 +882,16 @@ export class OraculumService implements OnApplicationBootstrap {
                 type: subChannel.type as unknown as 'GUILD_VOICE' | 'GUILD_TEXT',
                 parent: guildChannel.id
               });
+            }
 
-              if (!guildSubChannel) {
-                this.logger.error(`Channel ${subChannelName} was not created`);
-              } else {
-                await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}#${guildSubChannel.name.toLowerCase()}`, guildSubChannel.id);
+            if (!guildSubChannel) {
+              this.logger.error(`Channel ${subChannelName} was not created`);
+            } else {
+              console.log(`${DISCORD_REDIS_KEYS.CHANNEL}:${guildSubChannel.name.toLowerCase()}`, guildSubChannel.id)
+              await this.redisService.set(`${DISCORD_REDIS_KEYS.CHANNEL}:${guildSubChannel.name.toLowerCase()}`, guildSubChannel.id);
 
-                this.oraculumCore.channels[channelName].channels[subChannelName].id = guildChannel.id;
-                this.oraculumCore.channels[channelName].channels[subChannelName].channel = guildChannel;
-              }
+              this.oraculumCore.channels[channelName].channels[subChannelName].id = guildChannel.id;
+              this.oraculumCore.channels[channelName].channels[subChannelName].channel = guildChannel;
             }
           }
         }

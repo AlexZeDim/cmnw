@@ -23,6 +23,14 @@ import { messagesQueue } from '@app/core';
       { name: Message.name, schema: MessagesSchema },
       { name: Entity.name, schema: EntitySchema },
     ]),
+    BullModule.forRoot({
+      options: {
+        connection: {
+          host: redisConfig.host,
+          port: redisConfig.port,
+        },
+      },
+    }),
     BullModule.registerQueue({ queueName: messagesQueue.name, options: messagesQueue.options }),
   ],
   controllers: [],

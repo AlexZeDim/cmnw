@@ -44,6 +44,8 @@ export class OracleService implements OnApplicationBootstrap {
 
   private channel: Discord.Channel;
 
+  private guild: Discord.Guild;
+
   private manager = new NlpManager({
     languages: ['ru', 'en'],
     threshold: 0.8,
@@ -86,11 +88,15 @@ export class OracleService implements OnApplicationBootstrap {
 
     await this.setCommands();
 
+    await this.loadNerEngine();
+
     await this.client.login(this.key.token);
 
     const guild: Discord.Guild | undefined = await this.client.guilds.get(ORACULUM_CORE_ID);
 
     if (!guild) throw new NotFoundException('Discord Core Server not found!');
+
+    this.guild = guild;
 
     await this.getOracleChannel(guild);
 
@@ -213,23 +219,19 @@ export class OracleService implements OnApplicationBootstrap {
     message: Discord.Message,
   ): Promise<void> {
     try {
-      await this.loadNerEngine();
 
-      const emojisStage: string = removeEmojis(message);
-
+      const emojisStage: string = removeEmojis(message.content);
       const normalizeStage: string = this.normalizer.normalize(emojisStage);
-
       const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
-
       const analyzeText: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
 
       const user: Discord.User = message.author;
 
       if (analyzeText.entities.length > 0) {
-        const context = await this.sendMarkdownText(message, analyzeText);
+        await this.sendMarkdownText(message, analyzeText);
 
         const discordMessage = new this.MessagesModel({
-          context,
+          context: message.content,
           clearance: [CLEARANCE_LEVEL.RED, CLEARANCE_LEVEL.A, CLEARANCE_LEVEL.ORACULUM],
           source: {
             message_type: SOURCE_TYPE.DiscordText,
@@ -278,14 +280,14 @@ export class OracleService implements OnApplicationBootstrap {
         entity => text = `${text.substring(0, entity.start)}[${entity.utteranceText}](${entity.entity})${text.substring(entity.end + 1)}`
       );
 
-      text = `\`\`\`md\n${author}${channel}${guild}${text}\n\`\`\``;
+      text = `\`\`\`md\n\n${author}${channel}${guild}${text}\n\`\`\``;
 
       // FIXME post message larger then
       if (text.length < 2000) {
         const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
 
         if (flowId) {
-            const flowChannel = await this.client.channels.cache.get(flowId) as Discord.TextChannel;
+            const flowChannel = await this.guild.channels.get(flowId) as Discord.TextChannel;
             if (flowChannel) await flowChannel.send(text);
           }
 
@@ -295,7 +297,7 @@ export class OracleService implements OnApplicationBootstrap {
                 if (entity.entity === ENTITY_NAME.Person) {
                   const account = await this.AccountModel.findOne({ tags: entity.option });
                   if (account && account.oraculum_id) {
-                    const fileChannel = await this.client.channels.cache.get(account.oraculum_id) as Discord.TextChannel;
+                    const fileChannel = await this.guild.channels.get(account.oraculum_id) as Discord.TextChannel;
                     if (fileChannel) await fileChannel.send(text);
                   }
                 }

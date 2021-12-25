@@ -34,6 +34,12 @@
       ],
       "@app/mongo/*": [
         "libs/mongo/src/*"
+      ],
+      "@app/elastic": [
+        "libs/elastic/src"
+      ],
+      "@app/elastic/*": [
+        "libs/elastic/src/*"
       ]
     }
   }

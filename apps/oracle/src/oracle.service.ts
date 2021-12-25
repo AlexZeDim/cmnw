@@ -16,6 +16,7 @@ import fs from 'fs-extra';
 import { Normalizer } from '@nlpjs/core';
 import { removeEmojis } from '@nlpjs/emoji';
 import { NlpManager, Language } from 'node-nlp';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 import {
   CLEARANCE_LEVEL, delay,
   DISCORD_REDIS_KEYS, ENTITY_NAME,
@@ -29,8 +30,6 @@ import {
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
-import { from, lastValueFrom, mergeMap } from 'rxjs';
-
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -92,13 +91,9 @@ export class OracleService implements OnApplicationBootstrap {
 
     await this.client.login(this.key.token);
 
-    const guild: Discord.Guild | undefined = await this.client.guilds.get(ORACULUM_CORE_ID);
+    await this.loadCoreGuild();
 
-    if (!guild) throw new NotFoundException('Discord Core Server not found!');
-
-    this.guild = guild;
-
-    await this.getOracleChannel(guild);
+    await this.getOracleChannel(this.guild);
 
     this.logger.warn(`Key ${this.key.token} from ${account} has been taken!`);
 
@@ -115,11 +110,30 @@ export class OracleService implements OnApplicationBootstrap {
     await this.oracle();
   }
 
+  /**
+   * @description - Load CORE guild for ORACULUM network
+   * @private
+   */
+  private async loadCoreGuild(): Promise<void> {
+    const guild: Discord.Guild | undefined = await this.client.guilds.get(ORACULUM_CORE_ID);
+
+    if (!guild) throw new NotFoundException('Discord Core Server not found!');
+
+    this.guild = guild;
+  }
+
+  /**
+   * @description - Find selected key in CMNW-DB and initiate oracle
+   * @param account - Search query for selected oracle account in CMNW-DB
+   * @private
+   */
   private async getKey(account: string): Promise<void> {
     this.key = await this.KeysModel.findOne({ tags: { $all: [ 'discord', account ] } });
     if (!this.key) throw new ServiceUnavailableException('Available keys not found!');
 
     this.hexID = BigInt(this.key._id).toString(16);
+
+    await this.redisService.set(`${DISCORD_REDIS_KEYS.SERVER}:${DISCORD_REDIS_KEYS.USER}#${this.key._id}`, this.key._id);
 
     this.key.tags.pull('free');
     this.key.tags.addToSet('taken');
@@ -127,8 +141,12 @@ export class OracleService implements OnApplicationBootstrap {
     await this.key.save();
   }
 
+  /**
+   * @description - Fetch oracule management channel from CORE guild
+   * @param guild - CORE guild discord entity
+   * @private
+   */
   private async getOracleChannel(guild: Discord.Guild): Promise<void> {
-
     this.channel = await guild.channels.find(
       (channel: Discord.Channel) =>
         channel.name && channel.guild.id === ORACULUM_CORE_ID
@@ -138,27 +156,40 @@ export class OracleService implements OnApplicationBootstrap {
     if (!this.channel) this.logger.error(`Channel ${this.hexID} not found!`);
   }
 
+  /**
+   * @description - Oracule Main Thread
+   * @private
+   */
   private async oracle(): Promise<void> {
     try {
 
+      /**
+       * @description Trigger on every message
+       * @param message - Discord.Message0,0
+       */
       this.client.on('message', async (message: Discord.Message) => {
 
-        // if message is posted by self or another bot
-        // TODO optional check is another oraculum member?
-        if (message.author.id === this.key._id || message.author.bot) return;
+        const isOraculum = !!await this.redisService.exists(`${DISCORD_REDIS_KEYS.SERVER}:${DISCORD_REDIS_KEYS.USER}#${this.key._id}`) || false;
+
+        // if message is posted by self or another oracle or bot
+        if (
+          message.author.id === this.key._id
+          || message.author.bot
+          || isOraculum
+        ) return;
 
         try {
 
           // if we are at home server
           if (message.guild.id === ORACULUM_CORE_ID) {
-            const mirror = await this.redisService.sismember('discord:mirror', message.channel.parentID);
+            const mirror = await this.redisService.sismember(`${DISCORD_REDIS_KEYS.MIRROR}`, message.channel.parentID);
 
             // mirror messages only for discord clearance channels and for M oracle
             if (mirror && Array.from(this.key.tags).includes('management')) {
               await message.delete();
               await message.channel.send(message.content);
             } else if (this.channel && message.channel.id === this.channel.id) {
-              // FIXME execute command only for clearance personal redis
+              // execute command only for clearance personal redis
               const commandClearance = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.Commands}`);
 
               if (commandClearance.includes(message.author.id)) {
@@ -197,6 +228,10 @@ export class OracleService implements OnApplicationBootstrap {
     }
   }
 
+  /**
+   * @description Load NER engine for event or message recognition
+   * @private
+   */
   private async loadNerEngine(): Promise<void> {
     try {
       const dirPath = path.join(__dirname, '..', '..', '..', 'files');
@@ -215,6 +250,11 @@ export class OracleService implements OnApplicationBootstrap {
     }
   }
 
+  /**
+   * @description Analyze text for entity recognition
+   * @param message - Discord.Message
+   * @private
+   */
   private async analyzeText(
     message: Discord.Message,
   ): Promise<void> {
@@ -228,7 +268,8 @@ export class OracleService implements OnApplicationBootstrap {
       const user: Discord.User = message.author;
 
       if (analyzeText.entities.length > 0) {
-        await this.sendMarkdownText(message, analyzeText);
+        // TODO oracle can sent message TO FLOW. ACCESS!
+        await this.sendText(message, analyzeText);
 
         const discordMessage = new this.MessagesModel({
           context: message.content,
@@ -265,7 +306,17 @@ export class OracleService implements OnApplicationBootstrap {
     }
   }
 
-  private async sendMarkdownText(
+  private formatMarkdown(text: string): string {
+    return `\`\`\`md\n${text}\n\`\`\``;
+  }
+
+  /**
+   * @description Send Markdown text to selected & FLOW channel
+   * @param message - Discord.Message
+   * @param analyzeText - Entity recognition result
+   * @private
+   */
+  private async sendText(
     message: Discord.Message,
     analyzeText: INerProcess
   ): Promise<string> {
@@ -280,30 +331,42 @@ export class OracleService implements OnApplicationBootstrap {
         entity => text = `${text.substring(0, entity.start)}[${entity.utteranceText}](${entity.entity})${text.substring(entity.end + 1)}`
       );
 
-      text = `\`\`\`md\n\n${author}${channel}${guild}${text}\n\`\`\``;
+      text = `${author}${channel}${guild}\n${text}`;
 
-      // FIXME post message larger then
+      const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
+
+      if (flowId) {
+        throw new NotFoundException('FlowID not found');
+      }
+
+      const flowChannel = await this.guild.channels.get(flowId) as Discord.TextChannel;
+      if (!flowChannel) {
+        throw new NotFoundException('Flow channel not found');
+      }
+
       if (text.length < 2000) {
-        const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
+        await flowChannel.send(this.formatMarkdown(text));
 
-        if (flowId) {
-            const flowChannel = await this.guild.channels.get(flowId) as Discord.TextChannel;
-            if (flowChannel) await flowChannel.send(text);
-          }
-
-          await lastValueFrom(
-            from(analyzeText.entities).pipe(
-              mergeMap(async (entity) => {
-                if (entity.entity === ENTITY_NAME.Person) {
-                  const account = await this.AccountModel.findOne({ tags: entity.option });
-                  if (account && account.oraculum_id) {
-                    const fileChannel = await this.guild.channels.get(account.oraculum_id) as Discord.TextChannel;
-                    if (fileChannel) await fileChannel.send(text);
-                  }
+        await lastValueFrom(
+          from(analyzeText.entities).pipe(
+            mergeMap(async (entity) => {
+              if (entity.entity === ENTITY_NAME.Person) {
+                const account = await this.AccountModel.findOne({ tags: entity.option });
+                if (account && account.oraculum_id) {
+                  const fileChannel = await this.guild.channels.get(account.oraculum_id) as Discord.TextChannel;
+                  if (fileChannel) await fileChannel.send(this.formatMarkdown(text));
                 }
-              })
-            )
-          );
+              }
+            })
+          )
+        );
+      } else {
+        const
+          firstText = text.slice(0, 1999),
+          secondText = text.slice(1999);
+
+        await flowChannel.send(this.formatMarkdown(firstText));
+        await flowChannel.send(this.formatMarkdown(secondText));
       }
 
       return text;
@@ -313,22 +376,23 @@ export class OracleService implements OnApplicationBootstrap {
   }
 
   /**
-   * Add every new account to database
-   * and if we had a battle net connection
+   * @description - Add every new account to database & check connections for battle.net
+   * @param user - Discord.User context
+   * @private
    */
   private async createUser(user: Discord.User): Promise<void> {
     try {
       const accountExists = await this.AccountModel.findOne({ discord_id: user.id });
       if (!accountExists) return;
 
-      await delay(1);
-      const userProfile = await user.fetchProfile();
-
       const account = new this.AccountModel({
         discord_id: user.id,
         nickname: user.username,
         tags: [user.username],
       });
+
+      await delay(1);
+      const userProfile = await user.fetchProfile();
 
       if (userProfile.connections.size > 0) {
         for (const connection of userProfile.connections.values()) {
@@ -353,6 +417,10 @@ export class OracleService implements OnApplicationBootstrap {
     }
   }
 
+  /**
+   * @description - Add commands for ORACLE client
+   * @private
+   */
   private async setCommands(): Promise<void> {
     this.commands.set(Join.name, Join);
   }

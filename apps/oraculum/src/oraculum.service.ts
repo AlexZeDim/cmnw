@@ -412,7 +412,6 @@ export class OraculumService implements OnApplicationBootstrap {
 
     this.client.on('inviteCreate', async (invite: Invite) => {
       try {
-        // FIXME https://discord.gg/KMqRbte
         if (invite.inviter?.id !== this.client.user.id) {
           this.logger.log('Recreate invite');
           await invite.delete('Recreate invite');

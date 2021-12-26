@@ -1,5 +1,3 @@
-import { Snowflake } from 'discord.js';
-
 export enum ENTITY_NAME {
   Entity = 'ENTITY',
   Guild = 'GUILD',
@@ -40,8 +38,8 @@ export enum ORACULUM_CLEARANCE {
   V = 'V',
 }
 
-export const ORACULUM_UNIT7_ID: Snowflake = '895766801965785138';
+export const ORACULUM_UNIT7_ID: string = '895766801965785138';
 
-export const ORACULUM_CORE_ID: Snowflake = '734001595049705534';
+export const ORACULUM_CORE_ID: string = '734001595049705534';
 
 export const EXIT_CODES: string[] = [`close`, `exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `SIGTERM`];

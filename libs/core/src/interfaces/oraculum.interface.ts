@@ -10,6 +10,11 @@ export class OraculumChannel {
   channels?: OraculumChannels;
 }
 
+export interface IQDelivery {
+  readonly text: string;
+  readonly channelsId: string[];
+}
+
 class OraculumChannels {
   [key: string]: OraculumChannel;
 }

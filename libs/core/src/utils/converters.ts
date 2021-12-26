@@ -107,3 +107,9 @@ export const parseAccountDelimiters = (value: string | number, context: ICasting
   }
   return value;
 }
+
+/**
+ * Format string as a Markdown Code string
+ * @param text {string}
+ */
+export const formatCodeMarkdown = (text: string): string => `\`\`\`md\n${text}\n\`\`\``;

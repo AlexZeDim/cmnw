@@ -1,13 +1,14 @@
+import { IsArray, IsNumberString, IsOptional, IsString } from 'class-validator';
 import { SOURCE_TYPE } from '@app/core';
-import { IsArray, IsEnum, IsNumberString, IsOptional, IsString } from 'class-validator';
 
 export class MessagesIndex {
   @IsString()
   @IsOptional()
   snowflake: string;
 
-  @IsEnum(SOURCE_TYPE)
-  message_type: SOURCE_TYPE;
+  @IsString()
+  @IsOptional()
+  source_type: string;
 
   @IsString()
   @IsOptional()
@@ -61,7 +62,7 @@ export class MessagesIndex {
   static createFromModel(model: MessagesIndex) {
     return new MessagesIndex({
       snowflake: model.snowflake,
-      message_type: model.message_type ? model.message_type : SOURCE_TYPE.DiscordText,
+      source_type: model.source_type ? model.source_type : SOURCE_TYPE.DiscordText,
       author: model.author,
       discord_author: model.discord_author,
       discord_author_snowflake: model.discord_author_snowflake,

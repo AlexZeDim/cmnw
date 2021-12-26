@@ -17,6 +17,9 @@ import { REST } from '@discordjs/rest';
 import ms from 'ms';
 import csv from 'async-csv';
 import { Routes } from 'discord-api-types/v9';
+import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Job } from 'bullmq';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { Account, Character, Entity, Guild, Key, Realm } from '@app/mongo';
 import {
   Client,
@@ -27,28 +30,32 @@ import {
   Invite,
   MessageEmbed,
   PermissionFlags,
-  Permissions, PermissionString, Snowflake,
+  Permissions,
+  PermissionString,
+  Snowflake,
   TextChannel,
   VoiceChannel,
 } from 'discord.js';
+
 import {
-  capitalize,
-  delay,
+  capitalize, delay,
+  deliveryQueue,
+  ORACULUM_CORE_ID,
+  ORACULUM_UNIT7_ID,
   DISCORD_REDIS_KEYS,
   ENTITY_NAME,
-  IAccount,
-  IDiscordSlashCommand,
-  IEntities,
-  IEntity,
   ORACULUM_CLEARANCE,
-  ORACULUM_CORE_ID,
-  ORACULUM_UNIT7_ID, OraculumCore,
+  IAccount, IEntities,
+  IDiscordSlashCommand,
+  IEntity, IQDelivery,
+  OraculumCore,
   parseAccountDelimiters,
   parseEntityDelimiters,
+  formatCodeMarkdown,
 } from '@app/core';
 
-
 @Injectable()
+@BullWorker({ queueName: deliveryQueue.name, options: deliveryQueue.workerOptions })
 export class OraculumService implements OnApplicationBootstrap {
 
   private readonly logger = new Logger(
@@ -919,5 +926,58 @@ export class OraculumService implements OnApplicationBootstrap {
     );
 
     this.logger.log('Reloaded application (/) commands.');
+  }
+
+  /**
+   * @description Send Markdown text to selected channels
+   * @param job - BullMQ job IQDelivery formatted
+   * @private
+   */
+  @BullWorkerProcess(deliveryQueue.workerOptions)
+  private async process(job: Job<IQDelivery, void>): Promise<void> {
+    try {
+      let progress: number = 5;
+
+      const { text, channelsId } = { ...job.data };
+      await job.updateProgress(progress);
+
+      const percentage = 90 / channelsId.length;
+
+      await lastValueFrom(
+        from(channelsId).pipe(
+          mergeMap(async (channelId: Snowflake) => {
+            progress += percentage;
+            try {
+              const isChannelExists: boolean = this.client.channels.cache.has(channelId);
+              if (!isChannelExists) {
+                throw new NotFoundException(`Channel ID ${channelId} not found`);
+              }
+
+              const textChannel = this.client.channels.cache.get(channelId) as TextChannel;
+
+              if (text.length < 2000) {
+                await textChannel.send(formatCodeMarkdown(text));
+              } else {
+                const
+                  firstText = text.slice(0, 1999),
+                  secondText = text.slice(1999);
+
+                await textChannel.send(formatCodeMarkdown(firstText));
+                await textChannel.send(formatCodeMarkdown(secondText));
+              }
+
+              await job.updateProgress(progress);
+            } catch (error) {
+              this.logger.warn(error);
+            }
+          })
+        )
+      );
+
+      await job.updateProgress(100);
+    } catch (errorException) {
+      await job.log(errorException);
+      this.logger.error(`${deliveryQueue.name}: ${errorException}`);
+    }
   }
 }

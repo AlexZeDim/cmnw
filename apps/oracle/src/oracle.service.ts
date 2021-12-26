@@ -10,26 +10,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Account, Key, Message } from '@app/mongo';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { Join } from './commands/join';
-import { OracleCommandInterface } from './interface';
-import path from 'path';
-import fs from 'fs-extra';
-import { Normalizer } from '@nlpjs/core';
-import { removeEmojis } from '@nlpjs/emoji';
-import { NlpManager, Language } from 'node-nlp';
-import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { IQMessages, OracleCommandInterface } from './interface';
+import { Queue } from 'bullmq';
+import { BullQueueInject } from '@anchan828/nest-bullmq';
 import {
-  CLEARANCE_LEVEL, delay,
-  DISCORD_REDIS_KEYS, ENTITY_NAME,
+  delay,
+  DISCORD_REDIS_KEYS,
   EXIT_CODES,
-  IGuessLanguage,
-  INerProcess,
+  messagesQueue,
   ORACULUM_CLEARANCE,
   ORACULUM_CORE_ID,
-  SOURCE_TYPE,
 } from '@app/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
+
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -45,17 +40,6 @@ export class OracleService implements OnApplicationBootstrap {
 
   private guild: Discord.Guild;
 
-  private manager = new NlpManager({
-    languages: ['ru', 'en'],
-    threshold: 0.8,
-    nlp: { log: true },
-    forceNER: true
-  });
-
-  private normalizer = new Normalizer();
-
-  private language = new Language();
-
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
@@ -65,6 +49,8 @@ export class OracleService implements OnApplicationBootstrap {
     private readonly AccountModel: Model<Account>,
     @InjectModel(Message.name)
     private readonly MessagesModel: Model<Message>,
+    @BullQueueInject(messagesQueue.name)
+    private readonly queue: Queue<IQMessages, void>,
   ) { }
 
   private readonly logger = new Logger(
@@ -86,8 +72,6 @@ export class OracleService implements OnApplicationBootstrap {
     await this.getKey(account);
 
     await this.setCommands();
-
-    await this.loadNerEngine();
 
     await this.client.login(this.key.token);
 
@@ -169,9 +153,8 @@ export class OracleService implements OnApplicationBootstrap {
        */
       this.client.on('message', async (message: Discord.Message) => {
 
-        const isOraculum = !!await this.redisService.exists(`${DISCORD_REDIS_KEYS.SERVER}:${DISCORD_REDIS_KEYS.USER}#${this.key._id}`) || false;
-
         // if message is posted by self or another oracle or bot
+        const isOraculum = !!await this.redisService.exists(`${DISCORD_REDIS_KEYS.SERVER}:${DISCORD_REDIS_KEYS.USER}#${this.key._id}`) || false;
         if (
           message.author.id === this.key._id
           || message.author.bot
@@ -179,16 +162,18 @@ export class OracleService implements OnApplicationBootstrap {
         ) return;
 
         try {
-
           // if we are at home server
           if (message.guild.id === ORACULUM_CORE_ID) {
-            const mirror = await this.redisService.sismember(`${DISCORD_REDIS_KEYS.MIRROR}`, message.channel.parentID);
-
             // mirror messages only for discord clearance channels and for M oracle
+            const mirror = await this.redisService.sismember(`${DISCORD_REDIS_KEYS.MIRROR}`, message.channel.parentID);
             if (mirror && Array.from(this.key.tags).includes('management')) {
               await message.delete();
               await message.channel.send(message.content);
-            } else if (this.channel && message.channel.id === this.channel.id) {
+              return;
+            }
+
+            // if message channel is management channel
+            if (this.channel && message.channel.id === this.channel.id) {
               // execute command only for clearance personal redis
               const commandClearance = await this.redisService.smembers(`${DISCORD_REDIS_KEYS.CLEARANCE}:${ORACULUM_CLEARANCE.Commands}`);
 
@@ -207,11 +192,35 @@ export class OracleService implements OnApplicationBootstrap {
 
                 await command.execute(message, args, this.client, this.redisService);
               }
-            } else {
-              await this.analyzeText(message);
             }
+            // TODO if operations
           } else {
-            await this.analyzeText(message);
+            await this.queue.add(
+              message.id,
+              {
+                message: {
+                  id: message.id,
+                  text: message.content,
+                },
+                author: {
+                  id: message.author.id,
+                  username: message.author.username,
+                  discriminator: message.author.discriminator,
+                },
+                channel: {
+                  id: message.channel.id,
+                  name: message.channel.name,
+                  source_type: message.channel.type,
+                },
+                guild: {
+                  id: message.guild.id,
+                  name: message.guild.name,
+                }
+              }, {
+                jobId: message.id
+              }
+            );
+            await this.createUser(message.author);
           }
         } catch (errorException) {
           this.logger.error(`Error: ${errorException}`);
@@ -225,153 +234,6 @@ export class OracleService implements OnApplicationBootstrap {
 
     } catch (errorException) {
       this.logger.error(`bot: ${errorException}`);
-    }
-  }
-
-  /**
-   * @description Load NER engine for event or message recognition
-   * @private
-   */
-  private async loadNerEngine(): Promise<void> {
-    try {
-      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
-      await fs.ensureDir(dirPath);
-
-      const corpusPath = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
-      const corpusExists = fs.existsSync(corpusPath);
-
-      if (!corpusExists) {
-        throw new ServiceUnavailableException(`Corpus from: ${corpusPath} not found!`);
-      }
-
-      await this.manager.load(corpusPath);
-    } catch (errorOrException) {
-      this.logger.error(`loadNerEngine: ${errorOrException}`);
-    }
-  }
-
-  /**
-   * @description Analyze text for entity recognition
-   * @param message - Discord.Message
-   * @private
-   */
-  private async analyzeText(
-    message: Discord.Message,
-  ): Promise<void> {
-    try {
-
-      const emojisStage: string = removeEmojis(message.content);
-      const normalizeStage: string = this.normalizer.normalize(emojisStage);
-      const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
-      const analyzeText: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
-
-      const user: Discord.User = message.author;
-
-      if (analyzeText.entities.length > 0) {
-        // TODO oracle can sent message TO FLOW. ACCESS!
-        await this.sendText(message, analyzeText);
-
-        const discordMessage = new this.MessagesModel({
-          context: message.content,
-          clearance: [CLEARANCE_LEVEL.RED, CLEARANCE_LEVEL.A, CLEARANCE_LEVEL.ORACULUM],
-          source: {
-            message_type: SOURCE_TYPE.DiscordText,
-            discord_author: `${user.username}#${user.discriminator}`,
-            discord_author_id: user.id,
-            discord_channel_id: message.channel.id,
-            discord_channel: message.channel.name
-          },
-          tags: [
-            user.username,
-            message.channel.name
-          ],
-        });
-
-        analyzeText.entities.forEach((entity) =>
-          discordMessage.tags.addToSet(entity.option.toLowerCase())
-        );
-
-        if (message.guild) {
-          discordMessage.tags.addToSet(message.guild.name);
-          discordMessage.source.discord_server = message.guild.name;
-          discordMessage.source.discord_server_id = message.guild.id;
-        }
-
-        await discordMessage.save();
-      }
-
-      await this.createUser(user);
-    } catch (errorException) {
-      this.logger.error(`analyzeText: ${errorException}`);
-    }
-  }
-
-  private formatMarkdown(text: string): string {
-    return `\`\`\`md\n${text}\n\`\`\``;
-  }
-
-  /**
-   * @description Send Markdown text to selected & FLOW channel
-   * @param message - Discord.Message
-   * @param analyzeText - Entity recognition result
-   * @private
-   */
-  private async sendText(
-    message: Discord.Message,
-    analyzeText: INerProcess
-  ): Promise<string> {
-    try {
-      let text: string = analyzeText.utterance;
-
-      const author = `# Author: ${message.author.username}#${message.author.discriminator} (${message.author.id})\n`;
-      const channel = `# Channel: ${message.channel.name} (${message.channel.id})\n`;
-      const guild = `# Server: ${message.guild.name} (${message.guild.id})\n`;
-
-      analyzeText.entities.reverse().forEach(
-        entity => text = `${text.substring(0, entity.start)}[${entity.utteranceText}](${entity.entity})${text.substring(entity.end + 1)}`
-      );
-
-      text = `${author}${channel}${guild}\n${text}`;
-
-      const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
-
-      if (flowId) {
-        throw new NotFoundException('FlowID not found');
-      }
-
-      const flowChannel = await this.guild.channels.get(flowId) as Discord.TextChannel;
-      if (!flowChannel) {
-        throw new NotFoundException('Flow channel not found');
-      }
-
-      if (text.length < 2000) {
-        await flowChannel.send(this.formatMarkdown(text));
-
-        await lastValueFrom(
-          from(analyzeText.entities).pipe(
-            mergeMap(async (entity) => {
-              if (entity.entity === ENTITY_NAME.Person) {
-                const account = await this.AccountModel.findOne({ tags: entity.option });
-                if (account && account.oraculum_id) {
-                  const fileChannel = await this.guild.channels.get(account.oraculum_id) as Discord.TextChannel;
-                  if (fileChannel) await fileChannel.send(this.formatMarkdown(text));
-                }
-              }
-            })
-          )
-        );
-      } else {
-        const
-          firstText = text.slice(0, 1999),
-          secondText = text.slice(1999);
-
-        await flowChannel.send(this.formatMarkdown(firstText));
-        await flowChannel.send(this.formatMarkdown(secondText));
-      }
-
-      return text;
-    } catch (errorException) {
-      this.logger.error(`sendMarkdownText ${errorException}`);
     }
   }
 

@@ -17,6 +17,8 @@ import {
   Realm,
   RealmsSchema,
 } from '@app/mongo';
+import { BullModule } from '@anchan828/nest-bullmq';
+import { deliveryQueue, messagesQueue } from '@app/core';
 
 @Module({
   imports: [
@@ -35,6 +37,16 @@ import {
       { name: Entity.name, schema: EntitySchema },
       { name: Key.name, schema: KeysSchema },
     ]),
+    BullModule.forRoot({
+      options: {
+        connection: {
+          host: redisConfig.host,
+          port: redisConfig.port,
+        },
+      },
+    }),
+    BullModule.registerQueue({ queueName: messagesQueue.name, options: messagesQueue.options }),
+    BullModule.registerQueue({ queueName: deliveryQueue.name, options: deliveryQueue.options }),
   ],
   controllers: [],
   providers: [OraculumService],

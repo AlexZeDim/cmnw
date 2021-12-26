@@ -1,7 +1,8 @@
 export enum ELASTIC_INDEX_ENUM {
   ENTITY = 'entity',
   MESSAGES = 'message',
-  DISCORD_SERVER = 'discord-server'
+  SERVER = 'server',
+  CHANNEL = 'channel'
 }
 
 export enum CHANNEL_TYPE {

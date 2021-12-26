@@ -1,1 +1,1 @@
-export * from './indices.const';
+export * from './elastic.const';

@@ -16,6 +16,14 @@ export enum SOURCE_TYPE {
   Text = 'text',
 }
 
+export enum SUBJECT_VECTOR {
+  WPVP = 'wpvp',
+  PVP = 'pvp',
+  PVE = 'pve',
+  CLASS_HALL = 'class-discord',
+  COMMON = 'common',
+}
+
 export enum ORACULUM_COMMANDS {
   Whois = 'whois',
   Invite = 'invite',

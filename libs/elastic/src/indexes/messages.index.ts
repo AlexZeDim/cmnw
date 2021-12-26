@@ -1,7 +1,11 @@
 import { SOURCE_TYPE } from '@app/core';
 import { IsArray, IsEnum, IsNumberString, IsOptional, IsString } from 'class-validator';
 
-export class MessagesMapping {
+export class MessagesIndex {
+  @IsString()
+  @IsOptional()
+  snowflake: string;
+
   @IsEnum(SOURCE_TYPE)
   message_type: SOURCE_TYPE;
 
@@ -15,7 +19,7 @@ export class MessagesMapping {
 
   @IsNumberString()
   @IsOptional()
-  discord_author_id?: string;
+  discord_author_snowflake?: string;
 
   @IsString()
   @IsOptional()
@@ -23,7 +27,7 @@ export class MessagesMapping {
 
   @IsNumberString()
   @IsOptional()
-  discord_server_id?: string;
+  discord_server_snowflake?: string;
 
   @IsString()
   @IsOptional()
@@ -31,7 +35,7 @@ export class MessagesMapping {
 
   @IsNumberString()
   @IsOptional()
-  discord_channel_id?: string;
+  discord_channel_snowflake?: string;
 
   @IsArray()
   tags: string[];
@@ -50,20 +54,21 @@ export class MessagesMapping {
   @IsOptional()
   discord_text?: string;
 
-  constructor(data: MessagesMapping) {
+  constructor(data: MessagesIndex) {
     Object.assign(this, data);
-  }
+  };
 
-  static createFromModel(model: MessagesMapping) {
-    return new MessagesMapping({
+  static createFromModel(model: MessagesIndex) {
+    return new MessagesIndex({
+      snowflake: model.snowflake,
       message_type: model.message_type ? model.message_type : SOURCE_TYPE.DiscordText,
       author: model.author,
       discord_author: model.discord_author,
-      discord_author_id: model.discord_author_id,
+      discord_author_snowflake: model.discord_author_snowflake,
       discord_server: model.discord_server,
-      discord_server_id: model.discord_server_id,
+      discord_server_snowflake: model.discord_server_snowflake,
       discord_channel: model.discord_channel,
-      discord_channel_id: model.discord_channel_id,
+      discord_channel_snowflake: model.discord_channel_snowflake,
       tags: model.tags || [],
       clearance: model.clearance || [],
       subject: model.subject,

@@ -1,7 +1,7 @@
 import { ENTITY_NAME } from '@app/core';
 import { IsArray, IsEnum, IsString } from 'class-validator';
 
-export class EntityMapping {
+export class EntityIndex {
   @IsEnum(ENTITY_NAME)
   ner_tag: ENTITY_NAME;
 
@@ -14,12 +14,12 @@ export class EntityMapping {
   @IsArray()
   tags: string[];
 
-  constructor(data: EntityMapping) {
+  constructor(data: EntityIndex) {
     Object.assign(this, data);
   }
 
-  static createFromModel(model: EntityMapping) {
-    return new EntityMapping({
+  static createFromModel(model: EntityIndex) {
+    return new EntityIndex({
       ner_tag: model.ner_tag,
       name: model.name,
       languages: model.languages,

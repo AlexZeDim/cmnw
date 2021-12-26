@@ -1,3 +1,3 @@
 export * from './interfaces';
-export * from './mappings';
+export * from './indexes';
 export * from './const';

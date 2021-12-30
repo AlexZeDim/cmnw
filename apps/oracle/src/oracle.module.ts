@@ -15,10 +15,16 @@ import {
   Entity,
   EntitySchema
 } from '@app/mongo';
+import { OracleWorker } from './oracle.worker';
+import { ElasticsearchModule } from '@nestjs/elasticsearch';
+import { elasticConfig } from '@app/configuration/elastic.config';
 
 
 @Module({
   imports: [
+    ElasticsearchModule.register({
+      node: `http://${elasticConfig.host}:${elasticConfig.port}`,
+    }),
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,
@@ -44,6 +50,6 @@ import {
     BullModule.registerQueue({ queueName: deliveryQueue.name, options: deliveryQueue.options }),
   ],
   controllers: [],
-  providers: [OracleService],
+  providers: [OracleService, OracleWorker],
 })
 export class OracleModule {}

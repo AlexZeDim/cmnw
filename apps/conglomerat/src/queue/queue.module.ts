@@ -8,8 +8,10 @@ import { Express } from 'express';
 import {
   auctionsQueue,
   charactersQueue,
+  deliveryQueue,
   guildsQueue,
   itemsQueue,
+  messagesQueue,
   pricingQueue,
   realmsQueue,
   valuationsQueue,
@@ -32,6 +34,8 @@ import {
     BullModule.registerQueue(itemsQueue.name),
     BullModule.registerQueue(pricingQueue.name),
     BullModule.registerQueue(valuationsQueue.name),
+    BullModule.registerQueue(messagesQueue.name),
+    BullModule.registerQueue(deliveryQueue.name),
   ],
   controllers: [],
   providers: [],
@@ -55,6 +59,10 @@ export class QueueModule {
     private readonly pricing: Queue,
     @BullQueueInject(valuationsQueue.name)
     private readonly valuations: Queue,
+    @BullQueueInject(messagesQueue.name)
+    private readonly messages: Queue,
+    @BullQueueInject(deliveryQueue.name)
+    private readonly delivery: Queue,
 
   ) {
     const { router } = createBullBoard([
@@ -65,6 +73,8 @@ export class QueueModule {
       new BullMQAdapter(this.items, { readOnlyMode: false }),
       new BullMQAdapter(this.pricing, { readOnlyMode: false }),
       new BullMQAdapter(this.valuations, { readOnlyMode: false }),
+      new BullMQAdapter(this.messages, { readOnlyMode: false }),
+      new BullMQAdapter(this.delivery, { readOnlyMode: false }),
     ])
     this.router = router;
   }

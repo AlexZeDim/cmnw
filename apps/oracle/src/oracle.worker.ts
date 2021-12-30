@@ -1,6 +1,7 @@
 import {
   CLEARANCE_LEVEL,
   deliveryQueue,
+  DISCORD_REDIS_KEYS,
   ENTITY_NAME,
   IGuessLanguage,
   INerProcess,
@@ -9,7 +10,7 @@ import {
 } from '@app/core';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Logger } from '@nestjs/common';
+import { Logger, ServiceUnavailableException } from '@nestjs/common';
 import { Normalizer } from '@nlpjs/core';
 import { removeEmojis } from '@nlpjs/emoji';
 import { NlpManager, Language } from 'node-nlp';
@@ -21,6 +22,8 @@ import { Job, Queue } from 'bullmq';
 import { ELASTIC_INDEX_ENUM, MessagesIndex } from '@app/elastic';
 import { IQMessages } from './interface';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
+import path from 'path';
+import fs from 'fs-extra';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
@@ -36,7 +39,6 @@ export class OracleWorker {
     threshold: 0.8,
     nlp: { log: true },
     forceNER: true,
-    modelFileName: 'test' // FIXME corpus.json
   });
 
   private normalizer = new Normalizer();
@@ -56,17 +58,20 @@ export class OracleWorker {
   @BullWorkerProcess(messagesQueue.workerOptions)
   private async process(job: Job<IQMessages, void>): Promise<void> {
     try {
-      const messageQueue: IQMessages = { ...job.data };
+      await this.loadNerEngine();
       await job.updateProgress(1);
 
-      const emojisStage: string = removeEmojis(messageQueue.message.text);
+      const messageQueue: IQMessages = { ...job.data };
       await job.updateProgress(5);
 
-      const normalizeStage: string = this.normalizer.normalize(emojisStage);
+      const emojisStage: string = removeEmojis(messageQueue.message.text);
       await job.updateProgress(10);
 
-      const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
+      const normalizeStage: string = this.normalizer.normalize(emojisStage);
       await job.updateProgress(15);
+
+      const langStage: IGuessLanguage = this.language.guessBest(normalizeStage, ['en', 'ru']);
+      await job.updateProgress(20);
 
       const analyzeText: INerProcess = await this.manager.process(langStage.alpha2, normalizeStage);
       await job.updateProgress(50);
@@ -82,13 +87,13 @@ export class OracleWorker {
       const channel = `# Channel: ${messageQueue.channel.name} (${messageQueue.channel.id})\n`;
       const guild = `# Server: ${messageQueue.guild.name} (${messageQueue.guild.id})\n`;
 
-      /* FIXME if below code is fine
-      analyzeText.entities.reverse().forEach(
-        entity => text = `${text.substring(0, entity.start)}[${entity.utteranceText}](${entity.entity})${text.substring(entity.end + 1)}`
-      );
-      */
+      const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
+      if (!flowId) {
+        this.logger.log(`Flow channel not found`);
+        return void 0;
+      }
 
-      const channelsId: string[] = [];
+      const channelsId: string[] = [flowId];
 
       await lastValueFrom(
         from(analyzeText.entities.reverse()).pipe(
@@ -104,8 +109,8 @@ export class OracleWorker {
                 }
               }
 
-            } catch (e) {
-              // FIXME error block
+            } catch (errorException) {
+              this.logger.error(`Account ${entity.option} ${errorException}`);
             }
           })
         )
@@ -161,4 +166,22 @@ export class OracleWorker {
       this.logger.error(`${messagesQueue.name}: ${errorException}`);
     }
   };
+
+  private async loadNerEngine(): Promise<void> {
+    try {
+      const dirPath = path.join(__dirname, '..', '..', '..', 'files');
+      await fs.ensureDir(dirPath);
+
+      const corpusPath = path.join(__dirname, '..', '..', '..', 'files', 'corpus.json');
+      const corpusExists = fs.existsSync(corpusPath);
+
+      if (!corpusExists) {
+        throw new ServiceUnavailableException(`Corpus from: ${corpusPath} not found!`);
+      }
+
+      await this.manager.load(corpusPath);
+    } catch (errorOrException) {
+      this.logger.error(`loadNerEngine: ${errorOrException}`);
+    }
+  }
 }

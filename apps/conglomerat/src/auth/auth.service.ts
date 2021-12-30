@@ -14,7 +14,6 @@ export class AuthService {
   constructor(
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
-
     @InjectModel(Entity.name)
     private readonly EntityModel: Model<Entity>
   ) {}

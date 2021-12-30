@@ -149,12 +149,12 @@ export class OracleService implements OnApplicationBootstrap {
 
       /**
        * @description Trigger on every message
-       * @param message - Discord.Message0,0
+       * @param message - Discord.Message
        */
       this.client.on('message', async (message: Discord.Message) => {
 
         // if message is posted by self or another oracle or bot
-        const isOraculum = !!await this.redisService.exists(`${DISCORD_REDIS_KEYS.SERVER}:${DISCORD_REDIS_KEYS.USER}#${this.key._id}`) || false;
+        const isOraculum = !!await this.redisService.exists(`${DISCORD_REDIS_KEYS.SERVER}:${DISCORD_REDIS_KEYS.USER}#${message.author.id}`) || false;
         if (
           message.author.id === this.key._id
           || message.author.bot
@@ -223,19 +223,70 @@ export class OracleService implements OnApplicationBootstrap {
             await this.createUser(message.author);
           }
         } catch (errorException) {
-          this.logger.error(`Error: ${errorException}`);
+          this.logger.error(`onMessage: ${errorException}`);
         }
       });
 
-      // TODO watch for voice channel statuses
-      // this.client.on('voiceStateUpdate', async (oldMember: Discord.GuildMember, newMember: Discord.GuildMember) => {
-        // console.log(oldMember, newMember);
-      // });
+      /**
+       * @description Trigger every voice leave or join event
+       * @param oldMember - Discord.GuildMember
+       * @param newMember - Discord.GuildMember
+       */
+      this.client.on('voiceStateUpdate', async (oldMember: Discord.GuildMember, newMember: Discord.GuildMember) => {
+        try {
+          const snowflake = Discord.SnowflakeUtil.generate();
+
+          let channelId: Discord.Snowflake;
+          let member: Discord.GuildMember = oldMember;
+
+          if (oldMember.voiceChannelID === null && newMember.voiceChannelID) {
+            // join
+            channelId = newMember.voiceChannelID;
+            member = newMember;
+          } else if (oldMember.voiceChannelID && newMember.voiceChannelID == null) {
+            // leave
+            channelId = oldMember.voiceChannelID;
+            member = oldMember;
+          }
+
+          const channel = member.guild.channels.get(channelId);
+          // FIXME do it
+          const text = `leave or join`;
+
+          await this.queue.add(
+            snowflake,
+            {
+              message: {
+                id: snowflake,
+                text,
+              },
+              author: {
+                id: member.user.id,
+                username: member.user.username,
+                discriminator: member.user.discriminator,
+              },
+              channel: {
+                id: channelId,
+                name: channel.name,
+                source_type: channel.type,
+              },
+              guild: {
+                id: member.guild.id,
+                name: member.guild.name,
+              }
+            }, {
+              jobId: snowflake
+            }
+          );
+        } catch (errorOrException) {
+          this.logger.error(`Error: ${errorOrException}`);
+        }
+      });
 
     } catch (errorException) {
-      this.logger.error(`bot: ${errorException}`);
+      this.logger.error(`voiceStateUpdate: ${errorException}`);
     }
-  }
+  };
 
   /**
    * @description - Add every new account to database & check connections for battle.net

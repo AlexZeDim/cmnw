@@ -236,22 +236,31 @@ export class OracleService implements OnApplicationBootstrap {
         try {
           const snowflake = Discord.SnowflakeUtil.generate();
 
+          let channel: Discord.VoiceChannel;
           let channelId: Discord.Snowflake;
           let member: Discord.GuildMember = oldMember;
+          let text: string = 'leave or join';
 
           if (oldMember.voiceChannelID === null && newMember.voiceChannelID) {
             // join
             channelId = newMember.voiceChannelID;
             member = newMember;
+            // TODO fetch
+            channel = member.guild.channels.get(channelId);
+
+            channel.members.array()
+
+            text = '';
           } else if (oldMember.voiceChannelID && newMember.voiceChannelID == null) {
             // leave
             channelId = oldMember.voiceChannelID;
             member = oldMember;
-          }
+            channel = member.guild.channels.get(channelId);
 
-          const channel = member.guild.channels.get(channelId);
-          // FIXME do it
-          const text = `leave or join`;
+
+
+            text = '';
+          }
 
           await this.queue.add(
             snowflake,

@@ -240,26 +240,30 @@ export class OracleService implements OnApplicationBootstrap {
           let channelId: Discord.Snowflake;
           let member: Discord.GuildMember = oldMember;
           let text: string = 'leave or join';
+          let voiceChannelStatus: string;
 
           if (oldMember.voiceChannelID === null && newMember.voiceChannelID) {
             // join
             channelId = newMember.voiceChannelID;
             member = newMember;
-            // TODO fetch
+            // TODO probably fetch require testing fetch
             channel = member.guild.channels.get(channelId);
-
-            channel.members.array()
-
-            text = '';
+            // TODO require tests
+            const members: Discord.GuildMember[] = channel.members.array();
+            if (members.length) {
+              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.name}#${m.user.discriminator}`).join('\n')}`
+            }
+            text = `${member.user.name}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
           } else if (oldMember.voiceChannelID && newMember.voiceChannelID == null) {
             // leave
             channelId = oldMember.voiceChannelID;
             member = oldMember;
             channel = member.guild.channels.get(channelId);
-
-
-
-            text = '';
+            const members: Discord.GuildMember[] = channel.members.array();
+            if (members.length) {
+              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.name}#${m.user.discriminator}`).join('\n')}`
+            }
+            text = `${member.user.name}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
           }
 
           await this.queue.add(
@@ -319,14 +323,14 @@ export class OracleService implements OnApplicationBootstrap {
       if (userProfile.connections.size > 0) {
         for (const connection of userProfile.connections.values()) {
           if (connection.type === 'battlenet') {
-            const battle_tag = connection.name;
+            const battleTag = connection.name;
             const [beforeHashTag] = connection.name.split('#');
             const tags: Set<string> = new Set();
 
             tags.add(beforeHashTag);
             tags.add(user.username);
 
-            account.battle_tag = battle_tag;
+            account.battle_tag = battleTag;
             account.nickname = beforeHashTag;
             account.tags = Array.from(tags);
           }

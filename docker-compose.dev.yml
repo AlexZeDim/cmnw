@@ -16,10 +16,13 @@ services:
       - conglomerat-network
 
   elasticsearch:
-    image: elasticsearch:latest
+    image: elasticsearch:7.16.2
     container_name: elasticsearch
     environment:
-      - discovery.type=single-nod
+      - discovery.type=single-node
+      - ELASTIC_USERNAME=${ELK_ROOT_USER}
+      - ELASTIC_PASSWORD=${ELK_ROOT_PASSWORD}
+      - xpack.security.enabled=true
     volumes:
       - ./volumes/elasticsearch:/usr/share/elasticsearch/data
     ports:
@@ -29,10 +32,13 @@ services:
       - conglomerat-network
 
   kibana:
-    image: kibana:latest
+    image: kibana:7.16.2
     container_name: kibana
     environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+      - ELASTICSEARCH_USERNAME=${ELK_ROOT_USER}
+      - ELASTICSEARCH_PASSWORD=${ELK_ROOT_PASSWORD}
+      - xpack.security.enabled=true
     ports:
       - '5601:5601'
     links:

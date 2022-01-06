@@ -23,7 +23,7 @@ import { elasticConfig } from '@app/configuration/elastic.config';
 @Module({
   imports: [
     ElasticsearchModule.register({
-      node: `http://${elasticConfig.host}:${elasticConfig.port}`,
+      node: `https://${elasticConfig.username}:${elasticConfig.password}@${elasticConfig.host}:${elasticConfig.port}`,
     }),
     RedisModule.forRoot({
       config: {

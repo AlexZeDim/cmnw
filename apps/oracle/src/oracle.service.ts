@@ -47,8 +47,6 @@ export class OracleService implements OnApplicationBootstrap {
     private readonly KeysModel: Model<Key>,
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
-    @InjectModel(Message.name)
-    private readonly MessagesModel: Model<Message>,
     @BullQueueInject(messagesQueue.name)
     private readonly queue: Queue<IQMessages, void>,
   ) { }
@@ -239,30 +237,23 @@ export class OracleService implements OnApplicationBootstrap {
           let channel: Discord.VoiceChannel;
           let channelId: Discord.Snowflake;
           let member: Discord.GuildMember = oldMember;
-          let text: string = 'leave or join';
-          let voiceChannelStatus: string;
+          let text: string = 'LEAVE or JOIN';
+          let members: string[] = [];
 
           if (oldMember.voiceChannelID === null && newMember.voiceChannelID) {
             // join
             channelId = newMember.voiceChannelID;
             member = newMember;
             channel = member.guild.channels.get(channelId);
-
-            const members: Discord.GuildMember[] = channel.members.array();
-            if (members.length) {
-              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.username}#${m.user.discriminator}`).join('\n')}`
-            }
-            text = `${member.user.username}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
+            members = channel.members.array().map(m => `${m.user.username}#${m.user.discriminator}`);
+            text = `${member.user.username}#${member.user.discriminator} joins to channel`;
           } else if (oldMember.voiceChannelID && newMember.voiceChannelID == null) {
             // leave
             channelId = oldMember.voiceChannelID;
             member = oldMember;
             channel = member.guild.channels.get(channelId);
-            const members: Discord.GuildMember[] = channel.members.array();
-            if (members.length) {
-              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.username}#${m.user.discriminator}`).join('\n')}`
-            }
-            text = `${member.user.username}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
+            members = channel.members.array().map(m => `${m.user.username}#${m.user.discriminator}`);
+            text = `${member.user.username}#${member.user.discriminator} leaves channel`;
           }
 
           await this.queue.add(
@@ -271,6 +262,7 @@ export class OracleService implements OnApplicationBootstrap {
               message: {
                 id: snowflake,
                 text,
+                members,
               },
               author: {
                 id: member.user.id,

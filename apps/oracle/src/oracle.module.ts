@@ -23,7 +23,7 @@ import { elasticConfig } from '@app/configuration/elastic.config';
 @Module({
   imports: [
     ElasticsearchModule.register({
-      node: `https://${elasticConfig.username}:${elasticConfig.password}@${elasticConfig.host}:${elasticConfig.port}`,
+      node: `http://${elasticConfig.username}:${elasticConfig.password}@${elasticConfig.host}:${elasticConfig.port}`,
     }),
     RedisModule.forRoot({
       config: {
@@ -35,7 +35,6 @@ import { elasticConfig } from '@app/configuration/elastic.config';
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
       { name: Account.name, schema: AccountsSchema },
-      { name: Message.name, schema: MessagesSchema },
       { name: Entity.name, schema: EntitySchema },
     ]),
     BullModule.forRoot({

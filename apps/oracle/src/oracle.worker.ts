@@ -100,6 +100,7 @@ export class OracleWorker {
         from(analyzeText.entities.reverse()).pipe(
           mergeMap(async (entity) => {
             try {
+              // if (!!threshold && (entity.start > threshold || entity.entity === 'number')) return;
               // format Markdown text
               text = `${text.substring(0, entity.start)}[${entity.utteranceText}](${entity.entity})${text.substring(entity.end + 1)}`;
               // channel Id for personal files
@@ -118,8 +119,12 @@ export class OracleWorker {
       )
 
       text = `${author}${channel}${guild}\n${text}`;
-      await job.updateProgress(60);
 
+      if (messageQueue.message.members && messageQueue.message.members.length) {
+        text = `${text}\n\nVoice Channel Status:\n${messageQueue.message.members.map(m => `- ${m}`).join('\n')}`
+      }
+
+      await job.updateProgress(60);
       const entity = MessagesIndex.createFromModel({
         snowflake: messageQueue.message.id,
         source_type: messageQueue.channel.source_type,

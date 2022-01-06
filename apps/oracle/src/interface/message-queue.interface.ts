@@ -5,6 +5,7 @@ export interface IQMessages {
   message: {
     id: string;
     text: string;
+    members?: string[];
   };
   author: {
     id: string | Discord.Snowflake;

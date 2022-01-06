@@ -86,10 +86,11 @@ export class OracleWorker {
       const author = `# Author: ${messageQueue.author.username}#${messageQueue.author.discriminator} (${messageQueue.author.id})\n`;
       const channel = `# Channel: ${messageQueue.channel.name} (${messageQueue.channel.id})\n`;
       const guild = `# Server: ${messageQueue.guild.name} (${messageQueue.guild.id})\n`;
+      await job.updateProgress(55);
 
       const flowId = await this.redisService.get(`${DISCORD_REDIS_KEYS.CHANNEL}:flow`);
       if (!flowId) {
-        this.logger.log(`Flow channel not found`);
+        this.logger.error(`Flow channel not found`);
         return void 0;
       }
 
@@ -117,6 +118,7 @@ export class OracleWorker {
       )
 
       text = `${author}${channel}${guild}\n${text}`;
+      await job.updateProgress(60);
 
       const entity = MessagesIndex.createFromModel({
         snowflake: messageQueue.message.id,
@@ -140,10 +142,15 @@ export class OracleWorker {
         entity.discord_server_snowflake = messageQueue.guild.id;
       }
 
-      analyzeText.entities.forEach((entityNer) =>
-        entity.tags.push(entityNer.option.toLowerCase())
-      );
+      if (analyzeText.entities.length) {
+        analyzeText.entities.forEach((entityNer) => {
+          if (entityNer.option) {
+            entity.tags.push(entityNer.option.toLowerCase())
+          }
+        });
+      }
 
+      await job.updateProgress(65);
       await this.elasticsearchService.index({
         index: ELASTIC_INDEX_ENUM.MESSAGES,
         body: entity,

@@ -20,11 +20,11 @@ import {
   messagesQueue,
   ORACULUM_CLEARANCE,
   ORACULUM_CORE_ID,
+  SOURCE_TYPE,
 } from '@app/core';
 
 // @ts-ignore
 import Discord from 'v11-discord.js';
-
 
 @Injectable()
 export class OracleService implements OnApplicationBootstrap {
@@ -246,14 +246,13 @@ export class OracleService implements OnApplicationBootstrap {
             // join
             channelId = newMember.voiceChannelID;
             member = newMember;
-            // TODO probably fetch require testing fetch
             channel = member.guild.channels.get(channelId);
-            // TODO require tests
+
             const members: Discord.GuildMember[] = channel.members.array();
             if (members.length) {
-              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.name}#${m.user.discriminator}`).join('\n')}`
+              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.username}#${m.user.discriminator}`).join('\n')}`
             }
-            text = `${member.user.name}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
+            text = `${member.user.username}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
           } else if (oldMember.voiceChannelID && newMember.voiceChannelID == null) {
             // leave
             channelId = oldMember.voiceChannelID;
@@ -261,9 +260,9 @@ export class OracleService implements OnApplicationBootstrap {
             channel = member.guild.channels.get(channelId);
             const members: Discord.GuildMember[] = channel.members.array();
             if (members.length) {
-              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.name}#${m.user.discriminator}`).join('\n')}`
+              voiceChannelStatus = `\nVoice Channel status:\n${members.map(m => ` - ${m.user.username}#${m.user.discriminator}`).join('\n')}`
             }
-            text = `${member.user.name}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
+            text = `${member.user.username}#${member.user.discriminator} joins to channel ${channel.name} ${voiceChannelStatus ? voiceChannelStatus : ''}`;
           }
 
           await this.queue.add(
@@ -292,12 +291,48 @@ export class OracleService implements OnApplicationBootstrap {
             }
           );
         } catch (errorOrException) {
-          this.logger.error(`Error: ${errorOrException}`);
+          this.logger.error(`voiceStateUpdate: ${errorOrException}`);
+        }
+      });
+
+      this.client.on('guildMemberUpdate', async (oldMember: Discord.GuildMember, newMember: Discord.GuildMember) => {
+        try {
+          const snowflake = Discord.SnowflakeUtil.generate();
+
+          const text: string = `${newMember.user.username}#${newMember.user.discriminator} rank was changed from ${oldMember.highestRole.position} to ${newMember.highestRole.position}`;
+
+          await this.queue.add(
+            snowflake,
+            {
+              message: {
+                id: snowflake,
+                text,
+              },
+              author: {
+                id: newMember.user.id,
+                username: newMember.user.username,
+                discriminator: newMember.user.discriminator,
+              },
+              channel: {
+                id: newMember.guild.systemChannelID,
+                name: newMember.guild.systemChannel.name,
+                source_type: SOURCE_TYPE.Discord,
+              },
+              guild: {
+                id: newMember.guild.id,
+                name: newMember.guild.name,
+              }
+            }, {
+              jobId: snowflake
+            }
+          );
+        } catch (errorOrException) {
+          this.logger.error(`guildMemberUpdate: ${errorOrException}`);
         }
       });
 
     } catch (errorException) {
-      this.logger.error(`voiceStateUpdate: ${errorException}`);
+      this.logger.error(`oracle: ${errorException}`);
     }
   };
 

@@ -248,11 +248,11 @@ interface INerEntity {
   readonly start: number;
   readonly end: number;
   readonly len: number;
-  readonly levenshtein: number;
+  readonly levenshtein?: number;
   readonly accuracy: number;
   readonly entity: string;
-  readonly type: string;
-  readonly option: string;
+  readonly type?: string;
+  readonly option?: string;
   readonly sourceText: string;
   readonly utteranceText: string;
 }

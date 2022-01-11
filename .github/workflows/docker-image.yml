@@ -25,9 +25,9 @@ jobs:
     - name: Build & push to GitHub Container Registry
       uses: mr-smithers-excellent/docker-build-push@v5
       with:
-        image: ${{ github.repository }}
+        image: commonwealth
+        tags: latest
         registry: ghcr.io
-        githubOrg: override-org # optional
         username: ${{ github.actor }}
         password: ${{ secrets.CR_PAT }}
 

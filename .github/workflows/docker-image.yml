@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ master ]
     
-env:
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   # define job to build and publish docker image
   build:
@@ -16,24 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.4.0
     
     - name: Login to Github Packages
-      uses: docker/login-action@v1
+      uses: docker/login-action@v1.12.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.CR_PAT }}
       
     - name: Build & push to GitHub Container Registry
-      uses: docker/build-push-action@v2
+      uses: mr-smithers-excellent/docker-build-push@v5
       with:
-        # Note: tags has to be all lower-case
-        tags: |
-          alexzedim/commonwealth:latest 
-          ghcr.io/alexzedim/commonwealth:latest
-        # build on feature branches, push only on main branch
-        push: ${{ github.ref == 'refs/heads/main' }}
+        image: ${{ github.repository }}
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.CR_PAT }}
 
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

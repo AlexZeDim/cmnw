@@ -27,6 +27,7 @@ jobs:
       with:
         image: ${{ github.repository }}
         registry: ghcr.io
+        githubOrg: override-org # optional
         username: ${{ github.actor }}
         password: ${{ secrets.CR_PAT }}
 

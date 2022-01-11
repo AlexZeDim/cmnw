@@ -1,0 +1,40 @@
+name: Docker Image CI publish
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    
+env:
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # define job to build and publish docker image
+  build:
+    name: Build Docker image and push to GHCR
+    # run only when code is compiling and tests are passing
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+    - uses: actions/checkout@v2
+    
+    - name: Login to Github Packages
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.CR_PAT }}
+      
+    - name: Build & push to GitHub Container Registry
+      uses: docker/build-push-action@v2
+      with:
+        # Note: tags has to be all lower-case
+        tags: |
+          alexzedim/conglomerat:latest 
+          ghcr.io/alexzedim/conglomerat:latest
+        # build on feature branches, push only on main branch
+        push: ${{ github.ref == 'refs/heads/main' }}
+
+    - name: Image digest
+      run: echo ${{ steps.docker_build.outputs.digest }}

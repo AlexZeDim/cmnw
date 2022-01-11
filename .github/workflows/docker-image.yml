@@ -1,28 +1,28 @@
-name: Docker Image CI publish
+name: Create release
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-    
+
 jobs:
   # define job to build and publish docker image
-  build:
+  publish:
     # run only when code is compiling and tests are passing
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2.4.0
-    
+
     - name: Login to Github Packages
       uses: docker/login-action@v1.12.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.CR_PAT }}
-      
-    - name: Build & push to GitHub Container Registry
+
+    - name: Build & Push (GHCR)
       uses: mr-smithers-excellent/docker-build-push@v5
       with:
         image: commonwealth

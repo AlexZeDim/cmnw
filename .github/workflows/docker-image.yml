@@ -12,7 +12,6 @@ env:
 jobs:
   # define job to build and publish docker image
   build:
-    name: Build Docker image and push to GHCR
     # run only when code is compiling and tests are passing
     runs-on: ubuntu-latest
     steps:
@@ -31,8 +30,8 @@ jobs:
       with:
         # Note: tags has to be all lower-case
         tags: |
-          alexzedim/conglomerat:latest 
-          ghcr.io/alexzedim/conglomerat:latest
+          alexzedim/commonwealth:latest 
+          ghcr.io/alexzedim/commonwealth:latest
         # build on feature branches, push only on main branch
         push: ${{ github.ref == 'refs/heads/main' }}
 

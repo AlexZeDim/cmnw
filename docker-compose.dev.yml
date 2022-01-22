@@ -16,7 +16,7 @@ services:
       - conglomerat-network
 
   elasticsearch:
-    image: elasticsearch:7.16.2
+    image: elasticsearch:7.16.3
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -63,7 +63,7 @@ services:
 
   keys:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: keys
     restart: always
     links:
@@ -80,7 +80,7 @@ services:
 
   oracle-1:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: oracle-1
     links:
@@ -98,7 +98,7 @@ services:
 
   oracle-2:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: oracle-2
     links:
@@ -116,7 +116,7 @@ services:
 
   oracle-3:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: oracle-3
     links:

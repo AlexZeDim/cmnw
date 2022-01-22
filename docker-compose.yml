@@ -29,10 +29,13 @@ services:
       - conglomerat-network
 
   elasticsearch:
-    image: elasticsearch:latest
+    image: elasticsearch:7.16.3
     container_name: elasticsearch
     environment:
-      - discovery.type=single-nod
+      - discovery.type=single-node
+      - ELASTIC_USERNAME=${ELK_ROOT_USER}
+      - ELASTIC_PASSWORD=${ELK_ROOT_PASSWORD}
+      - xpack.security.enabled=true
     volumes:
       - ./volumes/elasticsearch:/usr/share/elasticsearch/data
     ports:
@@ -42,10 +45,13 @@ services:
       - conglomerat-network
 
   kibana:
-    image: kibana:latest
+    image: kibana:7.16.3
     container_name: kibana
     environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+      - ELASTICSEARCH_USERNAME=${ELK_ROOT_USER}
+      - ELASTICSEARCH_PASSWORD=${ELK_ROOT_PASSWORD}
+      - xpack.security.enabled=true
     ports:
       - '5601:5601'
     links:
@@ -57,7 +63,7 @@ services:
 
   commonwealth:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: commonwealth
     restart: always
     links:
@@ -76,7 +82,7 @@ services:
 
   keys:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: keys
     restart: always
     links:
@@ -93,7 +99,7 @@ services:
 
   ladder:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: ladder
     restart: always
     links:
@@ -110,7 +116,7 @@ services:
 
   discord:
     build: ./
-    image: conglomerat
+    image: commonwealth
     container_name: discord
     restart: always
     links:
@@ -127,7 +133,7 @@ services:
 
   realms:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: realms
     links:
@@ -144,7 +150,7 @@ services:
 
   characters:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: characters
     links:
@@ -161,7 +167,7 @@ services:
 
   osint-1:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: osint-1
     links:
@@ -178,7 +184,7 @@ services:
 
   osint-2:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: osint-2
     links:
@@ -195,7 +201,7 @@ services:
 
   osint-3:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: osint-3
     links:
@@ -212,7 +218,7 @@ services:
 
   osint-4:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: osint-4
     links:
@@ -229,7 +235,7 @@ services:
 
   osint-5:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: osint-5
     links:
@@ -246,7 +252,7 @@ services:
 
   oracle-1:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: oracle-1
     links:
@@ -264,7 +270,7 @@ services:
 
   dma-1:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: dma-1
     links:
@@ -281,7 +287,7 @@ services:
 
   dma-2:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: dma-2
     links:
@@ -298,7 +304,7 @@ services:
 
   dma-3:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: dma-3
     links:
@@ -315,7 +321,7 @@ services:
 
   guilds:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: guilds
     links:
@@ -332,7 +338,7 @@ services:
 
   auctions:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: auctions
     links:
@@ -349,7 +355,7 @@ services:
 
   contracts:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: contracts
     links:
@@ -366,7 +372,7 @@ services:
 
   valuations:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: valuations
     links:
@@ -383,7 +389,7 @@ services:
 
   gold:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: golds
     links:
@@ -400,7 +406,7 @@ services:
 
   wowprogress:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: wowprogress
     links:
@@ -417,7 +423,7 @@ services:
 
   warcraftlogs:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: warcraftlogs
     links:
@@ -434,7 +440,7 @@ services:
 
   items:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: items
     links:
@@ -451,7 +457,7 @@ services:
 
   pricing:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: pricing
     links:
@@ -468,7 +474,7 @@ services:
 
   wowtoken:
     build: ./
-    image: conglomerat
+    image: commonwealth
     restart: always
     container_name: wowtoken
     links:

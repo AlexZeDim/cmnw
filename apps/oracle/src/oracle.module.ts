@@ -42,6 +42,7 @@ import { elasticConfig } from '@app/configuration/elastic.config';
         connection: {
           host: redisConfig.host,
           port: redisConfig.port,
+          password: redisConfig.password,
         },
       },
     }),

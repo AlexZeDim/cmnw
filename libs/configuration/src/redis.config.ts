@@ -6,4 +6,5 @@ const Redis_Config = get<RedisInterface>('redis');
 export const redisConfig = {
   host: Redis_Config.host,
   port: Redis_Config.port,
+  password: Redis_Config.password,
 };

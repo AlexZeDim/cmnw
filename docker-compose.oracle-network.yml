@@ -1,0 +1,270 @@
+version: '3.8'
+services:
+  discord:
+    build: ./
+    image: commonwealth
+    container_name: discord
+    restart: always
+    command: [ 'node', 'dist/apps/discord/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    networks:
+      - cmnw-network
+
+  oraculum:
+    build: ./
+    image: commonwealth
+    container_name: oraculum
+    restart: always
+    command: [ 'node', 'dist/apps/oraculum/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    networks:
+      - cmnw-network
+
+  oracle-1:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-1
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=Childe
+    networks:
+      - cmnw-network
+
+  oracle-2:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-2
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=EdgarHoover
+    networks:
+      - cmnw-network
+
+  oracle-3:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-3
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=JohnBoil
+    networks:
+      - cmnw-network
+
+  oracle-4:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-4
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=MareAngmar
+    networks:
+      - cmnw-network
+
+  oracle-5:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-5
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=YoRu
+    networks:
+      - cmnw-network
+
+  oracle-6:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-6
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=BrettHand
+    networks:
+      - cmnw-network
+
+  oracle-7:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-7
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ДжонУик
+    networks:
+      - cmnw-network
+
+  oracle-8:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-8
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ГрустныйМох
+    networks:
+      - cmnw-network
+
+  oracle-9:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-9
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ОгуречныйРассол
+    networks:
+      - cmnw-network
+
+  oracle-10:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-10
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=МартиМакФлай
+    networks:
+      - cmnw-network
+
+  oracle-11:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-11
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ЛизаМечикова
+    networks:
+      - cmnw-network
+
+  oracle-12:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-12
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=Индийскийчай
+    networks:
+      - cmnw-network
+
+
+  oracle-13:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-13
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=TsurumaruKuninaga
+    networks:
+      - cmnw-network
+
+  oracle-14:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-14
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ШаловливыйПитон
+    networks:
+      - cmnw-network
+
+  oracle-15:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-15
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=РукастыйНуб
+    networks:
+      - cmnw-network
+
+  oracle-16:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-16
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ДеревоВЛесу
+    networks:
+      - cmnw-network
+
+  oracle-17:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-17
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=Enot
+    networks:
+      - cmnw-network
+
+  oracle-18:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-18
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=SashaMaze
+    networks:
+      - cmnw-network
+
+  oracle-19:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-19
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=ReaganRidley
+    networks:
+      - cmnw-network
+
+  oracle-20:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oracle-20
+    command: [ 'node', 'dist/apps/oracle/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - ACCOUNT=JaceMcKlee
+    networks:
+      - cmnw-network
+
+# Docker Networks
+networks:
+  # All container connect in a network
+  cmnw-network:
+    driver: bridge

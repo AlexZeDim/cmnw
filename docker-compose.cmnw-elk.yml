@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  elasticsearch:
+    image: elasticsearch:7.16.3
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_USERNAME=${ELK_ROOT_USER}
+      - ELASTIC_PASSWORD=${ELK_ROOT_PASSWORD}
+      - xpack.security.enabled=true
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    networks:
+      - cmnw-network
+
+  kibana:
+    image: kibana:7.16.3
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+      - ELASTICSEARCH_USERNAME=${ELK_ROOT_USER}
+      - ELASTICSEARCH_PASSWORD=${ELK_ROOT_PASSWORD}
+      - xpack.security.enabled=true
+    ports:
+      - '5601:5601'
+    links:
+      - elasticsearch
+    networks:
+      - cmnw-network
+    depends_on:
+      - elasticsearch
+
+  # Docker Networks
+networks:
+  # All container connect in a network
+  cmnw-network:
+    driver: bridge

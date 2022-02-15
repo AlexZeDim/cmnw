@@ -1,5 +1,7 @@
 FROM node:17
 
+ARG CR_PAT
+
 ENV CR_PAT=$CR_PAT
 
 RUN apt-get update

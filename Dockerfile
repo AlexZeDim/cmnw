@@ -1,10 +1,6 @@
 FROM node:17
 MAINTAINER me
 
-ARG CMNW_VAULT
-
-ENV CMNW_VAULT=$CR_PAT
-
 RUN apt-get update
 
 RUN apt-get install -y git
@@ -13,7 +9,7 @@ WORKDIR /usr/src/app
 
 RUN git init
 
-RUN git clone https://${CMNW_VAULT}@github.com/AlexZeDim/cmnw-secrets.git
+RUN git clone https://${CR_PAT}@github.com/AlexZeDim/cmnw-secrets.git
 
 RUN npm install -g @nestjs/cli
 

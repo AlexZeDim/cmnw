@@ -1,6 +1,10 @@
 FROM node:17-alpine3.12
 
-ARG CMNW_STORAGE
+ARG SSH_KEY
+
+ENV SSH_KEY=$CMNW_STORAGE
+
+RUN sh -c 'echo $SSH_KEY'
 
 RUN apk add git openssh-client
 

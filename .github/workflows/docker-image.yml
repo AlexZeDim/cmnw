@@ -23,14 +23,12 @@ jobs:
         password: ${{ secrets.CR_PAT }}
 
     - name: Build & Push (GHCR)
-      uses: mr-smithers-excellent/docker-build-push@v5
+      uses: docker/build-push-action@v2
       with:
-        image: commonwealth
-        tags: latest
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.CR_PAT }}
-        buildArgs: CR_PAT=${{ secrets.CR_PAT }}
+        push: true
+        tags: ghcr.io/alexzedim/commonwealth:latest
+        secrets: |
+          CR_PAT=${{ secrets.CR_PAT }}
 
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

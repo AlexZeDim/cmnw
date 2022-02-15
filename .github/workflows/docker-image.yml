@@ -28,7 +28,7 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: ghcr.io/alexzedim/commonwealth:latest
-        secrets: |
+        build-args: |
           CR_PAT=${{ secrets.CR_PAT }}
 
     - name: Image digest

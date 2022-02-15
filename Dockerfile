@@ -4,6 +4,12 @@ ARG SSH_KEY
 
 ENV SSH_KEY=$CMNW_STORAGE
 
+RUN apk update
+
+RUN apk upgrade
+
+RUN apk add bash
+
 RUN sh -c 'echo $SSH_KEY'
 
 RUN apk add git openssh-client

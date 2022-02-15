@@ -11,6 +11,21 @@ services:
     networks:
       - cmnw-network
 
+  rainy:
+    build: ./
+    image: rainy
+    container_name: rainy
+    restart: always
+    command: [ 'node', 'dist/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - discord=${discord}
+      - redis=${redis}
+      - port=${port}
+      - password=${password}
+    networks:
+      - cmnw-network
+
   oraculum:
     build: ./
     image: commonwealth

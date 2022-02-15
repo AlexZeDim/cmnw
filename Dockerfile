@@ -1,15 +1,11 @@
 FROM node:17
 MAINTAINER me
 
-ARG CMNW_VAULT
-
-ENV CMNW_VAULT=$SSH_KEY
-
 RUN apt-get update \
  && apt-get install -y git ssh
 
 RUN mkdir /root/.ssh/
-RUN echo "${CMNW_VAULT}" > /root/.ssh/id_rsa
+RUN echo "${SSH_KEY}" > /root/.ssh/id_rsa
 RUN chmod 600 /root/.ssh/id_rsa
 
 RUN touch /root/.ssh/known_hosts

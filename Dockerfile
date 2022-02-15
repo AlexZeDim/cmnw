@@ -1,30 +1,19 @@
 FROM node:17
 MAINTAINER me
 
-ARG SSH_KEY
+ARG CMNW_VAULT
 
-ENV SSH_KEY=$CMNW_STORAGE
+ENV CMNW_VAULT=$CR_PAT
 
 RUN apt-get update
 
-RUN apt-get install -y git openssh-client bash
-
-RUN mkdir /root/.ssh/
-
-RUN echo -n "$SSH_KEY" | base64 --decode > /root/.ssh/id_rsa
-
-RUN chmod 600 /root/.ssh/id_rsa
-
-# Create known_hosts
-RUN touch /root/.ssh/known_hosts
-
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
-
-RUN eval `ssh-agent -s` && ssh-add /root/.ssh/id_rsa
+RUN apt-get install -y git
 
 WORKDIR /usr/src/app
 
-RUN git clone git@github.com:AlexZeDim/cmnw-storage.git
+RUN git init
+
+RUN git clone https://${CMNW_VAULT}@github.com/AlexZeDim/cmnw-secrets.git
 
 RUN npm install -g @nestjs/cli
 

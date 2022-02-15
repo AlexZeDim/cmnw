@@ -1,24 +1,26 @@
-FROM node:17-alpine3.12
+FROM node:17
+MAINTAINER me
 
 ARG SSH_KEY
 
 ENV SSH_KEY=$CMNW_STORAGE
 
-RUN apk update
+RUN apt-get update
 
-RUN apk upgrade
+RUN apt-get install -y git openssh-client bash
 
-RUN apk add bash
+RUN mkdir /root/.ssh/
 
-RUN sh -c 'echo $SSH_KEY'
+RUN echo -n "$SSH_KEY" | base64 --decode > /root/.ssh/id_rsa
 
-RUN apk add git openssh-client
+RUN chmod 600 /root/.ssh/id_rsa
 
-RUN apk add git
+# Create known_hosts
+RUN touch /root/.ssh/known_hosts
 
-RUN mkdir -p -m 0600 ~/.ssh && touch .ssh/known_hosts && ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
-RUN ssh-agent sh -c 'ssh-add $SSH_KEY'
+RUN eval `ssh-agent -s` && ssh-add /root/.ssh/id_rsa
 
 WORKDIR /usr/src/app
 

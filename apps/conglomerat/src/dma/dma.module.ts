@@ -36,6 +36,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       config: {
         host: redisConfig.host,
         port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     BullModule.forRoot({
@@ -43,6 +44,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
         connection: {
           host: redisConfig.host,
           port: redisConfig.port,
+          password: redisConfig.password,
         },
       },
     }),

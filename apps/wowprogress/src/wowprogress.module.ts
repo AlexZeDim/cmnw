@@ -23,6 +23,7 @@ import { HttpModule } from '@nestjs/axios';
       config: {
         host: redisConfig.host,
         port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     BullModule.forRoot({
@@ -30,6 +31,7 @@ import { HttpModule } from '@nestjs/axios';
         connection: {
           host: redisConfig.host,
           port: redisConfig.port,
+          password: redisConfig.password,
         },
       },
     }),

@@ -26,6 +26,7 @@ import {
       config: {
         host: redisConfig.host,
         port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
@@ -40,6 +41,7 @@ import {
         connection: {
           host: redisConfig.host,
           port: redisConfig.port,
+          password: redisConfig.password,
         },
       },
     }),

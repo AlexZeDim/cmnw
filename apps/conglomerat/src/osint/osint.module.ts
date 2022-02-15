@@ -39,6 +39,7 @@ import { charactersQueue, guildsQueue } from '@app/core';
         connection: {
           host: redisConfig.host,
           port: redisConfig.port,
+          password: redisConfig.password,
         },
       },
     }),

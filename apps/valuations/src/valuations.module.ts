@@ -34,6 +34,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         connection: {
           host: redisConfig.host,
           port: redisConfig.port,
+          password: redisConfig.password,
         },
       },
     }),

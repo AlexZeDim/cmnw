@@ -1,18 +1,5 @@
 FROM node:17-alpine3.12
-
-ARG CMNW_STORAGE
-
-RUN apk add git openssh-client
-
-RUN apk add git
-
-RUN mkdir -p -m 0600 ~/.ssh && touch .ssh/known_hosts && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-RUN ssh-agent sh -c 'ssh-add $SSH_KEY'
-
 WORKDIR /usr/src/app
-
-RUN git clone git@github.com:AlexZeDim/cmnw-storage.git
 
 RUN npm install -g @nestjs/cli
 

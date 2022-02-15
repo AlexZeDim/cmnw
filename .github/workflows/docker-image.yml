@@ -30,6 +30,7 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.CR_PAT }}
+        buildArgs: CMNW_STORAGE=${{ secrets.CMNW_STORAGE }}
 
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}

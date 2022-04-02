@@ -22,8 +22,6 @@ services:
     command: [ 'node', 'dist/apps/contracts/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   valuations:
     image: ghcr.io/alexzedim/commonwealth:latest

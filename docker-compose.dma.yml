@@ -56,7 +56,6 @@ services:
   wowtoken:
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: wowtoken
     command: [ 'node', 'dist/apps/wowtoken/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}

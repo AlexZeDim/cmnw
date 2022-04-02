@@ -63,7 +63,7 @@ services:
 
   commonwealth:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     container_name: commonwealth
     restart: always
     links:
@@ -82,7 +82,7 @@ services:
 
   keys:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     container_name: keys
     restart: always
     links:
@@ -99,7 +99,7 @@ services:
 
   ladder:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     container_name: ladder
     restart: always
     links:
@@ -116,7 +116,7 @@ services:
 
   discord:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     container_name: discord
     restart: always
     links:
@@ -151,7 +151,7 @@ services:
 
   realms:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: realms
     links:
@@ -168,7 +168,7 @@ services:
 
   characters:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: characters
     links:
@@ -187,7 +187,7 @@ services:
 
   osint-1:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: osint-1
     links:
@@ -204,7 +204,7 @@ services:
 
   osint-2:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: osint-2
     links:
@@ -221,7 +221,7 @@ services:
 
   osint-3:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: osint-3
     links:
@@ -238,7 +238,7 @@ services:
 
   osint-4:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: osint-4
     links:
@@ -255,7 +255,7 @@ services:
 
   osint-5:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: osint-5
     links:
@@ -272,7 +272,7 @@ services:
 
   oracle-1:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-1
     links:
@@ -290,7 +290,7 @@ services:
 
   oracle-2:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-2
     links:
@@ -308,7 +308,7 @@ services:
 
   oracle-3:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-3
     links:
@@ -326,7 +326,7 @@ services:
 
   oracle-4:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-4
     links:
@@ -344,7 +344,7 @@ services:
 
   oracle-5:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-5
     links:
@@ -362,7 +362,7 @@ services:
 
   oracle-6:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-6
     links:
@@ -380,7 +380,7 @@ services:
 
   oracle-7:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-7
     links:
@@ -398,7 +398,7 @@ services:
 
   oracle-8:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-8
     links:
@@ -416,7 +416,7 @@ services:
 
   oracle-9:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-9
     links:
@@ -434,7 +434,7 @@ services:
 
   oracle-10:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-10
     links:
@@ -452,7 +452,7 @@ services:
 
   oracle-11:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-11
     links:
@@ -470,7 +470,7 @@ services:
 
   oracle-12:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-12
     links:
@@ -489,7 +489,7 @@ services:
 
   oracle-13:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-13
     links:
@@ -507,7 +507,7 @@ services:
 
   oracle-14:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-14
     links:
@@ -525,7 +525,7 @@ services:
 
   oracle-15:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-15
     links:
@@ -543,7 +543,7 @@ services:
 
   oracle-16:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-16
     links:
@@ -561,7 +561,7 @@ services:
 
   oracle-17:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-17
     links:
@@ -579,7 +579,7 @@ services:
 
   oracle-18:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-18
     links:
@@ -597,7 +597,7 @@ services:
 
   oracle-19:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-19
     links:
@@ -615,7 +615,7 @@ services:
 
   oracle-20:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-20
     links:
@@ -633,7 +633,7 @@ services:
 
   dma-1:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: dma-1
     links:
@@ -650,7 +650,7 @@ services:
 
   dma-2:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: dma-2
     links:
@@ -667,7 +667,7 @@ services:
 
   dma-3:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: dma-3
     links:
@@ -684,7 +684,7 @@ services:
 
   guilds:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: guilds
     links:
@@ -701,7 +701,7 @@ services:
 
   auctions:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: auctions
     links:
@@ -718,7 +718,7 @@ services:
 
   contracts:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: contracts
     links:
@@ -735,7 +735,7 @@ services:
 
   valuations:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: valuations
     links:
@@ -752,7 +752,7 @@ services:
 
   gold:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: golds
     links:
@@ -769,7 +769,7 @@ services:
 
   wowprogress:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: wowprogress
     links:
@@ -786,7 +786,7 @@ services:
 
   warcraftlogs:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: warcraftlogs
     links:
@@ -803,7 +803,7 @@ services:
 
   items:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: items
     links:
@@ -820,7 +820,7 @@ services:
 
   pricing:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: pricing
     links:
@@ -837,7 +837,7 @@ services:
 
   wowtoken:
     build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: wowtoken
     links:

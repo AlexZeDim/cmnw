@@ -1,54 +1,24 @@
 version: '3.8'
 services:
-  dma-1:
-    build: ./
+  dma:
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: dma-1
     command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
+    deploy:
+      replicas: 3
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  dma-2:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: dma-2
-    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  dma-3:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: dma-3
-    command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   auctions:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: auctions
     command: [ 'node', 'dist/apps/auctions/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   contracts:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: contracts
     command: [ 'node', 'dist/apps/contracts/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
@@ -56,62 +26,37 @@ services:
       - cmnw-network
 
   valuations:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: valuations
     command: [ 'node', 'dist/apps/valuations/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   gold:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: golds
     command: [ 'node', 'dist/apps/gold/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   items:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: items
     command: [ 'node', 'dist/apps/items/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   pricing:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: pricing
     command: [ 'node', 'dist/apps/pricing/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   wowtoken:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: wowtoken
     command: [ 'node', 'dist/apps/wowtoken/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-# Docker Networks
-networks:
-  # All container connect in a network
-  cmnw-network:
-    driver: bridge

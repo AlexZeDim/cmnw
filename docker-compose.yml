@@ -16,7 +16,7 @@ services:
       - conglomerat-network
 
   redis:
-    image: redis:6-alpine
+    image: redis:7.0-rc-alpine
     restart: always
     container_name: redis
     volumes:
@@ -131,6 +131,24 @@ services:
     networks:
       - conglomerat-network
 
+  oraculum:
+    build: ./
+    image: commonwealth
+    restart: always
+    container_name: oraculum
+    links:
+      - mongo
+      - redis
+    command: [ 'node', 'dist/apps/oraculum/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - conglomerat-network
+
+
   realms:
     build: ./
     image: commonwealth
@@ -164,6 +182,8 @@ services:
       - redis
     networks:
       - conglomerat-network
+
+
 
   osint-1:
     build: ./

@@ -22,7 +22,6 @@ services:
     command: redis-server --requirepass $REDIS_PASSWORD --appendonly yes
     volumes:
       - ./volumes/redis:/data:rw,z
-
     ports:
       - '6379:6379'
     networks:

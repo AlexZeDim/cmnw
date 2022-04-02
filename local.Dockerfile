@@ -1,25 +1,9 @@
-FROM node:17
-
-ARG CR_PAT
-
-ENV CR_PAT=$CR_PAT
-
-RUN apt-get update
-
-RUN apt-get install -y git
-
+FROM node:17-alpine3.12
 WORKDIR /usr/src/app
 
 RUN npm install -g @nestjs/cli
 
-RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
-
-RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
-
-RUN mv cmnw-secrets/* cmnw-secrets/.[^.]* . && rmdir cmnw-secrets/
-
 COPY package.json ./
-
 RUN yarn install
 
 COPY . .
@@ -46,4 +30,3 @@ RUN nest build conglomerat \
   && nest build oraculum
 
 CMD wait && ["node"]
-

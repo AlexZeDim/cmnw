@@ -4,6 +4,7 @@
 
 # DotEnv
 !/.env
+.env
 
 # Docker data
 /volumes
@@ -50,5 +51,3 @@ lerna-debug.log*
 !/init-mongo.js
 !/package-lock.json
 !/files/
-
-.env

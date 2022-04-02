@@ -1,139 +1,59 @@
 version: '3.8'
 services:
-  osint-1:
-    build: ./
-    image: commonwealth
+  osint:
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: osint-1
     command: [ 'node', 'dist/apps/osint/main.js' ]
+    deploy:
+      replicas: 5
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-2:
-    build: ./
-    image: commonwealth
-    restart: always
-    container_name: osint-2
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-3:
-    build: ./
-    image: commonwealth
-    restart: always
-    container_name: osint-3
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-4:
-    build: ./
-    image: commonwealth
-    restart: always
-    container_name: osint-4
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-5:
-    build: ./
-    image: commonwealth
-    restart: always
-    container_name: osint-5
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   keys:
-    build: ./
-    image: commonwealth
-    container_name: keys
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   ladder:
-    build: ./
-    image: commonwealth
-    container_name: ladder
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     command: [ 'node', 'dist/apps/ladder/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   realms:
-    build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: realms
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   characters:
-    build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: characters
     command: [ 'node', 'dist/apps/characters/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   guilds:
-    build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: guilds
     command: [ 'node', 'dist/apps/guilds/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   wowprogress:
-    build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: wowprogress
     command: [ 'node', 'dist/apps/wowprogress/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   warcraftlogs:
-    build: ./
-    image: commonwealth
+    image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: warcraftlogs
     command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-# Docker Networks
-networks:
-  # All container connect in a network
-  cmnw-network:
-    driver: bridge

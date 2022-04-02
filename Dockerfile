@@ -1,22 +1,25 @@
-FROM node:17-alpine3.12
+FROM node:17
 
-ARG CMNW_STORAGE
+ARG CR_PAT
 
-RUN apk add git openssh-client
+ENV CR_PAT=$CR_PAT
 
-RUN apk add git
+RUN apt-get update
 
-RUN mkdir -p -m 0600 ~/.ssh && touch .ssh/known_hosts && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-RUN ssh-agent sh -c 'ssh-add $SSH_KEY'
+RUN apt-get install -y git
 
 WORKDIR /usr/src/app
 
-RUN git clone git@github.com:AlexZeDim/cmnw-storage.git
-
 RUN npm install -g @nestjs/cli
 
+RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
+
+RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
+
+RUN mv cmnw-secrets/* cmnw-secrets/.[^.]* . && rmdir cmnw-secrets/
+
 COPY package.json ./
+
 RUN yarn install
 
 COPY . .
@@ -43,3 +46,4 @@ RUN nest build conglomerat \
   && nest build oraculum
 
 CMD wait && ["node"]
+

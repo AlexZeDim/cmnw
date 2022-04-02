@@ -1,55 +1,11 @@
 version: '3.8'
 services:
-  osint-1:
-    build: ./
+  osint:
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
-    container_name: osint-1
     command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-2:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: osint-2
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-3:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: osint-3
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-4:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: osint-4
-    command: [ 'node', 'dist/apps/osint/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
-
-  osint-5:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: osint-5
-    command: [ 'node', 'dist/apps/osint/main.js' ]
+    deploy:
+      replicas: 3
     environment:
       - NODE_ENV=${NODE_ENV}
     networks:

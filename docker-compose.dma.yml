@@ -39,7 +39,6 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
 
-
   items:
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always

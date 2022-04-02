@@ -1,20 +1,14 @@
 version: '3.8'
 services:
   discord:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
-    container_name: discord
     restart: always
     command: [ 'node', 'dist/apps/discord/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   rainy:
-    build: ./
     image: rainy
-    container_name: rainy
     restart: always
     command: [ 'node', 'dist/main.js' ]
     environment:
@@ -23,22 +17,15 @@ services:
       - redis=${redis}
       - port=${port}
       - password=${password}
-    networks:
-      - cmnw-network
 
   oraculum:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
-    container_name: oraculum
     restart: always
     command: [ 'node', 'dist/apps/oraculum/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
-    networks:
-      - cmnw-network
 
   oracle-1:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-1
@@ -46,11 +33,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=Childe
-    networks:
-      - cmnw-network
 
   oracle-2:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-2
@@ -58,11 +42,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=EdgarHoover
-    networks:
-      - cmnw-network
 
   oracle-3:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-3
@@ -70,11 +51,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=JohnBoil
-    networks:
-      - cmnw-network
 
   oracle-4:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-4
@@ -82,11 +60,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=MareAngmar
-    networks:
-      - cmnw-network
 
   oracle-5:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-5
@@ -94,11 +69,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=YoRu
-    networks:
-      - cmnw-network
 
   oracle-6:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-6
@@ -106,11 +78,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=BrettHand
-    networks:
-      - cmnw-network
 
   oracle-7:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-7
@@ -118,11 +87,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ДжонУик
-    networks:
-      - cmnw-network
 
   oracle-8:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-8
@@ -130,11 +96,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ГрустныйМох
-    networks:
-      - cmnw-network
 
   oracle-9:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-9
@@ -142,11 +105,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ОгуречныйРассол
-    networks:
-      - cmnw-network
 
   oracle-10:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-10
@@ -154,11 +114,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=МартиМакФлай
-    networks:
-      - cmnw-network
 
   oracle-11:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-11
@@ -166,11 +123,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ЛизаМечикова
-    networks:
-      - cmnw-network
 
   oracle-12:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-12
@@ -178,12 +132,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=Индийскийчай
-    networks:
-      - cmnw-network
-
 
   oracle-13:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-13
@@ -191,11 +141,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=TsurumaruKuninaga
-    networks:
-      - cmnw-network
 
   oracle-14:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-14
@@ -203,11 +150,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ШаловливыйПитон
-    networks:
-      - cmnw-network
 
   oracle-15:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-15
@@ -215,11 +159,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=РукастыйНуб
-    networks:
-      - cmnw-network
 
   oracle-16:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-16
@@ -227,11 +168,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ДеревоВЛесу
-    networks:
-      - cmnw-network
 
   oracle-17:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-17
@@ -239,11 +177,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=Enot
-    networks:
-      - cmnw-network
 
   oracle-18:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-18
@@ -251,11 +186,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=SashaMaze
-    networks:
-      - cmnw-network
 
   oracle-19:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-19
@@ -263,11 +195,8 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=ReaganRidley
-    networks:
-      - cmnw-network
 
   oracle-20:
-    build: ./
     image: ghcr.io/alexzedim/commonwealth:latest
     restart: always
     container_name: oracle-20
@@ -275,11 +204,5 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - ACCOUNT=JaceMcKlee
-    networks:
-      - cmnw-network
 
-# Docker Networks
-networks:
-  # All container connect in a network
-  cmnw-network:
-    driver: bridge
+

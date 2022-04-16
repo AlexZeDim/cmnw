@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   elasticsearch:
-    image: elasticsearch:7.16.3
+    image: elasticsearch:8.1.2
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -15,7 +15,7 @@ services:
       - cmnw-network
 
   kibana:
-    image: kibana:7.16.3
+    image: kibana:8.1.2
     container_name: kibana
     environment:
       - ELASTICSEARCH_URL="http://elasticsearch:9200"

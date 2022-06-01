@@ -179,24 +179,6 @@
         "tsConfigPath": "apps/dma/tsconfig.app.json"
       }
     },
-    "oraculum": {
-      "type": "application",
-      "root": "apps/oraculum",
-      "entryFile": "main",
-      "sourceRoot": "apps/oraculum/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/oraculum/tsconfig.app.json"
-      }
-    },
-    "oracle": {
-      "type": "application",
-      "root": "apps/oracle",
-      "entryFile": "main",
-      "sourceRoot": "apps/oracle/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/oracle/tsconfig.app.json"
-      }
-    },
     "contracts": {
       "type": "application",
       "root": "apps/contracts",
@@ -222,15 +204,6 @@
       "sourceRoot": "apps/ladder/src",
       "compilerOptions": {
         "tsConfigPath": "apps/ladder/tsconfig.app.json"
-      }
-    },
-    "elastic": {
-      "type": "library",
-      "root": "libs/elastic",
-      "entryFile": "index",
-      "sourceRoot": "libs/elastic/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/elastic/tsconfig.lib.json"
       }
     }
   }

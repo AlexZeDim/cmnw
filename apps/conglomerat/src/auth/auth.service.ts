@@ -6,7 +6,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Account, Entity } from '@app/mongo';
 import { FilterQuery, LeanDocument, Model } from 'mongoose';
 import { AccountGetDto } from '@app/core/dto/account-get.dto';
-import { ENTITY_NAME } from '@app/core';
 
 @Injectable()
 export class AuthService {
@@ -71,12 +70,5 @@ export class AuthService {
     if (!updatedAccount) throw new NotFoundException('Account not found!');
 
     return updatedAccount;
-  }
-
-  async addEntity() {
-    await this.EntityModel.create({
-      entity: ENTITY_NAME.Entity,
-      name: 'Test',
-    })
   }
 }

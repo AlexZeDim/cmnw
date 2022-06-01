@@ -3,7 +3,7 @@ import {
   Injectable, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Account, Entity } from '@app/mongo';
+import { Account } from '@app/mongo';
 import { FilterQuery, LeanDocument, Model } from 'mongoose';
 import { AccountGetDto } from '@app/core/dto/account-get.dto';
 
@@ -13,8 +13,6 @@ export class AuthService {
   constructor(
     @InjectModel(Account.name)
     private readonly AccountModel: Model<Account>,
-    @InjectModel(Entity.name)
-    private readonly EntityModel: Model<Entity>
   ) {}
 
   // FIXME deprecated

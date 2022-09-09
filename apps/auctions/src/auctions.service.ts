@@ -26,10 +26,8 @@ export class AuctionsService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     await this.indexCommodity(GLOBAL_DMA_KEY);
-    await this.indexAuctions(GLOBAL_DMA_KEY);
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);
@@ -84,7 +82,7 @@ export class AuctionsService implements OnApplicationBootstrap {
     try {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
-        this.logger.error(`indexAuctions: clearance: ${clearance} key not found`);
+        this.logger.error(`indexCommodity: clearance: ${clearance} key not found`);
         return
       }
 

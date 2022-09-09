@@ -1,8 +1,6 @@
 import { NOTIFICATIONS } from '@app/core/constants';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { Redis } from '@nestjs-modules/ioredis';
 import { Client, Message } from 'discord.js';
-import { OraculumCore } from '@app/core/interfaces/oraculum.interface';
 
 export interface IDiscordCommand {
   readonly name: string;
@@ -17,20 +15,6 @@ export interface IDiscordCommand {
 
   executeMessage(message: Message, args?: string, client?: Client): Promise<void>;
   executeInteraction(interaction: any, client?: Client): Promise<void>;
-}
-
-export interface ISlashCommandArgs {
-  readonly interaction: any,
-  readonly oraculumCore: OraculumCore,
-  readonly client?: Client,
-  readonly redis?: Redis,
-}
-
-export interface IDiscordSlashCommand {
-  readonly name: string;
-  readonly slashCommand: SlashCommandBuilder;
-
-  executeInteraction(interactionArgs): Promise<void>;
 }
 
 export class IDiscordSubscription {

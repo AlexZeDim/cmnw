@@ -1,5 +1,5 @@
-import { LeanDocument } from 'mongoose';
-import { Auction, Contract } from '@app/mongo';
+import { LeanDocument, Model } from 'mongoose';
+import { Auction, Contract, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { BattleNetOptions } from 'blizzapi';
 
@@ -13,6 +13,43 @@ class ItemNames {
   fr_FR: string;
   it_IT: string;
   ru_RU: string;
+}
+
+export interface IActionsModifier {
+  type: number;
+  value: number;
+}
+
+export interface IAuctionsItem {
+  id: number;
+  context?: number;
+  bonus_lists?: number[];
+  modifiers?: Array<IActionsModifier>;
+  pet_breed_id?: number,
+  pet_level?: number,
+  pet_quality_id?: number,
+  pet_species_id?: number
+}
+
+export interface IAuctionsOrder {
+  id: number
+  item: IAuctionsItem
+  bid?: number;
+  unit_price?: number;
+  buyout?: number;
+  quantity: number;
+  time_left: string;
+  // extend by transformOrders
+  item_id?: number;
+  price?: number;
+  connected_realm_id: number;
+  last_modified?: number;
+}
+
+export interface IAuctionsResponse {
+  auctions: Array<IAuctionsOrder>,
+  lastModified: string
+  commodities: { href: string },
 }
 
 export interface IQItemValuation {
@@ -71,7 +108,7 @@ export class IQItem implements BattleNetOptions {
 }
 
 export class IQAuction implements BattleNetOptions {
-  readonly connected_realm_id: number;
+  readonly connected_realm_id?: number;
 
   auctions?: number;
 
@@ -319,6 +356,20 @@ export interface ICsvReagents {
   readonly quantity: number;
 }
 
+export interface IBuildYAxis {
+  readonly itemId: number;
+  readonly connectedRealmsIds?: number[];
+  readonly isCommdty: boolean;
+  readonly isXrs: boolean;
+  readonly isGold: boolean;
+}
+
+export interface IGetCommdtyOrders {
+  readonly model: Model<Gold | Auction>;
+  readonly itemId?: number;
+  readonly connectedRealmId?: number;
+  readonly timestamp?: number;
+}
 
 export class MethodEvaluation {
 

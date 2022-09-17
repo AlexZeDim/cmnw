@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, IQAuction, round2 } from '@app/core';
+import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, IAuctionsOrder, IAuctionsResponse, IQAuction, round2 } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -9,6 +9,7 @@ import moment from 'moment';
 import { Model } from 'mongoose';
 import { bufferCount, concatMap } from 'rxjs/operators';
 import { from, lastValueFrom } from 'rxjs';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
@@ -19,6 +20,8 @@ export class AuctionsWorker {
   private BNet: BlizzAPI;
 
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectModel(Auction.name)
     private readonly AuctionModel: Model<Auction>,
     @InjectModel(Realm.name)
@@ -31,15 +34,8 @@ export class AuctionsWorker {
       const args: IQAuction = { ...job.data };
       await job.updateProgress(5);
 
-      if (!args.auctions || args.auctions === 0) {
-        const realm = await this.RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
-
-        realm ? args.auctions = realm.auctions : args.auctions = 0;
-
-        await job.updateProgress(10);
-      }
-
-      const ifModifiedSince: string = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+      let ifModifiedSince: string = `${moment(0).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+      let getAuctionsMethodApi: string = '/data/wow/auctions/commodities';
 
       this.BNet = new BlizzAPI({
         region: args.region,
@@ -47,8 +43,34 @@ export class AuctionsWorker {
         clientSecret: args.clientSecret,
         accessToken: args.accessToken
       });
+      /**
+       * @description If no connected realm passed, then deal with it, as COMMDTY
+       * @description Else, it's an auctions request
+       */
+      if (!args.connected_realm_id) {
+        const isModifiedSinceExists = !!(await this.redisService.exists('COMMDTY'));
+        if (isModifiedSinceExists) {
+          const ifModifiedSinceTimestamp = await this.redisService.get('COMMDTY');
 
-      const response: { auctions: Record<string, any>[], lastModified: string } = await this.BNet.query(`/data/wow/connected-realm/${args.connected_realm_id}/auctions`, {
+          ifModifiedSince = `${moment(ifModifiedSinceTimestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+        }
+      } else {
+        /**
+         * @description Check auction timestamp for each realm
+         */
+        if (!args.auctions || args.auctions === 0) {
+          const realm = await this.RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
+
+          realm ? args.auctions = realm.auctions : args.auctions = 0;
+
+          await job.updateProgress(10);
+
+          ifModifiedSince = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
+        }
+        getAuctionsMethodApi = `/data/wow/connected-realm/${args.connected_realm_id}/auctions`;
+      }
+
+      const auctionsResponse: IAuctionsResponse = await this.BNet.query(getAuctionsMethodApi, {
         timeout: DMA_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
         headers: {
@@ -58,16 +80,25 @@ export class AuctionsWorker {
       });
 
       await job.updateProgress(15);
-      if (!response || !Array.isArray(response.auctions) || !response.auctions.length) return 504
+      if (!auctionsResponse || !Array.isArray(auctionsResponse.auctions) || !auctionsResponse.auctions.length) return 504;
 
-      const ts: number = parseInt(moment(response.lastModified).format('x'));
+      const ts: number = parseInt(moment(auctionsResponse.lastModified).format('x'));
 
-      const orders = await this.writeBulkOrders(response.auctions, args.connected_realm_id, ts);
-      await job.log(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders}`);
+      const orders = await this.writeBulkOrders(auctionsResponse.auctions, ts, args.connected_realm_id);
 
-      await job.updateProgress(90);
-      await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
-      await job.updateProgress(100);
+      if (args.connected_realm_id) {
+        await job.log(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders}`);
+        await job.updateProgress(90);
+        await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
+        await job.updateProgress(100);
+      } else {
+        await job.log(`${AuctionsWorker.name}: COMMDTY:${orders}`);
+        await job.updateProgress(90);
+        await this.redisService.set('COMMDTY', ts);
+        await this.redisService.set(`COMMDTY:TS:${ts}`, ts, 'EX', 86400);
+        await job.updateProgress(100);
+      }
+
       return 200
     } catch (errorException) {
       await job.log(errorException);
@@ -76,31 +107,31 @@ export class AuctionsWorker {
     }
   }
 
-  private transformOrders(orders: any[], connected_realm_id: number, last_modified: number): Auction[] {
+  private transformOrders(orders: IAuctionsOrder[], last_modified: number, connected_realm_id?: number): Auction[] {
     return orders.map(order => {
       if (order.item && order.item.id) {
         order.item_id = order.item.id
         if (order.item.id === 82800) {
-          //TODO pet fix
+          // TODO pet fix
         }
       }
       if (order.bid) order.bid = round2(order.bid / 10000);
       if (order.buyout) order.buyout = round2(order.buyout / 10000);
       if (order.unit_price) order.price = round2(order.unit_price / 10000);
-      order.connected_realm_id = connected_realm_id;
+      if (connected_realm_id) order.connected_realm_id = connected_realm_id;
       order.last_modified = last_modified;
       return new this.AuctionModel(order)
     })
   }
 
-  private async writeBulkOrders(orders: any[], connected_realm_id: number, last_modified: number): Promise<number> {
+  private async writeBulkOrders(orders: IAuctionsOrder[], last_modified: number, connected_realm_id?: number): Promise<number> {
     let iterator: number = 0;
     try {
       await lastValueFrom(
         from(orders).pipe(
           bufferCount(10000),
           concatMap(async (ordersBulk) => {
-            const ordersBulkAuctions = this.transformOrders(ordersBulk, connected_realm_id, last_modified);
+            const ordersBulkAuctions = this.transformOrders(ordersBulk, last_modified, connected_realm_id);
             await this.AuctionModel.insertMany(ordersBulkAuctions, { rawResult: false, lean: true });
             iterator += ordersBulkAuctions.length;
             this.logger.debug(`writeBulkOrders: ${connected_realm_id}:${iterator}`);

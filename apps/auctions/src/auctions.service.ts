@@ -25,10 +25,9 @@ export class AuctionsService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexAuctions(GLOBAL_DMA_KEY)
+    await this.indexCommodity(GLOBAL_DMA_KEY);
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);
@@ -65,6 +64,7 @@ export class AuctionsService implements OnApplicationBootstrap {
             `${realm.name}`,
             {
               connected_realm_id: realm._id.connected_realm_id,
+              auctions: realm._id.auctions,
               region: 'eu',
               clientId: key._id,
               clientSecret: key.secret,
@@ -74,6 +74,29 @@ export class AuctionsService implements OnApplicationBootstrap {
         });
     } catch (errorException) {
       this.logger.error(`indexAuctions: ${errorException}`)
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  private async indexCommodity(clearance: string = GLOBAL_DMA_KEY) {
+    try {
+      const key = await this.KeyModel.findOne({ tags: clearance });
+      if (!key || !key.token) {
+        this.logger.error(`indexCommodity: clearance: ${clearance} key not found`);
+        return
+      }
+
+      await this.queue.add(
+        `COMMDTY`,
+        {
+          region: 'eu',
+          clientId: key._id,
+          clientSecret: key.secret,
+          accessToken: key.token
+        }
+      )
+    } catch (errorException) {
+      this.logger.error(`indexCommodity: ${errorException}`)
     }
   }
 }

@@ -6,6 +6,7 @@ import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
@@ -15,6 +16,13 @@ import { ScheduleModule } from '@nestjs/schedule';
       { name: Realm.name, schema: RealmsSchema },
       { name: Key.name, schema: KeysSchema },
     ]),
+    RedisModule.forRoot({
+      config: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      },
+    }),
     BullModule.forRoot({
       options: {
         connection: {

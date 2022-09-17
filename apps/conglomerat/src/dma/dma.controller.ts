@@ -19,14 +19,13 @@ import {
 } from '@nestjs/swagger';
 import { DmaService } from './dma.service';
 import { LeanDocument } from 'mongoose'
-import { Token } from '@app/mongo';
+import { Item, Token } from '@app/mongo';
 import {
-  ItemGetDto,
   ItemChartDto,
   ItemCrossRealmDto,
   ItemFeedDto,
   ItemQuotesDto,
-  ItemValuationsDto,
+  ItemValuationsDto, ReqGetItemDto,
   WowtokenDto,
 } from '@app/core';
 
@@ -48,7 +47,7 @@ export class DmaController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item')
-  async getItem(@Query() input: ItemCrossRealmDto): Promise<ItemGetDto> {
+  async getItem(@Query() input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
     return await this.dmaService.getItem(input);
   }
 
@@ -81,8 +80,8 @@ export class DmaController {
     return this.dmaService.getItemValuations(input);
   }
 
-  @ApiOperation({ description: 'Returns requested item chart' })
-  @ApiOkResponse({ description: 'Request item chart with selected _id' })
+  @ApiOperation({ description: 'Returns requested commdty item chart' })
+  @ApiOkResponse({ description: 'Request commdty chart with selected _id' })
   @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
   @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
@@ -90,9 +89,23 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/item/chart')
-  async getItemChart(@Query() input: ItemCrossRealmDto): Promise<ItemChartDto> {
-    return await this.dmaService.getItemChart(input);
+  @Get('/commdty/chart')
+  async getCommdtyChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
+    return await this.dmaService.getCommdtyChart(input);
+  }
+
+  @ApiOperation({ description: 'Returns requested gold chart' })
+  @ApiOkResponse({ description: 'Request gold chart with selected _id' })
+  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
+  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
+  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @HttpCode(HttpStatus.OK)
+  @Get('/gold/chart')
+  async getGoldChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
+    return await this.dmaService.getGoldChart(input);
   }
 
   @ApiOperation({ description: 'Returns requested item quotes' })
@@ -105,8 +118,8 @@ export class DmaController {
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/item/quotes')
-  async getItemQuotes(@Query() input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
-    return await this.dmaService.getItemQuotes(input);
+  async getAssetQuotes(@Query() input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
+    return await this.dmaService.getAssetQuotes(input);
   }
 
   @ApiOperation({ description: 'Returns requested item feed' })

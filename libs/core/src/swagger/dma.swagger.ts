@@ -129,6 +129,14 @@ export const SWAGGER_ITEM_CROSS_REALM: ApiPropertyOptions = {
   example: '171276@gordunni',
 }
 
+export const SWAGGER_ITEM_ID: ApiPropertyOptions = {
+  name: '_id',
+  description: 'Item ID, name or asset class of item group ',
+  required: true,
+  type: String,
+  example: '174305 || Windowblossom || HRBS'
+}
+
 export const SWAGGER_ITEM: ApiPropertyOptions = {
   name: 'item',
   description: 'Item ID, name or asset class of item group ',

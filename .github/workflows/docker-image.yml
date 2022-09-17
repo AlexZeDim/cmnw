@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2.4.0
+      uses: actions/checkout@v3.0.2
+      with:
+        fetch-depth: 2
 
     - name: Tag new release
       uses: salsify/action-detect-and-tag-new-version@v2

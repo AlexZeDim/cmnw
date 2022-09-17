@@ -13,7 +13,7 @@ services:
     ports:
       - '27017-27019:27017-27019'
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   redis:
     image: redis:6-alpine
@@ -26,11 +26,11 @@ services:
     ports:
       - '6379:6379'
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   keys:
     build: ./
-    image: commonwealth
+    image: cmnw
     container_name: keys
     restart: always
     links:
@@ -43,11 +43,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
 # Docker Networks
 networks:
   # All container connect in a network
-  conglomerat-network:
+  cmnw-network:
     driver: bridge
 

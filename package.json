@@ -33,7 +33,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/conglomerat/test/jest-e2e.json",
-    "docker:build": "docker build -t commonwealth:%npm_package_version% .",
+    "docker:build": "docker build -f local.Dockerfile -t cmnw:%npm_package_version% .",
     "version": "echo %npm_package_version%"
   },
   "dependencies": {

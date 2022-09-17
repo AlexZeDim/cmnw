@@ -1,8 +1,12 @@
 FROM node:17
 
 ARG CR_PAT
-
 ENV CR_PAT=$CR_PAT
+
+LABEL org.opencontainers.image.title = "CMNW"
+LABEL org.opencontainers.image.vendor = "AlexZeDim"
+LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
+LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
 
 RUN apt-get update
 

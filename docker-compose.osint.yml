@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   osint:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/osint/main.js' ]
     deploy:
@@ -10,49 +10,49 @@ services:
       - NODE_ENV=${NODE_ENV}
 
   keys:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   ladder:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/ladder/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   realms:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   characters:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/characters/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   guilds:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/guilds/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   wowprogress:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/wowprogress/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   warcraftlogs:
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
     environment:

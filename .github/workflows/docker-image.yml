@@ -20,12 +20,18 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.CR_PAT }}
 
+    - name: match-tag-to-package-version
+      id: match-tag-to-package-version
+      uses: geritol/match-tag-to-package-version@0.2.0
+      with:
+        TAG_PREFIX: v
+
     - name: Build & Push (GHCR)
       uses: docker/build-push-action@v2.9.0
       with:
         file: ./Dockerfile
         push: true
-        tags: ghcr.io/alexzedim/commonwealth:latest
+        tags: ghcr.io/alexzedim/cmnw:${{ steps.match-tag-to-package-version.outputs.PACKAGE_VERSION }}
         build-args: |
           CR_PAT=${{ secrets.CR_PAT }}
 

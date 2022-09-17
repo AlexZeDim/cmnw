@@ -95,6 +95,7 @@ export class AuctionsWorker {
         await job.log(`${AuctionsWorker.name}: COMMDTY:${orders}`);
         await job.updateProgress(90);
         await this.redisService.set('COMMDTY', ts);
+        await this.redisService.set(`COMMDTY:TS:${ts}`, ts, 'EX', 86400);
         await job.updateProgress(100);
       }
 

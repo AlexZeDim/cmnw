@@ -1,5 +1,5 @@
-import { LeanDocument } from 'mongoose';
-import { Auction, Contract } from '@app/mongo';
+import { LeanDocument, Model } from 'mongoose';
+import { Auction, Contract, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { BattleNetOptions } from 'blizzapi';
 
@@ -356,6 +356,20 @@ export interface ICsvReagents {
   readonly quantity: number;
 }
 
+export interface IBuildYAxis {
+  readonly itemId: number;
+  readonly connectedRealmsIds?: number[];
+  readonly isCommdty: boolean;
+  readonly isXrs: boolean;
+  readonly isGold: boolean;
+}
+
+export interface IGetCommdtyOrders {
+  readonly model: Model<Gold | Auction>;
+  readonly itemId?: number;
+  readonly connectedRealmId?: number;
+  readonly timestamp?: number;
+}
 
 export class MethodEvaluation {
 

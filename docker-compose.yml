@@ -13,7 +13,7 @@ services:
     ports:
       - '27017-27019:27017-27019'
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   redis:
     image: redis:7.0-rc-alpine
@@ -26,7 +26,7 @@ services:
     ports:
       - '6379:6379'
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   cmnw:
     build: ./
@@ -36,7 +36,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node','dist/apps/conglomerat/main.js' ]
+    command: [ 'node','dist/apps/cmnw/main.js' ]
     ports:
       - '5000:8000'
     environment:
@@ -45,7 +45,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   keys:
     build: ./
@@ -62,7 +62,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   ladder:
     build: ./
@@ -79,7 +79,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   discord:
     build: ./
@@ -96,7 +96,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   oraculum:
     build: ./
@@ -113,7 +113,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
 
   realms:
@@ -131,7 +131,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   characters:
     build: ./
@@ -148,7 +148,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
 
 
@@ -167,7 +167,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-2:
     build: ./
@@ -184,7 +184,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-3:
     build: ./
@@ -201,7 +201,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-4:
     build: ./
@@ -218,7 +218,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-5:
     build: ./
@@ -235,7 +235,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   dma-1:
     build: ./
@@ -252,7 +252,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   dma-2:
     build: ./
@@ -269,7 +269,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   dma-3:
     build: ./
@@ -286,7 +286,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   guilds:
     build: ./
@@ -303,7 +303,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   auctions:
     build: ./
@@ -320,7 +320,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   contracts:
     build: ./
@@ -337,7 +337,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   valuations:
     build: ./
@@ -354,7 +354,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   gold:
     build: ./
@@ -371,7 +371,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   wowprogress:
     build: ./
@@ -388,7 +388,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   warcraftlogs:
     build: ./
@@ -405,7 +405,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   items:
     build: ./
@@ -422,7 +422,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   pricing:
     build: ./
@@ -439,7 +439,7 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   wowtoken:
     build: ./
@@ -456,11 +456,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
 # Docker Networks
 networks:
   # All container connect in a network
-  conglomerat-network:
+  cmnw-network:
     driver: bridge
 

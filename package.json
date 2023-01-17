@@ -145,7 +145,8 @@
       "@app/core": "<rootDir>/libs/core/src",
       "@app/mongo/(.*)": "<rootDir>/libs/mongo/src/$1",
       "@app/mongo": "<rootDir>/libs/mongo/src",
-      "^@app/elastic(|/.*)$": "<rootDir>/libs/elastic/src/$1"
+      "^@app/elastic(|/.*)$": "<rootDir>/libs/elastic/src/$1",
+      "^@app/e2e(|/.*)$": "<rootDir>/libs/e2e/src/$1"
     }
   }
 }

@@ -214,6 +214,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/tests/tsconfig.app.json"
       }
+    },
+    "e2e": {
+      "type": "library",
+      "root": "libs/e2e",
+      "entryFile": "index",
+      "sourceRoot": "libs/e2e/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/e2e/tsconfig.lib.json"
+      }
     }
   }
 }

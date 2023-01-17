@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TestsService } from './tests.service';
+import { TestsOsint } from './tests.osint';
 
 @Module({
   imports: [],
   controllers: [],
-  providers: [TestsService],
+  providers: [TestsOsint],
 })
 export class TestsModule {}

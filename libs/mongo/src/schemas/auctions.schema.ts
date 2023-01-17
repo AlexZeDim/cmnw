@@ -1,4 +1,4 @@
-import { Document, Mixed } from 'mongoose';
+import { Document, Mixed, SchemaTypes } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ timestamps: true })
@@ -9,7 +9,7 @@ export class Auction extends Document {
   @Prop({ type: Number, required: true, ref: 'Item' })
   item_id: number;
 
-  @Prop()
+  @Prop({ type: SchemaTypes.Mixed })
   item: Mixed;
 
   @Prop({ type: Number, ref: 'Realm' })

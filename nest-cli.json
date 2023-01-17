@@ -205,6 +205,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/ladder/tsconfig.app.json"
       }
+    },
+    "tests": {
+      "type": "application",
+      "root": "apps/tests",
+      "entryFile": "main",
+      "sourceRoot": "apps/tests/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tests/tsconfig.app.json"
+      }
     }
   }
 }

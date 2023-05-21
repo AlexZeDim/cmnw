@@ -1,24 +1,40 @@
+import objectContaining = jasmine.objectContaining;
+
 export const propRefLink: PropRefLink = {
   href: expect.any(String),
-}
+};
 
 export const objectPropRef: ObjectPropRef = {
   id: expect.any(Number),
   name: expect.any(String),
   key: expect.objectContaining(propRefLink),
-}
+};
 
-export const objectRealmPropRef: ObjectPropRef & { slug: string} = {
+export const objectRealmPropRef: ObjectPropRef & { slug: string } = {
   id: expect.any(Number),
   name: expect.any(String),
   key: expect.objectContaining(propRefLink),
   slug: expect.any(String),
-}
+};
 
 export const objectProperty: ObjectProp = {
   type: expect.any(String),
   name: expect.any(String),
-}
+};
+
+export const objectMount = {
+  _links: { self: expect.objectContaining(propRefLink) },
+};
+
+export const objectMounts = {
+  mount: expect.objectContaining(objectPropRef),
+  is_useable: expect.any(Boolean),
+};
+
+export const  mountsSummary = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  mounts: expect.arrayContaining([objectMounts]),
+};
 
 export const characterSummary = {
   id: expect.any(Number),
@@ -54,33 +70,61 @@ export const characterSummary = {
 
 export class TCharacterSummary {
   id: number;
+
   name: string;
+
   gender: ObjectProp;
+
   race: ObjectPropRef;
+
   character_class: ObjectProp;
+
   active_spec: ObjectProp;
+
   realm: ObjectPropRef & { slug: string };
+
   level: number;
+
   experience: number;
+
   achievement_points: number;
+
   achievements: PropRefLink;
+
   titles: PropRefLink;
+
   pvp_summary: PropRefLink;
+
   encounters: PropRefLink;
+
   media: PropRefLink;
+
   last_login_timestamp: number;
+
   average_item_level: number;
+
   equipped_item_level: number;
+
   specializations: PropRefLink;
+
   statistics: PropRefLink;
+
   mythic_keystone_profile: PropRefLink;
+
   equipment: PropRefLink;
+
   appearance: PropRefLink;
+
   collections: PropRefLink;
+
   reputations: PropRefLink;
+
   quests: PropRefLink;
+
   achievements_statistics: PropRefLink;
+
   professions: PropRefLink;
+
   lastModified: string | Date;
 
   constructor(data: Record<string, any>) {
@@ -95,14 +139,14 @@ export class TCharacterSummary {
 export type ObjectProp = {
   type: string,
   name: string,
-}
+};
 
 export type ObjectPropRef = {
   key: PropRefLink,
   name: string,
   id: number,
-}
+};
 
 export type PropRefLink = {
   href: string;
-}
+};

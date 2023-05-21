@@ -36,6 +36,17 @@ export const  mountsSummary = {
   mounts: expect.arrayContaining([objectMounts]),
 };
 
+export const objectPet = {
+  species: expect.objectContaining({ id: expect.any(Number), name: expect.any(String) }),
+  level: expect.any(Number),
+  id: expect.any(Number),
+};
+export const petsSummary = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  pets: expect.arrayContaining([expect.objectContaining({ objectPet })],
+  ),
+};
+
 export const characterSummary = {
   id: expect.any(Number),
   name: expect.any(String),

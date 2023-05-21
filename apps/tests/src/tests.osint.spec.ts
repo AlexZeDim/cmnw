@@ -6,9 +6,10 @@ import {
   mountsSummary,
   petsSummary,
   objectPet,
-  objectMount
+  objectMount, statusObj, members_guildRosterObj, guildRosterObj, guildObj,
 } from '@app/e2e/characters';
 import * as console from "console";
+
 
 describe('OSINT', () => {
   let testsService: TestsOsint;
@@ -55,4 +56,32 @@ describe('OSINT', () => {
     });
   });
 
+  describe('status', () => {
+    it('haracter Profile Status', async () => {
+      const response = await testsService.status('лисаорк', 'howling-fjord');
+      console.log(response);
+      expect(response).toMatchObject(statusObj);
+    });
+  });
+
+  describe('guild', () => {
+    it('return Guild', async () => {
+      const response = await testsService.guild('рак-гейминг', 'soulflayer');
+      console.log(response);
+      expect(response).toMatchObject(guildObj);
+    });
+  });
+
+  describe('guild_roster', () => {
+    it('return Guild Roster', async () => {
+      const response = await testsService.guild_roster('рак-гейминг', 'soulflayer');
+      const [ member ] = response.members;
+
+      expect(response).toMatchObject(guildRosterObj);
+      expect(['Allicane', 'Horde']).toContain(response.guild.faction.name);
+      response.members.map(member => expect(member.character).toMatchObject(members_guildRosterObj));
+    });
+  });
+
 });
+

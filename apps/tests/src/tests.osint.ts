@@ -38,5 +38,8 @@ export class TestsOsint {
   async guild(nameSlug: string, realmSlug: string) {
     return this.BNet.query(`/data/wow/guild/${realmSlug}/${nameSlug}`, profileParams);
   }
+  async guild_roster(nameSlug: string, realmSlug: string) {
+    return this.BNet.query(`/data/wow/guild/${realmSlug}/${nameSlug}/roster`, profileParams);
+  }
 
 }

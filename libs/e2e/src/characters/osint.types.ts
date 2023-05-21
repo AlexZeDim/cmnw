@@ -47,6 +47,49 @@ export const petsSummary = {
   ),
 };
 
+export const guildRosterObj = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  guild: expect.objectContaining({ name: expect.any(String), id: expect.any(Number), realm: expect.objectContaining({ name: expect.any(String), id: expect.any(Number), slug: expect.any(String) }) }),
+};
+
+export const guildObj = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  id: expect.any(Number),
+  name: expect.any(String),
+  achievement_points: expect.any(Number),
+  member_count: expect.any(Number),
+  realm: expect.objectContaining({   id: expect.any(Number), name: expect.any(String), slug: expect.any(String) }),
+  roster: expect.objectContaining({ href: expect.any(String) }),
+  achievements: expect.objectContaining({ href: expect.any(String) }),
+  created_timestamp: expect.any(Number),
+  lastModified: expect.any(String),
+};
+
+export const memberGuildObj = {
+  name: expect.any(String),
+  id: expect.any(Number),
+  level: expect.any(Number),
+};
+
+export const members_guildRosterObj = {
+  name: expect.any(String),
+  id: expect.any(Number),
+  level: expect.any(Number),
+
+};
+// export const guildRosterObj1 = {
+//   id: expect.any(Number),
+//   realm: expect.objectContaining({ name:expect.any(String), id: expect.any(Number), slug: expect.any(String) }),
+//   members: expect.arrayContaining([expect.objectContaining({ members_guildRosterObj })]),
+// };
+
+export const statusObj = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  id: expect.any(Number),
+  is_valid: expect.any(Boolean),
+  lastModified: expect.any(String),
+};
+
 export const characterSummary = {
   id: expect.any(Number),
   name: expect.any(String),

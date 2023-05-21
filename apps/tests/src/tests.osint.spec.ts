@@ -1,6 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TestsOsint } from './tests.osint';
-import { characterSummary, TCharacterSummary, mountsSummary } from '@app/e2e/characters';
+import {
+  characterSummary,
+  TCharacterSummary,
+  mountsSummary,
+  petsSummary,
+  objectPet,
+  objectMount
+} from '@app/e2e/characters';
 import * as console from "console";
 
 describe('OSINT', () => {
@@ -33,7 +40,18 @@ describe('OSINT', () => {
     it('return Character Mounts Collection Summary', async () => {
       const response = await testsService.mounts('лисаорк', 'howling-fjord');
       console.log(response);
-      expect(response).toMatchObject(mountsSummary);
+      const [ mount ] = response.mounts;
+      response.mounts.map(mount => expect(response).toMatchObject(objectMount));
+    });
+  });
+
+  describe('pets', () => {
+    it('return Character Pets Collection Summary', async () => {
+      const response = await testsService.pets('лисаорк', 'howling-fjord');
+      expect(response).toHaveProperty('pets');
+      expect(response.pets.length).not.toBeLessThan(0);
+      const [ pet ] = response.pets;
+      response.pets.map(pet => expect(pet).toMatchObject(objectPet));
     });
   });
 

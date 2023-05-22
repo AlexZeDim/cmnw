@@ -65,6 +65,13 @@ export const guildObj = {
   lastModified: expect.any(String),
 };
 
+export const professionObj = {
+  lastModified: expect.any(String),
+  primaries: expect.objectContaining([expect.objectContaining({ profession: expect.objectContaining([]), tiers: expect.objectContaining([]) })]),
+  secondaries: expect.objectContaining([expect.objectContaining({ profession: expect.objectContaining([]), tiers: expect.objectContaining([]) })]),
+  character: expect.objectContaining({ name: expect.any(String), id: expect.any(Number), realm: expect.objectContaining({ name: expect.any(String), id: expect.any(Number), slug: expect.any(String) }) }),
+};
+
 export const memberGuildObj = {
   name: expect.any(String),
   id: expect.any(Number),

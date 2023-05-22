@@ -6,9 +6,8 @@ import {
   mountsSummary,
   petsSummary,
   objectPet,
-  objectMount, statusObj, members_guildRosterObj, guildRosterObj, guildObj,
+  objectMount, statusObj, members_guildRosterObj, guildRosterObj, guildObj, professionObj,
 } from '@app/e2e/characters';
-import * as console from "console";
 
 
 describe('OSINT', () => {
@@ -26,7 +25,6 @@ describe('OSINT', () => {
   describe('summary', () => {
     it('return character summary response', async () => {
       const response = await testsService.summary('лисаорк', 'howling-fjord');
-      console.log(response);
       expect(response).toMatchObject<TCharacterSummary>(characterSummary);
       /**
        * @description We could always use more .haveProperty things
@@ -40,7 +38,6 @@ describe('OSINT', () => {
   describe('mounts', () => {
     it('return Character Mounts Collection Summary', async () => {
       const response = await testsService.mounts('лисаорк', 'howling-fjord');
-      console.log(response);
       const [ mount ] = response.mounts;
       response.mounts.map(mount => expect(response).toMatchObject(objectMount));
     });
@@ -59,7 +56,6 @@ describe('OSINT', () => {
   describe('status', () => {
     it('haracter Profile Status', async () => {
       const response = await testsService.status('лисаорк', 'howling-fjord');
-      console.log(response);
       expect(response).toMatchObject(statusObj);
     });
   });
@@ -67,7 +63,6 @@ describe('OSINT', () => {
   describe('guild', () => {
     it('return Guild', async () => {
       const response = await testsService.guild('рак-гейминг', 'soulflayer');
-      console.log(response);
       expect(response).toMatchObject(guildObj);
     });
   });
@@ -83,5 +78,11 @@ describe('OSINT', () => {
     });
   });
 
+  describe('professions', () => {
+    it('Character Professions Summary', async () => {
+      const response = await testsService.professions('лисаорк', 'howling-fjord');
+      expect(response).toMatchObject(professionObj);
+    });
+  });
 });
 

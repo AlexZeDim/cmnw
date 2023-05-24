@@ -5,5 +5,5 @@ import { LeanDocument } from 'mongoose';
 
 export class ItemFeedDto {
   @ApiProperty(SWAGGER_ITEM_FEED)
-  readonly feed: LeanDocument<Auction>[]
+  readonly feed: LeanDocument<Auction>[];
 }

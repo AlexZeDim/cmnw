@@ -1,3 +1,3 @@
-export interface ValuationsInterface {
-  readonly build_init: boolean;
+export interface IValuations {
+  readonly build: boolean;
 }

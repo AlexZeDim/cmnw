@@ -1,10 +1,10 @@
 import { get } from 'config';
-import { PricingInterface } from '@app/configuration/interfaces';
+import { IPrice } from '@app/configuration/interfaces';
 
-const PRICING_CONFIG = get<PricingInterface>('valuations');
+const PRICING_CONFIG = get<IPrice>('valuations');
 
-export const pricingConfig: PricingInterface = {
-  pricing_init: PRICING_CONFIG.pricing_init,
-  build_init: PRICING_CONFIG.build_init,
-  lib_pricing: PRICING_CONFIG.lib_pricing,
-}
+export const pricingConfig: IPrice = {
+  init: PRICING_CONFIG.init,
+  build: PRICING_CONFIG.build,
+  libPricing: PRICING_CONFIG.libPricing,
+};

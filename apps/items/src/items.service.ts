@@ -38,7 +38,7 @@ export class ItemsService implements OnApplicationBootstrap  {
     min: number = 0,
     max: number = 200000,
     updateForce: boolean = true,
-    init: boolean = true
+    init: boolean = true,
   ): Promise<void> {
     try {
       this.logger.log(`indexItems: init: ${init}, updateForce: ${updateForce}`);
@@ -49,7 +49,7 @@ export class ItemsService implements OnApplicationBootstrap  {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexItems: clearance: ${clearance} key not found`);
-        return
+        return;
       }
       if (updateForce) {
         for (let i = min; i <= max; i++) {
@@ -60,12 +60,12 @@ export class ItemsService implements OnApplicationBootstrap  {
               region: 'eu',
               clientId: key._id,
               clientSecret: key.secret,
-              accessToken: key.token
+              accessToken: key.token,
             },
             {
-              jobId: `${i}`
-            }
-          )
+              jobId: `${i}`,
+            },
+          );
         }
       } else {
         await this.ItemModel
@@ -80,16 +80,16 @@ export class ItemsService implements OnApplicationBootstrap  {
                 region: 'eu',
                 clientId: key._id,
                 clientSecret: key.secret,
-                accessToken: key.token
+                accessToken: key.token,
               },
               {
-                jobId: `${item._id}`
-              }
-            )
-          })
+                jobId: `${item._id}`,
+              },
+            );
+          });
       }
     } catch (errorException) {
-      this.logger.error(`indexItems: ${errorException}`)
+      this.logger.error(`indexItems: ${errorException}`);
     }
   }
 
@@ -116,8 +116,8 @@ export class ItemsService implements OnApplicationBootstrap  {
                   await this.ItemModel.create(item);
                   this.logger.log(`Created: item(${item._id})`);
                 }
-              })
-            )
+              }),
+            ),
           );
         }
 
@@ -127,7 +127,7 @@ export class ItemsService implements OnApplicationBootstrap  {
           const rows: any[] = await csv.parse(csvString, {
             columns: true,
             skip_empty_lines: true,
-            cast: (value: number | string) => (Number.isNaN(Number(value)) ? value : Number(value))
+            cast: (value: number | string) => (Number.isNaN(Number(value)) ? value : Number(value)),
           });
 
           switch (file) {
@@ -166,15 +166,15 @@ export class ItemsService implements OnApplicationBootstrap  {
               for (const row of rows) {
                 await this.ItemModel.findByIdAndUpdate(
                   row.ID,
-                  { stackable: row.Stackable, expansion: EXPANSION_TICKER_ID.get(row.ExpansionID) }
-                  )
+                  { stackable: row.Stackable, expansion: EXPANSION_TICKER_ID.get(row.ExpansionID) },
+                );
               }
               break;
           }
         }
       }
     } catch (errorException) {
-      this.logger.error(`buildItems: ${errorException}`)
+      this.logger.error(`buildItems: ${errorException}`);
     }
   }
 }

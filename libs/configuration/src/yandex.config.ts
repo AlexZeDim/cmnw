@@ -1,8 +1,8 @@
 import { get } from 'config';
-import { YandexInterface } from '@app/configuration/interfaces';
+import { IYandex } from '@app/configuration/interfaces';
 
-const YANDEX_CONFIG = get<YandexInterface>('yandex');
+const YANDEX_CONFIG = get<IYandex>('yandex');
 
-export const yandexConfig: YandexInterface = {
-  token: YANDEX_CONFIG.token
+export const yandexConfig: IYandex = {
+  token: YANDEX_CONFIG.token,
 };

@@ -1,12 +1,12 @@
-import { CommonwealthInterface } from '@app/configuration/interfaces/commonwealth.interface';
+import { ICommonwealth } from '@app/configuration/interfaces/commonwealth.interface';
 import { get } from 'config';
 
-const COMMONWEALTH_CONFIG = get<CommonwealthInterface>('commonwealth');
+const COMMONWEALTH_CONFIG = get<ICommonwealth>('commonwealth');
 
-export const commonwealthConfig: CommonwealthInterface = {
-  client_id: COMMONWEALTH_CONFIG.client_id,
-  client_secret: COMMONWEALTH_CONFIG.client_secret,
-  redirect_uri: COMMONWEALTH_CONFIG.redirect_uri,
+export const commonwealthConfig: ICommonwealth = {
+  clientId: COMMONWEALTH_CONFIG.clientId,
+  clientSecret: COMMONWEALTH_CONFIG.clientSecret,
+  redirect: COMMONWEALTH_CONFIG.redirect,
   port: COMMONWEALTH_CONFIG.port,
   origin: COMMONWEALTH_CONFIG.origin,
 };

@@ -12,7 +12,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 @Module({
   imports: [
     HttpModule,
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,

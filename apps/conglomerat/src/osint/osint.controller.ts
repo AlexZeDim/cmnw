@@ -1,3 +1,10 @@
+import { Express } from 'express';
+import { OsintService } from './osint.service';
+import { LeanDocument } from 'mongoose';
+import { Character, Guild, Log, Realm, Subscription } from '@app/mongo';
+import path from 'path';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import {
   Body,
   Controller,
@@ -10,10 +17,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Express } from 'express'
-import { OsintService } from './osint.service';
-import { LeanDocument } from 'mongoose';
-import { Character, Guild, Log, Realm, Subscription } from '@app/mongo';
+
 import {
   ApiOperation,
   ApiServiceUnavailableResponse,
@@ -24,6 +28,7 @@ import {
   ApiUnauthorizedResponse,
   ApiTags, ApiConsumes, ApiBody,
 } from '@nestjs/swagger';
+
 import {
   CharacterHashDto,
   CharacterIdDto,
@@ -32,15 +37,14 @@ import {
   DiscordUidSubscriptionDto,
   GuildIdDto, RealmDto,
 } from '@app/core';
-import { FileInterceptor } from '@nestjs/platform-express';
-import path from 'path';
+
 
 @ApiTags('osint')
 @Controller('osint')
 export class OsintController {
 
   constructor(
-    private readonly osintService: OsintService
+    private readonly osintService: OsintService,
   ) {}
 
   @ApiConsumes('multipart/form-data')
@@ -63,10 +67,10 @@ export class OsintController {
       const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
       if (extname) return cb(null, true);
       cb(new Error(`Error: File upload only supports the following filetypes - ${filetypes}`), false);
-    }
+    },
   }))
   async uploadOsintLua(@UploadedFile() file: Express.Multer.File) {
-    await this.osintService.uploadOsintLua(file.buffer)
+    await this.osintService.uploadOsintLua(file.buffer);
   }
 
   @ApiOperation({ description: 'Returns requested character' })
@@ -185,7 +189,7 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Get('/discord')
   async checkDiscord(@Query() input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return await this.osintService.checkDiscord(input);
+    return this.osintService.checkDiscord(input);
   }
 
   @ApiOperation({ description: 'Create or update subscription' })
@@ -199,7 +203,7 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Post('/discord/subscribe')
   async subscribeDiscord(@Body() input: DiscordSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return await this.osintService.subscribeDiscord(input)
+    return this.osintService.subscribeDiscord(input);
   }
 
   @ApiOperation({ description: 'Unsubscribes discord server and channel from notifications' })
@@ -213,6 +217,6 @@ export class OsintController {
   @HttpCode(HttpStatus.OK)
   @Put('/discord/unsubscribe')
   async unsubscribeDiscord(@Body() input: DiscordUidSubscriptionDto): Promise<LeanDocument<Subscription>> {
-    return await this.osintService.unsubscribeDiscord(input)
+    return this.osintService.unsubscribeDiscord(input);
   }
 }

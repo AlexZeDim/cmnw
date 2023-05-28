@@ -19,14 +19,14 @@ import {
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Auction.name, schema: AuctionsSchema },
       { name: Character.name, schema: CharactersSchema },
       { name: Item.name, schema: ItemsSchema },
       { name: Realm.name, schema: RealmsSchema },
-      { name: Subscription.name, schema: SubscriptionsSchema }
-    ])
+      { name: Subscription.name, schema: SubscriptionsSchema },
+    ]),
   ],
   controllers: [],
   providers: [DiscordService],

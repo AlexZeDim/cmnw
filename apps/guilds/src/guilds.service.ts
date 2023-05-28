@@ -68,19 +68,19 @@ export class GuildsService {
               clientId: keys[i]._id,
               clientSecret: keys[i].secret,
               accessToken: keys[i].token,
-              iteration: iteration
+              iteration: iteration,
             }, {
               jobId: guild._id,
               priority: 5,
-            }
-          )
+            },
+          );
           i++;
           iteration++;
           if (i >= keys.length) i = 0;
         });
 
     } catch (errorException) {
-      this.logger.error(`indexGuilds: ${errorException}`)
+      this.logger.error(`indexGuilds: ${errorException}`);
     }
   }
 
@@ -112,26 +112,26 @@ export class GuildsService {
                 _id: guild_slug,
                 name: name,
                 realm: realm.slug,
-                created_by: OSINT_SOURCE.UNIQUEGUILDS,
-                updated_by: OSINT_SOURCE.UNIQUEGUILDS,
+                created_by: OSINT_SOURCE.GUILD_UNIQUE,
+                updated_by: OSINT_SOURCE.GUILD_UNIQUE,
                 forceUpdate: ms('1h'),
                 createOnlyUnique: true,
                 clientId: keys[i]._id,
                 clientSecret: keys[i].secret,
                 accessToken: keys[i].token,
-                iteration: iteration
+                iteration: iteration,
               }, {
                 jobId: guild_slug,
                 priority: 4,
-              }
-            )
+              },
+            );
             i++;
             iteration++;
             if (i >= keys.length) i = 0;
           }
         });
     } catch (errorException) {
-      this.logger.error(`indexGuildsUnique: ${errorException}`)
+      this.logger.error(`indexGuildsUnique: ${errorException}`);
     }
   }
 }

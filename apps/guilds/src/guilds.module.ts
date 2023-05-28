@@ -20,7 +20,7 @@ import {
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },
       { name: Key.name, schema: KeysSchema },

@@ -13,10 +13,10 @@ export const RAIDS: string[] = [
   'the-eternal-palace',
   'nyalotha-the-waking-city',
   'castle-nathria',
-  'sanctum-of-domination'
+  'sanctum-of-domination',
 ];
 
-export const RAID_FACTIONS = ['alliance', 'horde']
+export const RAID_FACTIONS = ['alliance', 'horde'];
 
 export const REALM_TICKER: Map<string, string> = new Map([
   ['Aerie Peak', 'ARPEAK'],
@@ -301,7 +301,7 @@ export const EXPANSION_LIST_ID: Map<string, string> = new Map([
   ['Draenor', 'WOD'],
   ['Legion', 'LGN'],
   ['Battle for Azeroth', 'BFA'],
-  ['Shadowlands', 'SHDW']
+  ['Shadowlands', 'SHDW'],
 ]);
 
 export const PLAYABLE_CLASS: Map<number, string> = new Map([
@@ -325,7 +325,7 @@ export const CHARACTER_CLASS: string[] = [
   'Mage',         'Monk',
   'Paladin',      'Priest',
   'Rogue',        'Shaman',
-  'Warlock',      'Warrior'
+  'Warlock',      'Warrior',
 ];
 
 export const COVENANTS: string[] = ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord'];
@@ -363,29 +363,28 @@ export enum ALIAS_KEY {
 }
 
 export enum OSINT_SOURCE {
-  REQUESTGUILD = 'OSINT-requestGuild',
-  UNIQUEGUILDS = 'OSINT-indexGuildsUnique',
-  REQUESTCHARACTER = 'OSINT-requestCharacter',
-  TOP100 = 'OSINT-hallOfFame',
-  GETGUILD = 'OSINT-getGuild',
-  GETCHARACTER = 'OSINT-getCharacter',
-  MYTHICPLUS = 'OSINT-mythicPlus',
-  PVPLADDER = 'OSINT-pvpLadder',
-  HALLOFFAME = 'OSINT-top100',
-  COLLECTIONS = 'OSINT-collections',
-  INDEXGUILD = 'OSINT-indexGuilds',
-  ROSTERGUILD = 'OSINT-rosterGuild',
-  INDEXCHARACTER = 'OSINT-indexCharacters',
-  WOWPROGRESS = 'OSINT-wowprogress',
-  WARCRAFTLOGS = 'OSINT-warcraftlogs',
-  WOWPROGRESSLFG = 'OSINT-lfgprogress',
-  OSINT_LUA = 'OSINT-lua'
+  GUILD_REQUEST = 'OSINT-GUILD-REQUEST',
+  GUILD_UNIQUE = 'OSINT-GUILD-INDEX-UNIQUE',
+  CHARACTER_REQUEST = 'OSINT-CHARACTER-REQUEST',
+  TOP100 = 'OSINT-HALL-OF-FAME',
+  GUILD_GET = 'OSINT-GUILD-GET',
+  CHARACTER_GET = 'OSINT-CHARACTER-GET',
+  MYTHIC_PLUS = 'OSINT-MYTHIC-PLUS',
+  PVP_LADDER = 'OSINT-PVP-LADDER',
+  COLLECTIONS = 'OSINT-COLLECTIONS',
+  GUILD_INDEX = 'OSINT-GUILD-INDEX',
+  GUILD_ROSTER = 'OSINT-GUILD-ROSTER',
+  CHARACTER_INDEX = 'OSINT-CHARACTER-INDEX',
+  WOW_PROGRESS = 'OSINT-WOW-PROGRESS',
+  WARCRAFT_LOGS = 'OSINT-WARCRAFT-LOGS',
+  WOW_PROGRESS_LFG = 'OSINT-WOW-PROGRESS-LFG',
+  OSINT_LUA = 'OSINT-LUA',
 }
 
 export enum LFG {
   NEW = 'NEW',
   NOW = 'NOW',
-  PREV = 'PREV'
+  PREV = 'PREV',
 }
 
 export enum EXPANSIONS {
@@ -397,7 +396,7 @@ export enum EXPANSIONS {
   WarlordsOfDraenor = 'WOD',
   Legion = 'LGN',
   BattleForAzeroth = 'BFA',
-  Shadowlands = 'SHDW'
+  Shadowlands = 'SHDW',
 }
 
 export enum MYTHIC_PLUS_SEASONS {
@@ -407,5 +406,5 @@ export enum MYTHIC_PLUS_SEASONS {
   BFA_S4 = 4,
   SHDW_S1 = 5,
   SHDW_S2 = 6,
-  SHDW_S3 = 7
+  SHDW_S3 = 7,
 }

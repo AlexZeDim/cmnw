@@ -1,12 +1,12 @@
 import { get } from 'config';
-import { IWarcraftLogsConfig } from '@app/core';
+import { IWarcraftLogs } from '@app/configuration/interfaces';
 
-const WARCRAFTLOGS_CONFIG = get<IWarcraftLogsConfig>('warcraftlogs');
+const WARCRAFT_LOGS_CONFIG = get<IWarcraftLogs>('warcraftlogs');
 
-export const warcraftlogsConfig: IWarcraftLogsConfig = {
-  raid_tier: WARCRAFTLOGS_CONFIG.raid_tier,
-  from: WARCRAFTLOGS_CONFIG.from,
-  to: WARCRAFTLOGS_CONFIG.to,
-  page: WARCRAFTLOGS_CONFIG.page,
-  logs: WARCRAFTLOGS_CONFIG.logs,
-}
+export const warcraftLogsConfig: IWarcraftLogs = {
+  raidTier: WARCRAFT_LOGS_CONFIG.raidTier,
+  from: WARCRAFT_LOGS_CONFIG.from,
+  to: WARCRAFT_LOGS_CONFIG.to,
+  page: WARCRAFT_LOGS_CONFIG.page,
+  logs: WARCRAFT_LOGS_CONFIG.logs,
+};

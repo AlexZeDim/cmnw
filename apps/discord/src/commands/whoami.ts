@@ -25,5 +25,5 @@ module.exports = {
 
     const user = interaction.options.getUser('target');
     await interaction.reply(`Username: ${user.username}\nID: ${user.id}`);
-  }
+  },
 };

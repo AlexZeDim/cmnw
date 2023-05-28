@@ -11,7 +11,7 @@ import {
   SWAGGER_CHARACTER_REALMS,
   SWAGGER_CHARACTER_RIO,
   SWAGGER_CHARACTER_WCL,
-} from '@app/core/swagger/osint.swagger';
+} from '@app/core';
 
 export class CharactersLfgDto {
   @ApiProperty(SWAGGER_CHARACTER_REALMS)

@@ -11,7 +11,7 @@ import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [
     HttpModule,
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connectionString),
     MongooseModule.forFeature([
       { name: Account.name, schema: AccountsSchema },
     ]),

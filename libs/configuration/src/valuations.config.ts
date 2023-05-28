@@ -1,8 +1,8 @@
 import { get } from 'config';
-import { ValuationsInterface } from '@app/configuration/interfaces';
+import { IValuations } from '@app/configuration/interfaces';
 
-const VALUATIONS_CONFIG = get<ValuationsInterface>('valuations');
+const VALUATIONS_CONFIG = get<IValuations>('valuations');
 
-export const valuationsConfig: ValuationsInterface = {
-  build_init: VALUATIONS_CONFIG.build_init
-}
+export const valuationsConfig: IValuations = {
+  build: VALUATIONS_CONFIG.build,
+};

@@ -34,6 +34,18 @@
       ],
       "@app/mongo/*": [
         "libs/mongo/src/*"
+      ],
+      "@app/e2e": [
+        "libs/e2e/src"
+      ],
+      "@app/e2e/*": [
+        "libs/e2e/src/*"
+      ],
+      "@app/pg": [
+        "libs/pg/src"
+      ],
+      "@app/pg/*": [
+        "libs/pg/src/*"
       ]
     }
   }

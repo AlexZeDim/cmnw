@@ -10,10 +10,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
-      { name: Item.name, schema: ItemsSchema }
+      { name: Item.name, schema: ItemsSchema },
     ]),
     BullModule.forRoot({
       options: {

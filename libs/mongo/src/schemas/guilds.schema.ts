@@ -41,7 +41,7 @@ export class Guild extends Document {
   faction: string;
 
   @Prop({ type: [GuildMembersSchema] })
-  members: Types.Array<GuildMember>
+  members: Types.Array<GuildMember>;
 
   @Prop({ type: Number })
   achievement_points: number;

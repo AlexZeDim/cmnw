@@ -4,69 +4,69 @@ import { Document } from 'mongoose';
 @Schema()
 export class Realm extends Document {
   @Prop({ type: Number })
-    _id: number;
+  _id: number;
 
   @Prop({ type: String })
-    slug: string;
+  slug: string;
 
   @Prop({ type: String })
-    name: string;
+  name: string;
 
   @Prop({ type: String })
-    region: string;
+  region: string;
 
   @Prop({ type: String })
-    name_locale: string;
+  name_locale: string;
 
   @Prop({ type: String })
-    slug_locale: string;
+  slug_locale: string;
 
   @Prop({ type: String })
-    ticker: string;
+  ticker: string;
 
   @Prop({ type: String })
-    status: string;
+  status: string;
 
   @Prop({ type: String })
-    category: string;
+  category: string;
 
   @Prop({ type: String })
-    locale: string;
+  locale: string;
 
   @Prop({ type: String })
-    timezone: string;
+  timezone: string;
 
   @Prop({ type: String })
-    type: string;
+  type: string;
 
   @Prop({ type: String })
-    population_status: string;
+  population_status: string;
 
   @Prop({ type: Number })
-    connected_realm_id: number;
+  connected_realm_id: number;
 
   @Prop({ type: [String] })
-    connected_realms: [string];
+  connected_realms: [string];
 
   /**
    * Kihra's WarcraftLogs realm ids
    * for parsing logs via fromLogs
    */
   @Prop({ type: Number })
-    wcl_id: number;
+  wcl_id: number;
 
   /**
    * String lastModified timestamp for auctions, gold and valuations
    * Required for valuations, getAuctionData, getGold
    */
   @Prop({ default: 0, type: Number })
-    auctions: number;
+  auctions: number;
 
   @Prop({ default: 0, type: Number })
-    valuations: number;
+  valuations: number;
 
   @Prop({ default: 0, type: Number })
-    golds: number;
+  golds: number;
 }
 
 export const RealmsSchema = SchemaFactory.createForClass(Realm);
@@ -82,16 +82,15 @@ RealmsSchema.index(
   },
   {
     default_language: 'english',
-    weights:
-      {
-        slug: 10,
-        name: 1,
-        slug_locale: 1,
-        name_locale: 1,
-        ticker: 3,
-        region: 1,
-        locale: 1,
-      },
+    weights: {
+      slug: 10,
+      name: 1,
+      slug_locale: 1,
+      name_locale: 1,
+      ticker: 3,
+      region: 1,
+      locale: 1,
+    },
     name: 'SQ',
   },
 );

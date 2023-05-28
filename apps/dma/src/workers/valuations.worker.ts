@@ -100,7 +100,7 @@ export class ValuationsWorker {
     if (!asset_class.includes(check)) {
       throw new InternalServerErrorException(`item: ${item_id} asset_class not ${check}`);
     }
-  };
+  }
 
   private async checkDerivativeItems(
     derivatives: ItemPricing[],
@@ -111,16 +111,16 @@ export class ValuationsWorker {
           const derivativeItem = await this.ItemModel.findById(derivative._id).lean();
           if (!derivativeItem) await this.addMissingItemToQueue(derivativeItem._id);
           this.checkAssetClass(derivativeItem._id, derivativeItem.asset_class, VALUATION_TYPE.MARKET);
-        }, 8)
-      )
-    )
-  };
+        }, 8),
+      ),
+    );
+  }
 
   private async checkReagentItems(
     reagents: ItemPricing[],
     derivative_id: number,
     last_modified: number,
-    connected_realm_id: number
+    connected_realm_id: number,
   ) {
     try {
       /**
@@ -154,14 +154,14 @@ export class ValuationsWorker {
               }
             }
           }, 8),
-        )
+        ),
       );
 
       await delay(1.5);
     } catch (errorException) {
       this.logger.error(`checkReagentItems: derivative ${derivative_id} error`);
     }
-  };
+  }
 
   private async addMissingItemToQueue(_id: number): Promise<void> {
     this.logger.warn(`getDVA: item ${_id} (reagent) not found`);
@@ -179,11 +179,11 @@ export class ValuationsWorker {
         region: 'eu',
         clientId: key._id,
         clientSecret: key.secret,
-        accessToken: key.token
+        accessToken: key.token,
       },
       {
-        jobId: `${_id}`
-      }
+        jobId: `${_id}`,
+      },
     );
   }
 
@@ -204,9 +204,9 @@ export class ValuationsWorker {
       {
         jobId,
         priority: 0,
-      }
+      },
     );
-  };
+  }
 
   private async getCVA <T extends IVAItem>(args: T): Promise<void> {
     try {
@@ -265,8 +265,8 @@ export class ValuationsWorker {
             quotation: 'RUB per x1000',
             lot_size: 1000,
             minimal_settlement_amount: 100000,
-          }
-        })
+          },
+        });
       }
 
       /** Request WoWToken price */
@@ -324,11 +324,11 @@ export class ValuationsWorker {
             lot_size: 1000,
             minimal_settlement_amount: wtPrice.price,
             description: description,
-          }
-        })
+          },
+        });
       }
     } catch (errorException) {
-      this.logger.error(`getCVA: item ${args._id}, ${errorException}`)
+      this.logger.error(`getCVA: item ${args._id}, ${errorException}`);
     }
   }
 
@@ -373,7 +373,7 @@ export class ValuationsWorker {
         }
       }
     } catch (errorException) {
-      this.logger.error(`getVVA: item ${args._id}, ${errorException}`)
+      this.logger.error(`getVVA: item ${args._id}, ${errorException}`);
     }
   }
 
@@ -434,8 +434,8 @@ export class ValuationsWorker {
                         description:
                           'You pay the fixed amount of real-money currency (based on your region) to receive in exchange a WoWToken, which could be converted to gold value of WoWToken, any time further.',
                       },
-                    }
-                  )
+                    },
+                  );
                 }
               }
             });
@@ -486,7 +486,7 @@ export class ValuationsWorker {
         }
       }
     } catch (errorException) {
-      this.logger.error(`getTVA: item ${args._id}, ${errorException}`)
+      this.logger.error(`getTVA: item ${args._id}, ${errorException}`);
     }
   }
 
@@ -542,7 +542,7 @@ export class ValuationsWorker {
         ]);
 
         if (!market_data) {
-          this.logger.error(`getAVA: item ${args._id}, marker data not found`)
+          this.logger.error(`getAVA: item ${args._id}, marker data not found`);
           return;
         }
 
@@ -564,14 +564,14 @@ export class ValuationsWorker {
               min_price: min_price,
               quantity: market_data.quantity,
               open_interest: Math.round(market_data.open_interest),
-              orders: market_data.orders
-            }
+              orders: market_data.orders,
+            },
           });
         }
 
       }
     } catch (errorException) {
-      this.logger.error(`getAVA: item ${args._id}, ${errorException}`)
+      this.logger.error(`getAVA: item ${args._id}, ${errorException}`);
     }
   }
 
@@ -582,7 +582,7 @@ export class ValuationsWorker {
       const primary_methods = await this.PricingModel
         .find({
           'derivatives._id': args._id,
-          type: { $ne: PRICING_TYPE.REVIEW }
+          type: { $ne: PRICING_TYPE.REVIEW },
         })
         .lean();
 
@@ -641,7 +641,7 @@ export class ValuationsWorker {
           single_derivative: singleDerivative,
           single_reagent: singleReagent,
           single_premium: false,
-          premium_clearance: true
+          premium_clearance: true,
         };
 
         /**
@@ -652,7 +652,7 @@ export class ValuationsWorker {
           price_method.reagents,
           args._id,
           args.last_modified,
-          args.connected_realm_id
+          args.connected_realm_id,
         );
         /**
          * Evaluate every reagent
@@ -683,7 +683,7 @@ export class ValuationsWorker {
   private async getRVA(
     args: IVAItem,
     price_method: LeanDocument<Pricing>,
-    methodEvaluation: MethodEvaluation
+    methodEvaluation: MethodEvaluation,
   ): Promise<MethodEvaluation> {
     try {
       for (const reagent of price_method.reagents) {
@@ -701,7 +701,7 @@ export class ValuationsWorker {
 
         const reagentItem: IReagentItem = Object.assign(
           { quantity: reagent.quantity, value: 0 },
-          item
+          item,
         );
 
         if (reagentItem.asset_class.includes(VALUATION_TYPE.PREMIUM)) {
@@ -786,7 +786,7 @@ export class ValuationsWorker {
   private async getPRVA(
     args: IVAItem,
     price_method: LeanDocument<Pricing>,
-    methodEvaluation: MethodEvaluation
+    methodEvaluation: MethodEvaluation,
   ): Promise<MethodEvaluation> {
     try {
 
@@ -841,7 +841,7 @@ export class ValuationsWorker {
               item_id: premium_item._id,
               last_modified: args.last_modified,
               connected_realm_id: args.connected_realm_id,
-              type: VALUATION_TYPE.DERIVATIVE
+              type: VALUATION_TYPE.DERIVATIVE,
             }).sort({ value: 1 });
 
             if (!ctdValuation) {
@@ -894,7 +894,7 @@ export class ValuationsWorker {
   private async getDVA(
     args: IVAItem,
     price_method: LeanDocument<Pricing>,
-    methodEvaluation: MethodEvaluation
+    methodEvaluation: MethodEvaluation,
   ): Promise<MethodEvaluation> {
     try {
 
@@ -943,8 +943,8 @@ export class ValuationsWorker {
                 rank: price_method.rank,
                 reagent_items: methodEvaluation.reagent_items,
                 premium_items: methodEvaluation.premium_items,
-                unsorted_items: methodEvaluation.unsorted_items
-              }
+                unsorted_items: methodEvaluation.unsorted_items,
+              },
             });
           }
         }
@@ -982,8 +982,8 @@ export class ValuationsWorker {
             rank: price_method.rank,
             reagent_items: methodEvaluation.reagent_items,
             premium_items: methodEvaluation.premium_items,
-            unsorted_items: methodEvaluation.unsorted_items
-          }
+            unsorted_items: methodEvaluation.unsorted_items,
+          },
         });
       }
 

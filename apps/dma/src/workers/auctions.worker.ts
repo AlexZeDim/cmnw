@@ -41,7 +41,7 @@ export class AuctionsWorker {
         region: args.region,
         clientId: args.clientId,
         clientSecret: args.clientSecret,
-        accessToken: args.accessToken
+        accessToken: args.accessToken,
       });
       /**
        * @description If no connected realm passed, then deal with it, as COMMDTY
@@ -75,8 +75,8 @@ export class AuctionsWorker {
         params: { locale: 'en_GB' },
         headers: {
           'Battlenet-Namespace': 'dynamic-eu',
-          'If-Modified-Since': ifModifiedSince
-        }
+          'If-Modified-Since': ifModifiedSince,
+        },
       });
 
       await job.updateProgress(15);
@@ -99,7 +99,7 @@ export class AuctionsWorker {
         await job.updateProgress(100);
       }
 
-      return 200
+      return 200;
     } catch (errorException) {
       await job.log(errorException);
       this.logger.error(`${AuctionsWorker.name}: ${errorException}`);
@@ -110,7 +110,7 @@ export class AuctionsWorker {
   private transformOrders(orders: IAuctionsOrder[], last_modified: number, connected_realm_id?: number): Auction[] {
     return orders.map(order => {
       if (order.item && order.item.id) {
-        order.item_id = order.item.id
+        order.item_id = order.item.id;
         if (order.item.id === 82800) {
           // TODO pet fix
         }
@@ -120,8 +120,8 @@ export class AuctionsWorker {
       if (order.unit_price) order.price = round2(order.unit_price / 10000);
       if (connected_realm_id) order.connected_realm_id = connected_realm_id;
       order.last_modified = last_modified;
-      return new this.AuctionModel(order)
-    })
+      return new this.AuctionModel(order);
+    });
   }
 
   private async writeBulkOrders(orders: IAuctionsOrder[], last_modified: number, connected_realm_id?: number): Promise<number> {
@@ -136,7 +136,7 @@ export class AuctionsWorker {
             iterator += ordersBulkAuctions.length;
             this.logger.debug(`writeBulkOrders: ${connected_realm_id}:${iterator}`);
           }),
-        )
+        ),
       );
       return iterator;
     } catch (errorException) {

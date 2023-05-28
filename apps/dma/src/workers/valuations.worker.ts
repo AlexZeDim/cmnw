@@ -18,7 +18,7 @@ import {
   MethodEvaluation,
   PRICING_TYPE,
   IReagentItem,
-  round2,
+  round,
   VALUATION_TYPE,
   valuationsQueue,
   IQItem,
@@ -259,7 +259,7 @@ export class ValuationsWorker {
           connected_realm_id: args.connected_realm_id,
           type: flag === FLAG_TYPE.S ? VALUATION_TYPE.OTC : VALUATION_TYPE.FUNPAY,
           last_modified: args.last_modified,
-          value: flag === FLAG_TYPE.S ? round2(goldCTD.price * 0.75) : round2(goldCTD.price),
+          value: flag === FLAG_TYPE.S ? round(goldCTD.price * 0.75) : round(goldCTD.price),
           details: {
             description: flag === FLAG_TYPE.S ? 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.' : 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.',
             quotation: 'RUB per x1000',
@@ -550,8 +550,8 @@ export class ValuationsWorker {
         const flags = ['BUY', 'SELL'];
 
         for (let flag of flags) {
-          const value: number = flag === FLAG_TYPE.S ? round2(market_data.value * 0.95) : round2(market_data.value);
-          const min_price: number = flag === FLAG_TYPE.S ? round2(market_data.min * 0.95) : round2(market_data.min);
+          const value: number = flag === FLAG_TYPE.S ? round(market_data.value * 0.95) : round(market_data.value);
+          const min_price: number = flag === FLAG_TYPE.S ? round(market_data.min * 0.95) : round(market_data.min);
           await this.ValuationsModel.create({
             name: `AUCTION ${flag}`,
             flag: flag,
@@ -753,7 +753,7 @@ export class ValuationsWorker {
           ) {
             for (const underlyingItem of ctdValuation.details.reagent_items) {
               /** Queue_quantity x Underlying_item.quantity */
-              const underlyingReagentItemValue = round2(underlyingItem.value * reagentItem.quantity);
+              const underlyingReagentItemValue = round(underlyingItem.value * reagentItem.quantity);
               const underlyingReagentItemQuantity = underlyingItem.quantity * reagentItem.quantity;
               /** if this item is already in reagent_items, then + quantity */
               if (methodEvaluation.reagent_items.some(reagent_item => reagent_item._id === underlyingItem._id)) {
@@ -768,12 +768,12 @@ export class ValuationsWorker {
               }
             }
           } else {
-            reagentItem.value = round2(ctdValuation.value * reagentItem.quantity);
+            reagentItem.value = round(ctdValuation.value * reagentItem.quantity);
             methodEvaluation.reagent_items.push(reagentItem);
           }
 
           /** We add value to queue_cost */
-          methodEvaluation.queue_cost += round2(ctdValuation.value * reagentItem.quantity);
+          methodEvaluation.queue_cost += round(ctdValuation.value * reagentItem.quantity);
         }
       }
 
@@ -794,7 +794,7 @@ export class ValuationsWorker {
         this.logger.log(`getPRVA: single_derivative ${methodEvaluation.single_derivative}`);
         /** Pre-valuate nominal value w/o premium part */
         const [firstPremiumItem] = methodEvaluation.premium_items;
-        methodEvaluation.nominal_value = round2(methodEvaluation.queue_cost / firstPremiumItem.quantity);
+        methodEvaluation.nominal_value = round(methodEvaluation.queue_cost / firstPremiumItem.quantity);
 
         /** Request market price from method item_id */
         const ava = await this.ValuationsModel.findOne({
@@ -811,7 +811,7 @@ export class ValuationsWorker {
 
         /** If ava.exists and premium_items is one */
         if (methodEvaluation.single_premium && ava) {
-          methodEvaluation.premium = round2(ava.value - methodEvaluation.queue_cost);
+          methodEvaluation.premium = round(ava.value - methodEvaluation.queue_cost);
         }
 
         for (const premium_item of methodEvaluation.premium_items) {
@@ -826,7 +826,7 @@ export class ValuationsWorker {
             }).sort({ 'details.wi': -1 });
 
             if (prva) {
-              methodEvaluation.queue_cost += round2(prva.value * premium_item.quantity);
+              methodEvaluation.queue_cost += round(prva.value * premium_item.quantity);
             } else {
               methodEvaluation.unsorted_items.push(premium_item);
             }
@@ -855,7 +855,7 @@ export class ValuationsWorker {
               continue;
             }
 
-            methodEvaluation.queue_cost += round2(ctdValuation.value * premium_item.quantity);
+            methodEvaluation.queue_cost += round(ctdValuation.value * premium_item.quantity);
 
           } else {
             /**
@@ -865,7 +865,7 @@ export class ValuationsWorker {
              * require additional research
              */
             if (methodEvaluation.premium_clearance && ava) {
-              methodEvaluation.premium = round2(ava.value - methodEvaluation.queue_cost);
+              methodEvaluation.premium = round(ava.value - methodEvaluation.queue_cost);
               methodEvaluation.premium_clearance = false;
             }
 
@@ -877,7 +877,7 @@ export class ValuationsWorker {
             }).sort({ 'details.wi': -1 });
 
             if (prva) {
-              methodEvaluation.queue_cost += round2(prva.value * premium_item.quantity);
+              methodEvaluation.queue_cost += round(prva.value * premium_item.quantity);
             } else {
               methodEvaluation.unsorted_items.push(premium_item);
             }
@@ -914,11 +914,11 @@ export class ValuationsWorker {
         for (const derivative of price_method.derivatives) {
           //`DR:${derivative._id}:${price_method.spell_id}:${reagentItem._id}`
           const derivativeItemName = price_method._id.toString();
-          const derivativeItemShare = round2(derivative.quantity / methodEvaluation.derivative_quantity_sum);
-          const derivativeValuationShare = round2(methodEvaluation.queue_cost * derivativeItemShare);
+          const derivativeItemShare = round(derivative.quantity / methodEvaluation.derivative_quantity_sum);
+          const derivativeValuationShare = round(methodEvaluation.queue_cost * derivativeItemShare);
           const derivativeItemValuation = derivative.quantity < 1
-            ? round2((1 / derivative.quantity) * derivativeValuationShare)
-            : round2(derivativeValuationShare / derivative.quantity);
+            ? round((1 / derivative.quantity) * derivativeValuationShare)
+            : round(derivativeValuationShare / derivative.quantity);
 
           const dva = await this.ValuationsModel.findOne({
             item_id: args._id,
@@ -938,7 +938,7 @@ export class ValuationsWorker {
               last_modified: args.last_modified,
               value: derivativeItemValuation,
               details: {
-                queue_cost: round2(methodEvaluation.queue_cost),
+                queue_cost: round(methodEvaluation.queue_cost),
                 queue_quantity: derivative.quantity,
                 rank: price_method.rank,
                 reagent_items: methodEvaluation.reagent_items,
@@ -957,7 +957,7 @@ export class ValuationsWorker {
         const [singleDerivative] = price_method.derivatives;
         // `DP:${singleDerivative._id}:${price_method.spell_id}`
         const derivativeItemName = price_method._id.toString();
-        methodEvaluation.nominal_value = round2(methodEvaluation.queue_cost / singleDerivative.quantity);
+        methodEvaluation.nominal_value = round(methodEvaluation.queue_cost / singleDerivative.quantity);
 
         // TODO proc chance
         if (
@@ -965,7 +965,7 @@ export class ValuationsWorker {
           price_method.profession === 'ALCH' &&
           price_method.rank === 3
         ) {
-          methodEvaluation.nominal_value = round2(methodEvaluation.nominal_value * 0.6);
+          methodEvaluation.nominal_value = round(methodEvaluation.nominal_value * 0.6);
         }
 
         await this.ValuationsModel.create({
@@ -977,7 +977,7 @@ export class ValuationsWorker {
           last_modified: args.last_modified,
           value: methodEvaluation.nominal_value,
           details: {
-            queue_cost: round2(methodEvaluation.queue_cost),
+            queue_cost: round(methodEvaluation.queue_cost),
             queue_quantity: singleDerivative.quantity,
             rank: price_method.rank,
             reagent_items: methodEvaluation.reagent_items,

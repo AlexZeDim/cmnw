@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, IAuctionsOrder, IAuctionsResponse, IQAuction, round2 } from '@app/core';
+import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, IAuctionsOrder, IAuctionsResponse, IQAuction, round } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
@@ -115,9 +115,9 @@ export class AuctionsWorker {
           // TODO pet fix
         }
       }
-      if (order.bid) order.bid = round2(order.bid / 10000);
-      if (order.buyout) order.buyout = round2(order.buyout / 10000);
-      if (order.unit_price) order.price = round2(order.unit_price / 10000);
+      if (order.bid) order.bid = round(order.bid / 10000);
+      if (order.buyout) order.buyout = round(order.buyout / 10000);
+      if (order.unit_price) order.price = round(order.unit_price / 10000);
       if (connected_realm_id) order.connected_realm_id = connected_realm_id;
       order.last_modified = last_modified;
       return new this.AuctionModel(order);

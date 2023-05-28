@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { GLOBAL_DMA_KEY, round2 } from '@app/core';
+import { GLOBAL_DMA_KEY, round } from '@app/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Token } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -50,7 +50,7 @@ export class WowtokenService {
         await this.TokenModel.create({
           _id: last_updated_timestamp,
           region: 'eu',
-          price: round2(price / 10000),
+          price: round(price / 10000),
           last_modified: lastModified,
         });
       }

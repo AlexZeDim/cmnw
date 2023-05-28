@@ -1,5 +1,5 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_TIMEOUT_TOLERANCE, IItem, IQItem, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
+import { DMA_TIMEOUT_TOLERANCE, IItem, IQItem, itemsQueue, round, VALUATION_TYPE } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { Job } from 'bullmq';
@@ -85,7 +85,7 @@ export class ItemsWorker {
             if (key === 'sell_price') {
               item.asset_class.addToSet(VALUATION_TYPE.VSP);
             }
-            requested_item[key] = round2(getItemSummary.value[key] / 10000);
+            requested_item[key] = round(getItemSummary.value[key] / 10000);
           }
         }
 

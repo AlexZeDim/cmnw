@@ -18,7 +18,7 @@ export class RealmsWorker {
     RealmsWorker.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     @InjectModel(Realm.name)
@@ -116,7 +116,7 @@ export class RealmsWorker {
               }
             }
           }
-        })
+        }),
       );
 
       Object.assign(realm, summary);
@@ -124,7 +124,7 @@ export class RealmsWorker {
       await realm.save();
       await job.updateProgress(100);
     } catch (errorException) {
-      this.logger.error(`${RealmsWorker.name}: ${errorException}`)
+      this.logger.error(`${RealmsWorker.name}: ${errorException}`);
     }
   }
 }

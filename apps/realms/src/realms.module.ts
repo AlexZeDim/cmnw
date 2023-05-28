@@ -30,7 +30,7 @@ import {
       { name: Realm.name, schema: RealmsSchema },
       { name: RealmPopulation.name, schema: RealmsPopulationSchema },
       { name: Guild.name, schema: GuildsSchema },
-      { name: Character.name, schema: CharactersSchema }
+      { name: Character.name, schema: CharactersSchema },
     ]),
     BullModule.forRoot({
       options: {

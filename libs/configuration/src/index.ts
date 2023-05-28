@@ -10,4 +10,5 @@ export { warcraftLogsConfig } from './warcraftlogs.config';
 export { valuationsConfig } from './valuations.config';
 export { pricingConfig } from './pricing.config';
 export { itemsConfig } from './items.config';
+export { postgresConfig } from './postgres.config';
 export * from './interfaces';

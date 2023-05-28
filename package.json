@@ -50,6 +50,7 @@
     "@nestjs/platform-express": "8.2.4",
     "@nestjs/schedule": "1.0.2",
     "@nestjs/swagger": "5.1.5",
+    "@nestjs/typeorm": "^9.0.1",
     "@nlpjs/core": "4.22.0",
     "@nlpjs/emoji": "4.22.0",
     "@types/cheerio": "0.22.30",

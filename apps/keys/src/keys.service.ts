@@ -84,19 +84,18 @@ export class KeysService implements OnApplicationBootstrap {
       .find({ tags: { $in: [ 'warcraftlogs', 'gql' ] } })
       .cursor()
       .eachAsync(async (key): Promise<void> => {
-        const { data } = await lastValueFrom(
-          this.httpService.request<Partial<IWarcraftLogsToken>>({
-            method: 'post',
-            url: 'https://www.warcraftlogs.com/oauth/token',
-            data: {
-              grant_type: 'client_credentials',
-            },
-            auth: {
-              username: '947f1d2f-0ea7-434d-8856-37b6786e2cf9',
-              password: 'iqpacAIt8ds3qfOhVn3gTakbvqumlMgLJqV6bsrb',
-            },
-          }),
-        );
+        const { data } = await
+        this.httpService.axiosRef.request<Partial<IWarcraftLogsToken>>({
+          method: 'post',
+          url: 'https://www.warcraftlogs.com/oauth/token',
+          data: {
+            grant_type: 'client_credentials',
+          },
+          auth: {
+            username: '947f1d2f-0ea7-434d-8856-37b6786e2cf9',
+            password: 'iqpacAIt8ds3qfOhVn3gTakbvqumlMgLJqV6bsrb',
+          },
+        });
         if (data.access_token && data.expires_in) {
           key.token = data.access_token;
           key.expired_in = data.expires_in;

@@ -4,19 +4,19 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema()
 export class Key extends Document {
   @Prop({ type: String })
-    _id: string;
+  _id: string;
 
   @Prop({ type: String, required: true })
-    secret: string;
+  secret: string;
 
   @Prop({ type: String })
-    token: string;
+  token: string;
 
   @Prop({ type: Number })
-    expiresIn: number;
+  expiresIn: number;
 
   @Prop({ type: [String] })
-    tags: Types.Array<String>;
+  tags: Types.Array<string>;
 }
 
 export const KeysSchema = SchemaFactory.createForClass(Key);

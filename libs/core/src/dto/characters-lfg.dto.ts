@@ -1,5 +1,5 @@
 import { FACTION } from '@app/core';
-import { IsArray, IsEnum, IsNumberString, IsOptional } from 'class-validator';
+import { IsArray, IsNumberString, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -17,18 +17,23 @@ export class CharactersLfgDto {
   @ApiProperty(SWAGGER_CHARACTER_REALMS)
   @IsOptional()
   @IsArray()
-  @Transform(({ value: realms }) => Array.isArray(realms) && realms ? realms.map((r) => r.toLowerCase()) : [realms])
+  @Transform(({ value: realms }) =>
+    Array.isArray(realms) && realms ? realms.map((r) => r.toLowerCase()) : [realms],
+  )
   readonly realms: string[];
 
   @ApiProperty(SWAGGER_CHARACTER_LANGUAGES)
   @IsOptional()
   @IsArray()
-  @Transform(({ value: languages }) => Array.isArray(languages) && languages ? languages.map((l) => l.toLowerCase()) : [languages])
+  @Transform(({ value: languages }) =>
+    Array.isArray(languages) && languages
+      ? languages.map((l) => l.toLowerCase())
+      : [languages],
+  )
   readonly languages: string[];
 
   @ApiProperty(SWAGGER_CHARACTER_FACTION)
   @IsOptional()
-  @IsEnum(FACTION)
   readonly faction: FACTION;
 
   @ApiProperty(SWAGGER_CHARACTER_AVGILVL)

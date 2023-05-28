@@ -7,7 +7,6 @@ import {
   SWAGGER_ACCOUNT_NICKNAME,
 } from '@app/core';
 
-
 export class AccountGetDto {
   @IsString()
   @IsOptional()

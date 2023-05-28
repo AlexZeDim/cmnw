@@ -18,7 +18,7 @@ import { MarketEmbed } from './embeds/market.embed';
 
 @Injectable()
 export class DiscordService implements OnApplicationBootstrap {
-  private client: Discord.Client
+  private client: Discord.Client;
 
   private intents = new Intents(32767);
 
@@ -109,7 +109,7 @@ export class DiscordService implements OnApplicationBootstrap {
         this.logger.error(error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
       }
-    })
+    });
   }
 
   private loadCommands(): void {
@@ -166,7 +166,7 @@ export class DiscordService implements OnApplicationBootstrap {
                 characters.map(character => {
                   const candidateEmbed = CandidateEmbedMessage(character);
                   if (channel.type === 'GUILD_TEXT') (channel as TextChannel).send( { embeds: [candidateEmbed] });
-                })
+                });
               }
 
               break;
@@ -188,53 +188,53 @@ export class DiscordService implements OnApplicationBootstrap {
 
                 await this.AuctionModel
                   .aggregate<IAAuctionOrders>([
-                    {
-                      $match: {
-                        connected_realm_id: connectedRealmHub.connected_realm_id,
-                        item_id: { $in: itemsIDs },
-                        last_modified: { $in: [ connectedRealmHub.auctions, realm.auctions ] },
-                      }
+                  {
+                    $match: {
+                      connected_realm_id: connectedRealmHub.connected_realm_id,
+                      item_id: { $in: itemsIDs },
+                      last_modified: { $in: [ connectedRealmHub.auctions, realm.auctions ] },
                     },
-                    {
-                      $group: {
-                        _id: '$item_id',
-                        orders_t0: {
-                          $push: {
-                            $cond: {
-                              if: {
-                                $eq: [ "$last_modified", connectedRealmHub.auctions ]
-                              },
-                              then: {
-                                id: "$id",
-                                quantity: "$quantity",
-                                price: "$price",
-                                bid: "$bid",
-                                buyout: "$buyout",
-                              },
-                              else: "$$REMOVE"
-                            }
-                          }
+                  },
+                  {
+                    $group: {
+                      _id: '$item_id',
+                      orders_t0: {
+                        $push: {
+                          $cond: {
+                            if: {
+                              $eq: [ '$last_modified', connectedRealmHub.auctions ],
+                            },
+                            then: {
+                              id: '$id',
+                              quantity: '$quantity',
+                              price: '$price',
+                              bid: '$bid',
+                              buyout: '$buyout',
+                            },
+                            else: '$$REMOVE',
+                          },
                         },
-                        orders_t1: {
-                          $push: {
-                            $cond: {
-                              if: {
-                                $eq: [ "$last_modified", realm.auctions ]
-                              },
-                              then: {
-                                id: "$id",
-                                quantity: "$quantity",
-                                price: "$price",
-                                bid: "$bid",
-                                buyout: "$buyout",
-                              },
-                              else: "$$REMOVE"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  ])
+                      },
+                      orders_t1: {
+                        $push: {
+                          $cond: {
+                            if: {
+                              $eq: [ '$last_modified', realm.auctions ],
+                            },
+                            then: {
+                              id: '$id',
+                              quantity: '$quantity',
+                              price: '$price',
+                              bid: '$bid',
+                              buyout: '$buyout',
+                            },
+                            else: '$$REMOVE',
+                          },
+                        },
+                      },
+                    },
+                  },
+                ])
                   .allowDiskUse(true)
                   .cursor()
                   .eachAsync(async (auctionsOrders: IAAuctionOrders) => {
@@ -270,7 +270,7 @@ export class DiscordService implements OnApplicationBootstrap {
                             } else {
                               message = message + line;
                             }
-                          })
+                          }),
                         ));
                       }
 
@@ -285,16 +285,16 @@ export class DiscordService implements OnApplicationBootstrap {
                             } else {
                               message = message + line;
                             }
-                          })
+                          }),
                         ));
                       }
 
-                      if (message.length) await (channel as TextChannel).send({ content: message })
+                      if (message.length) await (channel as TextChannel).send({ content: message });
                     }
 
                     if (subscription.type === NOTIFICATIONS.MARKET) {
                       const marketEmbed = MarketEmbed(created, removed, connectedRealmHub, item);
-                      await (channel as TextChannel).send({ embeds: [marketEmbed ]});
+                      await (channel as TextChannel).send({ embeds: [marketEmbed ] });
                     }
                   });
 

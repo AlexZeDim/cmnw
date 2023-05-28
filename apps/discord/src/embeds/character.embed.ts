@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed } from 'discord.js';
 import { CharacterDto, FACTION } from '@app/core';
 import { discordConfig } from '@app/configuration';
 
@@ -10,7 +10,7 @@ export function CharacterEmbedMessage(character: Partial<CharacterDto>): Message
     embed.setAuthor(
       character._id.toUpperCase(),
       undefined,
-      encodeURI(`${discordConfig.basename}/character/${character._id}`)
+      encodeURI(`${discordConfig.basename}/character/${character._id}`),
     );
 
     if (character.guild) {

@@ -25,8 +25,8 @@ import {
       { name: Character.name, schema: CharactersSchema },
       { name: Item.name, schema: ItemsSchema },
       { name: Realm.name, schema: RealmsSchema },
-      { name: Subscription.name, schema: SubscriptionsSchema }
-    ])
+      { name: Subscription.name, schema: SubscriptionsSchema },
+    ]),
   ],
   controllers: [],
   providers: [DiscordService],

@@ -1,0 +1,60 @@
+name: Create Keys Release Image
+
+# build image only on push to master & specific app directory
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'apps/keys/**'
+
+jobs:
+  # define job to build and publish docker image
+  publish:
+    # run only when code is compiling and tests are passing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 2
+
+      - name: Tag new release
+        uses: butlerlogic/action-autotag@stable
+        env:
+          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            ghcr.io/alexzedim/keys
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=semver,pattern={{raw}}
+          labels: |
+            org.opencontainers.image.title=Keys
+            org.opencontainers.image.vendor=AlexZeDim
+            org.opencontainers.image.url=https://i.imgur.com/CY0Kqy3.png
+            org.opencontainers.image.source=https://github.com/AlexZeDim/oraculum
+
+      - name: Login to Github Packages
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build & Push (GHCR)
+        uses: docker/build-push-action@v2.9.0
+        with:
+          file: ./apps/keys/Dockerfile
+          push: true
+          tags: ghcr.io/alexzedim/keys:latest
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            CR_PAT=${{ secrets.CR_PAT }}
+
+      - name: Image digest
+        run: echo ${{ steps.build-push-action.outputs.digest }}

@@ -12,7 +12,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
       { name: Key.name, schema: KeysSchema },
-    ])
+    ]),
   ],
   controllers: [],
   providers: [WowtokenService],

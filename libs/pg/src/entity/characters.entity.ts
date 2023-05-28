@@ -4,10 +4,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Index('ix__characters__guid', ['guid'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS })
 export class CharactersEntity {
   @PrimaryGeneratedColumn('uuid')

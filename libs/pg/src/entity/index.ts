@@ -7,3 +7,4 @@ export * from './professions.entity';
 export * from './characters-professions.entity';
 export * from './guilds.entity';
 export * from './characters-guilds-members.entity';
+export * from './characters-mounts.entity';

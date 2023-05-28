@@ -3,11 +3,12 @@ import { OSINT_SOURCE } from '@app/core';
 import {
   Column,
   CreateDateColumn,
-  Entity,
+  Entity, Index,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+  UpdateDateColumn
+} from "typeorm";
 
+@Index('ix__guilds__guid', ['guid'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.GUILDS })
 export class GuildsEntity {
   @PrimaryGeneratedColumn('uuid')

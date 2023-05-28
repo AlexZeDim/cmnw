@@ -3,3 +3,7 @@ export * from './keys.entity';
 export * from './pets.entity';
 export * from './characters-pets.entity';
 export * from './mounts.entity';
+export * from './professions.entity';
+export * from './characters-professions.entity';
+export * from './guilds.entity';
+export * from './characters-guilds-members.entity';

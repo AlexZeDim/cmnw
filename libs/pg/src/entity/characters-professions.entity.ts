@@ -1,22 +1,30 @@
+import { CMNW_ENTITY_ENUM } from '@app/pg';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CMNW_ENTITY_ENUM } from '@app/pg';
 
-@Entity({ name: CMNW_ENTITY_ENUM.MOUNTS })
-export class MountsEntity {
-  @PrimaryColumn('int')
-  id: number;
+@Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_PROFESSIONS })
+export class CharactersProfessionsEntity {
+  @PrimaryGeneratedColumn('uuid')
+  readonly uuid: string;
 
   @Column({
-    nullable: true,
-    type: 'varchar',
+    nullable: false,
+    type: 'int',
+    name: 'profession_id',
   })
-  name?: string;
+  professionId: number;
+
+  @Column({
+    nullable: false,
+    type: 'varchar',
+    name: 'character_guid',
+  })
+  characterGuid: string;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Key, Realm, WarcraftLogs } from '@app/mongo';
-import { Model } from "mongoose";
+import { Model } from 'mongoose';
 import {
   GLOBAL_WCL_KEY,
   charactersQueue,
@@ -50,9 +50,9 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         .cursor({ batchSize: 1 })
         .eachAsync(async (realm: Realm) => {
           await this.indexPage(warcraftlogsConfig, realm);
-        })
+        });
     } catch (errorException) {
-      this.logger.error(`${WarcraftlogsService.name},${errorException}`)
+      this.logger.error(`${WarcraftlogsService.name},${errorException}`);
     }
   }
 
@@ -64,7 +64,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         await delay(random);
 
         const response = await lastValueFrom(
-          this.httpService.get(`https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`)
+          this.httpService.get(`https://www.warcraftlogs.com/zone/reports?zone=${config.raid_tier}&server=${realm.wcl_id}&page=${page}`),
         );
 
         const wclHTML = cheerio.load(response.data);
@@ -112,14 +112,14 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
           } else {
             /** Else, counter -1 and create in DB */
             if (logExists > 1) logExists -= 1;
-            this.logger.log(`C, Log: ${logId}, Log EX: ${logExists}`)
+            this.logger.log(`C, Log: ${logId}, Log EX: ${logExists}`);
             await this.WarcraftLogsModel.create({ _id: logId });
           }
         }
 
         if (logExists > config.logs) {
           this.logger.log(`BREAK, ${realm.name}, Log FT: ${logExists} > ${config.logs}`);
-          break
+          break;
         }
       }
     } catch (errorException) {
@@ -178,9 +178,9 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
                           }
                         }
                       }
-                    }`
-                }
-              })
+                    }`,
+                },
+              }),
             );
 
             i++;
@@ -206,7 +206,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
           } catch (errorException) {
             this.logger.error(`Log: ${log._id}, ${errorException}`);
           }
-        })
+        });
     } catch (errorException) {
       this.logger.error(`indexLogs: ${errorException}`);
     }
@@ -219,7 +219,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
       const charactersToJobs = exportedCharacters.map((character) => {
         const _id = toSlug(`${character.name}@${character.server}`);
 
-        iteration++
+        iteration++;
         if (iteration >= keys.length) iteration = 0;
 
         return {
@@ -243,7 +243,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
             jobId: _id,
             priority: 4,
           },
-        }
+        };
       });
 
       await this.queue.addBulk(charactersToJobs);

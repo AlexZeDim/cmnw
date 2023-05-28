@@ -56,113 +56,113 @@ export class ContractsService {
           const matchStage =
             item._id === 1
               ? {
-                  $match: {
-                    createdAt: {
-                      $gt: YTD,
-                    },
-                    status: 'Online',
+                $match: {
+                  createdAt: {
+                    $gt: YTD,
                   },
-                }
+                  status: 'Online',
+                },
+              }
               : {
-                  $match: {
-                    last_modified: { $gte: T },
-                    item_id: item._id,
-                  },
-                };
+                $match: {
+                  last_modified: { $gte: T },
+                  item_id: item._id,
+                },
+              };
 
           const groupStage =
             item._id === 1
               ? {
-                  $group: {
-                    _id: {
-                      connected_realm_id: '$connected_realm_id',
-                      last_modified: '$last_modified',
-                    },
-                    open_interest: {
-                      $sum: {
-                        $multiply: ['$price', { $divide: ['$quantity', 1000] }],
-                      },
-                    },
-                    quantity: { $sum: '$quantity' },
-                    price: { $min: '$price' },
-                    price_size_array: {
-                      $addToSet: {
-                        $cond: {
-                          if: { $gte: ['$quantity', 1000000] },
-                          then: '$price',
-                          else: '$$REMOVE',
-                        },
-                      },
-                    },
-                    sellers: { $addToSet: '$owner' },
+                $group: {
+                  _id: {
+                    connected_realm_id: '$connected_realm_id',
+                    last_modified: '$last_modified',
                   },
-                }
+                  open_interest: {
+                    $sum: {
+                      $multiply: ['$price', { $divide: ['$quantity', 1000] }],
+                    },
+                  },
+                  quantity: { $sum: '$quantity' },
+                  price: { $min: '$price' },
+                  price_size_array: {
+                    $addToSet: {
+                      $cond: {
+                        if: { $gte: ['$quantity', 1000000] },
+                        then: '$price',
+                        else: '$$REMOVE',
+                      },
+                    },
+                  },
+                  sellers: { $addToSet: '$owner' },
+                },
+              }
               : {
-                  $group: {
-                    _id: {
-                      connected_realm_id: '$connected_realm_id',
-                      item_id: '$item_id',
-                      last_modified: '$last_modified',
-                    },
-                    open_interest: {
-                      $sum: {
-                        $multiply: ['$price', '$quantity'],
-                      },
-                    },
-                    quantity: { $sum: '$quantity' },
-                    price: { $min: '$price' },
-                    price_size_array: {
-                      $addToSet: {
-                        $cond: {
-                          if: { $gte: ['$quantity', item.stackable || 1] },
-                          then: '$price',
-                          else: '$$REMOVE',
-                        },
-                      },
-                    },
-                    orders: {
-                      $push: '$id',
+                $group: {
+                  _id: {
+                    connected_realm_id: '$connected_realm_id',
+                    item_id: '$item_id',
+                    last_modified: '$last_modified',
+                  },
+                  open_interest: {
+                    $sum: {
+                      $multiply: ['$price', '$quantity'],
                     },
                   },
-                };
+                  quantity: { $sum: '$quantity' },
+                  price: { $min: '$price' },
+                  price_size_array: {
+                    $addToSet: {
+                      $cond: {
+                        if: { $gte: ['$quantity', item.stackable || 1] },
+                        then: '$price',
+                        else: '$$REMOVE',
+                      },
+                    },
+                  },
+                  orders: {
+                    $push: '$id',
+                  },
+                },
+              };
 
           const projectStage =
             item._id === 1
               ? {
-                  $project: {
-                    connected_realm_id: '$_id.connected_realm_id',
-                    last_modified: '$_id.last_modified',
-                    price: '$price',
-                    price_size: {
-                      $cond: {
-                        if: { $gte: [{ $size: '$price_size_array' }, 1] },
-                        then: { $min: '$price_size_array' },
-                        else: '$price',
-                      },
+                $project: {
+                  connected_realm_id: '$_id.connected_realm_id',
+                  last_modified: '$_id.last_modified',
+                  price: '$price',
+                  price_size: {
+                    $cond: {
+                      if: { $gte: [{ $size: '$price_size_array' }, 1] },
+                      then: { $min: '$price_size_array' },
+                      else: '$price',
                     },
-                    quantity: '$quantity',
-                    open_interest: '$open_interest',
-                    sellers: '$sellers',
                   },
-                }
+                  quantity: '$quantity',
+                  open_interest: '$open_interest',
+                  sellers: '$sellers',
+                },
+              }
               : {
-                  $project: {
-                    item_id: '$_id.item_id',
-                    connected_realm_id: '$_id.connected_realm_id',
-                    last_modified: '$_id.last_modified',
-                    price: '$price',
-                    price_size: {
-                      $cond: {
-                        if: { $gte: [{ $size: '$price_size_array' }, 1] },
-                        then: { $min: '$price_size_array' },
-                        else: '$price',
-                      },
+                $project: {
+                  item_id: '$_id.item_id',
+                  connected_realm_id: '$_id.connected_realm_id',
+                  last_modified: '$_id.last_modified',
+                  price: '$price',
+                  price_size: {
+                    $cond: {
+                      if: { $gte: [{ $size: '$price_size_array' }, 1] },
+                      then: { $min: '$price_size_array' },
+                      else: '$price',
                     },
-                    quantity: '$quantity',
-                    open_interest: '$open_interest',
-                    orders: '$orders',
                   },
-                };
+                  quantity: '$quantity',
+                  open_interest: '$open_interest',
+                  orders: '$orders',
+                },
+              };
 
           const addStage = {
             $addFields: {

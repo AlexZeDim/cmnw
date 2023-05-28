@@ -9,7 +9,7 @@ import {
   Gold,
   GoldsSchema,
   Realm,
-  RealmsSchema
+  RealmsSchema,
 } from '@app/mongo';
 
 

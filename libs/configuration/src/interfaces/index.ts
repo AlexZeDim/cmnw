@@ -10,3 +10,4 @@ export { IPrice } from './pricing.interface';
 export { IValuations } from './valuations.interface';
 export { IWowProgress } from './wowprogress.interface';
 export { IWarcraftLogs } from './warcraft-logs.interface';
+export { IPostgres, IPostgresConfig } from './postgres.interface';

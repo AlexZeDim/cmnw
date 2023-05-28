@@ -1,8 +1,8 @@
 import { get } from 'config';
 import { IMongo } from '@app/configuration/interfaces';
 
-const DB_CONFIG = get<IMongo>('mongo');
+const MONGO_DB_CONFIG = get<IMongo>('mongo');
 
 export const mongoConfig: IMongo = {
-  connectionString: DB_CONFIG.connectionString,
+  connectionString: MONGO_DB_CONFIG.connectionString,
 };

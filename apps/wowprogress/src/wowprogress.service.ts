@@ -10,7 +10,7 @@ import zlib from 'zlib';
 import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { delay } from '@app/core/utils/converters';
-import { wowprogressConfig } from '@app/configuration';
+import { wowProgressConfig } from '@app/configuration';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
@@ -52,7 +52,7 @@ export class WowprogressService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexWowProgress(GLOBAL_KEY, wowprogressConfig.index_init);
+    await this.indexWowProgress(GLOBAL_KEY, wowProgressConfig.init);
   }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)

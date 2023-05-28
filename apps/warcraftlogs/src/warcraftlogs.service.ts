@@ -15,7 +15,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core/utils/converters';
-import { warcraftlogsConfig } from '@app/configuration';
+import { warcraftLogsConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
 import cheerio from 'cheerio';
 import { lastValueFrom } from 'rxjs';
@@ -49,7 +49,7 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         .find({ wcl_id: { $ne: null } })
         .cursor({ batchSize: 1 })
         .eachAsync(async (realm: Realm) => {
-          await this.indexPage(warcraftlogsConfig, realm);
+          await this.indexPage(warcraftLogsConfig, realm);
         });
     } catch (errorException) {
       this.logger.error(`${WarcraftlogsService.name},${errorException}`);

@@ -20,19 +20,19 @@ export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
   ) {
     super({
       authorizationURL: `https://eu.battle.net/oauth/authorize?${ stringify({
-        client_id    : commonwealthConfig.client_id,
-        redirect_uri : commonwealthConfig.redirect_uri,
+        client_id    : commonwealthConfig.clientId,
+        redirect_uri : commonwealthConfig.redirect,
         response_type: 'code',
         scope        : 'wow.profile',
       }) }`,
       // TODO probably function here, not sure
       // Authorization: 'Basic Base64',
-      tokenURL: `https://${commonwealthConfig.client_id}:${commonwealthConfig.client_secret}@eu.battle.net/oauth/token`,
-      clientID: commonwealthConfig.client_id,
-      clientSecret: commonwealthConfig.client_secret,
+      tokenURL: `https://${commonwealthConfig.clientId}:${commonwealthConfig.clientSecret}@eu.battle.net/oauth/token`,
+      clientID: commonwealthConfig.clientId,
+      clientSecret: commonwealthConfig.clientSecret,
       grant_type: 'client_credentials',
       scope: 'wow.profile',
-      redirect_uri: commonwealthConfig.redirect_uri,
+      redirect_uri: commonwealthConfig.redirect,
       region: 'eu',
     });
   }

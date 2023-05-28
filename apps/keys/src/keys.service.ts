@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { keysConfig } from '@app/configuration';
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import { KeyInterface } from '@app/configuration/interfaces/key.interface';
+import { IKey } from '@app/configuration/interfaces/key.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { GLOBAL_BLIZZARD_KEY, IWarcraftLogsToken } from '@app/core';
 import { HttpService } from '@nestjs/axios';
@@ -34,7 +34,7 @@ export class KeysService implements OnApplicationBootstrap {
 
     await lastValueFrom(
       from(keys).pipe(
-        mergeMap(async (key: KeyInterface) => {
+        mergeMap(async (key: IKey) => {
           const keyExists = await this.KeysModel.findById(key._id);
           if (!keyExists) {
             await this.KeysModel.create(key);
@@ -70,7 +70,7 @@ export class KeysService implements OnApplicationBootstrap {
           );
           if (data && 'access_token' in data && 'expires_in' in data) {
             key.token = data.access_token;
-            key.expired_in = data.expires_in;
+            key.expiredIn = data.expires_in;
             await key.save();
             this.logger.log(`Updated: key(${key._id})`);
           }
@@ -98,7 +98,7 @@ export class KeysService implements OnApplicationBootstrap {
         });
         if (data.access_token && data.expires_in) {
           key.token = data.access_token;
-          key.expired_in = data.expires_in;
+          key.expiredIn = data.expires_in;
           await key.save();
           this.logger.log(`Updated: key(${key._id})`);
         }

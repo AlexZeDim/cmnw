@@ -1,9 +1,9 @@
 import { get } from 'config';
-import { DiscordInterface } from '@app/configuration/interfaces';
+import { IDiscord } from '@app/configuration/interfaces';
 
-const DISCORD_CONFIG = get<DiscordInterface>('discord');
+const DISCORD_CONFIG = get<IDiscord>('discord');
 
-export const discordConfig: DiscordInterface = {
+export const discordConfig: IDiscord = {
   id: DISCORD_CONFIG.id,
   secret: DISCORD_CONFIG.secret,
   token: DISCORD_CONFIG.token,

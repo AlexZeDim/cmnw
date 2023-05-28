@@ -23,7 +23,7 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connectionString),
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
       { name: Realm.name, schema: RealmsSchema },

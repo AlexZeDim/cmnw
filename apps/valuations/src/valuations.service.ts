@@ -37,7 +37,7 @@ export class ValuationsService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     await this.clearQueue();
-    await this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
+    await this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build);
   }
 
   async clearQueue(): Promise<void> {

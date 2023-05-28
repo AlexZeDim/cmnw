@@ -368,12 +368,12 @@ export interface IWowProgress {
   languages: string[]
 }
 
-export interface IWarcraftLogs {
+export interface IWarcraftLog {
   wcl_percentile: number
 }
 
 export interface IWarcraftLogsConfig {
-  readonly raid_tier: number
+  readonly raidTier: number
   readonly from: number,
   readonly to: number,
   readonly page: number,

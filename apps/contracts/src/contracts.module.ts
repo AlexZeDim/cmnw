@@ -14,7 +14,7 @@ import {
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Realm.name, schema: RealmsSchema },
       { name: Item.name, schema: ItemsSchema },

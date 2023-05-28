@@ -13,7 +13,7 @@ export class Key extends Document {
     token: string;
 
   @Prop({ type: Number })
-    expired_in: number;
+    expiredIn: number;
 
   @Prop({ type: [String] })
     tags: Types.Array<String>;

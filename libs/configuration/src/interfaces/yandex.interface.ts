@@ -1,3 +1,3 @@
-export interface YandexInterface {
+export interface IYandex {
   readonly token: string;
 }

@@ -19,7 +19,7 @@ import {
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Auction.name, schema: AuctionsSchema },
       { name: Character.name, schema: CharactersSchema },

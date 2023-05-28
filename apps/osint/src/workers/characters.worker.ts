@@ -18,7 +18,7 @@ import {
   IProfessions,
   IRaiderIO,
   IWowProgress,
-  IWarcraftLogs,
+  IWarcraftLog,
   ICharacterStatus,
   charactersQueue,
   toSlug, capitalize,
@@ -603,8 +603,8 @@ export class CharactersWorker {
   private async warcraftLogs(
     name: string,
     realm_slug: string,
-  ): Promise<Partial<IWarcraftLogs>> {
-    const warcraftLogs: Partial<IWarcraftLogs> = {};
+  ): Promise<Partial<IWarcraftLog>> {
+    const warcraftLogs: Partial<IWarcraftLog> = {};
     try {
       const browser = await puppeteer.launch({ args: [ '--no-sandbox', '--disable-setuid-sandbox' ] });
       const page = await browser.newPage();

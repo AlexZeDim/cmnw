@@ -25,7 +25,7 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connectionString),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },
       { name: Key.name, schema: KeysSchema },

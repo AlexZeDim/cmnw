@@ -40,5 +40,5 @@ module.exports = {
     const { data: character } = await axios.get<Partial<CharacterDto>>(encodeURI(`${discordConfig.basename}/api/osint/character?_id=${name}@${realm}`));
     const embed = CharacterEmbedMessage(character);
     await interaction.reply({ embeds: [ embed ] });
-  }
-}
+  },
+};

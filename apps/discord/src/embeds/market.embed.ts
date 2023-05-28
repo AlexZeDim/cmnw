@@ -58,7 +58,7 @@ export function MarketEmbed(
       embed.addField(
         '────── CREATED ──────',
         `Orders: ${created.length}\nQuantity: ${marketData.createdQuantity}\nOpen Interest: ${marketData.createdOpenInterest.toFixed(2)}g\n───────────────────`,
-        false
+        false,
       );
     }
 
@@ -78,7 +78,7 @@ export function MarketEmbed(
       embed.addField(
         '────── CREATED ──────',
         `Orders: ${created.length}\nQuantity: ${marketData.removedQuantity}\nOpen Interest: ${marketData.removedOpenInterest.toFixed(2)}g\n───────────────────`,
-        false
+        false,
       );
     }
 
@@ -90,7 +90,7 @@ export function MarketEmbed(
       embed.addField(
         '────── CHANGED ──────',
         `Orders: ${marketData.changeOrders}\nQuantity: ${marketData.changeQuantity}\nInterest Diff: ${marketData.changeOpenInterest.toFixed(2)}g\n───────────────────`,
-        false
+        false,
       );
     }
 

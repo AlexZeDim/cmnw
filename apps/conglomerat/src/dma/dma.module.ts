@@ -4,6 +4,8 @@ import { mongoConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { DmaController } from './dma.controller';
 import { DmaService } from './dma.service';
+import { valuationsQueue } from '@app/core';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import {
   Auction,
   AuctionsSchema,
@@ -18,8 +20,6 @@ import {
   Valuations,
   ValuationsSchema,
 } from '@app/mongo';
-import { valuationsQueue } from '@app/core';
-import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [

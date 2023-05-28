@@ -81,7 +81,7 @@ export class WowprogressService implements OnApplicationBootstrap {
       page(wpPage).map(async (x, node) => {
         if ('attribs' in node) {
           const url = node.attribs.href;
-          if (!url.includes(`eu_`)) return;
+          if (!url.includes('eu_')) return;
 
           const
             download: string = encodeURI(decodeURI(url)),
@@ -96,7 +96,7 @@ export class WowprogressService implements OnApplicationBootstrap {
               .findOne(
                 { $text: { $search: realmQuery } },
                 { score: { $meta: 'textScore' } },
-                { projection: { slug_locale: 1 } }
+                { projection: { slug_locale: 1 } },
               )
               .sort({ score: { $meta: 'textScore' } })
               .lean();
@@ -108,13 +108,13 @@ export class WowprogressService implements OnApplicationBootstrap {
               .request({
                 url: download,
                 responseType: 'stream',
-               })
-            )
+              }),
+          )
             .then(
               async response => response.data
                 .pipe(
-                  fs.createWriteStream(`${dir}/${fileName}`)
-                )
+                  fs.createWriteStream(`${dir}/${fileName}`),
+                ),
             );
         }
       });
@@ -143,7 +143,7 @@ export class WowprogressService implements OnApplicationBootstrap {
                 .findOne(
                   { $text: { $search: realmQuery } },
                   { score: { $meta: 'textScore' } },
-                  { projection: { slug: 1 } }
+                  { projection: { slug: 1 } },
                 )
                 .sort({ score: { $meta: 'textScore' } })
                 .lean();
@@ -162,8 +162,8 @@ export class WowprogressService implements OnApplicationBootstrap {
               for (const guild of json) {
 
                 if (!guild.name || guild.name.includes('[Raid]')) {
-                 this.logger.log(`indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`);
-                 continue;
+                  this.logger.log(`indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`);
+                  continue;
                 }
 
                 const _id: string = toSlug(`${guild.name}@${realm.slug}`);
@@ -186,9 +186,9 @@ export class WowprogressService implements OnApplicationBootstrap {
                   },
                   {
                     jobId: _id,
-                    priority: 4
-                  }
-                )
+                    priority: 4,
+                  },
+                );
               }
             }
           } catch (error) {
@@ -200,29 +200,29 @@ export class WowprogressService implements OnApplicationBootstrap {
       await fs.rmdirSync(dir, { recursive: true });
       this.logger.warn(`indexWowProgress: directory ${dir} has been removed!`);
     } catch (errorException) {
-      this.logger.error(`indexWowProgress: ${errorException}`)
+      this.logger.error(`indexWowProgress: ${errorException}`);
     }
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async indexWowProgressLfg(clearance: string = GLOBAL_KEY): Promise<void> {
     try {
-      this.logger.log(`————————————————————————————————————`);
+      this.logger.log('————————————————————————————————————');
       /**
        * Revoke characters status from old NOW => to PREV
        */
       await delay(60);
       const charactersRevoked = await this.CharacterModel
         .updateMany(
-        { looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } },
-        { looking_for_guild: LFG.PREV }
+          { looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } },
+          { looking_for_guild: LFG.PREV },
         );
 
       this.logger.debug(`indexLookingForGuild: status LFG-${LFG.NOW} & LFG-${LFG.NEW} revoke from ${charactersRevoked.modifiedCount} characters`);
 
       const keys = await this.KeyModel.find({ tags: clearance });
       if (!keys.length) {
-        throw new NotFoundException(`${keys.length} keys found`)
+        throw new NotFoundException(`${keys.length} keys found`);
       }
 
       const [firstPage, secondPage] = await Promise.all([
@@ -286,7 +286,7 @@ export class WowprogressService implements OnApplicationBootstrap {
                 .findOne(
                   { $text: { $search: realmQuery } },
                   { score: { $meta: 'textScore' } },
-                  { projection: { slug: 1 } }
+                  { projection: { slug: 1 } },
                 )
                 .sort({ score: { $meta: 'textScore' } })
                 .lean();
@@ -319,14 +319,14 @@ export class WowprogressService implements OnApplicationBootstrap {
                 }, {
                   jobId: characterId,
                   priority: 2,
-                }
+                },
               );
 
-              index++
+              index++;
               this.logger.log(`indexLookingForGuild: Added to character queue: ${characterId}`);
               if (i >= keys.length) index = 0;
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -339,9 +339,9 @@ export class WowprogressService implements OnApplicationBootstrap {
       await this.CharacterModel.updateMany({ _id: { $in: charactersDiffNew } }, { looking_for_guild: LFG.NEW });
       this.logger.debug(`indexLookingForGuild: status LFG-${LFG.NEW} set to ${charactersDiffNew.length} characters`);
 
-      this.logger.log(`————————————————————————————————————`);
+      this.logger.log('————————————————————————————————————');
     } catch (errorException) {
-      this.logger.error(`indexLookingForGuild: ${errorException}`)
+      this.logger.error(`indexLookingForGuild: ${errorException}`);
     }
   }
 
@@ -361,7 +361,7 @@ export class WowprogressService implements OnApplicationBootstrap {
         const realm = page(td[3]).text();
         const ilvl = page(td[4]).text();
         const timestamp = page(td[5]).text();
-        if (!!name) charactersInQueue.push({ name, guild, raid, realm, ilvl, timestamp })
+        if (!!name) charactersInQueue.push({ name, guild, raid, realm, ilvl, timestamp });
       });
 
       return charactersInQueue;

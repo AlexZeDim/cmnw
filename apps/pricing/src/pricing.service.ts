@@ -29,7 +29,7 @@ export class PricingService implements OnApplicationBootstrap {
     PricingService.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     @InjectModel(Key.name)
@@ -58,10 +58,10 @@ export class PricingService implements OnApplicationBootstrap {
       this.logger.log(`libPricing: ${DMA_SOURCE.LAB}`);
 
       const reversePricingMethod = {
-        mask: `NAME`,
+        mask: 'NAME',
         media: 'MEDIA',
         spell_id: 0,
-        profession: `PROFESSION`,
+        profession: 'PROFESSION',
         expansion: 'SHDW',
         type: PRICING_TYPE.REVERSE,
         createdBy: DMA_SOURCE.LAB,
@@ -87,8 +87,8 @@ export class PricingService implements OnApplicationBootstrap {
                 createdBy: reversePricingMethod.createdBy,
                 updatedBy: reversePricingMethod.updatedBy,
               });
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -111,9 +111,9 @@ export class PricingService implements OnApplicationBootstrap {
                 createdBy: reversePricingMethod.createdBy,
                 updatedBy: reversePricingMethod.updatedBy,
               });
-            })
-          )
-        )
+            }),
+          ),
+        );
       }
 
       if (libs.includes('disenchant')) {
@@ -135,8 +135,8 @@ export class PricingService implements OnApplicationBootstrap {
                 createdBy: reversePricingMethod.createdBy,
                 updatedBy: reversePricingMethod.updatedBy,
               });
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -156,25 +156,25 @@ export class PricingService implements OnApplicationBootstrap {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexPricing: clearance: ${clearance} key not found`);
-        return
+        return;
       }
 
       this.BNet = new BlizzAPI({
         region: 'eu',
         clientId: key._id,
         clientSecret: key.secret,
-        accessToken: key.token
-      })
+        accessToken: key.token,
+      });
 
-      const { professions } = await this.BNet.query(`/data/wow/profession/index`, {
+      const { professions } = await this.BNet.query('/data/wow/profession/index', {
         timeout: 10000,
-        headers: { 'Battlenet-Namespace': 'static-eu' }
+        headers: { 'Battlenet-Namespace': 'static-eu' },
       });
 
       for (let profession of professions) {
         const { skill_tiers } = await this.BNet.query(`/data/wow/profession/${profession.id}`, {
           timeout: 10000,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
+          headers: { 'Battlenet-Namespace': 'static-eu' },
         });
         if (!skill_tiers) continue;
 
@@ -185,7 +185,7 @@ export class PricingService implements OnApplicationBootstrap {
           });
           const { categories } = await this.BNet.query(`/data/wow/profession/${profession.id}/skill-tier/${tier.id}`, {
             timeout: 10000,
-            headers: { 'Battlenet-Namespace': 'static-eu' }
+            headers: { 'Battlenet-Namespace': 'static-eu' },
           });
           if (!categories) continue;
 
@@ -203,16 +203,16 @@ export class PricingService implements OnApplicationBootstrap {
                   region: 'eu',
                   clientId: key._id,
                   clientSecret: key.secret,
-                  accessToken: key.token
-                }, { jobId: `${recipe.id}` }
-              )
+                  accessToken: key.token,
+                }, { jobId: `${recipe.id}` },
+              );
             }
           }
         }
       }
 
     } catch (errorException) {
-      this.logger.error(`indexPricing: ${errorException}`)
+      this.logger.error(`indexPricing: ${errorException}`);
     }
   }
 
@@ -245,7 +245,7 @@ export class PricingService implements OnApplicationBootstrap {
         const rows: any[] = await csv.parse(csvString, {
           columns: true,
           skip_empty_lines: true,
-          cast: value => (!isNaN(value as any)) ? parseInt(value) : value
+          cast: value => (!isNaN(value as any)) ? parseInt(value) : value,
         });
 
         for (const row of rows) {
@@ -257,10 +257,10 @@ export class PricingService implements OnApplicationBootstrap {
            *  EffectBasePointsF - item_quantity
            *  spellID - spell_id
            */
-          if ('SpellID' in row) row.spell_id = row.SpellID
-          if ('Effect' in row) row.effect = row.Effect
-          if ('EffectItemType' in row) row.item_id = row.EffectItemType
-          if ('EffectBasePointsF' in row) row.item_quantity = row.EffectBasePointsF
+          if ('SpellID' in row) row.spell_id = row.SpellID;
+          if ('Effect' in row) row.effect = row.Effect;
+          if ('EffectItemType' in row) row.item_id = row.EffectItemType;
+          if ('EffectBasePointsF' in row) row.item_quantity = row.EffectBasePointsF;
 
           /**
            * SkillLine
@@ -275,15 +275,15 @@ export class PricingService implements OnApplicationBootstrap {
            * TrivialSkillLineRankLow - yellowCraftQ
            * SkillUpSkillLineID represent subCategory in professions, for expansionTicker
            */
-          if ('SkillLine' in row) row.skill_line = row.SkillLine
-          if ('Spell' in row) row.spell_id = row.Spell
+          if ('SkillLine' in row) row.skill_line = row.SkillLine;
+          if ('Spell' in row) row.spell_id = row.Spell;
 
-          if ('SupersedesSpell' in row) row.supersedes_spell = row.SupersedesSpell
-          if ('MinSkillLineRank' in row) row.min_skill_rank = row.MinSkillLineRank
-          if ('NumSkillUps' in row) row.num_skill_ups = row.NumSkillUps
-          if ('TrivialSkillLineRankHigh' in row) row.green_craft = row.TrivialSkillLineRankHigh
-          if ('TrivialSkillLineRankLow' in row) row.yellow_craft = row.TrivialSkillLineRankLow
-          if ('SkillUpSkillLineID' in row) row.skill_up_skill_line_id = row.SkillUpSkillLineID
+          if ('SupersedesSpell' in row) row.supersedes_spell = row.SupersedesSpell;
+          if ('MinSkillLineRank' in row) row.min_skill_rank = row.MinSkillLineRank;
+          if ('NumSkillUps' in row) row.num_skill_ups = row.NumSkillUps;
+          if ('TrivialSkillLineRankHigh' in row) row.green_craft = row.TrivialSkillLineRankHigh;
+          if ('TrivialSkillLineRankLow' in row) row.yellow_craft = row.TrivialSkillLineRankLow;
+          if ('SkillUpSkillLineID' in row) row.skill_up_skill_line_id = row.SkillUpSkillLineID;
 
           if (file.includes('spellreagents')) {
             const
@@ -296,8 +296,8 @@ export class PricingService implements OnApplicationBootstrap {
               if (row_value[n] !== 0) {
                 reagents.push({
                   _id: row_value[n],
-                  quantity: row_value[quantityIndex[i]]
-                })
+                  quantity: row_value[quantityIndex[i]],
+                });
               }
             });
 
@@ -305,21 +305,21 @@ export class PricingService implements OnApplicationBootstrap {
           }
 
           if ('ID' in row) {
-            row._id = row.ID
+            row._id = row.ID;
             const document = await Model.findByIdAndUpdate(row._id, row,
               {
                 upsert: true,
                 new: true,
                 setDefaultsOnInsert: true,
                 lean: true,
-              }
+              },
             );
             this.logger.log(`buildPricing: document ID:${document._id} has been updated`);
           }
         }
       }
     } catch (errorException) {
-      this.logger.error(`buildPricing: ${errorException}`)
+      this.logger.error(`buildPricing: ${errorException}`);
     }
   }
 }

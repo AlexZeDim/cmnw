@@ -40,8 +40,8 @@ export class KeysService implements OnApplicationBootstrap {
             await this.KeysModel.create(key);
             this.logger.log(`Created: key(${key._id})`);
           }
-        }, 5)
-      )
+        }, 5),
+      ),
     );
   }
 
@@ -66,7 +66,7 @@ export class KeysService implements OnApplicationBootstrap {
                 username: key._id,
                 password: key.secret,
               },
-            })
+            }),
           );
           if (data && 'access_token' in data && 'expires_in' in data) {
             key.token = data.access_token;
@@ -81,22 +81,21 @@ export class KeysService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async indexWarcraftLogsKeys(): Promise<void> {
     await this.KeysModel
-      .find({ tags: { $in: [ "warcraftlogs", "gql" ] } })
+      .find({ tags: { $in: [ 'warcraftlogs', 'gql' ] } })
       .cursor()
       .eachAsync(async (key): Promise<void> => {
-        const { data } = await lastValueFrom(
-          this.httpService.request<Partial<IWarcraftLogsToken>>({
-            method: 'post',
-            url: 'https://www.warcraftlogs.com/oauth/token',
-            data: {
-              grant_type: 'client_credentials',
-            },
-            auth: {
-              username: '947f1d2f-0ea7-434d-8856-37b6786e2cf9',
-              password: 'iqpacAIt8ds3qfOhVn3gTakbvqumlMgLJqV6bsrb',
-            },
-          })
-        );
+        const { data } = await
+        this.httpService.axiosRef.request<Partial<IWarcraftLogsToken>>({
+          method: 'post',
+          url: 'https://www.warcraftlogs.com/oauth/token',
+          data: {
+            grant_type: 'client_credentials',
+          },
+          auth: {
+            username: '947f1d2f-0ea7-434d-8856-37b6786e2cf9',
+            password: 'iqpacAIt8ds3qfOhVn3gTakbvqumlMgLJqV6bsrb',
+          },
+        });
         if (data.access_token && data.expires_in) {
           key.token = data.access_token;
           key.expired_in = data.expires_in;

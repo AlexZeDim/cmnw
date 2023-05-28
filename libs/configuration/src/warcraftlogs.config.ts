@@ -9,4 +9,4 @@ export const warcraftlogsConfig: IWarcraftLogsConfig = {
   to: WARCRAFTLOGS_CONFIG.to,
   page: WARCRAFTLOGS_CONFIG.page,
   logs: WARCRAFTLOGS_CONFIG.logs,
-}
+};

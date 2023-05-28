@@ -33,7 +33,7 @@ export class CharactersWorker {
     CharactersWorker.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     private httpService: HttpService,
@@ -42,7 +42,7 @@ export class CharactersWorker {
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @InjectModel(Log.name)
-    private readonly LogModel: Model<Log>
+    private readonly LogModel: Model<Log>,
   ) {}
 
   @BullWorkerProcess(charactersQueue.workerOptions)
@@ -79,7 +79,7 @@ export class CharactersWorker {
         region: 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
-        accessToken: args.accessToken
+        accessToken: args.accessToken,
       });
 
       const status = await this.checkStatus(name_slug, character.realm, statusCheck, this.BNet);
@@ -94,7 +94,7 @@ export class CharactersWorker {
           this.pets(name_slug, character.realm, this.BNet),
           this.mounts(name_slug, character.realm, this.BNet),
           this.professions(name_slug, character.realm, this.BNet),
-          this.media(name_slug, character.realm, this.BNet)
+          this.media(name_slug, character.realm, this.BNet),
         ]);
 
         if (summary.status === 'fulfilled') Object.assign(character, summary.value);
@@ -181,7 +181,7 @@ export class CharactersWorker {
         status_code: 100,
         realm: realm.slug,
         realm_id: realm._id,
-        realm_name: realm.name
+        realm_name: realm.name,
       });
 
       /**
@@ -229,16 +229,16 @@ export class CharactersWorker {
     name_slug: string,
     realm_slug: string,
     status: boolean,
-    BNet: BlizzAPI
+    BNet: BlizzAPI,
   ): Promise<Partial<ICharacterStatus>> {
     const characterStatus: Partial<ICharacterStatus> = {};
     try {
       const statusResponse = await BNet.query(`/profile/wow/character/${realm_slug}/${name_slug}/status`, {
         params: {
           locale: 'en_GB',
-          timeout: OSINT_TIMEOUT_TOLERANCE
+          timeout: OSINT_TIMEOUT_TOLERANCE,
         },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
       });
 
       characterStatus.is_valid = false;
@@ -253,7 +253,7 @@ export class CharactersWorker {
     } catch (errorException) {
       if (errorException.response) {
         if (errorException.response.data && errorException.response.data.code) {
-          characterStatus.status_code = errorException.response.data.code
+          characterStatus.status_code = errorException.response.data.code;
         }
       }
       if (status) throw new NotFoundException(`Character: ${name_slug}@${realm_slug}, status: ${status}`);
@@ -268,7 +268,7 @@ export class CharactersWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' },
         timeout: OSINT_TIMEOUT_TOLERANCE,
-      })
+      });
 
       if (!response || !response.assets) return media;
 
@@ -276,8 +276,8 @@ export class CharactersWorker {
 
       const assets: { key: string, value: string }[] = response.assets;
 
-      assets.map(({key, value}) => {
-        media[key] = value
+      assets.map(({ key, value }) => {
+        media[key] = value;
       });
 
       return media;
@@ -290,7 +290,7 @@ export class CharactersWorker {
   private async mounts(
     name_slug: string,
     realm_slug: string,
-    BNet: BlizzAPI
+    BNet: BlizzAPI,
   ): Promise<Partial<IMounts>> {
     const mounts_collection: Partial<IMounts> = {};
     try {
@@ -298,7 +298,7 @@ export class CharactersWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' },
         timeout: OSINT_TIMEOUT_TOLERANCE,
-      })
+      });
 
       if (!response || !response.mounts || !response.mounts.length) return mounts_collection;
 
@@ -310,8 +310,8 @@ export class CharactersWorker {
         if ('mount' in m) {
           mounts_collection.mounts.push({
             _id: m.mount.id,
-            name: m.mount.name
-          })
+            name: m.mount.name,
+          });
         }
       });
 
@@ -327,7 +327,7 @@ export class CharactersWorker {
   private async pets(
     name_slug: string,
     realm_slug: string,
-    BNet: BlizzAPI
+    BNet: BlizzAPI,
   ): Promise<Partial<IPets>> {
     const pets_collection: Partial<IPets> = {};
     try {
@@ -350,7 +350,7 @@ export class CharactersWorker {
         pets_collection.pets.push({
           _id: pet.id,
           name: pet.species.name,
-        })
+        });
         if ('is_active' in pet) {
           if ('name' in pet) hash_a.push(pet.name);
           hash_a.push(pet.species.name, pet.level.toString());
@@ -366,7 +366,7 @@ export class CharactersWorker {
 
       return pets_collection;
     } catch (error) {
-      this.logger.error(`pets: ${name_slug}@${realm_slug}:${error}`)
+      this.logger.error(`pets: ${name_slug}@${realm_slug}:${error}`);
       return pets_collection;
     }
   }
@@ -374,7 +374,7 @@ export class CharactersWorker {
   private async professions(
     name_slug: string,
     realm_slug: string,
-    BNet: BlizzAPI
+    BNet: BlizzAPI,
   ): Promise<Partial<IProfessions>> {
     const professions: Partial<IProfessions> = {};
     try {
@@ -390,7 +390,7 @@ export class CharactersWorker {
       professions.professions = [];
 
       if ('primaries' in response) {
-        const { primaries } = response
+        const { primaries } = response;
         if (Array.isArray(primaries) && primaries.length) {
           primaries.map(primary => {
             if (primary.profession && primary.profession.name && primary.profession.id) {
@@ -398,9 +398,9 @@ export class CharactersWorker {
                 name: primary.profession.name,
                 id: primary.profession.id,
                 tier: 'Primary',
-              }
-              if (primary.specialization && primary.specialization.name) skill_tier.specialization = primary.specialization.name
-              professions.professions.push(skill_tier)
+              };
+              if (primary.specialization && primary.specialization.name) skill_tier.specialization = primary.specialization.name;
+              professions.professions.push(skill_tier);
             }
             if ('tiers' in primary && Array.isArray(primary.tiers) && primary.tiers.length) {
               primary.tiers.map(async (tier: { tier: { id: number; name: string; }; skill_points: number; max_skill_points: number; }) => {
@@ -410,25 +410,25 @@ export class CharactersWorker {
                     name: tier.tier.name,
                     skill_points: tier.skill_points,
                     max_skill_points: tier.max_skill_points,
-                    tier: 'Primary Tier'
-                  })
+                    tier: 'Primary Tier',
+                  });
                 }
-              })
+              });
             }
-          })
+          });
         }
       }
 
       if ('secondaries' in response) {
-        const { secondaries } = response
+        const { secondaries } = response;
         if (Array.isArray(secondaries) && secondaries.length) {
           secondaries.map(secondary => {
             if (secondary.profession && secondary.profession.name && secondary.profession.id) {
               professions.professions.push({
                 name: secondary.profession.name,
                 id: secondary.profession.id,
-                tier: 'Secondary'
-              })
+                tier: 'Secondary',
+              });
             }
             if ('tiers' in secondary && Array.isArray(secondary.tiers) && secondary.tiers.length) {
               secondary.tiers.map((tier: { tier: { id: number; name: string; }; skill_points: number; max_skill_points: number; }) => {
@@ -438,18 +438,18 @@ export class CharactersWorker {
                     name: tier.tier.name,
                     skill_points: tier.skill_points,
                     max_skill_points: tier.max_skill_points,
-                    tier: 'Secondary Tier'
-                  })
+                    tier: 'Secondary Tier',
+                  });
                 }
-              })
+              });
             }
-          })
+          });
         }
       }
 
       return professions;
     } catch (error) {
-      this.logger.error(`professions: ${name_slug}@${realm_slug}:${error}`)
+      this.logger.error(`professions: ${name_slug}@${realm_slug}:${error}`);
       return professions;
     }
   }
@@ -457,7 +457,7 @@ export class CharactersWorker {
   private async summary(
     name_slug: string,
     realm_slug: string,
-    BNet: BlizzAPI
+    BNet: BlizzAPI,
   ): Promise<Partial<ICharacterSummary>> {
     const summary: Partial<ICharacterSummary> = {};
     try {
@@ -466,7 +466,7 @@ export class CharactersWorker {
         params: { locale: 'en_GB' },
         headers: { 'Battlenet-Namespace': 'profile-eu' },
         timeout: OSINT_TIMEOUT_TOLERANCE,
-      })
+      });
 
       if (!response || typeof response !== 'object') return summary;
 
@@ -474,11 +474,11 @@ export class CharactersWorker {
       const keys: string[] = ['level', 'achievement_points'];
 
       Object.entries(response).map(([key, value]) => {
-        if (keys_named.includes(key) && value !== null && value.name) summary[key] = value.name
-        if (keys.includes(key) && value !== null) summary[key] = value
-        if (key === 'last_login_timestamp') summary.last_modified = value
-        if (key === 'average_item_level') summary.average_item_level = value
-        if (key === 'equipped_item_level') summary.equipped_item_level = value
+        if (keys_named.includes(key) && value !== null && value.name) summary[key] = value.name;
+        if (keys.includes(key) && value !== null) summary[key] = value;
+        if (key === 'last_login_timestamp') summary.last_modified = value;
+        if (key === 'average_item_level') summary.average_item_level = value;
+        if (key === 'equipped_item_level') summary.equipped_item_level = value;
         if (key === 'covenant_progress' && typeof value === 'object' && value !== null) {
           if (value.chosen_covenant && value.chosen_covenant.name) summary.chosen_covenant = value.chosen_covenant.name;
           if (value.renown_level) summary.renown_level = value.renown_level;
@@ -499,7 +499,7 @@ export class CharactersWorker {
         }
         if (key === 'active_title' && typeof value === 'object' && value !== null) {
           if ('active_title' in value) {
-            const { active_title } = value
+            const { active_title } = value;
             if (active_title.id) summary.hash_t = active_title.id.toString(16);
           }
         }
@@ -516,41 +516,41 @@ export class CharactersWorker {
 
       return summary;
     } catch (error) {
-      this.logger.error(`summary: ${name_slug}@${realm_slug}:${error}`)
+      this.logger.error(`summary: ${name_slug}@${realm_slug}:${error}`);
       return summary;
     }
   }
 
   private async raiderIO(
     name: string,
-    realm_slug: string
+    realm_slug: string,
   ): Promise<Partial<IRaiderIO>> {
     const raider_io: Partial<IRaiderIO> = {};
     try {
       const response = await lastValueFrom(this.httpService
-        .get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`))
+        .get(encodeURI(`https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`)),
       );
 
       if (!response || !response.data) return raider_io;
 
       if ('raid_progression' in response.data) {
-        const raid_progress: Record<string, any> = response.data['raid_progression'];
+        const raid_progress: Record<string, any> = response.data.raid_progression;
         const raid_tiers: { _id: string, progress: string }[] = [];
         for (const [key, value] of Object.entries(raid_progress)) {
           raid_tiers.push({
             _id: key,
-            progress: value['summary']
-          })
+            progress: value.summary,
+          });
         }
         raider_io.raid_progress = raid_tiers;
       }
 
       if ('mythic_plus_scores_by_season' in response.data) {
-        const rio_score = response.data['mythic_plus_scores_by_season']
+        const rio_score = response.data.mythic_plus_scores_by_season;
         if (rio_score && Array.isArray(rio_score) && rio_score.length) {
           for (const rio of rio_score) {
             if ('scores' in rio) {
-              raider_io.rio_score = rio.scores.all
+              raider_io.rio_score = rio.scores.all;
             }
           }
         }
@@ -565,13 +565,13 @@ export class CharactersWorker {
 
   private async wowProgress(
     name: string,
-    realm_slug: string
+    realm_slug: string,
   ): Promise<Partial<IWowProgress>> {
     const wowprogress: Partial<IWowProgress> = {};
     try {
       const response = await lastValueFrom(
-        this.httpService.get(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`))
-      )
+        this.httpService.get(encodeURI(`https://www.wowprogress.com/character/eu/${realm_slug}/${name}`)),
+      );
 
       const wowProgress = cheerio.load(response.data);
       const wpHTML = wowProgress
@@ -602,7 +602,7 @@ export class CharactersWorker {
 
   private async warcraftLogs(
     name: string,
-    realm_slug: string
+    realm_slug: string,
   ): Promise<Partial<IWarcraftLogs>> {
     const warcraftLogs: Partial<IWarcraftLogs> = {};
     try {
@@ -612,9 +612,9 @@ export class CharactersWorker {
       const [getXpath] = await page.$x('//div[@class=\'best-perf-avg\']/b');
 
       if (getXpath) {
-        const bestPrefAvg = await page.evaluate(name => name['innerText'], getXpath);
+        const bestPrefAvg = await page.evaluate(name => name.innerText, getXpath);
         if (bestPrefAvg && bestPrefAvg !== '-') {
-          warcraftLogs.wcl_percentile = parseFloat(bestPrefAvg)
+          warcraftLogs.wcl_percentile = parseFloat(bestPrefAvg);
         }
       }
 
@@ -629,7 +629,7 @@ export class CharactersWorker {
 
   private async checkDiffs(
     original: LeanDocument<Character>,
-    updated: Character
+    updated: Character,
   ): Promise<void> {
     try {
       const
@@ -663,7 +663,7 @@ export class CharactersWorker {
               t1: t1,
             });
           }
-        })
+        }),
       );
 
       if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });

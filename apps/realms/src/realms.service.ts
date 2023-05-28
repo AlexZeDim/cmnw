@@ -26,7 +26,7 @@ export class RealmsService implements OnApplicationBootstrap {
     RealmsService.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     private httpService: HttpService,
@@ -55,7 +55,7 @@ export class RealmsService implements OnApplicationBootstrap {
       const key = await this.KeyModel.findOne({ tags: clearance });
       if (!key || !key.token) {
         this.logger.error(`indexRealms: clearance: ${clearance} key not found`);
-        return
+        return;
       }
 
       await this.queue.drain(true);
@@ -64,13 +64,13 @@ export class RealmsService implements OnApplicationBootstrap {
         region: 'eu',
         clientId: key._id,
         clientSecret: key.secret,
-        accessToken: key.token
+        accessToken: key.token,
       });
 
-      const { realms: realmList } = await this.BNet.query(`/data/wow/realm/index`, {
+      const { realms: realmList } = await this.BNet.query('/data/wow/realm/index', {
         timeout: 10000,
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+        headers: { 'Battlenet-Namespace': 'dynamic-eu' },
       });
 
       for (const { id, name, slug } of realmList) {
@@ -84,14 +84,14 @@ export class RealmsService implements OnApplicationBootstrap {
             region: 'eu',
             clientId: key._id,
             clientSecret: key.secret,
-            accessToken: key.token
+            accessToken: key.token,
           }, {
-            jobId: slug
-          }
+            jobId: slug,
+          },
         );
       }
     } catch (errorException) {
-      this.logger.error(`indexRealms: ${errorException}`)
+      this.logger.error(`indexRealms: ${errorException}`);
     }
   }
 
@@ -107,18 +107,18 @@ export class RealmsService implements OnApplicationBootstrap {
       const wcl_ids: number[] = range(start, end + 1, 1);
       for (const wcl_id of wcl_ids) {
         const response = await lastValueFrom(
-          this.httpService.get(`https://www.warcraftlogs.com/server/id/${wcl_id}`)
+          this.httpService.get(`https://www.warcraftlogs.com/server/id/${wcl_id}`),
         );
         const wclHTML = cheerio.load(response.data);
         const serverElement = wclHTML.html('.server-name');
         const realmName = wclHTML(serverElement).text();
         if (!!realmName) {
-          const realm = await this.RealmModel.findOneAndUpdate({ $or: [{ name: realmName }, { name_locale: realmName } ]}, { wcl_id: wcl_id });
+          const realm = await this.RealmModel.findOneAndUpdate({ $or: [{ name: realmName }, { name_locale: realmName } ] }, { wcl_id: wcl_id });
           this.logger.debug(`${wcl_id}:${realmName}, ${realm}`);
         }
       }
     } catch (errorException) {
-      this.logger.error(`getRealmsWarcraftLogsID: ${errorException}`)
+      this.logger.error(`getRealmsWarcraftLogsID: ${errorException}`);
     }
   }
 
@@ -130,9 +130,9 @@ export class RealmsService implements OnApplicationBootstrap {
         .cursor()
         .eachAsync(async (realm: Realm) => {
           await this.population(realm);
-        }, { parallel: 5 })
+        }, { parallel: 5 });
     } catch (errorException) {
-      this.logger.error(`indexRealmPopulation: ${errorException}`)
+      this.logger.error(`indexRealmPopulation: ${errorException}`);
     }
   }
 
@@ -154,14 +154,14 @@ export class RealmsService implements OnApplicationBootstrap {
           rogue: 0,
           shaman: 0,
           warlock: 0,
-          warrior: 0
+          warrior: 0,
         },
         characters_covenants: {
           kyrian: 0,
           venthyr: 0,
           night_fae: 0,
-          necrolord: 0
-        }
+          necrolord: 0,
+        },
       };
 
       /**
@@ -172,7 +172,7 @@ export class RealmsService implements OnApplicationBootstrap {
       population.characters_active_alliance = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, faction: FACTION.A });
       population.characters_active_horde = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, faction: FACTION.H });
       population.characters_active_max_level = await this.CharacterModel.countDocuments({ realm: realm.slug, status_code: 200, level: MAX_LEVEL });
-      population.characters_guild_members = await this.CharacterModel.countDocuments({ realm: realm.slug, guild: { "$ne": undefined } });
+      population.characters_guild_members = await this.CharacterModel.countDocuments({ realm: realm.slug, guild: { '$ne': undefined } });
       population.characters_guildless = await this.CharacterModel.countDocuments({ realm: realm.slug, guild: undefined });
       /**
        * const players_unique = await this.CharacterModel.find({ realm: realm.slug }).distinct('personality');
@@ -207,9 +207,9 @@ export class RealmsService implements OnApplicationBootstrap {
       }
 
       await this.RealmPopulationModel.create(population);
-      this.logger.log(`population: ${realm.name} finished`)
+      this.logger.log(`population: ${realm.name} finished`);
     } catch (e) {
-      this.logger.error(`population: ${realm._id}:${e}`)
+      this.logger.error(`population: ${realm._id}:${e}`);
     }
   }
 }

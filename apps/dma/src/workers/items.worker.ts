@@ -13,7 +13,7 @@ export class ItemsWorker {
     ItemsWorker.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     @InjectModel(Item.name)
@@ -23,7 +23,7 @@ export class ItemsWorker {
   @BullWorkerProcess(itemsQueue.workerOptions)
   public async process(job: Job<IQItem, number>): Promise<number> {
     try {
-      const args: IQItem = { ...job.data }
+      const args: IQItem = { ...job.data };
 
       /** Check is exits */
       let item = await this.ItemModel.findById(args._id);
@@ -46,12 +46,12 @@ export class ItemsWorker {
       const [getItemSummary, getItemMedia] = await Promise.allSettled([
         this.BNet.query(`/data/wow/item/${args._id}`, {
           timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
+          headers: { 'Battlenet-Namespace': 'static-eu' },
         }),
         this.BNet.query(`/data/wow/media/item/${args._id}`, {
           timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
-        })
+          headers: { 'Battlenet-Namespace': 'static-eu' },
+        }),
       ]);
 
       if (getItemSummary.status === 'fulfilled' && getItemSummary.value) {
@@ -71,12 +71,12 @@ export class ItemsWorker {
           /** Loot type */
           if (key === 'preview_item') {
             if ('binding' in getItemSummary.value[key]) {
-              requested_item.loot_type = getItemSummary.value[key]['binding'].type;
+              requested_item.loot_type = getItemSummary.value[key].binding.type;
             }
           }
 
           if (fields.some(f => f === key)) {
-            requested_item[key] = getItemSummary.value[key].name['en_GB'];
+            requested_item[key] = getItemSummary.value[key].name.en_GB;
           } else {
             requested_item[key] = getItemSummary.value[key];
           }
@@ -89,7 +89,7 @@ export class ItemsWorker {
           }
         }
 
-        Object.assign(item, requested_item)
+        Object.assign(item, requested_item);
 
         if (
           getItemMedia.status === 'fulfilled' &&
@@ -103,7 +103,7 @@ export class ItemsWorker {
         await item.save();
         return 200;
       }
-      return 404
+      return 404;
     } catch (errorException) {
       await job.log(errorException);
       this.logger.error(`${ItemsWorker.name}: ${errorException}`);

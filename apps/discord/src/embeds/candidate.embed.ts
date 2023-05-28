@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { MessageEmbed } from 'discord.js';
 import { Character } from '@app/mongo';
 import { FACTION, fromSlug } from '@app/core';
 import { LeanDocument } from 'mongoose';
@@ -12,11 +12,11 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>): Messa
     embed.setAuthor(
       `${character.name}@${realm_title}`.toUpperCase(),
       undefined,
-      encodeURI(`${discordConfig.basename}/character/${character._id}`)
+      encodeURI(`${discordConfig.basename}/character/${character._id}`),
     );
 
-    embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm}/${character.name})\n`)
-    embed.setFooter(`WOWPROGRESS | CMNW`);
+    embed.setDescription(`:page_with_curl: [WCL](https://www.warcraftlogs.com/character/eu/${character.realm}/${character.name}) :speech_left: [WP](https://www.wowprogress.com/character/eu/${character.realm}/${character.name}) :key: [RIO](https://raider.io/characters/eu/${character.realm}/${character.name})\n`);
+    embed.setFooter('WOWPROGRESS | CMNW');
 
     if (character.guild) {
       let guild: string = character.guild;
@@ -44,7 +44,7 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>): Messa
     if (character.character_class) embed.addField('Class', character.character_class, true);
     if (character.active_spec) embed.addField('Active Spec', character.active_spec, true);
     if (character.hash_a) embed.addField('Hash A', `[${character.hash_a}](${discordConfig.basename}/hash/a@${character.hash_a})`, true);
-    if (character.hash_b) embed.addField('Hash B',`[${character.hash_b}](${discordConfig.basename}/hash/b@${character.hash_b})`, true);
+    if (character.hash_b) embed.addField('Hash B', `[${character.hash_b}](${discordConfig.basename}/hash/b@${character.hash_b})`, true);
     if (character.chosen_covenant && character.renown_level) embed.addField('Covenant', `${character.chosen_covenant} || ${character.renown_level}`, true);
     if (character.role) embed.addField('Role', character.role.toString().replace(/\./g, '\n').toUpperCase(), true);
     if (character.rio_score) embed.addField('RIO', character.rio_score.toString(), true);
@@ -54,15 +54,15 @@ export function CandidateEmbedMessage(character: LeanDocument<Character>): Messa
     if (character.battle_tag) embed.addField('Battle.tag', character.battle_tag, true);
 
     if (character.transfer) {
-      embed.addField('Transfer', `:white_check_mark:`, true);
+      embed.addField('Transfer', ':white_check_mark:', true);
     } else {
-      embed.addField('Transfer', `:x:`, true);
+      embed.addField('Transfer', ':x:', true);
     }
 
     if (character.raid_progress.length) {
       character.raid_progress.map((raid) => {
         embed.addField(fromSlug(raid._id), raid.progress, true);
-      })
+      });
     }
 
     return embed;

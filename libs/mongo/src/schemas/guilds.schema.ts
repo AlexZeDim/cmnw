@@ -6,13 +6,13 @@ import { OSINT_SOURCE } from '@app/core';
 @Schema()
 class GuildMember {
   @Prop({ type: String, required: true, lowercase: true })
-  _id: string;
+    _id: string;
 
   @Prop({ required: true })
-  id: number;
+    id: number;
 
   @Prop({ required: true })
-  rank: number;
+    rank: number;
 }
 
 export const GuildMembersSchema = SchemaFactory.createForClass(GuildMember);
@@ -20,55 +20,55 @@ export const GuildMembersSchema = SchemaFactory.createForClass(GuildMember);
 @Schema({ timestamps: true })
 export class Guild extends Document {
   @Prop({ type: String, required: true, lowercase: true })
-  _id: string;
+    _id: string;
 
   @Prop({ type: Number })
-  id: number;
+    id: number;
 
   @Prop({ type: String, required: true, index: true })
-  name: string;
+    name: string;
 
   @Prop({ type: String, required: true })
-  realm: string;
+    realm: string;
 
   @Prop({ required: true, type: Number, ref: 'Realm' })
-  realm_id: number | Realm;
+    realm_id: number | Realm;
 
   @Prop({ type: String, required: true })
-  realm_name: string;
+    realm_name: string;
 
   @Prop({ type: String })
-  faction: string;
+    faction: string;
 
   @Prop({ type: [GuildMembersSchema] })
-  members: Types.Array<GuildMember>
+    members: Types.Array<GuildMember>;
 
   @Prop({ type: Number })
-  achievement_points: number;
+    achievement_points: number;
 
   @Prop({ type: Number })
-  member_count: number;
+    member_count: number;
 
   @Prop({ type: Date, default: Date.now() })
-  last_modified: Date;
+    last_modified: Date;
 
   @Prop({ type: Date })
-  created_timestamp: Date;
+    created_timestamp: Date;
 
   @Prop({ type: Number })
-  status_code: number;
+    status_code: number;
 
   @Prop({ type: String, enum: OSINT_SOURCE })
-  created_by: string;
+    created_by: string;
 
   @Prop({ type: String, enum: OSINT_SOURCE })
-  updated_by: string;
+    updated_by: string;
 
   @Prop({ type: Date, index: true })
-  updatedAt: Date;
+    updatedAt: Date;
 
   @Prop({ type: Date })
-  createdAt: Date;
+    createdAt: Date;
 }
 
 export const GuildsSchema = SchemaFactory.createForClass(Guild);

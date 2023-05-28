@@ -6,10 +6,10 @@ import { PRICING_TYPE } from '@app/core';
 @Schema()
 export class ItemPricing {
   @Prop({ required: true })
-  _id: number;
+    _id: number;
 
   @Prop({ required: true, default: 0 })
-  quantity: number;
+    quantity: number;
 }
 
 const ItemSchema = SchemaFactory.createForClass(ItemPricing);
@@ -17,7 +17,7 @@ const ItemSchema = SchemaFactory.createForClass(ItemPricing);
 @Schema()
 export class ModifiedCraftingSlot {
   @Prop({ required: true })
-  _id: number;
+    _id: number;
 }
 
 const ModifiedCraftingSlotSchema = SchemaFactory.createForClass(ModifiedCraftingSlot);
@@ -25,58 +25,59 @@ const ModifiedCraftingSlotSchema = SchemaFactory.createForClass(ModifiedCrafting
 @Schema()
 class Locales {
   @Prop()
-  en_US: string;
+    en_US: string;
 
   @Prop()
-  es_MX: string;
+    es_MX: string;
 
   @Prop()
-  pt_BR: string;
+    pt_BR: string;
 
   @Prop()
-  de_DE: string;
+    de_DE: string;
 
   @Prop()
-  en_GB: string;
+    en_GB: string;
 
   @Prop()
-  es_ES: string;
+    es_ES: string;
 
   @Prop()
-  fr_FR: string;
+    fr_FR: string;
 
   @Prop()
-  it_IT: string;
+    it_IT: string;
 
   @Prop()
-  ru_RU: string;
+    ru_RU: string;
 
   @Prop()
-  ko_KR: string;
+    ko_KR: string;
 
   @Prop()
-  zh_TW: string;
+    zh_TW: string;
 
   @Prop()
-  zh_CN: string;
+    zh_CN: string;
 }
 
 @Schema()
 export class Pricing extends Document {
   @Prop({ type: String })
-  ticker: string;
+    ticker: string;
 
   @Prop({ _id: false, timestamp: false })
-  name: Locales;
+    name: Locales;
 
   @Prop({ _id: false, timestamp: false })
-  description: Locales;
+    description: Locales;
 
   @Prop({ type: String })
-  faction: string;
+    faction: string;
 
   @Prop({ type: String })
-  media: string;
+    media: string;
+
   /**
    * API or LOCAL
    *
@@ -88,44 +89,44 @@ export class Pricing extends Document {
    * {id: Number, Quantity: Number}
    */
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
-  derivatives: Types.Array<ItemPricing>;
+    derivatives: Types.Array<ItemPricing>;
 
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
-  reagents: Types.Array<ItemPricing>;
+    reagents: Types.Array<ItemPricing>;
 
   // TODO cover ref?
   @Prop({ required: true, index: true })
-  recipe_id: number;
+    recipe_id: number;
 
   @Prop({ index: true })
-  spell_id: number;
+    spell_id: number;
 
   @Prop({ default: [], type: [ModifiedCraftingSlotSchema] })
-  modified_crafting_slots:  Types.Array<ModifiedCraftingSlot>;
+    modified_crafting_slots:  Types.Array<ModifiedCraftingSlot>;
 
   /** if Local then Convert from SkillLine */
   @Prop({ type: String })
-  profession: string;
+    profession: string;
 
   /** API */
   @Prop({ type: String })
-  expansion: string;
+    expansion: string;
 
   @Prop({ type: Number })
-  rank: number;
+    rank: number;
 
   @Prop({ required: true, type: String, enum: PRICING_TYPE })
-  type: string;
+    type: string;
 
   @Prop({ type: Number })
-  single_premium: number;
+    single_premium: number;
 
   @Prop({ type: String })
-  create_by: string;
+    create_by: string;
 
   @Prop({ type: String })
-  updated_by: string;
+    updated_by: string;
 }
 
 export const PricingSchema = SchemaFactory.createForClass(Pricing);
-PricingSchema.index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' })
+PricingSchema.index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' });

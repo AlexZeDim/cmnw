@@ -3,5 +3,5 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ItemQuotesDto {
   @ApiProperty(SWAGGER_ITEM_QUOTES)
-  quotes: IOrderQuotes[]
+    quotes: IOrderQuotes[];
 }

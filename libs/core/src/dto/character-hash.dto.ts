@@ -1,8 +1,7 @@
 import { IsNotEmpty, IsString, Validate } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { AtSignExists } from '@app/core';
+import { AtSignExists, SWAGGER_CHARACTER_HASH } from '@app/core';
 import { Transform } from 'class-transformer';
-import { SWAGGER_CHARACTER_HASH } from '@app/core/swagger/osint.swagger';
 
 export class CharacterHashDto {
   @ApiProperty(SWAGGER_CHARACTER_HASH)

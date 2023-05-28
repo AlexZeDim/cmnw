@@ -31,7 +31,7 @@ export class GuildsWorker {
     GuildsWorker.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     @InjectModel(Realm.name)
@@ -61,7 +61,7 @@ export class GuildsWorker {
         region: 'eu',
         clientId: args._id,
         clientSecret: args.clientSecret,
-        accessToken: args.accessToken
+        accessToken: args.accessToken,
       });
       /**
        * Inherit safe values
@@ -111,7 +111,7 @@ export class GuildsWorker {
       const response: Record<string, any> = await BNet.query(`/data/wow/guild/${realm_slug}/${guild_slug}`, {
         timeout: OSINT_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
       });
 
       if (!response || typeof response !== 'object') return summary;
@@ -122,27 +122,27 @@ export class GuildsWorker {
         if (keys.includes(key) && value !== null) summary[key] = value;
         if (key === 'faction' && typeof value === 'object' && value !== null) {
           if (value.type && value.name === null) {
-            if (value.type.toString().startsWith('A')) summary.faction = FACTION.A
-            if (value.type.toString().startsWith('H')) summary.faction = FACTION.H
+            if (value.type.toString().startsWith('A')) summary.faction = FACTION.A;
+            if (value.type.toString().startsWith('H')) summary.faction = FACTION.H;
           } else {
-            summary.faction = value.name
+            summary.faction = value.name;
           }
         }
         if (key === 'realm' && typeof value === 'object' && value !== null) {
           if (value.id && value.name && value.slug) {
-            summary.realm_id = value.id
-            summary.realm_name = value.name
-            summary.realm = value.slug
+            summary.realm_id = value.id;
+            summary.realm_name = value.name;
+            summary.realm = value.slug;
           }
         }
         if (key === 'lastModified') summary.last_modified = new Date(value);
       });
 
       summary.status_code = 200;
-      return summary
+      return summary;
     } catch (errorException) {
       this.logger.error(`summary: ${guild_slug}@${realm_slug}:${errorException}`);
-      return summary
+      return summary;
     }
   }
 
@@ -156,7 +156,7 @@ export class GuildsWorker {
       const { members }: Partial<IRGuildRoster> = await BNet.query(`/data/wow/guild/${guild.realm}/${guild_slug}/roster`, {
         timeout: OSINT_TIMEOUT_TOLERANCE,
         params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'profile-eu' }
+        headers: { 'Battlenet-Namespace': 'profile-eu' },
       });
 
       if (!members || members.length === 0) {
@@ -172,8 +172,8 @@ export class GuildsWorker {
                 const _id: string = toSlug(`${member.character.name}@${guild.realm}`);
                 const character_class
                   = PLAYABLE_CLASS.has(member.character.playable_class.id)
-                  ? PLAYABLE_CLASS.get(member.character.playable_class.id)
-                  : undefined;
+                    ? PLAYABLE_CLASS.get(member.character.playable_class.id)
+                    : undefined;
 
                 if (member.rank === 0) {
                   // Force update GMs only
@@ -202,8 +202,8 @@ export class GuildsWorker {
                     }, {
                       jobId: _id,
                       priority: 2,
-                    }
-                  )
+                    },
+                  );
                 }
 
                 const characterExist = await this.CharacterModel.findById(_id);
@@ -264,10 +264,10 @@ export class GuildsWorker {
                 });
               }
             } catch (errorException) {
-              this.logger.error(`member: ${member.character.id} from ${guild._id}:${errorException}`)
+              this.logger.error(`member: ${member.character.id} from ${guild._id}:${errorException}`);
             }
-          }, 20)
-        )
+          }, 20),
+        ),
       );
 
       if (characters.length > 0) {
@@ -373,8 +373,8 @@ export class GuildsWorker {
               } catch (errorException) {
                 this.logger.error(`logs: error with ${guild_member_new._id} on intersection`);
               }
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -412,9 +412,9 @@ export class GuildsWorker {
               } catch (errorException) {
                 this.logger.error(`logs: error with ${guild_member._id} on join`);
               }
-            })
-          )
-        )
+            }),
+          ),
+        );
       }
 
       if (LLength > 0) {
@@ -426,7 +426,7 @@ export class GuildsWorker {
               try {
                 await this.CharacterModel.findOneAndUpdate(
                   { _id: guild_member._id, guild_id: original._id },
-                  { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } }
+                  { $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 } },
                 );
 
                 // More operative way to update character on leave
@@ -456,8 +456,8 @@ export class GuildsWorker {
               } catch (errorException) {
                 this.logger.error(`logs: error with ${guild_member._id} on leave`);
               }
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -466,7 +466,7 @@ export class GuildsWorker {
         this.logger.log(`logs: ${updated._id} updated with ${block.length} log events`);
       }
     } catch (errorException) {
-      this.logger.error(`logs: ${updated._id}:${errorException}`)
+      this.logger.error(`logs: ${updated._id}:${errorException}`);
     }
   }
 
@@ -474,7 +474,7 @@ export class GuildsWorker {
     member_new: IGuildMember,
     member_old: IGuildMember,
     original: LeanDocument<Guild>,
-    updated: Guild
+    updated: Guild,
   ): Promise<Log[]> {
     const block: Log[] = [];
     const now = new Date();
@@ -527,7 +527,7 @@ export class GuildsWorker {
         block.push(
           guildTitleLog,
           gmWithdrawTitleLog,
-          gmClaimTitleLog
+          gmClaimTitleLog,
         );
 
         this.logger.debug(`gm: guild (${updated._id}) | ${ACTION_LOG.TITLE}`);
@@ -773,14 +773,14 @@ export class GuildsWorker {
 
               block.push(guildLogCheck);
             }
-          })
-        )
-      )
+          }),
+        ),
+      );
 
       if (block.length > 1) await this.LogModel.insertMany(block, { rawResult: false });
-      this.logger.log(`diffs: ${updated._id}, blocks: ${block.length}`)
+      this.logger.log(`diffs: ${updated._id}, blocks: ${block.length}`);
     } catch (errorException) {
-      this.logger.error(`diffs: ${updated._id}:${errorException}`)
+      this.logger.error(`diffs: ${updated._id}:${errorException}`);
     }
   }
 }

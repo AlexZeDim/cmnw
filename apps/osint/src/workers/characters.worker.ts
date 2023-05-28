@@ -53,7 +53,7 @@ export class CharactersWorker {
       const character = await this.checkExistOrCreate(args);
       const original = { ...character.toObject() };
       const name_slug = toSlug(character.name);
-      const statusCheck = character.updated_by === OSINT_SOURCE.REQUESTCHARACTER;
+      const statusCheck = character.updated_by === OSINT_SOURCE.CHARACTER_REQUEST;
 
       await job.updateProgress(5);
 

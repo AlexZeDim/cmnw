@@ -52,25 +52,23 @@ export class KeysService implements OnApplicationBootstrap {
       .cursor()
       .eachAsync(async (key): Promise<void> => {
         if (key.secret) {
-          const { data } = await lastValueFrom(
-            this.httpService.request({
-              url: 'https://eu.battle.net/oauth/token',
-              method: 'post',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-              },
-              params: {
-                grant_type: 'client_credentials',
-              },
-              auth: {
-                username: key._id,
-                password: key.secret,
-              },
-            }),
-          );
-          if (data && 'access_token' in data && 'expires_in' in data) {
+          const { data } = await  this.httpService.axiosRef.request<any>({
+            url: 'https://eu.battle.net/oauth/token',
+            method: 'post',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            params: {
+              grant_type: 'client_credentials',
+            },
+            auth: {
+              username: key._id,
+              password: key.secret,
+            },
+          });
+          if (data && data.access_token && data.expires_in) {
             key.token = data.access_token;
-            key.expiredIn = data.expires_in;
+            key.expiresIn = data.expires_in;
             await key.save();
             this.logger.log(`Updated: key(${key._id})`);
           }
@@ -98,7 +96,7 @@ export class KeysService implements OnApplicationBootstrap {
         });
         if (data.access_token && data.expires_in) {
           key.token = data.access_token;
-          key.expiredIn = data.expires_in;
+          key.expiresIn = data.expires_in;
           await key.save();
           this.logger.log(`Updated: key(${key._id})`);
         }

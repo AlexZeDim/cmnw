@@ -708,8 +708,8 @@ export class GuildsWorker {
         realm: realm.slug,
         realm_id: realm._id,
         realm_name: realm.name,
-        created_by: OSINT_SOURCE.GETGUILD,
-        updated_by: OSINT_SOURCE.GETGUILD,
+        created_by: OSINT_SOURCE.GUILD_GET,
+        updated_by: OSINT_SOURCE.GUILD_GET,
       });
 
       if (guild.created_by) guildNew.created_by = guild.created_by;

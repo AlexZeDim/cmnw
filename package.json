@@ -1,6 +1,6 @@
 {
   "name": "cmnw",
-  "version": "5.3.0",
+  "version": "6.0.0",
   "homepage": "https://cmnw.me",
   "description": "",
   "private": true,
@@ -76,13 +76,15 @@
     "ms": "2.1.3",
     "passport": "0.6.0",
     "passport-oauth2": "1.6.1",
+    "pg": "^8.11.0",
     "prism-media": "2.0.0-alpha.0",
     "puppeteer": "13.0.0",
     "redis": "4.0.1",
     "reflect-metadata": "0.1.13",
     "rimraf": "3.0.2",
     "rxjs": "7.4.0",
-    "swagger-ui-express": "4.3.0"
+    "swagger-ui-express": "4.3.0",
+    "typeorm": "^0.3.16"
   },
   "devDependencies": {
     "@discordjs/rest": "0.1.0-canary.0",
@@ -148,7 +150,8 @@
       "@app/mongo/(.*)": "<rootDir>/libs/mongo/src/$1",
       "@app/mongo": "<rootDir>/libs/mongo/src",
       "^@app/elastic(|/.*)$": "<rootDir>/libs/elastic/src/$1",
-      "^@app/e2e(|/.*)$": "<rootDir>/libs/e2e/src/$1"
+      "^@app/e2e(|/.*)$": "<rootDir>/libs/e2e/src/$1",
+      "^@app/pg(|/.*)$": "<rootDir>/libs/pg/src/$1"
     }
   }
 }

@@ -37,17 +37,31 @@ export class RealmsEntity {
     default: null,
     nullable: true,
     type: 'varchar',
-    name: 'name_locale',
+    name: 'locale_name',
   })
-  nameLocale: string;
+  localeName: string;
 
   @Column({
     default: null,
     nullable: true,
     type: 'varchar',
-    name: 'slug_locale',
   })
-  slugLocale: string;
+  ticker: string;
+
+  @Column({
+    default: null,
+    nullable: true,
+    type: 'varchar',
+  })
+  status: string;
+
+  @Column({
+    default: null,
+    nullable: true,
+    type: 'varchar',
+    name: 'locale_slug',
+  })
+  localeSlug: string;
 
   @Column({
     default: null,
@@ -89,10 +103,10 @@ export class RealmsEntity {
   @Column({
     array: true,
     nullable: true,
-    type: 'int',
+    type: 'varchar',
     name: 'connected_realms',
   })
-  connectedRealms: number[];
+  connectedRealms: string[];
 
   @Column({
     default: null,

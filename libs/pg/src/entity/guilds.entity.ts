@@ -103,7 +103,7 @@ export class GuildsEntity {
   updatedBy?: string;
 
   @Column('timestamp with time zone', {
-    name: 'last_modified',
+    name: 'created_timestamp',
     nullable: true,
     default: () => 'CURRENT_TIMESTAMP',
   })

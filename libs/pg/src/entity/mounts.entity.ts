@@ -1,3 +1,4 @@
+import { CMNW_ENTITY_ENUM } from '@app/pg';
 import {
   Column,
   CreateDateColumn,
@@ -5,7 +6,6 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CMNW_ENTITY_ENUM } from '@app/pg';
 
 @Entity({ name: CMNW_ENTITY_ENUM.MOUNTS })
 export class MountsEntity {

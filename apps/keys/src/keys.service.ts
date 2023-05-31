@@ -9,7 +9,7 @@ import { HttpService } from '@nestjs/axios';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
-import { In, Repository } from 'typeorm';
+import { ArrayContains, In, Repository } from "typeorm";
 
 @Injectable()
 export class KeysService implements OnApplicationBootstrap {
@@ -52,7 +52,7 @@ export class KeysService implements OnApplicationBootstrap {
   private async indexBlizzardKeys(): Promise<void> {
     try {
       const keyEntities = await this.keysRepository.findBy({
-        tags: GLOBAL_BLIZZARD_KEY,
+        tags: ArrayContains([GLOBAL_BLIZZARD_KEY]),
       });
 
       for (const keyEntity of keyEntities) {
@@ -86,7 +86,7 @@ export class KeysService implements OnApplicationBootstrap {
   private async indexWarcraftLogsKeys(): Promise<void> {
     try {
       const keyEntities = await this.keysRepository.findBy({
-        tags: In([GLOBAL_WCL_KEY, 'gql']),
+        tags: ArrayContains([GLOBAL_WCL_KEY, 'gql']),
       });
 
       for (const keyEntity of keyEntities) {

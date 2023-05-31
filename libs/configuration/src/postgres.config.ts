@@ -12,8 +12,8 @@ import {
   KeysEntity,
   MountsEntity,
   PetsEntity,
-  ProfessionsEntity,
-} from '@app/pg';
+  ProfessionsEntity, RealmsEntity
+} from "@app/pg";
 
 const POSTGRES_DB_CONFIG = get<IPostgresConfig>('postgres');
 
@@ -36,6 +36,7 @@ export const postgresConfig: TypeOrmModuleOptions = {
     MountsEntity,
     PetsEntity,
     ProfessionsEntity,
+    RealmsEntity,
   ],
   synchronize: false,
   keepConnectionAlive: true,

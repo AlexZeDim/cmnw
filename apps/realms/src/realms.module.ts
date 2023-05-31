@@ -1,5 +1,10 @@
 import { Module } from '@nestjs/common';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import {
+  mongoConfig,
+  mongoOptionsConfig,
+  postgresConfig,
+  redisConfig,
+} from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,6 +12,8 @@ import { realmsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { HttpModule } from '@nestjs/axios';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
 import {
   Character,
   CharactersSchema,
@@ -24,14 +31,8 @@ import {
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: RealmPopulation.name, schema: RealmsPopulationSchema },
-      { name: Guild.name, schema: GuildsSchema },
-      { name: Character.name, schema: CharactersSchema },
-    ]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
     BullModule.forRoot({
       options: {
         connection: {
@@ -41,7 +42,10 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: realmsQueue.name, options: realmsQueue.options }),
+    BullModule.registerQueue({
+      queueName: realmsQueue.name,
+      options: realmsQueue.options,
+    }),
   ],
   controllers: [],
   providers: [RealmsService, RealmsWorker],

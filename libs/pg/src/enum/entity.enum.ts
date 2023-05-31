@@ -9,4 +9,5 @@ export enum CMNW_ENTITY_ENUM {
   CHARACTERS_GUILDS_MEMBERS = 'characters_guild_members',
   GUILDS = 'guilds',
   KEYS = 'keys',
+  REALMS = 'realms',
 }

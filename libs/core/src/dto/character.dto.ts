@@ -1,7 +1,6 @@
-import { LeanDocument, LeanDocumentElement } from 'mongoose';
 import { Character } from '@app/mongo';
 
-export class CharacterDto implements LeanDocument<Character> {
+export class CharacterDto {
   readonly _id: string;
 
   readonly achievement_points: number;
@@ -52,7 +51,7 @@ export class CharacterDto implements LeanDocument<Character> {
 
   readonly inset: string;
 
-  readonly languages: LeanDocumentElement<Character['languages']>;
+  readonly languages: Character['languages'];
 
   readonly last_modified: Date;
 
@@ -66,19 +65,19 @@ export class CharacterDto implements LeanDocument<Character> {
 
   readonly main: string;
 
-  readonly mounts: LeanDocumentElement<Character['mounts']>;
+  readonly mounts: Character['mounts'];
 
   readonly name: string;
 
   readonly personality: string;
 
-  readonly pets: LeanDocumentElement<Character['pets']>;
+  readonly pets: Character['pets'];
 
-  readonly professions: LeanDocumentElement<Character['professions']>;
+  readonly professions: Character['professions'];
 
   readonly race: string;
 
-  readonly raid_progress: LeanDocumentElement<Character['raid_progress']>;
+  readonly raid_progress: Character['raid_progress'];
 
   readonly realm: string;
 

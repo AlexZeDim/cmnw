@@ -9,3 +9,4 @@ export * from './guilds.entity';
 export * from './characters-guilds-members.entity';
 export * from './characters-mounts.entity';
 export * from './realms.entity';
+export * from './logs.entity';

@@ -2,9 +2,9 @@
   "name": "cmnw",
   "version": "6.0.0",
   "homepage": "https://cmnw.me",
-  "description": "",
+  "description": "Intelligence always wins",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MPL 2.0",
   "bugs": {
     "url": "https://github.com/AlexZeDim/conglomerat/issues",
     "discord": "AlexZeDim#2645"

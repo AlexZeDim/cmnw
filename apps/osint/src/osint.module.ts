@@ -7,13 +7,16 @@ import { CharactersWorker, GuildsWorker } from './workers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   CharactersEntity,
+  CharactersGuildsMembersEntity,
   CharactersMountsEntity,
   CharactersPetsEntity,
+  CharactersProfessionsEntity,
   GuildsEntity,
   KeysEntity,
   LogsEntity,
   MountsEntity,
   PetsEntity,
+  ProfessionsEntity,
   RealmsEntity,
 } from '@app/pg';
 
@@ -22,15 +25,18 @@ import {
     HttpModule,
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([
-      KeysEntity,
       CharactersEntity,
+      CharactersGuildsMembersEntity,
+      CharactersMountsEntity,
+      CharactersPetsEntity,
+      CharactersProfessionsEntity,
       GuildsEntity,
+      KeysEntity,
+      MountsEntity,
+      PetsEntity,
+      ProfessionsEntity,
       RealmsEntity,
       LogsEntity,
-      PetsEntity,
-      MountsEntity,
-      CharactersPetsEntity,
-      CharactersMountsEntity,
     ]),
     BullModule.forRoot({
       options: {

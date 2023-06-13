@@ -7,6 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { snakeCase } from 'snake-case';
 import {
   BadRequestException,
   GatewayTimeoutException,
@@ -309,7 +310,7 @@ export class CharactersWorker {
     const characterStatus: Partial<CharacterStatus> = {};
 
     try {
-      const statusResponse = await BNet.query(
+      const statusResponse: Record<string, any> = await BNet.query(
         `/profile/wow/character/${realmSlug}/${nameSlug}/status`,
         {
           params: {
@@ -619,7 +620,7 @@ export class CharactersWorker {
 
       Object.entries(response).map(([key, value]) => {
         if (keyValueName.includes(key) && value !== null && value.name)
-          summary[key] = value.name;
+          summary[snakeCase(key)] = value.name;
         if (keyValue.includes(key) && value !== null) summary[key] = value;
         if (key === 'last_login_timestamp') summary.lastModified = value;
         if (key === 'average_item_level') summary.averageItemLevel = value;
@@ -753,7 +754,7 @@ export class CharactersWorker {
 
   private async getWarcraftLogs(
     name: string,
-    realm_slug: string,
+    realmSlug: string,
   ): Promise<Partial<IWarcraftLog>> {
     const warcraftLogs: Partial<IWarcraftLog> = {};
     try {
@@ -762,12 +763,15 @@ export class CharactersWorker {
       });
       const page = await browser.newPage();
       await page.goto(
-        `https://www.warcraftlogs.com/character/eu/${realm_slug}/${name}#difficulty=5`,
+        `https://www.warcraftlogs.com/character/eu/${realmSlug}/${name}#difficulty=5`,
       );
       const [getXpath] = await page.$x("//div[@class='best-perf-avg']/b");
 
       if (getXpath) {
-        const bestPrefAvg = await page.evaluate((name) => name.innerText, getXpath);
+        const bestPrefAvg = await page.evaluate(
+          (nodeName: any) => nodeName.innerText,
+          getXpath,
+        );
         if (bestPrefAvg && bestPrefAvg !== '-') {
           warcraftLogs.wclMythicPercentile = parseFloat(bestPrefAvg);
         }
@@ -777,7 +781,7 @@ export class CharactersWorker {
 
       return warcraftLogs;
     } catch (errorException) {
-      this.logger.error(`warcraftlogs: ${name}@${realm_slug}:${errorException}`);
+      this.logger.error(`warcraftlogs: ${name}@${realmSlug}:${errorException}`);
       return warcraftLogs;
     }
   }

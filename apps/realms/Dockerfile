@@ -20,6 +20,12 @@ RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf 
 
 RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 
+RUN ls
+
+RUN cd cmnw-secrets
+
+RUN ls
+
 RUN mv cmnw-secrets/* .
 
 RUN mv cmnw-secrets/.* .

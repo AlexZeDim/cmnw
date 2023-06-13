@@ -14,7 +14,7 @@ import {
   delay,
   FACTION,
   GLOBAL_OSINT_KEY,
-  guildsQueue, IQCharacter,
+  guildsQueue, CharacterJobQueue,
   IQGuild, MYTHIC_PLUS_SEASONS, OSINT_SOURCE,
   RAID_FACTIONS,
   RAIDS, toSlug,
@@ -43,7 +43,7 @@ export class LadderService implements OnApplicationBootstrap {
     @BullQueueInject(guildsQueue.name)
     private readonly queueGuilds: Queue<IQGuild, number>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queueCharacters: Queue<IQCharacter, number>,
+    private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {

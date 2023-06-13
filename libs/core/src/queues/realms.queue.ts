@@ -1,12 +1,12 @@
 import { JobsOptions } from 'bullmq';
-import { QueueInterface } from '@app/core/interfaces';
+import { IQueue } from 'libs/core/src/types';
 
 const queueOptions: JobsOptions = {
   removeOnComplete: true,
   removeOnFail: false,
 };
 
-export const realmsQueue: QueueInterface = {
+export const realmsQueue: IQueue = {
   name: 'OSINT:Realms',
   workerOptions: { concurrency: 1 },
   options: {

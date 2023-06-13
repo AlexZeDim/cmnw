@@ -16,7 +16,7 @@ export class CharactersEntity {
   readonly uuid: string;
 
   @Column({
-    // TODO function,
+    // TODO default value function,
     nullable: false,
     type: 'varchar',
   })
@@ -214,7 +214,7 @@ export class CharactersEntity {
     type: 'varchar',
     name: 'main_image',
   })
-  mainImage: string;
+  mainImage?: string;
 
   @Column({
     default: null,
@@ -222,7 +222,7 @@ export class CharactersEntity {
     type: 'int',
     name: 'mounts_number',
   })
-  mountsNumber: number;
+  mountsNumber?: number;
 
   @Column({
     default: null,
@@ -230,7 +230,7 @@ export class CharactersEntity {
     type: 'int',
     name: 'pets_number',
   })
-  petsNumber: number;
+  petsNumber?: number;
 
   // TODO professions
 
@@ -244,7 +244,7 @@ export class CharactersEntity {
     type: 'varchar',
     name: 'created_by',
   })
-  createdBy: string;
+  createdBy?: OSINT_SOURCE;
 
   @Column({
     default: OSINT_SOURCE.CHARACTER_INDEX,
@@ -252,14 +252,14 @@ export class CharactersEntity {
     type: 'varchar',
     name: 'updated_by',
   })
-  updatedBy: string;
+  updatedBy: OSINT_SOURCE;
 
   @Column('timestamp with time zone', {
     name: 'last_modified',
     nullable: true,
     default: () => 'CURRENT_TIMESTAMP',
   })
-  lastModified: Date;
+  lastModified?: Date;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

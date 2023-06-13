@@ -23,7 +23,7 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
 import {
-  IQCharacter,
+  CharacterJobQueue,
   charactersQueue,
   GLOBAL_KEY,
   IQGuild,
@@ -53,7 +53,7 @@ export class WowprogressService implements OnApplicationBootstrap {
     @BullQueueInject(guildsQueue.name)
     private readonly queueGuilds: Queue<IQGuild, number>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queueCharacters: Queue<IQCharacter, number>,
+    private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {

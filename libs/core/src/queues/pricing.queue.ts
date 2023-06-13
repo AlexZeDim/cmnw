@@ -1,12 +1,12 @@
 import { JobsOptions } from 'bullmq';
-import { QueueInterface } from '@app/core/interfaces';
+import { IQueue } from 'libs/core/src/types';
 
 const queueOptions: JobsOptions = {
   removeOnComplete: 10,
   removeOnFail: 10,
 };
 
-export const pricingQueue: QueueInterface = {
+export const pricingQueue: IQueue = {
   name: 'DMA:Pricing',
   workerOptions: { concurrency: 3 },
   options: {

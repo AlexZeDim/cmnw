@@ -1,7 +1,7 @@
 import { Job } from 'bullmq';
-import { realmsQueue, IRealm, REALM_TICKER, IConnectedRealm } from '@app/core';
+import { realmsQueue, REALM_TICKER, IConnectedRealm, RealmJobQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
-import { BlizzAPI, BattleNetOptions } from 'blizzapi';
+import { BlizzAPI } from 'blizzapi';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RealmsEntity } from '@app/pg';
@@ -19,9 +19,9 @@ export class RealmsWorker {
   ) {}
 
   @BullWorkerProcess(realmsQueue.workerOptions)
-  public async process(job: Job): Promise<void> {
+  public async process(job: Job<RealmJobQueue, number>): Promise<void> {
     try {
-      const args: IRealm & BattleNetOptions = { ...job.data };
+      const args: RealmJobQueue = { ...job.data };
 
       await job.updateProgress(1);
 

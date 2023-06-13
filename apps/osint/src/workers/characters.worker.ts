@@ -1,15 +1,12 @@
 import { BlizzAPI } from 'blizzapi';
-import { InjectModel } from '@nestjs/mongoose';
-import { Character, Log, Realm } from '@app/mongo';
-import { Model } from 'mongoose';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
 import puppeteer from 'puppeteer';
-import { lastValueFrom } from 'rxjs';
 import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import {
   BadRequestException,
   GatewayTimeoutException,
@@ -18,51 +15,93 @@ import {
 } from '@nestjs/common';
 
 import {
+  ACTION_LOG,
+  capitalize,
+  CharacterExistsOrCreate,
+  charactersQueue,
+  CharacterStatus,
+  EVENT_LOG,
+  CharacterJobQueue,
   ICharacterSummary,
   IMedia,
   IMounts,
+  IMountsNameWithId,
   IPets,
+  IPetType,
   IProfessions,
   IRaiderIO,
-  IWowProgress,
+  IRaidProgressRIO,
   IWarcraftLog,
-  ICharacterStatus,
-  charactersQueue,
-  toSlug,
-  capitalize,
+  IWowProgress,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
-  IQCharacter,
+  toSlug,
+  findRealm,
 } from '@app/core';
+
+import {
+  CharactersEntity,
+  CharactersGuildsMembersEntity,
+  CharactersMountsEntity,
+  CharactersPetsEntity,
+  GuildsEntity,
+  KeysEntity,
+  LogsEntity,
+  MountsEntity,
+  PetsEntity,
+  ProfessionsEntity,
+  RealmsEntity,
+} from '@app/pg';
 
 @BullWorker({
   queueName: charactersQueue.name,
   options: charactersQueue.workerOptions,
 })
 export class CharactersWorker {
-  private readonly logger = new Logger(CharactersWorker.name, { timestamp: true });
+  private readonly logger = new Logger(CharactersWorker.name, {
+    timestamp: true,
+  });
 
   private BNet: BlizzAPI;
 
   constructor(
     private httpService: HttpService,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Character.name)
-    private readonly CharacterModel: Model<Character>,
-    @InjectModel(Log.name)
-    private readonly LogModel: Model<Log>,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(ProfessionsEntity)
+    private readonly professionsRepository: Repository<ProfessionsEntity>,
+    @InjectRepository(GuildsEntity)
+    private readonly guildsRepository: Repository<GuildsEntity>,
+    @InjectRepository(CharactersGuildsMembersEntity)
+    private readonly characterGuildsMembersRepository: Repository<CharactersGuildsMembersEntity>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(CharactersEntity)
+    private readonly charactersRepository: Repository<CharactersEntity>,
+    @InjectRepository(PetsEntity)
+    private readonly petsRepository: Repository<PetsEntity>,
+    @InjectRepository(MountsEntity)
+    private readonly mountsRepository: Repository<MountsEntity>,
+    @InjectRepository(CharactersPetsEntity)
+    private readonly charactersPetsRepository: Repository<CharactersPetsEntity>,
+    @InjectRepository(CharactersMountsEntity)
+    private readonly charactersMountsRepository: Repository<CharactersMountsEntity>,
+    @InjectRepository(LogsEntity)
+    private readonly logsRepository: Repository<LogsEntity>,
   ) {}
 
   @BullWorkerProcess(charactersQueue.workerOptions)
-  public async process(job: Job<IQCharacter, number>): Promise<number> {
+  public async process(job: Job<CharacterJobQueue, number>): Promise<number> {
     try {
-      const args: IQCharacter = { ...job.data };
+      const { data: args } = job;
 
-      const character = await this.checkExistOrCreate(args);
-      const original = { ...character.toObject() };
-      const name_slug = toSlug(character.name);
-      const statusCheck = character.updated_by === OSINT_SOURCE.CHARACTER_REQUEST;
+      const { characterEntity, isNew } = await this.characterExistOrCreate(args);
+      const characterEntityOriginal =
+        this.charactersRepository.create(characterEntity);
+
+      const nameSlug = toSlug(characterEntity.name);
+      const statusCheck =
+        characterEntity.updatedBy === OSINT_SOURCE.CHARACTER_REQUEST;
 
       await job.updateProgress(5);
 
@@ -71,17 +110,16 @@ export class CharactersWorker {
        * from args in any case
        * summary overwrite later
        */
-      if (args.race) character.race = args.race;
-      if (args.level) character.level = args.level;
-      if (args.gender) character.gender = args.gender;
-      if (args.faction) character.faction = args.faction;
-      if (args.looking_for_guild)
-        character.looking_for_guild = args.looking_for_guild;
-      if (args.character_class) character.character_class = args.character_class;
-      if (args.last_modified) character.last_modified = args.last_modified;
-      if (args.updated_by) character.updated_by = args.updated_by;
-      if (args.character_class) character.character_class = args.character_class;
-      if (args.active_spec) character.active_spec = args.active_spec;
+      if (args.race) characterEntity.race = args.race;
+      if (args.level) characterEntity.level = args.level;
+      if (args.gender) characterEntity.gender = args.gender;
+      if (args.faction) characterEntity.faction = args.faction;
+      // TODO
+      // if (args.lookingForGuild) character.lookingForGuild = args.lookingForGuild;
+      if (args.class) characterEntity.class = args.class;
+      if (args.lastModified) characterEntity.lastModified = args.lastModified;
+      if (args.updatedBy) characterEntity.updatedBy = args.updatedBy;
+      if (args.specialization) characterEntity.specialization = args.specialization;
 
       await job.updateProgress(10);
 
@@ -92,34 +130,37 @@ export class CharactersWorker {
         accessToken: args.accessToken,
       });
 
-      const status = await this.checkStatus(
-        name_slug,
-        character.realm,
+      const status = await this.getStatus(
+        nameSlug,
+        characterEntity.realm,
         statusCheck,
         this.BNet,
       );
-      if (status) Object.assign(character, status);
+
+      if (status) Object.assign(characterEntity, status);
 
       await job.updateProgress(20);
 
-      if (status.is_valid === true) {
-        const [summary, pets_collection, mount_collection, professions, media] =
+      if (status.isValid === true) {
+        const [summary, petsCollection, mountsCollection, media] =
           await Promise.allSettled([
-            this.summary(name_slug, character.realm, this.BNet),
-            this.pets(name_slug, character.realm, this.BNet),
-            this.mounts(name_slug, character.realm, this.BNet),
-            this.professions(name_slug, character.realm, this.BNet),
-            this.media(name_slug, character.realm, this.BNet),
+            this.getSummary(nameSlug, characterEntity.realm, this.BNet),
+            this.getPets(nameSlug, characterEntity.realm, this.BNet),
+            this.getMounts(nameSlug, characterEntity.realm, this.BNet),
+            // this.getProfessions(nameSlug, characterEntity.realm, this.BNet),
+            this.getMedia(nameSlug, characterEntity.realm, this.BNet),
           ]);
 
-        if (summary.status === 'fulfilled') Object.assign(character, summary.value);
-        if (pets_collection.status === 'fulfilled')
-          Object.assign(character, pets_collection.value);
-        if (mount_collection.status === 'fulfilled')
-          Object.assign(character, mount_collection.value);
-        if (professions.status === 'fulfilled')
-          Object.assign(character, professions.value);
-        if (media.status === 'fulfilled') Object.assign(character, media.value);
+        if (summary.status === 'fulfilled')
+          Object.assign(characterEntity, summary.value);
+        if (petsCollection.status === 'fulfilled')
+          Object.assign(characterEntity, petsCollection.value);
+        if (mountsCollection.status === 'fulfilled')
+          Object.assign(characterEntity, mountsCollection.value);
+        // TODO if (professions.status === 'fulfilled')
+        // TODO Object.assign(characterEntity, professions.value);
+        if (media.status === 'fulfilled')
+          Object.assign(characterEntity, media.value);
       }
 
       await job.updateProgress(50);
@@ -128,47 +169,56 @@ export class CharactersWorker {
        * by request from args
        */
       if (args.updateRIO) {
-        const raiderIo = await this.raiderIO(character.name, character.realm);
-        Object.assign(character, raiderIo);
+        const raiderIo = await this.getRaiderIO(
+          characterEntity.name,
+          characterEntity.realm,
+        );
+
+        Object.assign(characterEntity, raiderIo);
         await job.updateProgress(60);
       }
 
       if (args.updateWCL) {
-        const warcraftLogs = await this.warcraftLogs(
-          character.name,
-          character.realm,
+        const warcraftLogs = await this.getWarcraftLogs(
+          characterEntity.name,
+          characterEntity.realm,
         );
-        Object.assign(character, warcraftLogs);
+
+        Object.assign(characterEntity, warcraftLogs);
         await job.updateProgress(70);
       }
 
       if (args.updateWP) {
-        const wowProgress = await this.wowProgress(character.name, character.realm);
-        Object.assign(character, wowProgress);
+        const wowProgress = await this.getWowProgressProfile(
+          characterEntity.name,
+          characterEntity.realm,
+        );
+
+        Object.assign(characterEntity, wowProgress);
         await job.updateProgress(80);
       }
 
       /**
        * TODO detective after transfer / rename
        * Check differences between req & original
-       * only if original
+       * only if characterEntityOriginal exists
        */
-      if (!character.isNew) {
-        if (original.guild_guid !== character.guild_guid) {
-          if (!character.guild_id) {
-            character.guild_id = undefined;
-            character.guild = undefined;
-            character.guild_rank = undefined;
-            character.guild_guid = undefined;
+      if (!isNew) {
+        if (characterEntityOriginal.guildGuid !== characterEntity.guildGuid) {
+          if (!characterEntity.guildId) {
+            characterEntity.guildGuid = undefined;
+            characterEntity.guild = undefined;
+            characterEntity.guildRank = undefined;
+            characterEntity.guildId = undefined;
           }
         }
-        await this.checkDiffs(original, character);
+        await this.diffCharacterEntity(characterEntityOriginal, characterEntity);
         await job.updateProgress(90);
       }
 
-      await character.save();
+      await this.charactersRepository.save(characterEntity);
       await job.updateProgress(100);
-      return character.status_code;
+      return characterEntity.statusCode;
     } catch (errorException) {
       await job.log(errorException);
       this.logger.error(`${CharactersWorker.name}: ${errorException}`);
@@ -176,32 +226,30 @@ export class CharactersWorker {
     }
   }
 
-  private async checkExistOrCreate(character: IQCharacter): Promise<Character> {
-    const forceUpdate: number = character.forceUpdate || 86400 * 1000;
-    const name_slug: string = toSlug(character.name);
-    const now: number = new Date().getTime();
-
-    const realm = await this.RealmModel.findOne(
-      { $text: { $search: character.realm } },
-      { score: { $meta: 'textScore' } },
-    )
-      .sort({ score: { $meta: 'textScore' } })
-      .lean();
-
-    if (!realm) {
-      throw new NotFoundException(`realm ${character.realm} not found`);
+  private async characterExistOrCreate(
+    character: CharacterJobQueue,
+  ): Promise<CharacterExistsOrCreate> {
+    const forceUpdate = character.forceUpdate || 86400 * 1000;
+    const nameSlug = toSlug(character.name);
+    const timestampNow = new Date().getTime();
+    const realmEntity = await findRealm(this.realmsRepository, character.realm);
+    if (!realmEntity) {
+      throw new NotFoundException(`Realm ${character.realm} not found`);
     }
 
-    const characterExist = await this.CharacterModel.findById(character._id);
+    const characterEntity = await this.charactersRepository.findOneBy({
+      guid: character.guid,
+    });
 
-    if (!characterExist) {
-      const characterNew = new this.CharacterModel({
-        _id: character._id,
-        name: capitalize(name_slug),
-        status_code: 100,
-        realm: realm.slug,
-        realm_id: realm._id,
-        realm_name: realm.name,
+    if (!characterEntity) {
+      const characterNew = this.charactersRepository.create({
+        id: character.id || 1,
+        guid: character.guid,
+        name: capitalize(nameSlug),
+        statusCode: 100,
+        realm: realmEntity.slug,
+        realmId: realmEntity.id,
+        realmName: realmEntity.name,
       });
 
       /**
@@ -209,24 +257,25 @@ export class CharactersWorker {
        * only if they were passed
        */
       if (character.guild) characterNew.guild = character.guild;
-      if (character.guild_guid) characterNew.guild_guid = character.guild_guid;
-      if (character.guild_id) characterNew.guild_id = character.guild_id;
-      if (character.created_by) characterNew.created_by = character.created_by;
+      if (character.guildGuid) characterNew.guildGuid = character.guildGuid;
+      if (character.guildId) characterNew.guildId = character.guildId;
+      if (character.createdBy) characterNew.createdBy = character.createdBy;
 
-      return characterNew;
+      return { characterEntity: characterNew, isNew: true };
     }
 
     /**
      * Update LFG status immediately
      * if it was passed from queue
      */
-    if (character.looking_for_guild) {
-      characterExist.looking_for_guild = character.looking_for_guild;
+    /*
+    if (character.lookingForGuild) {
+      characterEntity.lookingForGuild = character.lookingForGuild;
       this.logger.log(
-        `LFG: ${characterExist._id}, looking for guild: ${character.looking_for_guild}`,
+        `LFG: ${characterEntity._id}, looking for guild: ${character.looking_for_guild}`,
       );
-      await characterExist.save();
-    }
+      await characterEntity.save();
+    }*/
 
     /**
      * If character exists
@@ -234,37 +283,34 @@ export class CharactersWorker {
      */
     if (character.createOnlyUnique) {
       throw new BadRequestException(
-        `${character.iteration ? character.iteration + ':' : ''}${
-          character._id
-        },createOnlyUnique: ${character.createOnlyUnique}`,
+        `createOnlyUnique: ${character.createOnlyUnique} | ${character.guid}`,
       );
     }
     /**
      * ...or character was updated recently
      */
-    if (now - forceUpdate < characterExist.updatedAt.getTime()) {
+    if (timestampNow - forceUpdate < characterEntity.updatedAt.getTime()) {
       throw new GatewayTimeoutException(
-        `${character.iteration ? character.iteration + ':' : ''}${
-          character._id
-        },forceUpdate: ${forceUpdate}`,
+        `forceUpdate: ${forceUpdate} | ${character.guid}`,
       );
     }
 
-    characterExist.status_code = 100;
+    characterEntity.statusCode = 100;
 
-    return characterExist;
+    return { characterEntity, isNew: false };
   }
 
-  private async checkStatus(
-    name_slug: string,
-    realm_slug: string,
+  private async getStatus(
+    nameSlug: string,
+    realmSlug: string,
     status: boolean,
     BNet: BlizzAPI,
-  ): Promise<Partial<ICharacterStatus>> {
-    const characterStatus: Partial<ICharacterStatus> = {};
+  ): Promise<Partial<CharacterStatus>> {
+    const characterStatus: Partial<CharacterStatus> = {};
+
     try {
       const statusResponse = await BNet.query(
-        `/profile/wow/character/${realm_slug}/${name_slug}/status`,
+        `/profile/wow/character/${realmSlug}/${nameSlug}/status`,
         {
           params: {
             locale: 'en_GB',
@@ -274,40 +320,39 @@ export class CharactersWorker {
         },
       );
 
-      characterStatus.is_valid = false;
+      characterStatus.isValid = false;
 
       if (statusResponse.id) characterStatus.id = statusResponse.id;
-      if (statusResponse.is_valid)
-        characterStatus.is_valid = statusResponse.is_valid;
-      if (statusResponse.lastModified)
-        characterStatus.last_modified = statusResponse.lastModified;
+      if (statusResponse.is_valid) characterStatus.isValid = statusResponse.is_valid;
+      if (statusResponse.last_modified)
+        characterStatus.lastModified = statusResponse.last_modified;
 
-      characterStatus.status_code = 201;
+      characterStatus.statusCode = 201;
 
       return characterStatus;
     } catch (errorException) {
       if (errorException.response) {
         if (errorException.response.data && errorException.response.data.code) {
-          characterStatus.status_code = errorException.response.data.code;
+          characterStatus.statusCode = errorException.response.data.code;
         }
       }
       if (status)
         throw new NotFoundException(
-          `Character: ${name_slug}@${realm_slug}, status: ${status}`,
+          `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
         );
       return characterStatus;
     }
   }
 
-  private async media(
-    name_slug: string,
-    realm_slug: string,
+  private async getMedia(
+    nameSlug: string,
+    realmSlug: string,
     BNet: BlizzAPI,
   ): Promise<Partial<IMedia>> {
     const media: Partial<IMedia> = {};
     try {
       const response: Record<string, any> = await BNet.query(
-        `/profile/wow/character/${realm_slug}/${name_slug}/character-media`,
+        `/profile/wow/character/${realmSlug}/${nameSlug}/character-media`,
         {
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' },
@@ -328,20 +373,20 @@ export class CharactersWorker {
 
       return media;
     } catch (errorException) {
-      this.logger.error(`media: ${name_slug}@${realm_slug}:${errorException}`);
+      this.logger.error(`media: ${nameSlug}@${realmSlug}:${errorException}`);
       return media;
     }
   }
 
-  private async mounts(
-    name_slug: string,
-    realm_slug: string,
+  private async getMounts(
+    nameSlug: string,
+    realmSlug: string,
     BNet: BlizzAPI,
   ): Promise<Partial<IMounts>> {
-    const mounts_collection: Partial<IMounts> = {};
+    const mountsCollection: Partial<IMounts> = {};
     try {
       const response: Record<string, any> = await BNet.query(
-        `/profile/wow/character/${realm_slug}/${name_slug}/collections/mounts`,
+        `/profile/wow/character/${realmSlug}/${nameSlug}/collections/mounts`,
         {
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' },
@@ -350,91 +395,83 @@ export class CharactersWorker {
       );
 
       if (!response || !response.mounts || !response.mounts.length)
-        return mounts_collection;
+        return mountsCollection;
 
       const { mounts } = response;
 
-      mounts_collection.mounts = [];
+      mountsCollection.mounts = [];
 
-      mounts.map((m: { mount: { id: number; name: string } }) => {
-        if ('mount' in m) {
-          mounts_collection.mounts.push({
-            _id: m.mount.id,
+      mounts.forEach((m: Partial<IMountsNameWithId>) => {
+        if (m.mount) {
+          mountsCollection.mounts.push({
+            id: m.mount.id,
             name: m.mount.name,
           });
         }
       });
 
-      mounts_collection.mounts_score = mounts.length;
+      mountsCollection.mountsNumber = mounts.length;
 
-      return mounts_collection;
+      return mountsCollection;
     } catch (errorException) {
-      this.logger.error(`mounts: ${name_slug}@${realm_slug}:${errorException}`);
-      return mounts_collection;
+      this.logger.error(`mounts: ${nameSlug}@${realmSlug}:${errorException}`);
+      return mountsCollection;
     }
   }
 
-  private async pets(
-    name_slug: string,
-    realm_slug: string,
+  private async getPets(
+    nameSlug: string,
+    realmSlug: string,
     BNet: BlizzAPI,
   ): Promise<Partial<IPets>> {
-    const pets_collection: Partial<IPets> = {};
+    const petsCollection: Partial<IPets> = {};
     try {
-      const hash_b: string[] = [],
-        hash_a: string[] = [],
-        response: Record<string, any> = await BNet.query(
-          `/profile/wow/character/${realm_slug}/${name_slug}/collections/pets`,
-          {
-            params: { locale: 'en_GB' },
-            headers: { 'Battlenet-Namespace': 'profile-eu' },
-            timeout: OSINT_TIMEOUT_TOLERANCE,
-          },
-        );
-
-      if (!response || !response.pets || !response.pets.length)
-        return pets_collection;
-
-      const { pets } = response;
-
-      pets_collection.pets = [];
-
-      pets.map(
-        (pet: {
-          id: number;
-          species: { name: string };
-          name: string;
-          is_active: boolean;
-          level: { toString: () => string };
-        }) => {
-          pets_collection.pets.push({
-            _id: pet.id,
-            name: pet.species.name,
-          });
-          if ('is_active' in pet) {
-            if ('name' in pet) hash_a.push(pet.name);
-            hash_a.push(pet.species.name, pet.level.toString());
-          }
-          if ('name' in pet) hash_b.push(pet.name);
-          hash_b.push(pet.species.name, pet.level.toString());
+      const hashB: string[] = [];
+      const hashA: string[] = [];
+      const response: Record<string, any> = await BNet.query(
+        `/profile/wow/character/${realmSlug}/${nameSlug}/collections/pets`,
+        {
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'profile-eu' },
+          timeout: OSINT_TIMEOUT_TOLERANCE,
         },
       );
 
-      pets_collection.pets_score = pets.length;
+      if (!response || !response.pets || !response.pets.length)
+        return petsCollection;
 
-      if (hash_b.length)
-        pets_collection.hash_b = BigInt(hash64(hash_b.toString())).toString(16);
-      if (hash_a.length)
-        pets_collection.hash_a = BigInt(hash64(hash_a.toString())).toString(16);
+      const { pets } = response;
 
-      return pets_collection;
+      petsCollection.pets = [];
+
+      pets.forEach((pet: IPetType) => {
+        petsCollection.pets.push({
+          id: pet.id,
+          name: pet.species.name,
+        });
+        if ('is_active' in pet) {
+          if ('name' in pet) hashA.push(pet.name);
+          hashA.push(pet.species.name, pet.level.toString());
+        }
+        if ('name' in pet) hashB.push(pet.name);
+        hashB.push(pet.species.name, pet.level.toString());
+      });
+
+      petsCollection.petsNumber = pets.length;
+
+      if (hashB.length)
+        petsCollection.hashB = BigInt(hash64(hashB.toString())).toString(16);
+      if (hashA.length)
+        petsCollection.hashA = BigInt(hash64(hashA.toString())).toString(16);
+
+      return petsCollection;
     } catch (error) {
-      this.logger.error(`pets: ${name_slug}@${realm_slug}:${error}`);
-      return pets_collection;
+      this.logger.error(`pets: ${nameSlug}@${realmSlug}:${error}`);
+      return petsCollection;
     }
   }
 
-  private async professions(
+  private async getProfessions(
     name_slug: string,
     realm_slug: string,
     BNet: BlizzAPI,
@@ -492,8 +529,8 @@ export class CharactersWorker {
                     professions.professions.push({
                       id: tier.tier.id,
                       name: tier.tier.name,
-                      skill_points: tier.skill_points,
-                      max_skill_points: tier.max_skill_points,
+                      skillPoints: tier.skill_points,
+                      maxSkillPoints: tier.max_skill_points,
                       tier: 'Primary Tier',
                     });
                   }
@@ -534,8 +571,8 @@ export class CharactersWorker {
                     professions.professions.push({
                       id: tier.tier.id,
                       name: tier.tier.name,
-                      skill_points: tier.skill_points,
-                      max_skill_points: tier.max_skill_points,
+                      skillPoints: tier.skill_points,
+                      maxSkillPoints: tier.max_skill_points,
                       tier: 'Secondary Tier',
                     });
                   }
@@ -553,7 +590,7 @@ export class CharactersWorker {
     }
   }
 
-  private async summary(
+  private async getSummary(
     name_slug: string,
     realm_slug: string,
     BNet: BlizzAPI,
@@ -571,61 +608,53 @@ export class CharactersWorker {
 
       if (!response || typeof response !== 'object') return summary;
 
-      const keys_named: string[] = [
+      const keyValueName: string[] = [
         'gender',
         'faction',
         'race',
         'character_class',
         'active_spec',
       ];
-      const keys: string[] = ['level', 'achievement_points'];
+      const keyValue: string[] = ['level', 'achievement_points'];
 
       Object.entries(response).map(([key, value]) => {
-        if (keys_named.includes(key) && value !== null && value.name)
+        if (keyValueName.includes(key) && value !== null && value.name)
           summary[key] = value.name;
-        if (keys.includes(key) && value !== null) summary[key] = value;
-        if (key === 'last_login_timestamp') summary.last_modified = value;
-        if (key === 'average_item_level') summary.average_item_level = value;
-        if (key === 'equipped_item_level') summary.equipped_item_level = value;
-        if (
-          key === 'covenant_progress' &&
-          typeof value === 'object' &&
-          value !== null
-        ) {
-          if (value.chosen_covenant && value.chosen_covenant.name)
-            summary.chosen_covenant = value.chosen_covenant.name;
-          if (value.renown_level) summary.renown_level = value.renown_level;
-        }
-        if (key === 'guild' && typeof value === 'object' && value !== null) {
+        if (keyValue.includes(key) && value !== null) summary[key] = value;
+        if (key === 'last_login_timestamp') summary.lastModified = value;
+        if (key === 'average_item_level') summary.averageItemLevel = value;
+        if (key === 'equipped_item_level') summary.equippedItemLevel = value;
+
+        if (key === 'guild' && value instanceof Object) {
           if (value.id && value.name) {
-            summary.guild_id = toSlug(`${value.name}@${realm_slug}`);
+            summary.guildGuid = toSlug(`${value.name}@${realm_slug}`);
             summary.guild = value.name;
-            summary.guild_guid = value.id;
+            summary.guildId = value.id;
           }
         }
-        if (key === 'realm' && typeof value === 'object' && value !== null) {
+        if (key === 'realm' && value instanceof Object) {
           if (value.id && value.name && value.slug) {
-            summary.realm_id = value.id;
-            summary.realm_name = value.name;
+            summary.realmId = value.id;
+            summary.realmName = value.name;
             summary.realm = value.slug;
           }
         }
-        if (key === 'active_title' && typeof value === 'object' && value !== null) {
+        if (key === 'active_title' && value instanceof Object) {
           if ('active_title' in value) {
             const { active_title } = value;
-            if (active_title.id) summary.hash_t = active_title.id.toString(16);
+            if (active_title.id) summary.hashT = active_title.id.toString(16);
           }
         }
       });
-
+      // TODO make sure
       if (!summary.guild) {
-        summary.guild_id = undefined;
-        summary.guild = undefined;
-        summary.guild_guid = undefined;
-        summary.guild_rank = undefined;
+        summary.guildId = null;
+        summary.guild = null;
+        summary.guildGuid = null;
+        summary.guildRank = null;
       }
 
-      summary.status_code = 200;
+      summary.statusCode = 200;
 
       return summary;
     } catch (error) {
@@ -634,97 +663,95 @@ export class CharactersWorker {
     }
   }
 
-  private async raiderIO(
+  private async getRaiderIO(
     name: string,
-    realm_slug: string,
+    realmSlug: string,
   ): Promise<Partial<IRaiderIO>> {
-    const raider_io: Partial<IRaiderIO> = {};
+    const raiderIO: Partial<IRaiderIO> = {};
     try {
-      const response = await lastValueFrom(
-        this.httpService.get(
-          encodeURI(
-            `https://raider.io/api/v1/characters/profile?region=eu&realm=${realm_slug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`,
-          ),
+      const { data } = await this.httpService.axiosRef.get<any>(
+        encodeURI(
+          `https://raider.io/api/v1/characters/profile?region=eu&realm=${realmSlug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`,
         ),
       );
 
-      if (!response || !response.data) return raider_io;
+      if (!data) return raiderIO;
 
-      if ('raid_progression' in response.data) {
-        const raid_progress: Record<string, any> = response.data.raid_progression;
-        const raid_tiers: { _id: string; progress: string }[] = [];
-        for (const [key, value] of Object.entries(raid_progress)) {
-          raid_tiers.push({
-            _id: key,
-            progress: value.summary,
+      if ('raid_progression' in data) {
+        const raidProgress: Record<string, any> = data.raid_progression;
+        const raidTiers: Array<IRaidProgressRIO> = [];
+        for (const [key, value] of Object.entries(raidProgress)) {
+          raidTiers.push({
+            id: key,
+            progress: value.getSummary,
           });
         }
-        raider_io.raid_progress = raid_tiers;
+        raiderIO.raidProgress = raidTiers;
       }
 
-      if ('mythic_plus_scores_by_season' in response.data) {
-        const rio_score = response.data.mythic_plus_scores_by_season;
+      if ('mythic_plus_scores_by_season' in data) {
+        const rio_score = data.mythic_plus_scores_by_season;
         if (rio_score && Array.isArray(rio_score) && rio_score.length) {
           for (const rio of rio_score) {
             if ('scores' in rio) {
-              raider_io.rio_score = rio.scores.all;
+              raiderIO.rioScore = rio.scores.all;
             }
           }
         }
       }
 
-      return raider_io;
+      return raiderIO;
     } catch (errorException) {
-      this.logger.error(`raiderio: ${name}@${realm_slug}:${errorException}`);
-      return raider_io;
+      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorException}`);
+      return raiderIO;
     }
   }
 
-  private async wowProgress(
+  private async getWowProgressProfile(
     name: string,
-    realm_slug: string,
+    realmSlug: string,
   ): Promise<Partial<IWowProgress>> {
-    const wowprogress: Partial<IWowProgress> = {};
+    const wowProgress: Partial<IWowProgress> = {};
     try {
-      const response = await lastValueFrom(
-        this.httpService.get(
-          encodeURI(
-            `https://www.wowprogress.com/character/eu/${realm_slug}/${name}`,
-          ),
-        ),
+      const { data } = await this.httpService.axiosRef.get<any>(
+        encodeURI(`https://www.wowprogress.com/character/eu/${realmSlug}/${name}`),
       );
 
-      const wowProgress = cheerio.load(response.data);
-      const wpHTML = wowProgress.html('.language');
+      if (!data) {
+        return wowProgress;
+      }
 
-      wowProgress(wpHTML).each((_x, node) => {
-        const characterText = wowProgress(node).text();
+      const wpRoot = cheerio.load(data);
+      const wpHTML = wpRoot.html('.language');
+
+      wpRoot(wpHTML).each((_x, node) => {
+        const characterText = wpRoot(node).text();
         const [key, value] = characterText.split(':');
-        if (key === 'Battletag') wowprogress.battle_tag = value.trim();
+        if (key === 'Battletag') wowProgress.battleTag = value.trim();
         if (key === 'Looking for guild')
-          wowprogress.transfer = value.includes('ready to transfer');
+          wowProgress.transfer = value.includes('ready to transfer');
         if (key === 'Raids per week') {
           if (value.includes(' - ')) {
             const [from, to] = value.split(' - ');
-            wowprogress.days_from = parseInt(from);
-            wowprogress.days_to = parseInt(to);
+            wowProgress.daysFrom = parseInt(from);
+            wowProgress.daysTo = parseInt(to);
           }
         }
-        if (key === 'Specs playing') wowprogress.role = value.trim();
+        if (key === 'Specs playing') wowProgress.role = value.trim();
         if (key === 'Languages')
-          wowprogress.languages = value
+          wowProgress.languages = value
             .split(',')
             .map((s: string) => s.toLowerCase().trim());
       });
 
-      return wowprogress;
+      return wowProgress;
     } catch (errorException) {
-      this.logger.error(`wowprogress: ${name}@${realm_slug}:${errorException}`);
-      return wowprogress;
+      this.logger.error(`wowprogress: ${name}@${realmSlug}:${errorException}`);
+      return wowProgress;
     }
   }
 
-  private async warcraftLogs(
+  private async getWarcraftLogs(
     name: string,
     realm_slug: string,
   ): Promise<Partial<IWarcraftLog>> {
@@ -742,7 +769,7 @@ export class CharactersWorker {
       if (getXpath) {
         const bestPrefAvg = await page.evaluate((name) => name.innerText, getXpath);
         if (bestPrefAvg && bestPrefAvg !== '-') {
-          warcraftLogs.wcl_percentile = parseFloat(bestPrefAvg);
+          warcraftLogs.wclMythicPercentile = parseFloat(bestPrefAvg);
         }
       }
 
@@ -755,58 +782,40 @@ export class CharactersWorker {
     }
   }
 
-  private async checkDiffs(
-    original: LeanDocument<Character>,
-    updated: Character,
+  private async diffCharacterEntity(
+    original: CharactersEntity,
+    updated: CharactersEntity,
   ): Promise<void> {
     try {
-      const detectiveFields: string[] = [
-          'name',
-          'realm_name',
-          'race',
-          'gender',
-          'faction',
-        ],
-        block: LeanDocument<Log>[] = [],
-        t0: Date = original.last_modified || original.updatedAt || new Date(),
-        t1: Date = updated.last_modified || updated.updatedAt || new Date();
+      const actionLogFields = [
+        ACTION_LOG.NAME,
+        // TODO ACTION_LOG.REALM,
+        ACTION_LOG.RACE,
+        ACTION_LOG.GENDER,
+        ACTION_LOG.FACTION,
+      ];
 
-      await Promise.all(
-        detectiveFields.map(async (check: string) => {
-          if (
-            check in original &&
-            check in updated &&
-            original[check] !== updated[check]
-          ) {
-            if (check === 'name' || check === 'realm_name') {
-              await this.LogModel.updateMany(
-                {
-                  root_id: original._id,
-                },
-                {
-                  root_id: updated._id,
-                  $push: { root_history: updated._id },
-                },
-              );
-            }
-            block.push({
-              root_id: updated._id,
-              root_history: [updated._id],
-              action: check,
-              event: 'character',
-              original: `${capitalize(check)}: ${capitalize(original[check])}`,
-              updated: `${capitalize(check)}: ${capitalize(updated[check])}`,
-              t0: t0,
-              t1: t1,
-            });
-          }
-        }),
-      );
+      for (const actionLogField of actionLogFields) {
+        const hasField = !!original[actionLogField] && !!updated[actionLogField];
+        if (!hasField) continue;
 
-      if (block.length > 1)
-        await this.LogModel.insertMany(block, { rawResult: false });
+        const isFieldChanged = original[actionLogField] !== updated[actionLogField];
+        if (!isFieldChanged) continue;
+
+        const logEntity = this.logsRepository.create({
+          guid: updated.guid,
+          original: original[actionLogField],
+          updated: updated[actionLogField],
+          action: actionLogField,
+          event: EVENT_LOG.CHARACTER,
+          originalAt: original.lastModified || original.updatedAt,
+          updatedAt: updated.lastModified || updated.updatedAt,
+        });
+
+        await this.logsRepository.save(logEntity);
+      }
     } catch (errorException) {
-      this.logger.error(`diffs: ${original._id}:${errorException}`);
+      this.logger.error(`diffs: ${original.id}:${errorException}`);
     }
   }
 }

@@ -2,9 +2,9 @@
   "name": "cmnw",
   "version": "6.0.0",
   "homepage": "https://cmnw.me",
-  "description": "",
+  "description": "Intelligence always wins",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MPL 2.0",
   "bugs": {
     "url": "https://github.com/AlexZeDim/conglomerat/issues",
     "discord": "AlexZeDim#2645"
@@ -70,7 +70,6 @@
     "farmhash": "3.2.2",
     "fs-extra": "10.0.0",
     "ioredis": "4.28.2",
-    "libsodium-wrappers": "0.7.9",
     "lodash": "4.17.21",
     "moment": "^2.29.4",
     "mongoose": "7.2.1",
@@ -78,12 +77,12 @@
     "passport": "0.6.0",
     "passport-oauth2": "1.6.1",
     "pg": "^8.11.0",
-    "prism-media": "2.0.0-alpha.0",
     "puppeteer": "13.0.0",
     "redis": "4.0.1",
     "reflect-metadata": "0.1.13",
     "rimraf": "3.0.2",
     "rxjs": "7.4.0",
+    "snake-case": "^3.0.4",
     "swagger-ui-express": "4.3.0",
     "typeorm": "^0.3.16"
   },

@@ -9,7 +9,7 @@ import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
 import { ArrayContains, Repository } from 'typeorm';
-import { GLOBAL_KEY, realmsQueue } from '@app/core';
+import { GLOBAL_KEY, RealmJobQueue, realmsQueue } from '@app/core';
 
 @Injectable()
 export class RealmsService implements OnApplicationBootstrap {
@@ -24,7 +24,7 @@ export class RealmsService implements OnApplicationBootstrap {
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
     @BullQueueInject(realmsQueue.name)
-    private readonly queue: Queue,
+    private readonly queue: Queue<RealmJobQueue, number>,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {

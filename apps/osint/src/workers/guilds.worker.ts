@@ -12,32 +12,50 @@ import {
 } from '@anchan828/nest-bullmq';
 
 import { BlizzAPI } from 'blizzapi';
-import { InjectModel } from '@nestjs/mongoose';
-import { Character, Guild, Log, Realm } from '@app/mongo';
-import { Model } from 'mongoose';
 import { Job, Queue } from 'bullmq';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { differenceBy, intersectionBy } from 'lodash';
+import { difference, intersection } from 'lodash';
+import { snakeCase } from 'snake-case';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 
 import {
+  ACTION_LOG,
   capitalize,
+  characterAsGuildMember,
+  CharacterJobQueue,
+  charactersQueue,
+  EVENT_LOG,
   FACTION,
-  IGuildMember,
+  findRealm,
+  GuildExistsOrCreate,
+  GuildJobQueue,
   guildsQueue,
+  ICharacterGuildMember,
+  IGuildRoster,
   IGuildSummary,
+  IRGuildRoster,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
   PLAYABLE_CLASS,
+  toGuid,
   toSlug,
-  IQGuild,
-  IRGuildRoster,
-  IGuildRoster,
-  EVENT_LOG,
-  charactersQueue,
-  IQCharacter,
-  ACTION_LOG,
 } from '@app/core';
+
+import {
+  CharactersEntity,
+  CharactersGuildsMembersEntity,
+  CharactersMountsEntity,
+  CharactersPetsEntity,
+  GuildsEntity,
+  KeysEntity,
+  LogsEntity,
+  MountsEntity,
+  PetsEntity,
+  ProfessionsEntity,
+  RealmsEntity,
+} from '@app/pg';
 
 @BullWorker({ queueName: guildsQueue.name })
 export class GuildsWorker {
@@ -46,32 +64,46 @@ export class GuildsWorker {
   private BNet: BlizzAPI;
 
   constructor(
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Guild.name)
-    private readonly GuildModel: Model<Guild>,
-    @InjectModel(Character.name)
-    private readonly CharacterModel: Model<Character>,
-    @InjectModel(Log.name)
-    private readonly LogModel: Model<Log>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queue: Queue<IQCharacter, number>,
+    private readonly queue: Queue<CharacterJobQueue, number>,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(ProfessionsEntity)
+    private readonly professionsRepository: Repository<ProfessionsEntity>,
+    @InjectRepository(GuildsEntity)
+    private readonly guildsRepository: Repository<GuildsEntity>,
+    @InjectRepository(CharactersGuildsMembersEntity)
+    private readonly characterGuildsMembersRepository: Repository<CharactersGuildsMembersEntity>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(CharactersEntity)
+    private readonly charactersRepository: Repository<CharactersEntity>,
+    @InjectRepository(PetsEntity)
+    private readonly petsRepository: Repository<PetsEntity>,
+    @InjectRepository(MountsEntity)
+    private readonly mountsRepository: Repository<MountsEntity>,
+    @InjectRepository(CharactersPetsEntity)
+    private readonly charactersPetsRepository: Repository<CharactersPetsEntity>,
+    @InjectRepository(CharactersMountsEntity)
+    private readonly charactersMountsRepository: Repository<CharactersMountsEntity>,
+    @InjectRepository(LogsEntity)
+    private readonly logsRepository: Repository<LogsEntity>,
   ) {}
 
   @BullWorkerProcess(guildsQueue.workerOptions)
-  public async process(job: Job<IQGuild, number>): Promise<number> {
+  public async process(job: Job<GuildJobQueue, number>): Promise<number> {
     try {
-      const args: IQGuild = { ...job.data };
+      const { data: args } = job;
 
-      const guild = await this.checkExistOrCreate(args);
-      const original = { ...guild.toObject() };
-      const name_slug = toSlug(guild.name);
+      const { guildEntity, isNew } = await this.guildExistOrCreate(args);
+      const guildEntityOriginal = this.guildsRepository.create(guildEntity);
+      const nameSlug = toSlug(guildEntity.name);
 
       await job.updateProgress(5);
 
       this.BNet = new BlizzAPI({
         region: 'eu',
-        clientId: args._id,
+        clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
       });
@@ -80,39 +112,39 @@ export class GuildsWorker {
        * from args in any case
        * summary overwrite later
        */
-      if (args.updated_by) guild.updated_by = args.updated_by;
+      if (args.updatedBy) guildEntity.updatedBy = args.updatedBy;
       await job.updateProgress(10);
 
-      const summary = await this.summary(name_slug, guild.realm, this.BNet);
-      Object.assign(guild, summary);
-
+      const summary = await this.getSummary(nameSlug, guildEntity.realm, this.BNet);
+      Object.assign(guildEntity, summary);
       await job.updateProgress(25);
-      const roster = await this.roster(guild, this.BNet);
 
-      if (roster.members.length > 0) Object.assign(guild, roster);
+      const roster = await this.getRoster(guildEntity, this.BNet);
+      roster.updatedAt = guildEntity.updatedAt;
+      await this.updateRoster(guildEntityOriginal, roster);
       await job.updateProgress(50);
 
-      if (guild.isNew) {
+      if (isNew) {
         /** Check was guild renamed */
-        const rename = await this.GuildModel.findOne({
-          id: guild.id,
-          realm: guild.realm,
+        const guildEntityById = await this.guildsRepository.findOneBy({
+          id: guildEntityOriginal.id,
+          realm: guildEntityOriginal.realm,
         });
-        if (rename) {
-          await this.checkDiffs(rename, guild);
-          await this.logs(rename, guild);
+
+        if (guildEntityById) {
+          await this.diffGuildEntity(guildEntityById, guildEntity);
+          await this.updateGuildMaster(guildEntityById, roster);
         }
       } else {
-        await this.logs(original, guild);
-        await this.checkDiffs(original, guild);
+        await this.diffGuildEntity(guildEntityOriginal, guildEntity);
+        await this.updateGuildMaster(guildEntityOriginal, roster);
       }
 
       await job.updateProgress(90);
+      await this.guildsRepository.save(guildEntity);
 
-      await guild.save();
       await job.updateProgress(100);
-
-      return guild.status_code;
+      return guildEntity.statusCode;
     } catch (errorException) {
       await job.log(errorException);
       this.logger.error(`${GuildsWorker.name}, ${errorException}`);
@@ -120,15 +152,261 @@ export class GuildsWorker {
     }
   }
 
-  private async summary(
-    guild_slug: string,
-    realm_slug: string,
+  private async updateRoster(guildEntity: GuildsEntity, roster: IGuildRoster) {
+    try {
+      const guildsMembersEntities =
+        await this.characterGuildsMembersRepository.findBy({
+          guildGuid: guildEntity.guid,
+        });
+
+      const { members: updatedRosterMembers } = roster;
+
+      if (!updatedRosterMembers.length) {
+        this.logger.warn(`Guild roster for ${guildEntity.guid} was not found!`);
+        return;
+      }
+
+      const originalRoster = new Map(
+        guildsMembersEntities.map((guildMember) => [
+          guildMember.characterId,
+          guildMember,
+        ]),
+      );
+      const updatedRoster = new Map(
+        updatedRosterMembers.map((member) => [member.id, member]),
+      );
+
+      const originalRosterCharIds = Array.from(originalRoster.keys());
+      const updatedRosterCharIds = Array.from(updatedRoster.keys());
+
+      const membersIntersectIds = intersection(
+          updatedRosterCharIds,
+          originalRosterCharIds,
+        ),
+        membersJoinedIds = difference(updatedRosterCharIds, originalRosterCharIds),
+        membersLeaveIds = difference(originalRosterCharIds, updatedRosterCharIds);
+
+      const interLength = membersIntersectIds.length,
+        joinsLength = membersJoinedIds.length,
+        leaveLength = membersLeaveIds.length;
+
+      if (interLength) {
+        await lastValueFrom(
+          from(membersIntersectIds).pipe(
+            mergeMap(async (guildMemberId) => {
+              try {
+                const guildMemberOriginal = originalRoster.get(guildMemberId);
+                const guildMemberUpdated = updatedRoster.get(guildMemberId);
+                const isRankChanged =
+                  guildMemberUpdated.rank !== guildMemberOriginal.rank;
+                if (!isRankChanged) return;
+
+                const isNotGuildMaster =
+                  guildMemberOriginal.rank !== 0 || guildMemberUpdated.rank !== 0;
+                const isDemote = guildMemberUpdated.rank > guildMemberOriginal.rank;
+                const isPromote = guildMemberUpdated.rank < guildMemberOriginal.rank;
+
+                const eventAction = isDemote
+                  ? ACTION_LOG.DEMOTE
+                  : ACTION_LOG.PROMOTE;
+
+                if (isNotGuildMaster) {
+                  const logEntityGuildMemberDemote = [
+                    this.logsRepository.create({
+                      guid: guildMemberOriginal.characterGuid,
+                      original: `${guildEntity.guid} | ${guildMemberUpdated.rank}`,
+                      updated: `${guildEntity.guid} | ${guildMemberOriginal.rank}`,
+                      event: EVENT_LOG.CHARACTER,
+                      action: eventAction,
+                      originalAt: guildEntity.updatedAt,
+                      updatedAt: roster.updatedAt,
+                    }),
+                    this.logsRepository.create({
+                      guid: guildEntity.guid,
+                      original: `${guildMemberOriginal.characterGuid} | ${guildMemberUpdated.rank}`,
+                      updated: `${guildMemberOriginal.characterGuid} | ${guildMemberOriginal.rank}`,
+                      event: EVENT_LOG.GUILD,
+                      action: eventAction,
+                      originalAt: guildEntity.updatedAt,
+                      updatedAt: roster.updatedAt,
+                    }),
+                  ];
+
+                  await Promise.allSettled([
+                    this.logsRepository.save(logEntityGuildMemberDemote),
+                    this.charactersRepository.update(
+                      { guid: guildMemberUpdated.guid, id: guildMemberUpdated.id },
+                      {
+                        guildRank: guildMemberUpdated.rank,
+                        updatedBy: OSINT_SOURCE.GUILD_ROSTER,
+                      },
+                    ),
+                    this.characterGuildsMembersRepository.update(
+                      {
+                        characterGuid: guildMemberOriginal.characterGuid,
+                        guildGuid: guildEntity.guid,
+                      },
+                      {
+                        rank: guildMemberUpdated.rank,
+                        updatedBy: OSINT_SOURCE.GUILD_ROSTER,
+                      },
+                    ),
+                  ]);
+                }
+              } catch (errorException) {
+                this.logger.error(
+                  `logs: error with ${guildEntity.guid} on intersection`,
+                );
+              }
+            }),
+          ),
+        );
+      }
+
+      if (joinsLength) {
+        await lastValueFrom(
+          from(membersJoinedIds).pipe(
+            mergeMap(async (guildMemberId) => {
+              try {
+                const guildMemberUpdated = updatedRoster.get(guildMemberId);
+                const isNotGuildMaster = guildMemberUpdated.rank !== 0;
+
+                const charactersGuildsMembersEntity =
+                  this.characterGuildsMembersRepository.create({
+                    guildGuid: guildEntity.guid,
+                    guildId: guildEntity.id,
+                    characterId: guildMemberUpdated.id,
+                    characterGuid: guildMemberUpdated.guid,
+                    realmId: guildEntity.realmId,
+                    realmName: guildEntity.realmName,
+                    realm: guildEntity.realm,
+                    rank: guildMemberUpdated.rank,
+                    createdBy: OSINT_SOURCE.GUILD_ROSTER,
+                    updatedBy: OSINT_SOURCE.GUILD_ROSTER,
+                    lastModified: roster.updatedAt,
+                  });
+
+                if (isNotGuildMaster) {
+                  const logEntityGuildMemberJoin = [
+                    this.logsRepository.create({
+                      guid: guildMemberUpdated.guid,
+                      original: guildEntity.guid,
+                      updated: `${guildEntity.guid} | ${guildMemberUpdated.rank}`,
+                      event: EVENT_LOG.CHARACTER,
+                      action: ACTION_LOG.JOIN,
+                      originalAt: guildEntity.updatedAt,
+                      updatedAt: roster.updatedAt,
+                    }),
+                    this.logsRepository.create({
+                      guid: guildEntity.guid,
+                      original: guildMemberUpdated.guid,
+                      updated: `${guildMemberUpdated.guid} | ${guildMemberUpdated.rank}`,
+                      event: EVENT_LOG.GUILD,
+                      action: ACTION_LOG.JOIN,
+                      originalAt: guildEntity.updatedAt,
+                      updatedAt: roster.updatedAt,
+                    }),
+                  ];
+                  await this.logsRepository.save(logEntityGuildMemberJoin);
+                }
+                await Promise.allSettled([
+                  this.characterGuildsMembersRepository.save(
+                    charactersGuildsMembersEntity,
+                  ),
+                  this.charactersRepository.update(
+                    { guid: guildMemberUpdated.guid, id: guildMemberUpdated.id },
+                    {
+                      guild: guildEntity.name,
+                      guildId: guildEntity.id,
+                      guildGuid: guildEntity.guid,
+                      guildRank: guildMemberUpdated.rank,
+                      updatedBy: OSINT_SOURCE.GUILD_ROSTER,
+                    },
+                  ),
+                ]);
+              } catch (errorException) {
+                this.logger.error(
+                  `logs: error with ${guildEntity.guid} on intersection`,
+                );
+              }
+            }),
+          ),
+        );
+      }
+
+      if (leaveLength) {
+        await lastValueFrom(
+          from(membersLeaveIds).pipe(
+            mergeMap(async (guildMemberId) => {
+              try {
+                const guildMemberOriginal = originalRoster.get(guildMemberId);
+                const isNotGuildMaster = guildMemberOriginal.rank !== 0;
+
+                if (isNotGuildMaster) {
+                  const logEntityGuildMemberLeave = [
+                    this.logsRepository.create({
+                      guid: guildMemberOriginal.characterGuid,
+                      original: `${guildEntity.guid} | ${guildMemberOriginal.rank}`,
+                      updated: guildEntity.guid,
+                      event: EVENT_LOG.CHARACTER,
+                      action: ACTION_LOG.LEAVE,
+                      originalAt: guildEntity.updatedAt,
+                      updatedAt: roster.updatedAt,
+                    }),
+                    this.logsRepository.create({
+                      guid: guildEntity.guid,
+                      original: `${guildMemberOriginal.characterGuid} | ${guildMemberOriginal.rank}`,
+                      updated: guildMemberOriginal.characterGuid,
+                      event: EVENT_LOG.GUILD,
+                      action: ACTION_LOG.LEAVE,
+                      originalAt: guildEntity.updatedAt,
+                      updatedAt: roster.updatedAt,
+                    }),
+                  ];
+                  await this.logsRepository.save(logEntityGuildMemberLeave);
+                }
+                await Promise.allSettled([
+                  this.characterGuildsMembersRepository.delete({
+                    guildGuid: guildEntity.guid,
+                    characterGuid: guildMemberOriginal.characterGuid,
+                  }),
+                  this.charactersRepository.update(
+                    {
+                      guid: guildMemberOriginal.characterGuid,
+                      guildGuid: guildEntity.guid,
+                    },
+                    {
+                      guild: null,
+                      guildId: null,
+                      guildGuid: null,
+                      guildRank: null,
+                      updatedBy: OSINT_SOURCE.GUILD_ROSTER,
+                    },
+                  ),
+                ]);
+              } catch (errorException) {
+                this.logger.error(
+                  `logs: error with ${guildEntity.guid} on intersection`,
+                );
+              }
+            }),
+          ),
+        );
+      }
+    } catch (errorException) {
+      this.logger.error(`updateRoster: ${guildEntity.guid}:${errorException}`);
+    }
+  }
+
+  private async getSummary(
+    guildNameSlug: string,
+    realmSlug: string,
     BNet: BlizzAPI,
   ): Promise<Partial<IGuildSummary>> {
     const summary: Partial<IGuildSummary> = {};
     try {
       const response: Record<string, any> = await BNet.query(
-        `/data/wow/guild/${realm_slug}/${guild_slug}`,
+        `/data/wow/guild/${realmSlug}/${guildNameSlug}`,
         {
           timeout: OSINT_TIMEOUT_TOLERANCE,
           params: { locale: 'en_GB' },
@@ -138,16 +416,10 @@ export class GuildsWorker {
 
       if (!response || typeof response !== 'object') return summary;
 
-      const keys: string[] = [
-        'id',
-        'name',
-        'achievement_points',
-        'member_count',
-        'created_timestamp',
-      ];
+      const keys = ['id', 'name', 'achievement_points', 'created_timestamp'];
 
       Object.entries(response).map(([key, value]) => {
-        if (keys.includes(key) && value !== null) summary[key] = value;
+        if (keys.includes(key) && value !== null) summary[snakeCase(key)] = value;
         if (key === 'faction' && typeof value === 'object' && value !== null) {
           if (value.type && value.name === null) {
             if (value.type.toString().startsWith('A')) summary.faction = FACTION.A;
@@ -158,31 +430,36 @@ export class GuildsWorker {
         }
         if (key === 'realm' && typeof value === 'object' && value !== null) {
           if (value.id && value.name && value.slug) {
-            summary.realm_id = value.id;
-            summary.realm_name = value.name;
+            summary.realmId = value.id;
+            summary.realmName = value.name;
             summary.realm = value.slug;
           }
         }
-        if (key === 'lastModified') summary.last_modified = new Date(value);
+        if (key === 'member_count') {
+          summary.membersCount = value;
+        }
+        // TODO research
+        if (key === 'last_modified') summary.lastModified = new Date(value);
       });
 
-      summary.status_code = 200;
+      summary.statusCode = 200;
       return summary;
     } catch (errorException) {
-      this.logger.error(`summary: ${guild_slug}@${realm_slug}:${errorException}`);
+      this.logger.error(`summary: ${guildNameSlug}@${realmSlug}:${errorException}`);
       return summary;
     }
   }
 
-  private async roster(guild: Guild, BNet: BlizzAPI): Promise<IGuildRoster> {
+  private async getRoster(
+    guildEntity: GuildsEntity,
+    BNet: BlizzAPI,
+  ): Promise<IGuildRoster> {
     const roster: IGuildRoster = { members: [] };
-    const characters: Character[] = [];
     try {
-      const guild_slug = toSlug(guild.name);
-      let iteration = 0;
+      const guildNameSlug = toSlug(guildEntity.name);
 
       const { members }: Partial<IRGuildRoster> = await BNet.query(
-        `/data/wow/guild/${guild.realm}/${guild_slug}/roster`,
+        `/data/wow/guild/${guildEntity.realm}/${guildNameSlug}/roster`,
         {
           timeout: OSINT_TIMEOUT_TOLERANCE,
           params: { locale: 'en_GB' },
@@ -198,563 +475,261 @@ export class GuildsWorker {
         from(members).pipe(
           mergeMap(async (member) => {
             try {
-              if ('character' in member && 'rank' in member) {
-                iteration += 1;
-                const _id: string = toSlug(
-                  `${member.character.name}@${guild.realm}`,
-                );
-                const character_class = PLAYABLE_CLASS.has(
-                  member.character.playable_class.id,
-                )
-                  ? PLAYABLE_CLASS.get(member.character.playable_class.id)
-                  : undefined;
+              const isMember = 'character' in member && 'rank' in member;
+              if (!isMember) return;
 
-                if (member.rank === 0) {
-                  // Force update GMs only
-                  await this.queue.add(
-                    _id,
-                    {
-                      _id: _id,
-                      name: member.character.name,
-                      realm: guild.realm,
-                      guild_id: `${guild_slug}@${guild.realm}`,
-                      guild: guild.name,
-                      guild_guid: guild.id,
-                      character_class,
-                      faction: guild.faction,
-                      level: member.character.level
-                        ? member.character.level
-                        : undefined,
-                      last_modified: guild.last_modified,
-                      updated_by: OSINT_SOURCE.ROSTERGUILD,
-                      created_by: OSINT_SOURCE.ROSTERGUILD,
-                      accessToken: BNet.accessToken,
-                      clientId: BNet.clientId,
-                      clientSecret: BNet.clientSecret,
-                      createOnlyUnique: false,
-                      forceUpdate: 1,
-                      guildRank: true,
-                      region: 'eu',
-                    },
-                    {
-                      jobId: _id,
-                      priority: 2,
-                    },
-                  );
-                }
+              const isGM = member.rank === 0;
+              const guid = toSlug(`${member.character.name}@${guildEntity.realm}`);
+              const level = member.character.level ? member.character.level : null;
+              const characterClass = PLAYABLE_CLASS.has(
+                member.character.playable_class.id,
+              )
+                ? PLAYABLE_CLASS.get(member.character.playable_class.id)
+                : null;
 
-                const characterExist = await this.CharacterModel.findById(_id);
-
-                if (characterExist) {
-                  characterExist.updated_by = OSINT_SOURCE.ROSTERGUILD;
-
-                  if (
-                    guild.last_modified &&
-                    characterExist.last_modified &&
-                    guild.last_modified.getTime() >
-                      characterExist.last_modified.getTime()
-                  ) {
-                    characterExist.realm = guild.realm;
-                    characterExist.realm_id = guild.realm_id;
-                    characterExist.realm_name = guild.realm_name;
-                    characterExist.guild_id = guild._id;
-                    characterExist.guild = guild.name;
-                    characterExist.guild_guid = guild.id;
-                    characterExist.guild_rank = member.rank;
-                    characterExist.faction = guild.faction;
-                    characterExist.level = member.character.level
-                      ? member.character.level
-                      : undefined;
-                    characterExist.character_class = character_class;
-                    characterExist.last_modified = guild.last_modified;
-                  } else if (guild._id === characterExist.guild_id) {
-                    characterExist.guild_rank = member.rank;
-                  }
-
-                  await characterExist.save();
-                }
-
-                if (!characterExist) {
-                  const character = new this.CharacterModel({
-                    _id,
-                    id: member.character.id,
+              if (isGM) {
+                /**
+                 * @description Force update GM character
+                 * @description for further diff compare
+                 */
+                await this.queue.add(
+                  guid,
+                  {
+                    guid,
                     name: member.character.name,
-                    realm: guild.realm,
-                    realm_id: guild.realm_id,
-                    realm_name: guild.realm_name,
-                    guild_id: `${guild_slug}@${guild.realm}`,
-                    guild: guild.name,
-                    guild_rank: member.rank,
-                    guild_guid: guild.id,
-                    character_class,
-                    faction: guild.faction,
-                    level: member.character.level
-                      ? member.character.level
-                      : undefined,
-                    last_modified: guild.last_modified,
-                    updated_by: OSINT_SOURCE.ROSTERGUILD,
-                    created_by: OSINT_SOURCE.ROSTERGUILD,
-                  });
-
-                  characters.push(character);
-                }
-
-                roster.members.push({
-                  _id: _id,
-                  id: member.character.id,
-                  rank: member.rank,
-                });
+                    realm: guildEntity.realm,
+                    guild: guildEntity.name,
+                    guildGuid: toGuid(guildNameSlug, guildEntity.realm),
+                    guildId: guildEntity.id,
+                    class: characterClass,
+                    faction: guildEntity.faction,
+                    level,
+                    lastModified: guildEntity.lastModified,
+                    updatedBy: OSINT_SOURCE.GUILD_ROSTER,
+                    createdBy: OSINT_SOURCE.GUILD_ROSTER,
+                    accessToken: BNet.accessToken,
+                    clientId: BNet.clientId,
+                    clientSecret: BNet.clientSecret,
+                    createOnlyUnique: false,
+                    forceUpdate: 1,
+                    guildRank: 0,
+                    requestGuildRank: true,
+                    region: 'eu',
+                  },
+                  {
+                    jobId: guid,
+                    priority: 2,
+                  },
+                );
               }
+
+              const guildMember: ICharacterGuildMember = {
+                guid,
+                id: member.character.id,
+                name: member.character.name,
+                guildNameSlug,
+                rank: member.rank,
+                level,
+                class: characterClass,
+              };
+
+              await characterAsGuildMember(
+                this.charactersRepository,
+                guildEntity,
+                guildMember,
+              );
+
+              roster.members.push({
+                guid,
+                id: member.character.id,
+                rank: member.rank,
+                level,
+              });
             } catch (errorException) {
               this.logger.error(
-                `member: ${member.character.id} from ${guild._id}:${errorException}`,
+                `member: ${member.character.id} from ${guildEntity.guid}:${errorException}`,
               );
             }
           }, 20),
         ),
       );
 
-      if (characters.length > 0) {
-        await this.CharacterModel.insertMany(characters, { rawResult: false });
-        this.logger.log(`roster: ${characters.length} added`);
-      }
-
       return roster;
     } catch (errorException) {
-      this.logger.error(`roster: ${guild._id}:${errorException}`);
+      this.logger.error(`roster: ${guildEntity.guid}:${errorException}`);
       return roster;
     }
   }
 
-  private async logs(original: LeanDocument<Guild>, updated: Guild): Promise<void> {
-    try {
-      const gm_member_new: IGuildMember | undefined = updated.members.find(
-          (m) => m.rank === 0,
-        ),
-        gm_member_old: IGuildMember | undefined = original.members.find(
-          (m) => m.rank === 0,
-        ),
-        now = new Date(),
-        block: Log[] = [];
+  private async updateGuildMaster(
+    guildEntity: GuildsEntity,
+    updatedRoster: IGuildRoster,
+  ) {
+    const guildMasterOriginal =
+      await this.characterGuildsMembersRepository.findOneBy({
+        guildGuid: guildEntity.guid,
+        rank: 0,
+      });
+    const guildMasterUpdated = updatedRoster.members.find(
+      (guildMember) => guildMember.rank === 0,
+    );
 
-      /** Guild Master have been changed */
-      if (gm_member_old && gm_member_new && gm_member_old.id !== gm_member_new.id) {
-        const gm_blocks = await this.gm(
-          gm_member_new,
-          gm_member_old,
-          original,
-          updated,
-        );
-        block.concat(gm_blocks);
-      }
-
-      const intersection = intersectionBy(updated.members, original.members, 'id'),
-        joins = differenceBy(updated.members, original.members, 'id'),
-        leaves = differenceBy(original.members, updated.members, 'id');
-
-      const ILength = intersection.length,
-        JLength = joins.length,
-        LLength = leaves.length;
-
-      if (ILength > 0) {
-        this.logger.debug(`logs: ${updated._id} intersections ${ILength}`);
-
-        await lastValueFrom(
-          from(intersection).pipe(
-            mergeMap(async (guild_member_new: IGuildMember) => {
-              try {
-                const guild_member_old: IGuildMember | undefined =
-                  original.members.find(({ id }) => id === guild_member_new.id);
-                if (guild_member_old) {
-                  if (guild_member_old.rank !== 0 || guild_member_new.rank !== 0) {
-                    if (guild_member_new.rank > guild_member_old.rank) {
-                      // Demote
-                      const characterLogDemote = new this.LogModel({
-                        root_id: guild_member_new._id,
-                        root_history: [guild_member_new._id],
-                        original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
-                        updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
-                        event: EVENT_LOG.CHARACTER,
-                        action: ACTION_LOG.DEMOTE,
-                        t0: original.last_modified || now,
-                        t1: updated.last_modified || now,
-                      });
-
-                      const guildLogDemote = new this.LogModel({
-                        root_id: updated._id,
-                        root_history: [updated._id],
-                        original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
-                        updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
-                        event: EVENT_LOG.GUILD,
-                        action: ACTION_LOG.DEMOTE,
-                        t0: original.last_modified || now,
-                        t1: updated.last_modified || now,
-                      });
-
-                      block.push(characterLogDemote, guildLogDemote);
-                    }
-                    if (guild_member_new.rank < guild_member_old.rank) {
-                      // Promote
-                      const characterLogPromote = new this.LogModel({
-                        root_id: guild_member_new._id,
-                        root_history: [guild_member_new._id],
-                        original: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_old.rank}`,
-                        updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member_new.rank}`,
-                        event: EVENT_LOG.CHARACTER,
-                        action: ACTION_LOG.PROMOTE,
-                        t0: original.last_modified || now,
-                        t1: updated.last_modified || now,
-                      });
-
-                      const guildLogPromote = new this.LogModel({
-                        root_id: updated._id,
-                        root_history: [updated._id],
-                        original: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_old.rank}`,
-                        updated: `${guild_member_new._id}:${guild_member_new.id}//Rank:${guild_member_new.rank}`,
-                        event: EVENT_LOG.GUILD,
-                        action: ACTION_LOG.PROMOTE,
-                        t0: original.last_modified || now,
-                        t1: updated.last_modified || now,
-                      });
-
-                      block.push(characterLogPromote, guildLogPromote);
-                    }
-                  }
-                }
-              } catch (errorException) {
-                this.logger.error(
-                  `logs: error with ${guild_member_new._id} on intersection`,
-                );
-              }
-            }),
-          ),
-        );
-      }
-
-      if (JLength > 0) {
-        this.logger.debug(`logs: ${updated._id} joins ${JLength}`);
-
-        await lastValueFrom(
-          from(joins).pipe(
-            mergeMap(async (guild_member: IGuildMember) => {
-              try {
-                // Join
-                const characterLogJoin = new this.LogModel({
-                  root_id: guild_member._id,
-                  root_history: [guild_member._id],
-                  original: ' ',
-                  updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
-                  event: EVENT_LOG.CHARACTER,
-                  action: ACTION_LOG.JOIN,
-                  t0: original.last_modified || now,
-                  t1: updated.last_modified || now,
-                });
-
-                const guildLogJoin = new this.LogModel({
-                  root_id: updated._id,
-                  root_history: [updated._id],
-                  original: ' ',
-                  updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
-                  event: EVENT_LOG.GUILD,
-                  action: ACTION_LOG.JOIN,
-                  t0: original.last_modified || now,
-                  t1: updated.last_modified || now,
-                });
-
-                block.push(characterLogJoin, guildLogJoin);
-              } catch (errorException) {
-                this.logger.error(`logs: error with ${guild_member._id} on join`);
-              }
-            }),
-          ),
-        );
-      }
-
-      if (LLength > 0) {
-        this.logger.debug(`logs: ${updated._id} leaves ${LLength}`);
-
-        await lastValueFrom(
-          from(leaves).pipe(
-            mergeMap(async (guild_member: IGuildMember) => {
-              try {
-                await this.CharacterModel.findOneAndUpdate(
-                  { _id: guild_member._id, guild_id: original._id },
-                  {
-                    $unset: { guild: 1, guild_id: 1, guild_guid: 1, guild_rank: 1 },
-                  },
-                );
-
-                // More operative way to update character on leave
-                const guildLogLeave = new this.LogModel({
-                  root_id: updated._id,
-                  root_history: [updated._id],
-                  original: ' ',
-                  updated: `${guild_member._id}:${guild_member.id}//Rank:${guild_member.rank}`,
-                  event: EVENT_LOG.GUILD,
-                  action: ACTION_LOG.LEAVE,
-                  t0: original.last_modified || new Date(),
-                  t1: updated.last_modified || new Date(),
-                });
-
-                const characterLogLeave = new this.LogModel({
-                  root_id: guild_member._id,
-                  root_history: [guild_member._id],
-                  original: ' ',
-                  updated: `${updated.name}@${updated.realm_name}:${updated.id}//Rank:${guild_member.rank}`,
-                  event: EVENT_LOG.CHARACTER,
-                  action: ACTION_LOG.LEAVE,
-                  t0: original.last_modified || new Date(),
-                  t1: updated.last_modified || new Date(),
-                });
-
-                block.push(characterLogLeave, guildLogLeave);
-              } catch (errorException) {
-                this.logger.error(`logs: error with ${guild_member._id} on leave`);
-              }
-            }),
-          ),
-        );
-      }
-
-      if (block.length > 0) {
-        await this.LogModel.insertMany(block, { rawResult: false });
-        this.logger.log(
-          `logs: ${updated._id} updated with ${block.length} log events`,
-        );
-      }
-    } catch (errorException) {
-      this.logger.error(`logs: ${updated._id}:${errorException}`);
-    }
-  }
-
-  private async gm(
-    member_new: IGuildMember,
-    member_old: IGuildMember,
-    original: LeanDocument<Guild>,
-    updated: Guild,
-  ): Promise<Log[]> {
-    const block: Log[] = [];
-    const now = new Date();
-    try {
-      this.logger.debug(
-        `gm: guild (${updated._id}) | ${member_old._id} => ${member_new._id}`,
+    const isGuildMasterCharacterChanged =
+      guildMasterOriginal.characterId !== guildMasterUpdated.id;
+    if (!isGuildMasterCharacterChanged) {
+      this.logger.warn(
+        `Guild ${guildEntity.guid} doesn't change their Guild Master`,
       );
-
-      const gm_character_old = await this.CharacterModel.findById(member_old._id),
-        gm_character_new = await this.CharacterModel.findById(member_new._id);
-
-      if (!gm_character_new || !gm_character_old) {
-        const guildTitleLog = new this.LogModel({
-          root_id: updated._id,
-          root_history: [updated._id],
-          // GM title withdraw from
-          original: `${member_old._id}:${member_old.id}`,
-          // GM title claimed by
-          updated: `${member_new._id}:${member_old.id}`,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.TITLE,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmWithdrawTitleLog = new this.LogModel({
-          root_id: member_new._id,
-          root_history: [member_new._id],
-          original: ' ',
-          // GM title withdraw from
-          updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`,
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TITLE,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmClaimTitleLog = new this.LogModel({
-          root_id: member_old._id,
-          root_history: [member_old._id],
-          // GM title claimed by
-          original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`,
-          updated: ' ',
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TITLE,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        block.push(guildTitleLog, gmWithdrawTitleLog, gmClaimTitleLog);
-
-        this.logger.debug(`gm: guild (${updated._id}) | ${ACTION_LOG.TITLE}`);
-        return block;
-      }
-
-      if (!gm_character_old.hash_a || !gm_character_new.hash_a) {
-        // Transfer title
-        const guildTitleLog = new this.LogModel({
-          root_id: updated._id,
-          root_history: [updated._id],
-          // GM title withdraw from
-          original: `${member_old._id}:${member_old.id}`,
-          // GM title claimed by
-          updated: `${member_new._id}:${member_old.id}`,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.TITLE,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmWithdrawTitleLog = new this.LogModel({
-          root_id: member_new._id,
-          root_history: [member_new._id],
-          original: ' ',
-          updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM title withdraw from
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TITLE,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmClaimTitleLog = new this.LogModel({
-          root_id: member_old._id,
-          root_history: [member_old._id],
-          original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM title claimed by
-          updated: ' ',
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TITLE,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        block.push(guildTitleLog, gmWithdrawTitleLog, gmClaimTitleLog);
-
-        this.logger.debug(`gm: guild (${updated._id}) | ${ACTION_LOG.TITLE}`);
-        return block;
-      }
-
-      if (gm_character_old.hash_a === gm_character_new.hash_a) {
-        // Inherit title
-        const guildInheritLog = new this.LogModel({
-          root_id: updated._id,
-          root_history: [updated._id],
-          // GM Title transferred from
-          original: `${member_old._id}:${member_old.id}`,
-          // GM Title transferred to
-          updated: `${member_new._id}:${member_new.id}`,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.INHERIT,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmTitleReceivedLog = new this.LogModel({
-          root_id: member_new._id,
-          root_history: [member_new._id],
-          original: ' ',
-          // GM Title received from
-          updated: `${updated._id}:${updated.id}//${member_old._id}:${member_old.id}`,
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.INHERIT,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmTitleTransferredLog = new this.LogModel({
-          root_id: member_old._id,
-          root_history: [member_old._id],
-          // GM Title transferred to
-          original: `${updated._id}:${updated.id}//${member_new._id}:${member_new.id}`,
-          updated: ' ',
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.INHERIT,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        block.push(guildInheritLog, gmTitleReceivedLog, gmTitleTransferredLog);
-
-        this.logger.debug(`gm: guild (${updated._id}) | ${ACTION_LOG.INHERIT}`);
-      }
-
-      if (gm_character_old.hash_a !== gm_character_new.hash_a) {
-        // Transfer ownership
-
-        const guildOwnershipLog = new this.LogModel({
-          root_id: updated._id,
-          root_history: [updated._id],
-          original: `${member_old._id}:${member_old.id}`, // GM ownership withdraw from
-          updated: `${member_new._id}:${member_old.id}`, // GM ownership claimed by
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.OWNERSHIP,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmOwnershipWithdrawLog = new this.LogModel({
-          root_id: member_new._id,
-          root_history: [member_new._id],
-          original: ' ',
-          updated: `${updated.name}@${updated.realm_name}:${updated.id}//${member_old._id}:${member_old.id}`, //GM ownership withdraw from
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.OWNERSHIP,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        const gmOwnershipClaimedLog = new this.LogModel({
-          root_id: member_old._id,
-          root_history: [member_old._id],
-          original: `${updated.name}@${updated.realm_name}:${updated.id}//${member_new._id}:${member_new.id}`, ////GM ownership claimed by
-          updated: ' ',
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.OWNERSHIP,
-          t0: original.last_modified || now,
-          t1: updated.last_modified || now,
-        });
-
-        block.push(guildOwnershipLog, gmOwnershipWithdrawLog, gmOwnershipClaimedLog);
-
-        this.logger.debug(`gm: guild (${updated._id}) | ${ACTION_LOG.OWNERSHIP}`);
-      }
-
-      return block;
-    } catch (errorException) {
-      this.logger.error(`gm: ${updated._id}:${errorException}`);
-      return block;
+      return;
     }
+
+    const [guildMasterCharacter, guildMasterUpdatedCharacter] = await Promise.all([
+      this.charactersRepository.findOneBy({
+        guid: guildMasterOriginal.characterGuid,
+        hashA: Not(IsNull()),
+      }),
+      this.charactersRepository.findOneBy({
+        guid: guildMasterUpdated.guid,
+        hashA: Not(IsNull()),
+      }),
+    ]);
+
+    const isGuildMastersHaveCharacters =
+      !!guildMasterCharacter && !!guildMasterUpdatedCharacter;
+    const logEntityGuildMasterEvents: LogsEntity[] = [];
+
+    if (isGuildMastersHaveCharacters) {
+      const isGuildMasterCharactersFamily =
+        guildMasterCharacter.hashA === guildMasterUpdatedCharacter.hashA;
+
+      const logEntityInheritGuildMaster = [
+        this.logsRepository.create({
+          guid: guildEntity.guid,
+          original: guildMasterOriginal.characterGuid,
+          updated: guildMasterUpdated.guid,
+          event: EVENT_LOG.GUILD,
+          action: isGuildMasterCharactersFamily
+            ? ACTION_LOG.INHERIT
+            : ACTION_LOG.OWNERSHIP,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+        this.logsRepository.create({
+          guid: guildEntity.guid,
+          original: guildMasterOriginal.characterGuid,
+          updated: guildMasterUpdated.guid,
+          event: EVENT_LOG.GUILD,
+          action: ACTION_LOG.TRANSIT,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+        this.logsRepository.create({
+          guid: guildMasterOriginal.characterGuid,
+          original: guildEntity.guid,
+          updated: guildEntity.guid,
+          event: EVENT_LOG.CHARACTER,
+          action: ACTION_LOG.TRANSIT,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+        this.logsRepository.create({
+          guid: guildMasterUpdated.guid,
+          original: guildEntity.guid,
+          updated: guildEntity.guid,
+          event: EVENT_LOG.CHARACTER,
+          action: isGuildMasterCharactersFamily
+            ? ACTION_LOG.INHERIT
+            : ACTION_LOG.OWNERSHIP,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+      ];
+
+      logEntityGuildMasterEvents.push(...logEntityInheritGuildMaster);
+    } else {
+      const logEntityInheritGuildMaster = [
+        this.logsRepository.create({
+          guid: guildEntity.guid,
+          original: guildMasterOriginal.characterGuid,
+          updated: guildMasterUpdated.guid,
+          event: EVENT_LOG.GUILD,
+          action: ACTION_LOG.TITLE,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+        this.logsRepository.create({
+          guid: guildEntity.guid,
+          original: guildMasterOriginal.characterGuid,
+          updated: guildMasterUpdated.guid,
+          event: EVENT_LOG.GUILD,
+          action: ACTION_LOG.TRANSIT,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+        this.logsRepository.create({
+          guid: guildMasterOriginal.characterGuid,
+          original: guildEntity.guid,
+          updated: guildEntity.guid,
+          event: EVENT_LOG.CHARACTER,
+          action: ACTION_LOG.TRANSIT,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+        this.logsRepository.create({
+          guid: guildMasterUpdated.guid,
+          original: guildEntity.guid,
+          updated: guildEntity.guid,
+          event: EVENT_LOG.CHARACTER,
+          action: ACTION_LOG.TITLE,
+          originalAt: guildEntity.updatedAt,
+          updatedAt: updatedRoster.updatedAt,
+        }),
+      ];
+
+      logEntityGuildMasterEvents.push(...logEntityInheritGuildMaster);
+    }
+
+    await this.logsRepository.save(logEntityGuildMasterEvents);
+
+    const [logEvent] = logEntityGuildMasterEvents;
+    this.logger.warn(
+      `Guild ${guildEntity.guid} action event ${logEvent.action} has been logged`,
+    );
   }
 
-  private async checkExistOrCreate(guild: IQGuild): Promise<Guild> {
-    const forceUpdate: number = guild.forceUpdate || 1000 * 60 * 60 * 4;
-    const nameSlug: string = toSlug(guild.name);
-    const now: number = new Date().getTime();
-
-    const realm = await this.RealmModel.findOne(
-      { $text: { $search: guild.realm } },
-      { score: { $meta: 'textScore' } },
-    )
-      .sort({ score: { $meta: 'textScore' } })
-      .lean();
-
-    if (!realm) {
-      throw new NotFoundException(`realm ${guild.realm} not found`);
+  private async guildExistOrCreate(
+    guild: GuildJobQueue,
+  ): Promise<GuildExistsOrCreate> {
+    const forceUpdate = guild.forceUpdate || 1000 * 60 * 60 * 4;
+    const nameSlug = toSlug(guild.name);
+    const timestampNow = new Date().getTime();
+    const realmEntity = await findRealm(this.realmsRepository, guild.realm);
+    if (!realmEntity) {
+      throw new NotFoundException(`Realm ${guild.realm} not found`);
     }
 
-    const guildExist = await this.GuildModel.findById(`${nameSlug}@${realm.slug}`);
+    const guid = toGuid(nameSlug, realmEntity.slug);
 
-    if (!guildExist) {
-      const guildNew = new this.GuildModel({
-        _id: `${nameSlug}@${realm.slug}`,
+    const guildEntity = await this.guildsRepository.findOneBy({
+      guid,
+    });
+
+    if (!guildEntity) {
+      const guildNew = this.guildsRepository.create({
+        guid: guid,
+        id: guild.id || 100,
         name: capitalize(guild.name),
-        status_code: 100,
-        realm: realm.slug,
-        realm_id: realm._id,
-        realm_name: realm.name,
-        created_by: OSINT_SOURCE.GUILD_GET,
-        updated_by: OSINT_SOURCE.GUILD_GET,
+        realm: realmEntity.slug,
+        realmId: realmEntity.id,
+        realmName: realmEntity.name,
+        statusCode: 100,
+        createdBy: OSINT_SOURCE.GUILD_GET,
+        updatedBy: OSINT_SOURCE.GUILD_GET,
       });
 
-      if (guild.created_by) guildNew.created_by = guild.created_by;
+      if (guild.createdBy) guildNew.createdBy = guild.createdBy;
 
-      return guildNew;
+      return { guildEntity: guildNew, isNew: true };
     }
 
     /**
@@ -763,78 +738,70 @@ export class GuildsWorker {
      */
     if (guild.createOnlyUnique) {
       throw new BadRequestException(
-        `${guild.iteration ? guild.iteration + ':' : ''}${
-          guild._id
-        },createOnlyUnique: ${guild.createOnlyUnique}`,
+        `createOnlyUnique: ${guild.createOnlyUnique} | ${guild.guid}`,
       );
     }
     /**
      * ...or guild was updated recently
      */
-    if (now - forceUpdate < guildExist.updatedAt.getTime()) {
+    if (timestampNow - forceUpdate < guildEntity.updatedAt.getTime()) {
       throw new GatewayTimeoutException(
-        `${guild.iteration ? guild.iteration + ':' : ''}${
-          guild._id
-        },forceUpdate: ${forceUpdate}`,
+        `forceUpdate: ${forceUpdate} | ${guild.guid}`,
       );
     }
 
-    return guildExist;
+    guildEntity.statusCode = 100;
+
+    return { guildEntity, isNew: false };
   }
 
-  private async checkDiffs(
-    original: LeanDocument<Guild>,
-    updated: Guild,
-  ): Promise<void> {
-    try {
-      const detectiveFields: string[] = ['name', 'faction'],
-        block: LeanDocument<Log>[] = [],
-        now = new Date(),
-        t0: Date = original.last_modified || original.updatedAt || now,
-        t1: Date = updated.last_modified || updated.updatedAt || now;
+  private async diffGuildEntity(original: GuildsEntity, updated: GuildsEntity) {
+    const logEntities: LogsEntity[] = [];
+    const isNameChanged = original.name !== updated.name;
+    const isFactionChanged = original.faction !== updated.faction;
 
-      await lastValueFrom(
-        from(detectiveFields).pipe(
-          mergeMap(async (check) => {
-            if (
-              check in updated &&
-              check in updated &&
-              updated[check] !== original[check]
-            ) {
-              if (check === 'name') {
-                await this.LogModel.updateMany(
-                  {
-                    root_id: updated._id,
-                  },
-                  {
-                    root_id: updated._id,
-                    $push: { root_history: updated._id },
-                  },
-                );
-              }
+    if (!isNameChanged && !isFactionChanged) {
+      this.logger.warn(`Guild ${original.guid} diffs are not detected!`);
+      return;
+    }
 
-              const guildLogCheck = new this.LogModel({
-                root_id: updated._id,
-                root_history: [updated._id],
-                action: check,
-                event: EVENT_LOG.GUILD,
-                original: original[check],
-                updated: updated[check],
-                t0: t0,
-                t1: t1,
-              });
-
-              block.push(guildLogCheck);
-            }
-          }),
-        ),
+    if (isNameChanged) {
+      await this.logsRepository.update(
+        {
+          guid: original.guid,
+        },
+        {
+          guid: updated.guid,
+        },
       );
 
-      if (block.length > 1)
-        await this.LogModel.insertMany(block, { rawResult: false });
-      this.logger.log(`diffs: ${updated._id}, blocks: ${block.length}`);
-    } catch (errorException) {
-      this.logger.error(`diffs: ${updated._id}:${errorException}`);
+      const logEntityNameChanged = this.logsRepository.create({
+        guid: updated.guid,
+        original: original.name,
+        updated: updated.name,
+        event: EVENT_LOG.GUILD,
+        action: ACTION_LOG.NAME,
+        originalAt: original.updatedAt,
+        updatedAt: updated.updatedAt,
+      });
+
+      logEntities.push(logEntityNameChanged);
     }
+
+    if (isFactionChanged) {
+      const logEntityFactionChanged = this.logsRepository.create({
+        guid: updated.guid,
+        original: original.name,
+        updated: updated.name,
+        event: EVENT_LOG.GUILD,
+        action: ACTION_LOG.FACTION,
+        originalAt: original.updatedAt,
+        updatedAt: updated.updatedAt,
+      });
+
+      logEntities.push(logEntityFactionChanged);
+    }
+
+    await this.logsRepository.save(logEntities);
   }
 }

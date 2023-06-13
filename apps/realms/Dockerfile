@@ -22,7 +22,7 @@ RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 
 RUN mv cmnw-secrets/* .
 
-RUN rmdir cmnw-secrets/
+RUN rmdir -rf cmnw-secrets
 
 COPY package.json ./
 

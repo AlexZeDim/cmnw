@@ -16,9 +16,9 @@ RUN npm install -g @nestjs/cli
 
 RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
 
-RUN git clone https://github.com/AlexZeDim/oraculum-secrets.git
+RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 
-RUN mv oraculum-secrets/* oraculum-secrets/.[^.]* . && rmdir oraculum-secrets/
+RUN mv cmnw-secrets/* cmnw-secrets/.[^.]* . && rmdir cmnw-secrets/
 
 COPY package.json ./
 

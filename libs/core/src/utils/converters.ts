@@ -1,4 +1,4 @@
-export const toGuild = (name: string, realm: string) => `${name}@${realm}`;
+export const toGuid = (name: string, realm: string) => `${name}@${realm}`;
 /**
  * @description Returns capitalized string
  * @param s {string}

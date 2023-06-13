@@ -1,4 +1,4 @@
-export * from './queue.interface';
-export * from './osint.interface';
+export * from './queue';
+export * from './osint';
 export * from './dma.interface';
 export * from './discord.interface';

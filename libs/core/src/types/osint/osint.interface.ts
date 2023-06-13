@@ -1,7 +1,3 @@
-import { LFG, OSINT_SOURCE } from '@app/core/constants';
-import { BattleNetOptions } from 'blizzapi';
-import { Guild } from '@app/mongo';
-
 export interface IWarcraftLogsActors {
   readonly type: 'NPC' | 'Player' | 'Pet';
 
@@ -18,34 +14,20 @@ export interface IWarcraftLogsToken {
   readonly access_token: string;
 }
 
-export class IQOptionsOsintIndex {
-  readonly forceUpdate: number;
-
-  readonly createOnlyUnique: boolean;
-
-  readonly iteration?: number;
-
-  readonly guildRank: boolean;
-
-  readonly created_by?: OSINT_SOURCE;
-
-  readonly updated_by: OSINT_SOURCE;
-}
-
 export interface ISelfKeyHref {
   readonly href: string;
 }
 
 export interface IGuildRoster {
   readonly members: IGuildMember[];
+  updatedAt?: Date;
 }
 
-export class IGuildMember {
-  readonly _id: string;
-
+export interface IGuildMember {
+  readonly guid: string;
   readonly id: number;
-
   readonly rank: number;
+  readonly level?: number;
 }
 
 export interface IRGuildRoster {
@@ -101,121 +83,6 @@ export interface IRGuildRoster {
 
     readonly rank: number;
   }>;
-}
-
-export class IQGuild
-  implements Pick<Guild, '_id' | 'name'>, IQOptionsOsintIndex, BattleNetOptions
-{
-  readonly _id: string;
-
-  readonly id?: number;
-
-  readonly name: string;
-
-  readonly realm: string;
-
-  readonly realm_id?: number;
-
-  readonly realm_name?: string;
-
-  readonly faction?: string;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
-
-  readonly created_by?: OSINT_SOURCE;
-
-  readonly updated_by: OSINT_SOURCE;
-
-  readonly forceUpdate: number;
-
-  readonly createOnlyUnique: boolean;
-
-  readonly iteration?: number;
-
-  readonly last_modified?: Date;
-
-  readonly guildRank: boolean;
-}
-
-export class IQCharacter implements BattleNetOptions, IQOptionsOsintIndex {
-  readonly _id: string;
-
-  readonly name: string;
-
-  readonly realm: string;
-
-  readonly guild?: string;
-
-  readonly guild_guid?: number;
-
-  readonly guild_id?: string;
-
-  readonly created_by?: OSINT_SOURCE;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
-
-  readonly updated_by: OSINT_SOURCE;
-
-  readonly guildRank: boolean;
-
-  readonly createOnlyUnique: boolean;
-
-  readonly forceUpdate: number;
-
-  readonly iteration?: number;
-
-  readonly looking_for_guild?: LFG;
-
-  readonly updateRIO?: boolean;
-
-  readonly updateWCL?: boolean;
-
-  readonly updateWP?: boolean;
-
-  readonly race?: string;
-
-  readonly level?: number;
-
-  readonly faction?: string;
-
-  readonly gender?: string;
-
-  readonly character_class?: string;
-
-  readonly last_modified?: Date;
-
-  readonly active_spec?: string;
-}
-
-export interface IRealm {
-  id: number;
-  slug: string;
-  name?: string;
-  category?: string;
-  race?: string;
-  timezone?: string;
-  ticker?: string;
-  locale?: string;
-  name_locale?: string;
-  slug_locale?: string;
-  has_queue?: boolean;
-  wcl_id?: number;
-  connected_realm_id?: number;
-  population_status?: string;
-  status?: string;
-  connected_realms?: string[];
 }
 
 export interface Locales {
@@ -297,62 +164,78 @@ export interface IMedia {
   'main-raw': string;
 }
 
-export interface IidName {
-  _id: number;
+export interface IMountsNameWithId {
+  mount: INameWithId;
+}
+
+export interface INameWithId {
+  id: number;
   name: string;
 }
 
 export interface IMounts {
-  mounts: IidName[];
-  mounts_score: number;
+  mounts: INameWithId[];
+  mountsNumber: number;
 }
 
 export interface IPets {
-  pets: IidName[];
-  pets_score: number;
-  hash_b: string;
-  hash_a: string;
+  pets: INameWithId[];
+  petsNumber: number;
+  hashB: string;
+  hashA: string;
+}
+
+export interface IPetType {
+  id: number;
+  species: { name: string };
+  name: string;
+  is_active: boolean;
+  level: string | number;
 }
 
 export interface IProfession {
   name: string;
   id: number;
   tier: string;
-  skill_points: number;
-  max_skill_points: number;
+  skillPoints: number;
+  maxSkillPoints: number;
 }
 
 export interface IProfessions {
   professions: Partial<IProfession>[];
 }
 
+export interface IRaidProgressRIO {
+  id: string;
+  progress: string;
+}
+
 export interface IRaiderIO {
-  raid_progress: { _id: string; progress: string }[];
-  rio_score: number;
+  raidProgress: Array<IRaidProgressRIO>;
+  rioScore: number;
 }
 
 export interface ICharacterSummary {
   gender: string;
   faction: string;
   race: string;
-  character_class: string;
-  active_spec: string;
-  realm_id: number;
-  realm_name: string;
+  class: string;
+  specialization: string;
+  realmId: number;
+  realmName: string;
   realm: string;
-  guild_id: string;
+  guildId: number;
   guild: string;
-  guild_guid: number;
-  guild_rank: number;
+  guildGuid: string;
+  guildRank: number;
   level: number;
-  achievement_points: number;
-  last_modified: number;
-  average_item_level: number;
-  equipped_item_level: number;
-  chosen_covenant: string;
-  renown_level: number;
-  status_code: number;
-  hash_t: string;
+  achievementPoints: number;
+  lastModified: number;
+  averageItemLevel: number;
+  equippedItemLevel: number;
+  covenantId: string;
+  statusCode: number;
+  hashT: string;
 }
 
 export interface ICharacterStatus {
@@ -363,16 +246,16 @@ export interface ICharacterStatus {
 }
 
 export interface IWowProgress {
-  battle_tag: string;
+  battleTag: string;
   transfer: boolean;
-  days_from: number;
-  days_to: number;
+  daysFrom: number;
+  daysTo: number;
   role: string;
   languages: string[];
 }
 
 export interface IWarcraftLog {
-  wcl_percentile: number;
+  wclMythicPercentile: number;
 }
 
 export interface IWarcraftLogsConfig {
@@ -388,18 +271,28 @@ export interface ICharactersExported {
   readonly server: string;
 }
 
+export interface ICharacterGuildMember {
+  guid: string;
+  id: number;
+  name: string;
+  guildNameSlug: string;
+  rank: number;
+  level: number | null;
+  class: string | null;
+}
+
 export interface IGuildSummary {
   id: number;
   name: string;
   faction: string;
-  achievement_points: number;
-  member_count: number;
-  realm_id: number;
+  achievementPoints: number;
+  membersCount: number;
+  realmId: number;
   realm: string;
-  realm_name: string;
-  created_timestamp: number;
-  status_code: number;
-  last_modified: Date;
+  realmName: string;
+  createdTimestamp: number;
+  statusCode: number;
+  lastModified: Date;
 }
 
 export interface ICharacterWpLfg {

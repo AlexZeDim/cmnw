@@ -1,4 +1,4 @@
-export const MAX_LEVEL = 60;
+export const MAX_LEVEL = 70;
 
 export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
@@ -324,6 +324,7 @@ export const PLAYABLE_CLASS: Map<number, string> = new Map([
   [10, 'Monk'],
   [11, 'Druid'],
   [12, 'Demon Hunter'],
+  [13, 'Evoker'],
 ]);
 
 export const CHARACTER_CLASS: string[] = [
@@ -339,6 +340,7 @@ export const CHARACTER_CLASS: string[] = [
   'Shaman',
   'Warlock',
   'Warrior',
+  'Evoker',
 ];
 
 export const COVENANTS: string[] = ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord'];
@@ -351,18 +353,24 @@ export enum FACTION {
 }
 
 export enum EVENT_LOG {
-  GUILD = 'guild',
-  CHARACTER = 'character',
+  GUILD = 'GUILD',
+  CHARACTER = 'CHARACTER',
 }
 
 export enum ACTION_LOG {
-  PROMOTE = 'promote',
-  DEMOTE = 'demote',
-  JOIN = 'join',
-  LEAVE = 'leave',
-  INHERIT = 'inherit',
-  OWNERSHIP = 'ownership',
-  TITLE = 'title',
+  PROMOTE = 'PROMOTE',
+  DEMOTE = 'DEMOTE',
+  JOIN = 'JOIN',
+  LEAVE = 'LEAVE',
+  TRANSIT = 'TRANSIT',
+  INHERIT = 'INHERIT',
+  OWNERSHIP = 'OWNERSHIP',
+  TITLE = 'TITLE',
+  NAME = 'NAME',
+  TRANSFER = 'TRANSFER',
+  RACE = 'RACE',
+  GENDER = 'GENDER',
+  FACTION = 'FACTION',
 }
 
 export enum ALIAS_KEY {

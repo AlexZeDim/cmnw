@@ -16,7 +16,7 @@ export const SWAGGER_CHARACTER_FACTION: ApiPropertyOptions = {
   type: String,
   enum: FACTION,
   required: false,
-  example: FACTION.A
+  example: FACTION.A,
 };
 
 export const SWAGGER_CHARACTER_AVGILVL: ApiPropertyOptions = {
@@ -79,7 +79,7 @@ export const SWAGGER_CHARACTER_LANGUAGES: ApiPropertyOptions = {
   type: String,
   isArray: true,
   required: false,
-  example: ['russian']
+  example: ['russian'],
 };
 
 export const SWAGGER_REALMS_LOCALE: ApiPropertyOptions = {
@@ -87,7 +87,7 @@ export const SWAGGER_REALMS_LOCALE: ApiPropertyOptions = {
   description: 'Locale realm group string',
   type: String,
   required: false,
-  example: 'en_GB'
+  example: 'en_GB',
 };
 
 export const SWAGGER_CHARACTER_REALMS: ApiPropertyOptions = {
@@ -96,7 +96,7 @@ export const SWAGGER_CHARACTER_REALMS: ApiPropertyOptions = {
   type: [String],
   isArray: true,
   required: false,
-  example: ['gordunni']
+  example: ['gordunni'],
 };
 
 export const SWAGGER_CHARACTER_HASH: ApiPropertyOptions = {
@@ -135,7 +135,8 @@ export const SWAGGER_REALM_NAME: ApiPropertyOptions = {
 
 export const SWAGGER_REALM_SLUG: ApiPropertyOptions = {
   name: 'slug',
-  description: 'Realm slug for server as required by Blizzard, lowercased, without spaces',
+  description:
+    'Realm slug for server as required by Blizzard, lowercased, without spaces',
   type: String,
   required: false,
   example: 'gordunni',
@@ -155,12 +156,12 @@ export const SWAGGER_REALM_CONNECTED_REALM_ID: ApiPropertyOptions = {
   type: Number,
   required: false,
   example: 1602,
-}
+};
 
 export const SWAGGER_CHARACTER_CLASS: ApiPropertyOptions = {
   name: 'character_class',
   description: 'Unique playable character class',
   required: false,
   type: String,
-  example: 'rogue'
-}
+  example: 'rogue',
+};

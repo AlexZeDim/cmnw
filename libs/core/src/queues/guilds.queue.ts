@@ -13,7 +13,7 @@ export const guildsQueue: IQueue = {
     limiter: {
       max: 5,
       duration: 1000,
-    }
+    },
   },
   options: {
     defaultJobOptions: queueOptions,

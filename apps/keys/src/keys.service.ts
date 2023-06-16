@@ -9,7 +9,7 @@ import { HttpService } from '@nestjs/axios';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
-import { ArrayContains, In, Repository } from "typeorm";
+import { ArrayContains, Repository } from 'typeorm';
 
 @Injectable()
 export class KeysService implements OnApplicationBootstrap {
@@ -99,8 +99,8 @@ export class KeysService implements OnApplicationBootstrap {
             grant_type: 'client_credentials',
           },
           auth: {
-            username: '947f1d2f-0ea7-434d-8856-37b6786e2cf9',
-            password: 'iqpacAIt8ds3qfOhVn3gTakbvqumlMgLJqV6bsrb',
+            username: keyEntity.client,
+            password: keyEntity.secret,
           },
         });
 

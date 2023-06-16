@@ -51,11 +51,14 @@ export class RealmsService implements OnApplicationBootstrap {
         accessToken: keyEntity.token,
       });
 
-      const { realms: realmList } = await this.BNet.query('/data/wow/realm/index', {
-        timeout: 10000,
-        params: { locale: 'en_GB' },
-        headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-      });
+      const { realms: realmList }: Record<string, any> = await this.BNet.query(
+        '/data/wow/realm/index',
+        {
+          timeout: 10000,
+          params: { locale: 'en_GB' },
+          headers: { 'Battlenet-Namespace': 'dynamic-eu' },
+        },
+      );
 
       for (const { id, name, slug } of realmList) {
         this.logger.log(`${id}:${name}`);

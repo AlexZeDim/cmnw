@@ -1,7 +1,6 @@
 import { Model } from 'mongoose';
-import { Auction, Contract, Gold } from '@app/mongo';
+import { Auction, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
-import { BattleNetOptions } from 'blizzapi';
 
 class ItemNames {
   en_US: string;
@@ -79,7 +78,7 @@ export class IAAuctionOrders {
   readonly orders_t1: IAAuctionOrder[];
 }
 
-export class IQPricing implements BattleNetOptions {
+export class IQPricing {
   readonly recipe_id: number;
 
   readonly profession: string | number;
@@ -95,7 +94,7 @@ export class IQPricing implements BattleNetOptions {
   readonly accessToken: string;
 }
 
-export class IQItem implements BattleNetOptions {
+export class IQItem {
   readonly _id: number;
 
   readonly region: string;
@@ -107,7 +106,7 @@ export class IQItem implements BattleNetOptions {
   readonly accessToken: string;
 }
 
-export class IQAuction implements BattleNetOptions {
+export class IQAuction {
   readonly connected_realm_id?: number;
 
   auctions?: number;

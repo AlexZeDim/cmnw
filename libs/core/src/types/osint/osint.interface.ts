@@ -147,13 +147,40 @@ export interface IConnectedRealm {
     name: string;
   };
   population: {
+    type: string;
     name: string;
   };
   realms: [
     {
+      id: number;
+      region: {
+        key: {
+          href: string;
+        };
+        name: string;
+        id: number;
+      };
+      connected_realm: {
+        href: string;
+      };
+      name: string;
+      category: string;
+      locale: string;
+      timezone: string;
+      type: {
+        type: string;
+        name: string;
+      };
+      is_tournament: boolean;
       slug: string;
     },
   ];
+  mythic_leaderboards: {
+    href: string;
+  };
+  auctions: {
+    href: string;
+  };
 }
 
 export interface IMedia {

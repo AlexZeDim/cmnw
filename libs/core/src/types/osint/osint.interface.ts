@@ -201,7 +201,6 @@ export interface INameWithId {
 }
 
 export interface IMounts {
-  mounts: INameWithId[];
   mountsNumber: number;
 }
 

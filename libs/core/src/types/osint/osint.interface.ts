@@ -31,57 +31,57 @@ export interface IGuildMember {
 }
 
 export interface IRGuildRoster {
-  readonly _links: {
-    readonly self: ISelfKeyHref;
+  _links: {
+    self: ISelfKeyHref;
   };
 
-  readonly guild: {
-    readonly key: ISelfKeyHref;
-    readonly name: string;
+  guild: {
+    key: ISelfKeyHref;
+    name: string;
 
-    readonly id: number;
+    id: number;
 
-    readonly realm: {
-      readonly key: ISelfKeyHref;
+    realm: {
+      key: ISelfKeyHref;
 
-      readonly name: string;
-      readonly id: number;
-      readonly slug: string;
+      name: string;
+      id: number;
+      slug: string;
     };
   };
 
-  readonly faction: {
-    readonly type: string;
-    readonly name: string;
+  faction: {
+    type: string;
+    name: string;
   };
 
-  readonly members: Array<{
-    readonly character: {
-      readonly key: ISelfKeyHref;
+  members: Array<{
+    character: {
+      key: ISelfKeyHref;
 
-      readonly name: string;
-      readonly id: number;
-      readonly realm: {
-        readonly key: ISelfKeyHref;
+      name: string;
+      id: number;
+      realm: {
+        key: ISelfKeyHref;
 
-        readonly id: number;
-        readonly slug: string;
+        id: number;
+        slug: string;
       };
-      readonly level: number;
-      readonly playable_class: {
-        readonly key: ISelfKeyHref;
+      level: number;
+      playable_class: {
+        key: ISelfKeyHref;
 
-        readonly id: number;
+        id: number;
       };
 
-      readonly playable_race: {
-        readonly key: ISelfKeyHref;
+      playable_race: {
+        key: ISelfKeyHref;
 
-        readonly id: number;
+        id: number;
       };
     };
 
-    readonly rank: number;
+    rank: number;
   }>;
 }
 
@@ -206,7 +206,6 @@ export interface IMounts {
 }
 
 export interface IPets {
-  pets: INameWithId[];
   petsNumber: number;
   hashB: string;
   hashA: string;
@@ -215,7 +214,7 @@ export interface IPets {
 export interface IPetType {
   id: number;
   species: { name: string };
-  name: string;
+  name?: string;
   is_active: boolean;
   level: string | number;
 }

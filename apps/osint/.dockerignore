@@ -1,6 +1,6 @@
 .git*
 node_modules
-Dockerfile
+x86.Dockerfile
 local.Dockerfile
 docker-compose.db.yaml
 docker-compose.oraculum.yaml

@@ -1,9 +1,9 @@
-FROM node:lts
+FROM arm64v8/node:lts-alpine
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
-LABEL org.opencontainers.image.title = "Keys"
+LABEL org.opencontainers.image.title = "Osint"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
 LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
@@ -29,9 +29,9 @@ RUN yarn install
 COPY . .
 
 RUN npm install -g @nestjs/cli
-RUN nest build keys
+RUN nest build osint
 
-CMD wait && ["node", "dist/apps/keys/main.js"]
+CMD wait && ["node", "dist/apps/osint/main.js"]
 
 
 

@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   osint:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/osint/main.js' ]
     deploy:
@@ -10,21 +10,21 @@ services:
       - NODE_ENV=${NODE_ENV}
 
   keys:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/keys:latest
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   realms:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/realms:latest
     restart: always
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   characters:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/characters:latest
     restart: always
     command: [ 'node', 'dist/apps/characters/main.js' ]
     environment:

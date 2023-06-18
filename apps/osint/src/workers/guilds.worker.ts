@@ -36,6 +36,7 @@ import {
   IGuildRoster,
   IGuildSummary,
   IRGuildRoster,
+  isGuildRoster,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
   PLAYABLE_CLASS,
@@ -445,7 +446,9 @@ export class GuildsWorker {
       summary.statusCode = 200;
       return summary;
     } catch (errorException) {
-      this.logger.error(`summary: ${guildNameSlug}@${realmSlug}:${errorException}`);
+      this.logger.error(
+        `getSummary: ${guildNameSlug}@${realmSlug}:${errorException}`,
+      );
       return summary;
     }
   }
@@ -458,7 +461,7 @@ export class GuildsWorker {
     try {
       const guildNameSlug = toSlug(guildEntity.name);
 
-      const { members }: Partial<IRGuildRoster> = await BNet.query(
+      const response = await BNet.query<Readonly<IRGuildRoster>>(
         `/data/wow/guild/${guildEntity.realm}/${guildNameSlug}/roster`,
         {
           timeout: OSINT_TIMEOUT_TOLERANCE,
@@ -467,12 +470,10 @@ export class GuildsWorker {
         },
       );
 
-      if (!members || members.length === 0) {
-        return roster;
-      }
+      if (!isGuildRoster(response)) return roster;
 
       await lastValueFrom(
-        from(members).pipe(
+        from(response.members).pipe(
           mergeMap(async (member) => {
             try {
               const isMember = 'character' in member && 'rank' in member;
@@ -507,7 +508,7 @@ export class GuildsWorker {
                     lastModified: guildEntity.lastModified,
                     updatedBy: OSINT_SOURCE.GUILD_ROSTER,
                     createdBy: OSINT_SOURCE.GUILD_ROSTER,
-                    accessToken: BNet.accessToken,
+                    accessToken: BNet.accessTokenObject.access_token,
                     clientId: BNet.clientId,
                     clientSecret: BNet.clientSecret,
                     createOnlyUnique: false,

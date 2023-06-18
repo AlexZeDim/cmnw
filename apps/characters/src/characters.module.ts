@@ -2,11 +2,20 @@ import { Module } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, RealmsSchema } from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import {
+  Character,
+  CharactersSchema,
+  Key,
+  KeysSchema,
+  Log,
+  LogsSchema,
+  Realm,
+  RealmsSchema,
+} from '@app/mongo';
 
 @Module({
   imports: [
@@ -23,7 +32,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       { name: Log.name, schema: LogsSchema },
       { name: Key.name, schema: KeysSchema },
       { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema }
+      { name: Character.name, schema: CharactersSchema },
     ]),
     BullModule.forRoot({
       options: {
@@ -34,7 +43,10 @@ import { RedisModule } from '@nestjs-modules/ioredis';
         },
       },
     }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      queueName: charactersQueue.name,
+      options: charactersQueue.options,
+    }),
   ],
   controllers: [],
   providers: [CharactersService],

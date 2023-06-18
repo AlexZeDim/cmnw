@@ -6,8 +6,9 @@ import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { snakeCase } from 'snake-case';
+import { In, Repository } from 'typeorm';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { difference, get } from 'lodash';
 import {
   BadRequestException,
   GatewayTimeoutException,
@@ -23,10 +24,9 @@ import {
   CharacterStatus,
   EVENT_LOG,
   CharacterJobQueue,
-  ICharacterSummary,
-  IMedia,
+  CharacterSummary,
+  Media,
   IMounts,
-  IMountsNameWithId,
   IPets,
   IPetType,
   IProfessions,
@@ -38,6 +38,16 @@ import {
   OSINT_TIMEOUT_TOLERANCE,
   toSlug,
   findRealm,
+  toGuid,
+  isPetsCollection,
+  isMountCollection,
+  BlizzardApiPetsCollection,
+  isCharacterSummary,
+  BlizzardApiCharacterSummary,
+  CHARACTER_SUMMARY_FIELD_MAPPING,
+  BlizzardApiCharacterMedia,
+  isCharacterMedia,
+  CHARACTER_MEDIA_FIELD_MAPPING,
 } from '@app/core';
 
 import {
@@ -146,8 +156,8 @@ export class CharactersWorker {
         const [summary, petsCollection, mountsCollection, media] =
           await Promise.allSettled([
             this.getSummary(nameSlug, characterEntity.realm, this.BNet),
-            this.getPets(nameSlug, characterEntity.realm, this.BNet),
-            this.getMounts(nameSlug, characterEntity.realm, this.BNet),
+            this.getPets(nameSlug, characterEntity.realm, this.BNet, true),
+            this.getMounts(nameSlug, characterEntity.realm, this.BNet, true),
             // this.getProfessions(nameSlug, characterEntity.realm, this.BNet),
             this.getMedia(nameSlug, characterEntity.realm, this.BNet),
           ]);
@@ -205,13 +215,15 @@ export class CharactersWorker {
        * only if characterEntityOriginal exists
        */
       if (!isNew) {
-        if (characterEntityOriginal.guildGuid !== characterEntity.guildGuid) {
-          if (!characterEntity.guildId) {
-            characterEntity.guildGuid = undefined;
-            characterEntity.guild = undefined;
-            characterEntity.guildRank = undefined;
-            characterEntity.guildId = undefined;
-          }
+        const isUserNotGuildMember =
+          characterEntityOriginal.guildGuid !== characterEntity.guildGuid &&
+          !characterEntity.guildId;
+
+        if (isUserNotGuildMember) {
+          characterEntity.guildGuid = null;
+          characterEntity.guild = null;
+          characterEntity.guildRank = null;
+          characterEntity.guildId = null;
         }
         await this.diffCharacterEntity(characterEntityOriginal, characterEntity);
         await job.updateProgress(90);
@@ -220,9 +232,9 @@ export class CharactersWorker {
       await this.charactersRepository.save(characterEntity);
       await job.updateProgress(100);
       return characterEntity.statusCode;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${CharactersWorker.name}: ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(`${CharactersWorker.name}: ${errorOrException}`);
       return 500;
     }
   }
@@ -331,16 +343,17 @@ export class CharactersWorker {
       characterStatus.statusCode = 201;
 
       return characterStatus;
-    } catch (errorException) {
-      if (errorException.response) {
-        if (errorException.response.data && errorException.response.data.code) {
-          characterStatus.statusCode = errorException.response.data.code;
+    } catch (errorOrException) {
+      if (errorOrException.response) {
+        if (errorOrException.response.data && errorOrException.response.data.code) {
+          characterStatus.statusCode = errorOrException.response.data.code;
         }
       }
       if (status)
         throw new NotFoundException(
           `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
         );
+
       return characterStatus;
     }
   }
@@ -349,10 +362,10 @@ export class CharactersWorker {
     nameSlug: string,
     realmSlug: string,
     BNet: BlizzAPI,
-  ): Promise<Partial<IMedia>> {
-    const media: Partial<IMedia> = {};
+  ): Promise<Partial<Media>> {
+    const media: Partial<Media> = {};
     try {
-      const response: Record<string, any> = await BNet.query(
+      const response = await BNet.query<BlizzardApiCharacterMedia>(
         `/profile/wow/character/${realmSlug}/${nameSlug}/character-media`,
         {
           params: { locale: 'en_GB' },
@@ -361,20 +374,18 @@ export class CharactersWorker {
         },
       );
 
-      if (!response || !response.assets) return media;
+      if (!isCharacterMedia(response)) return media;
 
-      if (response.character && response.character.id)
-        media.id = response.character.id;
-
-      const assets: { key: string; value: string }[] = response.assets;
+      const { assets } = response;
 
       assets.map(({ key, value }) => {
-        media[key] = value;
+        if (!CHARACTER_MEDIA_FIELD_MAPPING.has(key)) return;
+        media[CHARACTER_MEDIA_FIELD_MAPPING.get(key)] = value;
       });
 
       return media;
-    } catch (errorException) {
-      this.logger.error(`media: ${nameSlug}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${errorOrException}`);
       return media;
     }
   }
@@ -383,10 +394,14 @@ export class CharactersWorker {
     nameSlug: string,
     realmSlug: string,
     BNet: BlizzAPI,
+    isIndex = false,
   ): Promise<Partial<IMounts>> {
     const mountsCollection: Partial<IMounts> = {};
     try {
-      const response: Record<string, any> = await BNet.query(
+      const mountEntities: Array<MountsEntity> = [];
+      const characterMountsEntities: Array<CharactersMountsEntity> = [];
+
+      const response = await BNet.query(
         `/profile/wow/character/${realmSlug}/${nameSlug}/collections/mounts`,
         {
           params: { locale: 'en_GB' },
@@ -395,27 +410,75 @@ export class CharactersWorker {
         },
       );
 
-      if (!response || !response.mounts || !response.mounts.length)
-        return mountsCollection;
+      if (!isMountCollection(response)) return mountsCollection;
 
       const { mounts } = response;
 
-      mountsCollection.mounts = [];
+      const characterGuid = toGuid(nameSlug, realmSlug);
 
-      mounts.forEach((m: Partial<IMountsNameWithId>) => {
-        if (m.mount) {
-          mountsCollection.mounts.push({
-            id: m.mount.id,
-            name: m.mount.name,
-          });
-        }
+      const charactersMountEntities = await this.charactersMountsRepository.findBy({
+        characterGuid,
+      });
+
+      const updatedMountIds = new Set<number>();
+      const originalMountIds = new Set(
+        charactersMountEntities.map((charactersMount) => charactersMount.mountId),
+      );
+
+      await lastValueFrom(
+        from(response.mounts).pipe(
+          mergeMap(async (mount) => {
+            const isAddedToCollection = originalMountIds.has(mount.mount.id);
+            updatedMountIds.add(mount.mount.id);
+
+            if (isIndex) {
+              const isMountExists = await this.mountsRepository.exist({
+                where: { id: mount.mount.id },
+              });
+
+              if (!isMountExists) {
+                const mountEntity = this.mountsRepository.create({
+                  id: mount.mount.id,
+                  name: mount.mount.name,
+                });
+
+                mountEntities.push(mountEntity);
+              }
+            }
+
+            if (!isAddedToCollection) {
+              const characterMountEntity = this.charactersMountsRepository.create({
+                mountId: mount.mount.id,
+                characterGuid,
+              });
+
+              characterMountsEntities.push(characterMountEntity);
+            }
+          }),
+        ),
+      );
+
+      const isNewEntityPets = Boolean(isIndex && mountEntities.length);
+      if (isNewEntityPets) {
+        await this.charactersMountsRepository.save(mountEntities);
+      }
+
+      const removeMountIds = difference(
+        Array.from(originalMountIds),
+        Array.from(updatedMountIds),
+      );
+
+      await this.charactersMountsRepository.save(characterMountsEntities);
+      await this.charactersMountsRepository.delete({
+        characterGuid: characterGuid,
+        mountId: In(removeMountIds),
       });
 
       mountsCollection.mountsNumber = mounts.length;
 
       return mountsCollection;
-    } catch (errorException) {
-      this.logger.error(`mounts: ${nameSlug}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${errorOrException}`);
       return mountsCollection;
     }
   }
@@ -424,12 +487,15 @@ export class CharactersWorker {
     nameSlug: string,
     realmSlug: string,
     BNet: BlizzAPI,
+    isIndex = false,
   ): Promise<Partial<IPets>> {
     const petsCollection: Partial<IPets> = {};
     try {
-      const hashB: string[] = [];
-      const hashA: string[] = [];
-      const response: Record<string, any> = await BNet.query(
+      const hashB: Array<string | number> = [];
+      const hashA: Array<string | number> = [];
+      const characterPetsEntities: Array<CharactersPetsEntity> = [];
+      const petsEntities: Array<PetsEntity> = [];
+      const response = await BNet.query<BlizzardApiPetsCollection>(
         `/profile/wow/character/${realmSlug}/${nameSlug}/collections/pets`,
         {
           params: { locale: 'en_GB' },
@@ -438,36 +504,106 @@ export class CharactersWorker {
         },
       );
 
-      if (!response || !response.pets || !response.pets.length)
-        return petsCollection;
+      if (!isPetsCollection(response)) return petsCollection;
 
       const { pets } = response;
 
-      petsCollection.pets = [];
+      const characterGuid = toGuid(nameSlug, realmSlug);
 
-      pets.forEach((pet: IPetType) => {
-        petsCollection.pets.push({
-          id: pet.id,
-          name: pet.species.name,
-        });
-        if ('is_active' in pet) {
-          if ('name' in pet) hashA.push(pet.name);
-          hashA.push(pet.species.name, pet.level.toString());
-        }
-        if ('name' in pet) hashB.push(pet.name);
-        hashB.push(pet.species.name, pet.level.toString());
+      const charactersPetsEntities = await this.charactersPetsRepository.findBy({
+        characterGuid,
+      });
+
+      const updatedPetIds = new Set<number>();
+      const originalPetIds = new Set(
+        charactersPetsEntities.map((charactersPet) => charactersPet.petId),
+      );
+
+      await lastValueFrom(
+        from(response.pets).pipe(
+          mergeMap(async (pet: IPetType) => {
+            try {
+              const isAddedToCollection = originalPetIds.has(pet.id);
+              const isNamed = 'name' in pet;
+
+              updatedPetIds.add(pet.id);
+
+              const petName = isNamed ? pet.name : pet.species.name;
+              const petLevel = Number(pet.level) || 1;
+              const isActive = 'is_active' in pet;
+              if (isActive) {
+                hashA.push(
+                  isNamed
+                    ? `${pet.name}.${pet.species.name}`
+                    : `${pet.species.name}`,
+                  pet.level,
+                );
+              }
+
+              hashB.push(
+                isNamed ? `${pet.name}.${pet.species.name}` : `${pet.species.name}`,
+                pet.level,
+              );
+
+              if (isIndex) {
+                const isPetExists = await this.petsRepository.exist({
+                  where: { id: pet.id },
+                });
+
+                if (!isPetExists) {
+                  const petEntity = this.petsRepository.create({
+                    id: pet.id,
+                    name: pet.species.name,
+                  });
+
+                  petsEntities.push(petEntity);
+                }
+              }
+
+              if (!isAddedToCollection) {
+                const characterPetEntity = this.charactersPetsRepository.create({
+                  petId: pet.id,
+                  characterGuid,
+                  petName,
+                  petLevel,
+                  isActive,
+                });
+
+                characterPetsEntities.push(characterPetEntity);
+              }
+            } catch (error) {
+              this.logger.error(error);
+            }
+          }, 5),
+        ),
+      );
+
+      const isNewEntityPets = Boolean(isIndex && petsEntities.length);
+      if (isNewEntityPets) {
+        await this.charactersPetsRepository.save(petsEntities);
+      }
+
+      const removePetIds = difference(
+        Array.from(originalPetIds),
+        Array.from(updatedPetIds),
+      );
+
+      await this.charactersPetsRepository.save(characterPetsEntities);
+      await this.charactersPetsRepository.delete({
+        characterGuid: characterGuid,
+        petId: In(removePetIds),
       });
 
       petsCollection.petsNumber = pets.length;
 
       if (hashB.length)
-        petsCollection.hashB = BigInt(hash64(hashB.toString())).toString(16);
+        petsCollection.hashB = BigInt(hash64(hashB.join('.'))).toString(16);
       if (hashA.length)
-        petsCollection.hashA = BigInt(hash64(hashA.toString())).toString(16);
+        petsCollection.hashA = BigInt(hash64(hashA.join('.'))).toString(16);
 
       return petsCollection;
     } catch (error) {
-      this.logger.error(`pets: ${nameSlug}@${realmSlug}:${error}`);
+      this.logger.error(`getPets: ${nameSlug}@${realmSlug}:${error}`);
       return petsCollection;
     }
   }
@@ -595,10 +731,10 @@ export class CharactersWorker {
     name_slug: string,
     realm_slug: string,
     BNet: BlizzAPI,
-  ): Promise<Partial<ICharacterSummary>> {
-    const summary: Partial<ICharacterSummary> = {};
+  ): Promise<Partial<CharacterSummary>> {
+    const summary: Partial<CharacterSummary> = {};
     try {
-      const response: Record<string, any> = await BNet.query(
+      const response = await BNet.query<BlizzardApiCharacterSummary>(
         `/profile/wow/character/${realm_slug}/${name_slug}`,
         {
           params: { locale: 'en_GB' },
@@ -607,59 +743,31 @@ export class CharactersWorker {
         },
       );
 
-      if (!response || typeof response !== 'object') return summary;
+      if (!isCharacterSummary(response)) return summary;
 
-      const keyValueName: string[] = [
-        'gender',
-        'faction',
-        'race',
-        'character_class',
-        'active_spec',
-      ];
-      const keyValue: string[] = ['level', 'achievement_points'];
+      for (const [key, path] of CHARACTER_SUMMARY_FIELD_MAPPING.entries()) {
+        const value = get(response, path, null);
+        if (!value) continue;
+        // TODO guard type if exists
+        summary[key] = value;
+      }
 
-      Object.entries(response).map(([key, value]) => {
-        if (keyValueName.includes(key) && value !== null && value.name)
-          summary[snakeCase(key)] = value.name;
-        if (keyValue.includes(key) && value !== null) summary[key] = value;
-        if (key === 'last_login_timestamp') summary.lastModified = value;
-        if (key === 'average_item_level') summary.averageItemLevel = value;
-        if (key === 'equipped_item_level') summary.equippedItemLevel = value;
+      summary.guid = toGuid(summary.name, summary.realm);
 
-        if (key === 'guild' && value instanceof Object) {
-          if (value.id && value.name) {
-            summary.guildGuid = toSlug(`${value.name}@${realm_slug}`);
-            summary.guild = value.name;
-            summary.guildId = value.id;
-          }
-        }
-        if (key === 'realm' && value instanceof Object) {
-          if (value.id && value.name && value.slug) {
-            summary.realmId = value.id;
-            summary.realmName = value.name;
-            summary.realm = value.slug;
-          }
-        }
-        if (key === 'active_title' && value instanceof Object) {
-          if ('active_title' in value) {
-            const { active_title } = value;
-            if (active_title.id) summary.hashT = active_title.id.toString(16);
-          }
-        }
-      });
-      // TODO make sure
       if (!summary.guild) {
         summary.guildId = null;
         summary.guild = null;
         summary.guildGuid = null;
         summary.guildRank = null;
+      } else {
+        summary.guildGuid = toGuid(summary.guild, summary.realm);
       }
 
       summary.statusCode = 200;
 
       return summary;
     } catch (error) {
-      this.logger.error(`summary: ${name_slug}@${realm_slug}:${error}`);
+      this.logger.error(`getSummary: ${name_slug}@${realm_slug}:${error}`);
       return summary;
     }
   }
@@ -702,8 +810,8 @@ export class CharactersWorker {
       }
 
       return raiderIO;
-    } catch (errorException) {
-      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorOrException}`);
       return raiderIO;
     }
   }
@@ -746,8 +854,10 @@ export class CharactersWorker {
       });
 
       return wowProgress;
-    } catch (errorException) {
-      this.logger.error(`wowprogress: ${name}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(
+        `getWowProgressProfile: ${name}@${realmSlug}:${errorOrException}`,
+      );
       return wowProgress;
     }
   }
@@ -780,8 +890,8 @@ export class CharactersWorker {
       await browser.close();
 
       return warcraftLogs;
-    } catch (errorException) {
-      this.logger.error(`warcraftlogs: ${name}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getWarcraftLogs: ${name}@${realmSlug}:${errorOrException}`);
       return warcraftLogs;
     }
   }
@@ -818,8 +928,8 @@ export class CharactersWorker {
 
         await this.logsRepository.save(logEntity);
       }
-    } catch (errorException) {
-      this.logger.error(`diffs: ${original.id}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`diffCharacterEntity: ${original.guid}:${errorOrException}`);
     }
   }
 }

@@ -1,4 +1,9 @@
-import { IMountsNameWithId, IPetType } from '@app/core/types';
+import {
+  ICharacterSummary,
+  IMedia,
+  IMountsNameWithId,
+  IPetType,
+} from '@app/core/types';
 
 export type BlizzardApiStringNumber = string | number;
 
@@ -14,3 +19,7 @@ export type BlizzardApiResponse = Record<
 export type BlizzardApiPetsCollection = Record<'pets', Array<IPetType>>;
 
 export type BlizzardApiMountsCollection = Record<'mounts', Array<IMountsNameWithId>>;
+
+export type BlizzardApiCharacterSummary = Readonly<ICharacterSummary>;
+
+export type BlizzardApiCharacterMedia = Readonly<IMedia>;

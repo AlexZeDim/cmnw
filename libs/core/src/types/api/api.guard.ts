@@ -1,9 +1,12 @@
 import {
+  BlizzardApiCharacterMedia,
+  BlizzardApiCharacterSummary,
   BlizzardApiMountsCollection,
   BlizzardApiPetsCollection,
   BlizzardApiResponse,
   IRGuildRoster,
 } from '@app/core/types';
+import { response } from 'express';
 
 export const isBlizzardApiResponse = (
   response: unknown,
@@ -33,3 +36,19 @@ export const isMountCollection = (
   'mounts' in response &&
   Array.isArray(response.mounts) &&
   Boolean(response.mounts.length);
+
+export const isCharacterSummary = (
+  response: unknown,
+): response is Readonly<BlizzardApiCharacterSummary> =>
+  typeof response === 'object' &&
+  !('error' in response) &&
+  'id' in response &&
+  'name' in response;
+
+export const isCharacterMedia = (
+  response: unknown,
+): response is Readonly<BlizzardApiCharacterMedia> =>
+  typeof response === 'object' &&
+  'assets' in response &&
+  Array.isArray(response.assets) &&
+  Boolean(response.assets.length);

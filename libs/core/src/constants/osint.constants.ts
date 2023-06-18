@@ -25,7 +25,34 @@ export const RAIDS: string[] = [
 
 export const RAID_FACTIONS = ['alliance', 'horde'];
 
-export const REALM_TICKER: Map<string, string> = new Map([
+export const CHARACTER_SUMMARY_FIELD_MAPPING = new Map<string, string>([
+  ['id', 'id'],
+  ['name', 'name'],
+  ['gender', 'gender.name'],
+  ['faction', 'faction.name'],
+  ['race', 'race.name'],
+  ['class', 'character_class.name'],
+  ['specialization', 'active_spec.name'],
+  ['level', 'level'],
+  ['achievementPoints', 'achievement_points'],
+  ['averageItemLevel', 'average_item_level'],
+  ['equippedItemLevel', 'equipped_item_level'],
+  ['covenantId', 'covenant_progress.chosen_covenant.id'],
+  ['lastModified', 'last_login_timestamp'],
+  ['realmId', 'realm.id'],
+  ['realmName', 'realm.name'],
+  ['realm', 'realm.slug'],
+  ['guild', 'guild.name'],
+  ['guildId', 'guild.id'],
+]);
+
+export const CHARACTER_MEDIA_FIELD_MAPPING = new Map<string, string>([
+  ['avatar', 'avatarImage'],
+  ['main-raw', 'insetImage'],
+  ['inset', 'mainImage'],
+]);
+
+export const REALM_TICKER = new Map<string, string>([
   ['Aerie Peak', 'ARPEAK'],
   ['Bronzebeard', 'BRNZBRD'],
   ["Blade's Edge", 'BLDEDGE'],
@@ -299,7 +326,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Blackscar', 'BLKSCR'],
 ]);
 
-export const EXPANSION_LIST_ID: Map<string, string> = new Map([
+export const EXPANSION_LIST_ID = new Map<string, string>([
   ['Classic', 'CLSC'],
   ['Burning', 'TBC'],
   ['Lich King', 'WOTLK'],
@@ -311,7 +338,7 @@ export const EXPANSION_LIST_ID: Map<string, string> = new Map([
   ['Shadowlands', 'SHDW'],
 ]);
 
-export const PLAYABLE_CLASS: Map<number, string> = new Map([
+export const PLAYABLE_CLASS = new Map<number, string>([
   [1, 'Warrior'],
   [2, 'Paladin'],
   [3, 'Hunter'],

@@ -1,21 +1,27 @@
 export interface IWarcraftLogsActors {
-  readonly type: 'NPC' | 'Player' | 'Pet';
-
-  readonly name: string;
-
-  readonly server: string | null;
+  type: 'NPC' | 'Player' | 'Pet';
+  name: string;
+  server: string | null;
 }
 
 export interface IWarcraftLogsToken {
-  readonly token_type: string;
-
-  readonly expires_in: number;
-
-  readonly access_token: string;
+  token_type: string;
+  expires_in: number;
+  access_token: string;
 }
 
 export interface ISelfKeyHref {
-  readonly href: string;
+  href: string;
+}
+
+export interface ISelfWithNameAndId {
+  key: ISelfKeyHref;
+  name: string;
+  id: number;
+}
+
+export interface ISelfRealm {
+  slug: string;
 }
 
 export interface IGuildRoster {
@@ -24,10 +30,10 @@ export interface IGuildRoster {
 }
 
 export interface IGuildMember {
-  readonly guid: string;
-  readonly id: number;
-  readonly rank: number;
-  readonly level?: number;
+  guid: string;
+  id: number;
+  rank: number;
+  level?: number;
 }
 
 export interface IRGuildRoster {
@@ -50,10 +56,7 @@ export interface IRGuildRoster {
     };
   };
 
-  faction: {
-    type: string;
-    name: string;
-  };
+  faction: INameWithType;
 
   members: Array<{
     character: {
@@ -146,10 +149,7 @@ export interface IConnectedRealm {
   status: {
     name: string;
   };
-  population: {
-    type: string;
-    name: string;
-  };
+  population: INameWithType;
   realms: [
     {
       id: number;
@@ -183,16 +183,34 @@ export interface IConnectedRealm {
   };
 }
 
+export interface Media {
+  avatarImage: string;
+  insetImage: string;
+  mainImage: string;
+}
+
+export interface IMediaAssets {
+  key: 'avatar' | 'main-raw' | 'inset';
+  value: string;
+}
+
 export interface IMedia {
-  id: number;
-  avatar: string;
-  inset: string;
-  main: string;
-  'main-raw': string;
+  character: {
+    key: ISelfKeyHref;
+    id: number;
+    name: string;
+    realm: ISelfWithNameAndId & ISelfRealm;
+  };
+  assets: Array<IMediaAssets>;
 }
 
 export interface IMountsNameWithId {
   mount: INameWithId;
+}
+
+export interface INameWithType {
+  type: string;
+  name: string;
 }
 
 export interface INameWithId {
@@ -240,7 +258,9 @@ export interface IRaiderIO {
   rioScore: number;
 }
 
-export interface ICharacterSummary {
+export interface CharacterSummary {
+  guid: string;
+  name: string;
   gender: string;
   faction: string;
   race: string;
@@ -261,6 +281,47 @@ export interface ICharacterSummary {
   covenantId: string;
   statusCode: number;
   hashT: string;
+}
+
+export interface ICharacterSummary {
+  id: number;
+  name: string;
+  gender: INameWithType;
+  faction: INameWithType;
+  race: ISelfWithNameAndId;
+  character_class: ISelfWithNameAndId;
+  active_spec: ISelfWithNameAndId;
+  realm: ISelfWithNameAndId & ISelfRealm;
+  guild?: ISelfWithNameAndId & {
+    realm: ISelfWithNameAndId & ISelfRealm;
+    faction: INameWithType;
+  };
+  level: number;
+  experience: number;
+  achievement_points: number;
+  achievements: ISelfKeyHref;
+  titles: ISelfKeyHref;
+  pvp_summary: ISelfKeyHref;
+  encounters: ISelfKeyHref;
+  media: ISelfKeyHref;
+  last_login_timestamp: number;
+  average_item_level: number;
+  equipped_item_level: number;
+  specializations: ISelfKeyHref;
+  statistics: ISelfKeyHref;
+  mythic_keystone_profile: ISelfKeyHref;
+  equipment: ISelfKeyHref;
+  appearance: ISelfKeyHref;
+  collections: ISelfKeyHref;
+  reputations: ISelfKeyHref;
+  quests: ISelfKeyHref;
+  achievements_statistics: ISelfKeyHref;
+  professions: ISelfKeyHref;
+  covenant_progress?: {
+    chosen_covenant: ISelfWithNameAndId;
+    renown_level: number;
+    soulbinds: ISelfKeyHref;
+  };
 }
 
 export interface ICharacterStatus {
@@ -284,11 +345,11 @@ export interface IWarcraftLog {
 }
 
 export interface IWarcraftLogsConfig {
-  readonly raidTier: number;
-  readonly from: number;
-  readonly to: number;
-  readonly page: number;
-  readonly logs: number;
+  raidTier: number;
+  from: number;
+  to: number;
+  page: number;
+  logs: number;
 }
 
 export interface ICharactersExported {
@@ -321,12 +382,12 @@ export interface IGuildSummary {
 }
 
 export interface ICharacterWpLfg {
-  readonly name: string;
-  readonly guild: string;
-  readonly raid: string;
-  readonly realm: string;
-  readonly ilvl: string;
-  readonly timestamp: string;
+  name: string;
+  guild: string;
+  raid: string;
+  realm: string;
+  ilvl: string;
+  timestamp: string;
 }
 
 export interface IExpansionSet {
@@ -335,13 +396,13 @@ export interface IExpansionSet {
 }
 
 export interface IExpansionList {
-  readonly CLSC: IExpansionSet;
-  readonly TBC: IExpansionSet;
-  readonly WOTLK: IExpansionSet;
-  readonly CATA: IExpansionSet;
-  readonly MOP: IExpansionSet;
-  readonly WOD: IExpansionSet;
-  readonly LGN: IExpansionSet;
-  readonly BFA: IExpansionSet;
-  readonly SHDW: IExpansionSet;
+  CLSC: IExpansionSet;
+  TBC: IExpansionSet;
+  WOTLK: IExpansionSet;
+  CATA: IExpansionSet;
+  MOP: IExpansionSet;
+  WOD: IExpansionSet;
+  LGN: IExpansionSet;
+  BFA: IExpansionSet;
+  SHDW: IExpansionSet;
 }

@@ -7,8 +7,8 @@ import { HttpService } from '@nestjs/axios';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { snakeCase } from 'snake-case';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { difference, get } from 'lodash';
 import {
   BadRequestException,
   GatewayTimeoutException,
@@ -24,8 +24,8 @@ import {
   CharacterStatus,
   EVENT_LOG,
   CharacterJobQueue,
-  ICharacterSummary,
-  IMedia,
+  CharacterSummary,
+  Media,
   IMounts,
   IPets,
   IPetType,
@@ -42,6 +42,12 @@ import {
   isPetsCollection,
   isMountCollection,
   BlizzardApiPetsCollection,
+  isCharacterSummary,
+  BlizzardApiCharacterSummary,
+  CHARACTER_SUMMARY_FIELD_MAPPING,
+  BlizzardApiCharacterMedia,
+  isCharacterMedia,
+  CHARACTER_MEDIA_FIELD_MAPPING,
 } from '@app/core';
 
 import {
@@ -57,7 +63,6 @@ import {
   ProfessionsEntity,
   RealmsEntity,
 } from '@app/pg';
-import { difference } from 'lodash';
 
 @BullWorker({
   queueName: charactersQueue.name,
@@ -210,13 +215,15 @@ export class CharactersWorker {
        * only if characterEntityOriginal exists
        */
       if (!isNew) {
-        if (characterEntityOriginal.guildGuid !== characterEntity.guildGuid) {
-          if (!characterEntity.guildId) {
-            characterEntity.guildGuid = null;
-            characterEntity.guild = null;
-            characterEntity.guildRank = null;
-            characterEntity.guildId = null;
-          }
+        const isUserNotGuildMember =
+          characterEntityOriginal.guildGuid !== characterEntity.guildGuid &&
+          !characterEntity.guildId;
+
+        if (isUserNotGuildMember) {
+          characterEntity.guildGuid = null;
+          characterEntity.guild = null;
+          characterEntity.guildRank = null;
+          characterEntity.guildId = null;
         }
         await this.diffCharacterEntity(characterEntityOriginal, characterEntity);
         await job.updateProgress(90);
@@ -225,9 +232,9 @@ export class CharactersWorker {
       await this.charactersRepository.save(characterEntity);
       await job.updateProgress(100);
       return characterEntity.statusCode;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${CharactersWorker.name}: ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(`${CharactersWorker.name}: ${errorOrException}`);
       return 500;
     }
   }
@@ -336,10 +343,10 @@ export class CharactersWorker {
       characterStatus.statusCode = 201;
 
       return characterStatus;
-    } catch (errorException) {
-      if (errorException.response) {
-        if (errorException.response.data && errorException.response.data.code) {
-          characterStatus.statusCode = errorException.response.data.code;
+    } catch (errorOrException) {
+      if (errorOrException.response) {
+        if (errorOrException.response.data && errorOrException.response.data.code) {
+          characterStatus.statusCode = errorOrException.response.data.code;
         }
       }
       if (status)
@@ -355,10 +362,10 @@ export class CharactersWorker {
     nameSlug: string,
     realmSlug: string,
     BNet: BlizzAPI,
-  ): Promise<Partial<IMedia>> {
-    const media: Partial<IMedia> = {};
+  ): Promise<Partial<Media>> {
+    const media: Partial<Media> = {};
     try {
-      const response: Record<string, any> = await BNet.query(
+      const response = await BNet.query<BlizzardApiCharacterMedia>(
         `/profile/wow/character/${realmSlug}/${nameSlug}/character-media`,
         {
           params: { locale: 'en_GB' },
@@ -367,20 +374,18 @@ export class CharactersWorker {
         },
       );
 
-      if (!response || !response.assets) return media;
+      if (!isCharacterMedia(response)) return media;
 
-      if (response.character && response.character.id)
-        media.id = response.character.id;
-
-      const assets: { key: string; value: string }[] = response.assets;
+      const { assets } = response;
 
       assets.map(({ key, value }) => {
-        media[key] = value;
+        if (!CHARACTER_MEDIA_FIELD_MAPPING.has(key)) return;
+        media[CHARACTER_MEDIA_FIELD_MAPPING.get(key)] = value;
       });
 
       return media;
-    } catch (errorException) {
-      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${errorOrException}`);
       return media;
     }
   }
@@ -472,8 +477,8 @@ export class CharactersWorker {
       mountsCollection.mountsNumber = mounts.length;
 
       return mountsCollection;
-    } catch (errorException) {
-      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${errorOrException}`);
       return mountsCollection;
     }
   }
@@ -726,10 +731,10 @@ export class CharactersWorker {
     name_slug: string,
     realm_slug: string,
     BNet: BlizzAPI,
-  ): Promise<Partial<ICharacterSummary>> {
-    const summary: Partial<ICharacterSummary> = {};
+  ): Promise<Partial<CharacterSummary>> {
+    const summary: Partial<CharacterSummary> = {};
     try {
-      const response: Record<string, any> = await BNet.query(
+      const response = await BNet.query<BlizzardApiCharacterSummary>(
         `/profile/wow/character/${realm_slug}/${name_slug}`,
         {
           params: { locale: 'en_GB' },
@@ -738,59 +743,31 @@ export class CharactersWorker {
         },
       );
 
-      if (!response || typeof response !== 'object') return summary;
+      if (!isCharacterSummary(response)) return summary;
 
-      const keyValueName: string[] = [
-        'gender',
-        'faction',
-        'race',
-        'character_class',
-        'active_spec',
-      ];
-      const keyValue: string[] = ['level', 'achievement_points'];
+      for (const [key, path] of CHARACTER_SUMMARY_FIELD_MAPPING.entries()) {
+        const value = get(response, path, null);
+        if (!value) continue;
+        // TODO guard type if exists
+        summary[key] = value;
+      }
 
-      Object.entries(response).map(([key, value]) => {
-        if (keyValueName.includes(key) && value !== null && value.name)
-          summary[snakeCase(key)] = value.name;
-        if (keyValue.includes(key) && value !== null) summary[key] = value;
-        if (key === 'last_login_timestamp') summary.lastModified = value;
-        if (key === 'average_item_level') summary.averageItemLevel = value;
-        if (key === 'equipped_item_level') summary.equippedItemLevel = value;
+      summary.guid = toGuid(summary.name, summary.realm);
 
-        if (key === 'guild' && value instanceof Object) {
-          if (value.id && value.name) {
-            summary.guildGuid = toSlug(`${value.name}@${realm_slug}`);
-            summary.guild = value.name;
-            summary.guildId = value.id;
-          }
-        }
-        if (key === 'realm' && value instanceof Object) {
-          if (value.id && value.name && value.slug) {
-            summary.realmId = value.id;
-            summary.realmName = value.name;
-            summary.realm = value.slug;
-          }
-        }
-        if (key === 'active_title' && value instanceof Object) {
-          if ('active_title' in value) {
-            const { active_title } = value;
-            if (active_title.id) summary.hashT = active_title.id.toString(16);
-          }
-        }
-      });
-      // TODO make sure
       if (!summary.guild) {
         summary.guildId = null;
         summary.guild = null;
         summary.guildGuid = null;
         summary.guildRank = null;
+      } else {
+        summary.guildGuid = toGuid(summary.guild, summary.realm);
       }
 
       summary.statusCode = 200;
 
       return summary;
     } catch (error) {
-      this.logger.error(`summary: ${name_slug}@${realm_slug}:${error}`);
+      this.logger.error(`getSummary: ${name_slug}@${realm_slug}:${error}`);
       return summary;
     }
   }
@@ -833,8 +810,8 @@ export class CharactersWorker {
       }
 
       return raiderIO;
-    } catch (errorException) {
-      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorOrException}`);
       return raiderIO;
     }
   }
@@ -877,9 +854,9 @@ export class CharactersWorker {
       });
 
       return wowProgress;
-    } catch (errorException) {
+    } catch (errorOrException) {
       this.logger.error(
-        `getWowProgressProfile: ${name}@${realmSlug}:${errorException}`,
+        `getWowProgressProfile: ${name}@${realmSlug}:${errorOrException}`,
       );
       return wowProgress;
     }
@@ -913,8 +890,8 @@ export class CharactersWorker {
       await browser.close();
 
       return warcraftLogs;
-    } catch (errorException) {
-      this.logger.error(`getWarcraftLogs: ${name}@${realmSlug}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getWarcraftLogs: ${name}@${realmSlug}:${errorOrException}`);
       return warcraftLogs;
     }
   }
@@ -951,8 +928,8 @@ export class CharactersWorker {
 
         await this.logsRepository.save(logEntity);
       }
-    } catch (errorException) {
-      this.logger.error(`diffCharacterEntity: ${original.id}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`diffCharacterEntity: ${original.guid}:${errorOrException}`);
     }
   }
 }

@@ -12,14 +12,9 @@ RUN apt-get update && apt-get install -y git
 
 WORKDIR /usr/src/app
 
-RUN npm install -g @nestjs/cli
-
 RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
-
 RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
-
 RUN mv cmnw-secrets/* .
-
 RUN rm -rf cmnw-secrets
 
 COPY package.json ./
@@ -33,6 +28,7 @@ RUN yarn install
 
 COPY . .
 
+RUN npm install -g @nestjs/cli
 RUN nest build characters
 
 CMD wait && ["node", "dist/apps/characters/main.js"]

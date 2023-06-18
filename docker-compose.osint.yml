@@ -5,7 +5,7 @@ services:
     restart: always
     command: [ 'node', 'dist/apps/osint/main.js' ]
     deploy:
-      replicas: 5
+      replicas: 3
     environment:
       - NODE_ENV=${NODE_ENV}
 
@@ -13,13 +13,6 @@ services:
     image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
-  ladder:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/ladder/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
@@ -34,26 +27,5 @@ services:
     image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/characters/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
-  guilds:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/guilds/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
-  wowprogress:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/wowprogress/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
-  warcraftlogs:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}

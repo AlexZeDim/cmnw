@@ -1,4 +1,4 @@
-name: Create Keys Release Image
+name: Create Characters Release Image
 
 # build image only on push to master & specific app directory
 on:

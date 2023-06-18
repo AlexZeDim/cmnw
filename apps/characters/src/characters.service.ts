@@ -38,7 +38,7 @@ export class CharactersService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 10000) {
-        this.logger.warn(`indexCharacters: ${jobs} jobs found`);
+        this.logger.warn(`indexCharactersFromMongo: ${jobs} jobs found`);
         return;
       }
 
@@ -85,7 +85,7 @@ export class CharactersService {
           { parallel: 50 },
         );
     } catch (errorException) {
-      this.logger.error(`indexCharacters: ${errorException}`);
+      this.logger.error(`indexCharactersFromMongo: ${errorException}`);
     }
   }
 }

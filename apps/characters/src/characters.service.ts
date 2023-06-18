@@ -32,7 +32,7 @@ export class CharactersService {
   ) {}
 
   @Cron(CronExpression.EVERY_HOUR)
-  private async indexCharacters(
+  private async indexCharactersFromMongo(
     clearance: string = GLOBAL_OSINT_KEY,
   ): Promise<void> {
     try {

@@ -3,6 +3,7 @@ FROM arm64v8/node:lts
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
+# Set image labels
 LABEL org.opencontainers.image.title = "Realms"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
 LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
@@ -10,6 +11,7 @@ LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
 
 WORKDIR /usr/src/app
 
+# Clone config from private github repo
 RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
 RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 RUN mv cmnw-secrets/* .

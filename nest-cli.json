@@ -5,7 +5,8 @@
   "root": "apps/conglomerat",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+    "tsConfigPath": "apps/conglomerat/tsconfig.app.json",
+    "assets": [{"include": "../config/*.yaml", "outDir": "./dist/config"}]
   },
   "projects": {
     "conglomerat": {

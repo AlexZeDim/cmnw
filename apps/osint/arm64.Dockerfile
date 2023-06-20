@@ -30,7 +30,7 @@ COPY . .
 RUN npm install -g @nestjs/cli
 RUN nest build osint
 
-CMD wait && ["node", "dist/apps/osint/main.js"]
+CMD ["node", "dist/apps/osint/main.js"]
 
 
 

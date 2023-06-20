@@ -30,7 +30,7 @@ COPY . .
 RUN npm install -g @nestjs/cli
 RUN nest build realms
 
-CMD wait && ["node", "dist/apps/realms/main.js"]
+CMD ["node", "dist/apps/realms/main.js"]
 
 
 

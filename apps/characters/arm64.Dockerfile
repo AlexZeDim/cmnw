@@ -30,7 +30,7 @@ COPY . .
 RUN npm install -g @nestjs/cli
 RUN nest build characters
 
-CMD wait && ["node", "dist/apps/characters/main.js"]
+CMD ["node", "dist/apps/characters/main.js"]
 
 
 

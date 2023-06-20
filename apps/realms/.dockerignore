@@ -1,5 +1,4 @@
 .git*
-config
 node_modules
 x86.Dockerfile
 local.Dockerfile

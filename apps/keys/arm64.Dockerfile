@@ -4,7 +4,7 @@ ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
 ARG KEY
-ENV KEy=$KEY
+ENV KEY=$KEY
 
 # Set image labels #
 LABEL org.opencontainers.image.title = "Keys"

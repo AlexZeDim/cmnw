@@ -8,8 +8,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Index('ix__characters_pets__pet_id', ['pet_id'], {})
-@Index('ix__characters_pets__character_guid', ['character_guid'], {})
+@Index('ix__characters_pets__pet_id', ['petId'], {})
+@Index('ix__characters_pets__character_guid', ['characterGuid'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_PETS })
 export class CharactersPetsEntity {
   @PrimaryGeneratedColumn('uuid')

@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Index('ix__characters_guilds_members__guild_guid', ['guild_guid'], {})
-@Index('ix__characters_guilds_members__character_guid', ['character_guild'], {})
+@Index('ix__characters_guilds_members__guild_guid', ['guildGuid'], {})
+@Index('ix__characters_guilds_members__character_guid', ['characterGuild'], {})
 @Index('ix__characters_guilds_members__realm', ['realm'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_GUILDS_MEMBERS })
 export class CharactersGuildsMembersEntity {

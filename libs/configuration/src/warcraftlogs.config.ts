@@ -1,7 +1,7 @@
-import { get } from 'config';
+import config from 'config';
 import { IWarcraftLogs } from '@app/configuration/interfaces';
 
-const WARCRAFT_LOGS_CONFIG = get<IWarcraftLogs>('warcraftlogs');
+const WARCRAFT_LOGS_CONFIG = config.get<IWarcraftLogs>('warcraftlogs');
 
 export const warcraftLogsConfig: IWarcraftLogs = {
   raidTier: WARCRAFT_LOGS_CONFIG.raidTier,

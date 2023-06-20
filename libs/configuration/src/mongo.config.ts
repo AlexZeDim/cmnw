@@ -1,8 +1,9 @@
-import { get } from 'config';
+import config from 'config';
 import { IMongo } from '@app/configuration/interfaces';
+import { decrypt } from '@app/core';
 
-const MONGO_DB_CONFIG = get<IMongo>('mongo');
+const MONGO_DB_CONFIG = config.get<IMongo>('mongo');
 
 export const mongoConfig: IMongo = {
-  connectionString: MONGO_DB_CONFIG.connectionString,
+  connectionString: decrypt(MONGO_DB_CONFIG.connectionString),
 };

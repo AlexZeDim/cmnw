@@ -1,8 +1,9 @@
-import { get } from 'config';
+import config from 'config';
 import { IYandex } from '@app/configuration/interfaces';
+import { decrypt } from '@app/core';
 
-const YANDEX_CONFIG = get<IYandex>('yandex');
+const YANDEX_CONFIG = config.get<IYandex>('yandex');
 
 export const yandexConfig: IYandex = {
-  token: YANDEX_CONFIG.token,
+  token: decrypt(YANDEX_CONFIG.token),
 };

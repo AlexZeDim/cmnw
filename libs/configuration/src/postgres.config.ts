@@ -1,7 +1,8 @@
-import { get } from 'config';
+import config from 'config';
 import { IPostgresConfig } from '@app/configuration/interfaces';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { readFileSync } from 'fs';
+import { decrypt } from '@app/core';
 import {
   CharactersEntity,
   CharactersGuildsMembersEntity,
@@ -17,15 +18,15 @@ import {
   RealmsEntity,
 } from '@app/pg';
 
-const POSTGRES_DB_CONFIG = get<IPostgresConfig>('postgres');
+const POSTGRES_DB_CONFIG = config.get<IPostgresConfig>('postgres');
 
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  host: POSTGRES_DB_CONFIG.host,
+  host: decrypt(POSTGRES_DB_CONFIG.host),
   port: POSTGRES_DB_CONFIG.port,
-  username: POSTGRES_DB_CONFIG.username,
-  password: POSTGRES_DB_CONFIG.password,
-  database: POSTGRES_DB_CONFIG.database,
+  username: decrypt(POSTGRES_DB_CONFIG.username),
+  password: decrypt(POSTGRES_DB_CONFIG.password),
+  database: decrypt(POSTGRES_DB_CONFIG.database),
   logging: true,
   entities: [
     CharactersEntity,

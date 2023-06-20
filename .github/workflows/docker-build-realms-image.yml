@@ -38,7 +38,7 @@ jobs:
             ghcr.io/alexzedim/realms
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=semver,pattern={{raw}}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
             org.opencontainers.image.title=Realms
             org.opencontainers.image.vendor=AlexZeDim
@@ -58,7 +58,7 @@ jobs:
           file: ./apps/realms/arm64.Dockerfile
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/alexzedim/realms:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}

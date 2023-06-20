@@ -1,4 +1,5 @@
 import config from 'config';
+import process from 'node:process';
 import { IMongo } from '@app/configuration/interfaces';
 import { decrypt } from '@app/core';
 

@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 @Index('ix__characters_guilds_members__guild_guid', ['guildGuid'], {})
-@Index('ix__characters_guilds_members__character_guid', ['characterGuild'], {})
+@Index('ix__characters_guilds_members__character_guid', ['characterGuid'], {})
 @Index('ix__characters_guilds_members__realm', ['realm'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_GUILDS_MEMBERS })
 export class CharactersGuildsMembersEntity {
@@ -41,7 +41,7 @@ export class CharactersGuildsMembersEntity {
   @Column({
     nullable: false,
     type: 'varchar',
-    name: 'character_guild',
+    name: 'character_guid',
   })
   characterGuid: string;
 

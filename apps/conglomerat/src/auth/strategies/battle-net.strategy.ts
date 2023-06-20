@@ -7,24 +7,20 @@ import { commonwealthConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 
-
 /**
  * Review full list of available scopes here: https://develop.battle.net/documentation/guides/using-oauth
  */
 
 @Injectable()
 export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
-  constructor(
-    private authService: AuthService,
-    private httpService: HttpService,
-  ) {
+  constructor(private authService: AuthService, private httpService: HttpService) {
     super({
-      authorizationURL: `https://eu.battle.net/oauth/authorize?${ stringify({
-        client_id    : commonwealthConfig.clientId,
-        redirect_uri : commonwealthConfig.redirect,
+      authorizationURL: `https://eu.battle.net/oauth/authorize?${stringify({
+        client_id: commonwealthConfig.clientId,
+        redirect_uri: commonwealthConfig.redirect,
         response_type: 'code',
-        scope        : 'wow.profile',
-      }) }`,
+        scope: 'wow.profile',
+      })}`,
       // TODO probably function here, not sure
       // Authorization: 'Basic Base64',
       tokenURL: `https://${commonwealthConfig.clientId}:${commonwealthConfig.clientSecret}@eu.battle.net/oauth/token`,
@@ -37,14 +33,12 @@ export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
     });
   }
 
-  async validate(
-    accessToken: string,
-  ): Promise<any> {
+  async validate(accessToken: string): Promise<any> {
     console.log(`accessToken: ${accessToken}`);
     const { data } = await lastValueFrom(
       this.httpService.get('https://eu.battle.net/oauth/userinfo', {
-        headers: { Authorization: `Bearer ${ accessToken }` },
-      })
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
     );
     console.log(data);
   }

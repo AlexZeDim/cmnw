@@ -1,6 +1,5 @@
 name: Create Keys Release Image
 
-# build image only on push to master & specific app directory
 on:
   push:
     branches: [ master ]
@@ -8,10 +7,9 @@ on:
       - 'apps/keys/**'
 
 jobs:
-  # define job to build and publish docker image
   publish:
-    # run only when code is compiling and tests are passing
-    runs-on: buildjet-4vcpu-ubuntu-2204-arm
+    name: publish
+    runs-on: buildjet-4vcpu-ubuntu-2204
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2
@@ -30,10 +28,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          # list of Docker images to use as base name for tags
           images: |
             ghcr.io/alexzedim/keys
-          # generate Docker tags based on the following events/attributes
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |

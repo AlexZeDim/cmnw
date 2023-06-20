@@ -6,4 +6,3 @@ docker-compose.db.yaml
 docker-compose.oraculum.yaml
 docker-compose.dev.oraculum.yaml
 README.md
-cmnw.png

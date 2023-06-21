@@ -9,15 +9,13 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    name: publish
+    runs-on: buildjet-16vcpu-ubuntu-2204-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 2
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -38,7 +36,7 @@ jobs:
           labels: |
             org.opencontainers.image.title=Realms
             org.opencontainers.image.vendor=AlexZeDim
-            org.opencontainers.image.url=https://i.imgur.com/CY0Kqy3.png
+            org.opencontainers.image.url=https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png
             org.opencontainers.image.source=https://github.com/AlexZeDim/cmnw
 
       - name: Login to Github Packages

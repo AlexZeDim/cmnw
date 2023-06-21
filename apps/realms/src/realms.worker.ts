@@ -13,6 +13,7 @@ import {
   REALM_TICKER,
   RealmJobQueue,
   realmsQueue,
+  toLocale,
   transformConnectedRealmId,
   transformNamedField,
 } from '@app/core';
@@ -97,11 +98,12 @@ export class RealmsWorker {
         );
 
         await job.updateProgress(40);
+        const locale = toLocale(realmEntity.locale);
 
-        const localeName = get(realmLocale, `name.${realmEntity.locale}`, null);
+        const localeName = get(realmLocale, `name.${locale}`, null);
         if (localeName) realmEntity.localeName = localeName;
 
-        const localeSlug = get(realmLocale, `slug.${realmEntity.locale}`, null);
+        const localeSlug = get(realmLocale, `slug.${locale}`, null);
         if (localeSlug) realmEntity.localeSlug = localeSlug;
       } else {
         const localeNameSlug = get(response, 'name', null);

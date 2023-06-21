@@ -46,3 +46,5 @@ export const toSlug = (s: string): string =>
  */
 export const toKey = (s: string): string =>
   s.replace(/\s+/g, '_').replace(/'+/g, '').toLowerCase();
+
+export const toLocale = (s: string): string => s.substr(0, 2) + '_' + s.substr(2);

@@ -27,7 +27,7 @@ export const postgresConfig: TypeOrmModuleOptions = {
   username: decrypt(POSTGRES_DB_CONFIG.username),
   password: decrypt(POSTGRES_DB_CONFIG.password),
   database: decrypt(POSTGRES_DB_CONFIG.database),
-  logging: true,
+  logging: false,
   entities: [
     CharactersEntity,
     CharactersGuildsMembersEntity,

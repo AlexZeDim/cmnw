@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { profileParams } from '@app/e2e/params';
+import { dynamicParams, profileParams } from '@app/e2e/params';
 import { BlizzardApiResponse } from '@app/core';
 import { commonwealthConfig } from '@app/configuration';
 
@@ -18,6 +18,17 @@ export class TestsOsint implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     const token = await this.BNet.getAccessToken();
     this.logger.warn(`getAccessToken: ${token}`);
+  }
+
+  async realm(realmSlug: string): Promise<BlizzardApiResponse> {
+    return this.BNet.query(`/data/wow/realm/${realmSlug}`, dynamicParams);
+  }
+
+  async connectedRealm(connectedRealmId: number): Promise<BlizzardApiResponse> {
+    return this.BNet.query(
+      `/data/wow/connected-realm/${connectedRealmId}`,
+      dynamicParams,
+    );
   }
 
   async summary(nameSlug: string, realmSlug: string): Promise<BlizzardApiResponse> {

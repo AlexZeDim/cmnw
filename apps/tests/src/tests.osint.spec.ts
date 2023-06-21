@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TestsOsint } from './tests.osint';
 import {
   characterSummary,
-  TCharacterSummary,
   objectPet,
   objectMount,
   statusObj,
@@ -10,6 +9,8 @@ import {
   guildObj,
   professionObj,
   guildRosterObj,
+  objectRealm,
+  objectConnectedRealm,
 } from '@app/e2e/characters';
 
 describe('OSINT', () => {
@@ -24,16 +25,24 @@ describe('OSINT', () => {
     testsService = app.get<TestsOsint>(TestsOsint);
   });
 
+  describe('realm', () => {
+    it('return realm response', async () => {
+      const response = await testsService.realm('howling-fjord');
+      expect(response).toMatchObject(objectRealm);
+    });
+  });
+
+  describe('connectedRealm', () => {
+    it('return connected realm response', async () => {
+      const response = await testsService.connectedRealm(1615);
+      expect(response).toMatchObject(objectConnectedRealm);
+    });
+  });
+
   describe('summary', () => {
     it('return character summary response', async () => {
       const response = await testsService.summary('лисаорк', 'howling-fjord');
-      expect(response).toMatchObject<TCharacterSummary>(characterSummary);
-      /**
-       * @description We could always use more .haveProperty things
-       * @description for test implementing of characters endpoints
-       */
-      // expect(response).toHaveProperty('id', 4);
-      // expect(response).not.toHaveProperty('guild');
+      expect(response).toMatchObject(characterSummary);
     });
   });
 

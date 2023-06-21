@@ -2,6 +2,10 @@ export const propRefLink = {
   href: expect.any(String),
 };
 
+export const keyPropRefLink = {
+  key: expect.objectContaining(propRefLink),
+};
+
 export const objectPropRef = {
   id: expect.any(Number),
   name: expect.any(String),
@@ -18,6 +22,54 @@ export const objectRealmPropRef = {
 export const objectNamedProperty = {
   type: expect.any(String),
   name: expect.any(String),
+};
+
+export const objectRealm = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  id: expect.any(Number),
+  region: {
+    key: expect.objectContaining(propRefLink),
+    id: expect.any(Number),
+    name: expect.any(String),
+  },
+  connected_realm: expect.objectContaining(propRefLink),
+  name: expect.any(String),
+  category: expect.any(String),
+  locale: expect.any(String),
+  timezone: expect.any(String),
+  type: expect.objectContaining(objectNamedProperty),
+  is_tournament: expect.any(Boolean),
+  slug: expect.any(String),
+  lastModified: expect.any(String),
+};
+
+export const objectConnectedRealmArray = {
+  id: expect.any(Number),
+  region: {
+    key: expect.objectContaining(propRefLink),
+    id: expect.any(Number),
+    name: expect.any(String),
+  },
+  connected_realm: expect.objectContaining(propRefLink),
+  name: expect.any(String),
+  category: expect.any(String),
+  locale: expect.any(String),
+  timezone: expect.any(String),
+  type: expect.objectContaining(objectNamedProperty),
+  is_tournament: expect.any(Boolean),
+  slug: expect.any(String),
+};
+
+export const objectConnectedRealm = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  id: expect.any(Number),
+  has_queue: expect.any(Boolean),
+  status: expect.objectContaining(objectNamedProperty),
+  population: expect.objectContaining(objectNamedProperty),
+  realms: expect.arrayContaining([objectConnectedRealmArray]),
+  mythic_leaderboards: expect.objectContaining(propRefLink),
+  auctions: expect.objectContaining(propRefLink),
+  lastModified: expect.any(String),
 };
 
 export const objectMount = {

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { dynamicParams, profileParams } from '@app/e2e';
+import { dynamicParams, profileParams } from '@app/e2e/params/';
 
 @Injectable()
 export class TestDma {
@@ -12,10 +12,11 @@ export class TestDma {
     region: 'eu',
     clientId: '',
     clientSecret: '',
-    accessToken: ''
-  })
+    accessToken: '',
+  });
 
   async commodity() {
-    return await this.BNet.query(`/data/wow/auctions/commodities`, dynamicParams);
+    return this.BNet.query('/data/wow/auctions/commodities', dynamicParams);
   }
 }
+

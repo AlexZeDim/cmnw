@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TestDma } from './test.dma';
-import { commodityItem, TCommodityItem } from '@app/e2e';
+import { commodityItem, TCommodityItem } from '@app/e2e/characters';
 
 describe('DMA', () => {
   let testsService: TestDma;
-  jest.setTimeout(600_000)
+  jest.setTimeout(600_000);
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -21,9 +21,11 @@ describe('DMA', () => {
       expect(response).toHaveProperty('auctions');
       expect(response.auctions.length).not.toBeLessThan(0);
 
-      const [ item ] = response.auctions
+      const [ item ] = response.auctions;
 
       expect(item).toMatchObject<TCommodityItem>(commodityItem);
     });
   });
 });
+
+

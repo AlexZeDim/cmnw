@@ -5,6 +5,8 @@ import { decrypt } from '@app/core';
 
 console.log(process.env);
 
+console.log(config);
+
 const MONGO_DB_CONFIG = config.get<IMongo>('mongo');
 
 export const mongoConfig: IMongo = {

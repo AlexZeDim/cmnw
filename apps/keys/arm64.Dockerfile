@@ -33,6 +33,12 @@ COPY . .
 RUN npm install -g @nestjs/cli
 RUN nest build keys
 
+RUN ls
+
+RUN cd config
+
+RUN ls
+
 CMD ["node", "dist/apps/keys/main.js"]
 
 

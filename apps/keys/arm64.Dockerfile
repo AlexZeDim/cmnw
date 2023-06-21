@@ -9,7 +9,7 @@ ENV KEY=$KEY
 # Set image labels
 LABEL org.opencontainers.image.title = "Keys"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
-LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
+LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
 
 WORKDIR /usr/src/app
@@ -32,12 +32,6 @@ COPY . .
 
 RUN npm install -g @nestjs/cli
 RUN nest build keys
-
-RUN ls
-
-RUN cd config
-
-RUN ls
 
 CMD ["node", "dist/apps/keys/main.js"]
 

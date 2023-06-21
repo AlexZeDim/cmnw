@@ -12,7 +12,6 @@ export const encrypt = (sensitive: string) => {
 };
 
 export const decrypt = (sensitiveEnc: string) => {
-  console.log(sensitiveEnc);
   if (!sensitiveEnc) return sensitiveEnc;
   const key = Buffer.from(process.env.KEY);
   const [s, encryptedData] = sensitiveEnc.split(':');

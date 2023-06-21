@@ -3,10 +3,13 @@ FROM arm64v8/node:lts
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
+ARG KEY
+ENV KEY=$KEY
+
 # Set image labels #
 LABEL org.opencontainers.image.title = "Realms"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
-LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
+LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
 
 WORKDIR /usr/src/app

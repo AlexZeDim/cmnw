@@ -20,8 +20,6 @@ import {
 
 const POSTGRES_DB_CONFIG = config.get<IPostgresConfig>('postgres');
 
-console.log(POSTGRES_DB_CONFIG);
-
 export const postgresConfig: TypeOrmModuleOptions = {
   type: 'postgres',
   host: decrypt(POSTGRES_DB_CONFIG.host),

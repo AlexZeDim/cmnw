@@ -5,7 +5,7 @@ ENV CR_PAT=$CR_PAT
 
 LABEL org.opencontainers.image.title = "Osint"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
-LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
+LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
 
 RUN apt-get update && apt-get install -y git

@@ -4,12 +4,10 @@ import { decrypt } from '@app/core';
 
 const COMMONWEALTH_CONFIG = config.get<ICommonwealth>('commonwealth');
 
-console.log(COMMONWEALTH_CONFIG)
-
 export const commonwealthConfig: ICommonwealth = {
   clientId: decrypt(COMMONWEALTH_CONFIG.clientId),
   clientSecret: decrypt(COMMONWEALTH_CONFIG.clientSecret),
-  redirect: decrypt(COMMONWEALTH_CONFIG.redirect),
+  redirectUri: decrypt(COMMONWEALTH_CONFIG.redirectUri),
   port: COMMONWEALTH_CONFIG.port,
   origin: COMMONWEALTH_CONFIG.origin,
 };

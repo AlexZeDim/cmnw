@@ -1,16 +1,14 @@
 name: Create Realms Release Image
 
-# build image only on push to master & specific app directory
 on:
   push:
     branches: [ master ]
     paths:
       - 'apps/realms/**'
+      - 'libs/*'
 
 jobs:
-  # define job to build and publish docker image
   publish:
-    # run only when code is compiling and tests are passing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,10 +31,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          # list of Docker images to use as base name for tags
           images: |
             ghcr.io/alexzedim/realms
-          # generate Docker tags based on the following events/attributes
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |

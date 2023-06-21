@@ -41,7 +41,7 @@ export class QueueModule {
 
   private router: Express;
 
-  constructor (
+  constructor(
     @BullQueueInject(auctionsQueue.name)
     private readonly auctions: Queue,
     @BullQueueInject(charactersQueue.name)
@@ -66,7 +66,7 @@ export class QueueModule {
       new BullMQAdapter(this.items, { readOnlyMode: false }),
       new BullMQAdapter(this.pricing, { readOnlyMode: false }),
       new BullMQAdapter(this.valuations, { readOnlyMode: false }),
-    ])
+    ]);
     this.router = router;
   }
 

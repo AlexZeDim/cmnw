@@ -1,32 +1,42 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@anchan828/nest-bullmq';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { charactersQueue, guildsQueue } from '@app/core';
-import { MongooseModule } from '@nestjs/mongoose';
 import { HttpModule } from '@nestjs/axios';
 import { CharactersWorker, GuildsWorker } from './workers';
-
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Log,
-  LogsSchema,
-  Realm,
-  RealmsSchema,
-} from '@app/mongo';
-
+  CharactersEntity,
+  CharactersGuildsMembersEntity,
+  CharactersMountsEntity,
+  CharactersPetsEntity,
+  CharactersProfessionsEntity,
+  GuildsEntity,
+  KeysEntity,
+  LogsEntity,
+  MountsEntity,
+  PetsEntity,
+  ProfessionsEntity,
+  RealmsEntity,
+} from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Log.name, schema: LogsSchema },
-      { name: Guild.name, schema: GuildsSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema }
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([
+      CharactersEntity,
+      CharactersGuildsMembersEntity,
+      CharactersMountsEntity,
+      CharactersPetsEntity,
+      CharactersProfessionsEntity,
+      GuildsEntity,
+      KeysEntity,
+      MountsEntity,
+      PetsEntity,
+      ProfessionsEntity,
+      RealmsEntity,
+      LogsEntity,
     ]),
     BullModule.forRoot({
       options: {
@@ -37,8 +47,14 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      queueName: guildsQueue.name,
+      options: guildsQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: charactersQueue.name,
+      options: charactersQueue.options,
+    }),
   ],
   controllers: [],
   providers: [CharactersWorker, GuildsWorker],

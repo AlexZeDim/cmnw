@@ -1,10 +1,11 @@
-import { get } from 'config';
-import { RedisInterface } from '@app/configuration/interfaces';
+import config from 'config';
+import { IRedis } from '@app/configuration/interfaces';
+import { decrypt } from '@app/core';
 
-const Redis_Config = get<RedisInterface>('redis');
+const REDIS_CONFIG = config.get<IRedis>('redis');
 
 export const redisConfig = {
-  host: Redis_Config.host,
-  port: Redis_Config.port,
-  password: Redis_Config.password,
+  host: decrypt(REDIS_CONFIG.host),
+  port: REDIS_CONFIG.port,
+  password: decrypt(REDIS_CONFIG.password),
 };

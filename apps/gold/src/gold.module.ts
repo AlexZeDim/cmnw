@@ -9,7 +9,7 @@ import {
   Gold,
   GoldsSchema,
   Realm,
-  RealmsSchema
+  RealmsSchema,
 } from '@app/mongo';
 
 
@@ -17,7 +17,7 @@ import {
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
+    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Realm.name, schema: RealmsSchema },
       { name: Gold.name, schema: GoldsSchema },

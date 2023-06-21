@@ -7,6 +7,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -17,9 +18,11 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+
 import { DmaService } from './dma.service';
-import { LeanDocument } from 'mongoose'
+import { LeanDocument } from 'mongoose';
 import { Item, Token } from '@app/mongo';
+
 import {
   ItemChartDto,
   ItemCrossRealmDto,
@@ -34,7 +37,7 @@ import {
 export class DmaController {
 
   constructor(
-    private readonly dmaService: DmaService
+    private readonly dmaService: DmaService,
   ) {}
 
   @ApiOperation({ description: 'Returns requested item' })
@@ -48,7 +51,7 @@ export class DmaController {
   @HttpCode(HttpStatus.OK)
   @Get('/item')
   async getItem(@Query() input: ItemCrossRealmDto): Promise<LeanDocument<Item>> {
-    return await this.dmaService.getItem(input);
+    return this.dmaService.getItem(input);
   }
 
 
@@ -63,7 +66,7 @@ export class DmaController {
   @HttpCode(HttpStatus.OK)
   @Get('/token')
   async getWowToken(@Query() input: WowtokenDto): Promise<LeanDocument<Token>[]> {
-    return await this.dmaService.getWowToken(input);
+    return this.dmaService.getWowToken(input);
   }
 
   @ApiOperation({ description: 'Returns requested item valuations' })
@@ -91,7 +94,7 @@ export class DmaController {
   @HttpCode(HttpStatus.OK)
   @Get('/commdty/chart')
   async getCommdtyChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
-    return await this.dmaService.getCommdtyChart(input);
+    return this.dmaService.getCommdtyChart(input);
   }
 
   @ApiOperation({ description: 'Returns requested gold chart' })
@@ -105,7 +108,7 @@ export class DmaController {
   @HttpCode(HttpStatus.OK)
   @Get('/gold/chart')
   async getGoldChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
-    return await this.dmaService.getGoldChart(input);
+    return this.dmaService.getGoldChart(input);
   }
 
   @ApiOperation({ description: 'Returns requested item quotes' })
@@ -119,7 +122,7 @@ export class DmaController {
   @HttpCode(HttpStatus.OK)
   @Get('/item/quotes')
   async getAssetQuotes(@Query() input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
-    return await this.dmaService.getAssetQuotes(input);
+    return this.dmaService.getAssetQuotes(input);
   }
 
   @ApiOperation({ description: 'Returns requested item feed' })
@@ -133,6 +136,6 @@ export class DmaController {
   @HttpCode(HttpStatus.OK)
   @Get('/item/feed')
   async getItemFeed(@Query() input: ItemCrossRealmDto): Promise<ItemFeedDto> {
-    return await this.dmaService.getItemFeed(input);
+    return this.dmaService.getItemFeed(input);
   }
 }

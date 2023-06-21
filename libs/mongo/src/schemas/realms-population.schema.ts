@@ -4,105 +4,105 @@ import { Realm } from '@app/mongo/schemas/realms.schema';
 
 class CharacterCovenants {
   @Prop()
-  kyrian: number;
+    kyrian: number;
 
   @Prop()
-  necrolord: number;
+    necrolord: number;
 
   @Prop()
-  venthyr: number;
+    venthyr: number;
 
   @Prop()
-  night_fae: number;
+    night_fae: number;
 }
 
 class CharacterClasses {
   @Prop()
-  death_knight: number;
+    death_knight: number;
 
   @Prop()
-  demon_hunter: number;
+    demon_hunter: number;
 
   @Prop()
-  druid: number;
+    druid: number;
 
   @Prop()
-  hunter: number;
+    hunter: number;
 
   @Prop()
-  mage: number;
+    mage: number;
 
   @Prop()
-  monk: number;
+    monk: number;
 
   @Prop()
-  paladin: number;
+    paladin: number;
 
   @Prop()
-  priest: number;
+    priest: number;
 
   @Prop()
-  rogue: number;
+    rogue: number;
 
   @Prop()
-  shaman: number;
+    shaman: number;
 
   @Prop()
-  warlock: number;
+    warlock: number;
 
   @Prop()
-  warrior: number;
+    warrior: number;
 }
 
 @Schema({ timestamps: true })
 export class RealmPopulation extends Document {
   @Prop({ type: Number, ref: 'Realm' })
-  realm_id: number | Realm;
+    realm_id: number | Realm;
 
   @Prop({ type: Number, ref: 'Realm' })
-  connected_realm_id: number | Realm;
+    connected_realm_id: number | Realm;
 
   /**
    * TODO name probably? day?
    */
   @Prop()
-  characters_total: number;
+    characters_total: number;
 
   @Prop()
-  characters_active: number;
+    characters_active: number;
 
   @Prop()
-  characters_active_alliance: number;
+    characters_active_alliance: number;
 
   @Prop()
-  characters_active_horde: number;
+    characters_active_horde: number;
 
   @Prop()
-  characters_active_max_level: number;
+    characters_active_max_level: number;
 
   @Prop()
-  characters_guild_members: number
+    characters_guild_members: number;
 
   @Prop()
-  characters_guildless: number
+    characters_guildless: number;
 
   @Prop()
-  players_unique: number
+    players_unique: number;
 
   @Prop()
-  players_active_unique: number
+    players_active_unique: number;
 
   @Prop()
-  guilds_total: number
+    guilds_total: number;
 
   @Prop()
-  guilds_alliance: number
+    guilds_alliance: number;
 
   @Prop()
-  guilds_horde: number
+    guilds_horde: number;
 
   @Prop({ type: CharacterClasses })
-  characters_classes: CharacterClasses
+    characters_classes: CharacterClasses;
 
   /** TODO
   @Prop({ type: CharacterProfessions })
@@ -110,7 +110,7 @@ export class RealmPopulation extends Document {
   */
 
   @Prop({ type: CharacterCovenants })
-  characters_covenants: CharacterCovenants
+    characters_covenants: CharacterCovenants;
 }
 
 export const RealmsPopulationSchema = SchemaFactory.createForClass(RealmPopulation);

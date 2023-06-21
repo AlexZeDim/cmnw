@@ -80,4 +80,4 @@ export const SWAGGER_DISCORD_TYPE: ApiPropertyOptions = {
   enum: NOTIFICATIONS,
   required: false,
   example: NOTIFICATIONS.CANDIDATES,
-}
+};

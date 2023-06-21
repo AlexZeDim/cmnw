@@ -4,7 +4,7 @@ import qs from 'qs';
 import { discordConfig } from '@app/configuration';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { GuildMember, Interaction } from 'discord.js';
-import { LeanDocument } from "mongoose";
+import { LeanDocument } from 'mongoose';
 import { Subscription } from '@app/mongo';
 import { SearchEmbedMessage } from '../embeds';
 
@@ -34,13 +34,13 @@ module.exports = {
             .addChoice('Francais', 'fr_FR')
             .addChoice('Español', 'es_ES')
             .addChoice('Across EU Region', 'all')
-            .setRequired(true)
+            .setRequired(true),
         )
         .addStringOption(option =>
           option.setName('faction')
             .setDescription('(OPTIONAL) Select faction')
             .addChoice('Horde', 'Horde')
-            .addChoice('Alliance', 'Alliance')
+            .addChoice('Alliance', 'Alliance'),
         )
         .addIntegerOption(option =>
           option.setName('item_level')
@@ -71,14 +71,14 @@ module.exports = {
             .addChoice('Warlock', 'Warlock')
             .addChoice('Monk', 'Monk')
             .addChoice('Druid', 'Druid')
-            .addChoice('Demon Hunter', 'Demon Hunter')
+            .addChoice('Demon Hunter', 'Demon Hunter'),
         )
         .addStringOption(option =>
           option.setName('languages')
             .setDescription('(OPTIONAL) Speaking Language')
             .addChoice('Russian', 'russian')
             .addChoice('English', 'english')
-            .addChoice('All', 'all')
+            .addChoice('All', 'all'),
         ))
     .addSubcommand(subcommand =>
       subcommand
@@ -91,7 +91,7 @@ module.exports = {
         .addIntegerOption(option =>
           option.setName('connected_realm_id')
             .setDescription('To know ID of your realm use /realm command')
-            .setRequired(true))
+            .setRequired(true)),
     )
     .addSubcommand(subcommand =>
       subcommand
@@ -104,17 +104,17 @@ module.exports = {
         .addIntegerOption(option =>
           option.setName('connected_realm_id')
             .setDescription('To know ID of your realm use /realm command')
-            .setRequired(true))
+            .setRequired(true)),
     )
     .addSubcommand(subcommand =>
       subcommand
         .setName(NOTIFICATIONS.INFO)
-        .setDescription('Shows information about search setting for current Discord channel')
+        .setDescription('Shows information about search setting for current Discord channel'),
     )
     .addSubcommand(subcommand =>
       subcommand
         .setName(NOTIFICATIONS.CANCEL)
-        .setDescription('Cancel any kind of subscription for the selected channel')
+        .setDescription('Cancel any kind of subscription for the selected channel'),
     ),
 
   async executeInteraction(interaction: Interaction): Promise<void> {
@@ -163,8 +163,8 @@ module.exports = {
           { discord_id: querySubscription.discord_id, channel_id: querySubscription.channel_id },
           {
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
           });
 
         if (!removedSubscription) {
@@ -178,7 +178,7 @@ module.exports = {
 
       if (querySubscription.type === NOTIFICATIONS.INFO) {
         const { data: currentSubscription } = await axios.get<LeanDocument<Subscription>>(
-          encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${querySubscription.discord_id}&channel_id=${querySubscription.channel_id}`)
+          encodeURI(`${discordConfig.basename}/api/osint/discord?discord_id=${querySubscription.discord_id}&channel_id=${querySubscription.channel_id}`),
         );
 
         if (!currentSubscription) {
@@ -198,7 +198,7 @@ module.exports = {
       });
 
       if (!createdSubscription) {
-        throw new Error(`Probably something goes wrong. Please report directly to AlexZeDim#2645 with #search error.`);
+        throw new Error('Probably something goes wrong. Please report directly to AlexZeDim#2645 with #search error.');
       }
 
       const embed = SearchEmbedMessage(createdSubscription);
@@ -207,5 +207,5 @@ module.exports = {
       console.error(errorOrException);
       await interaction.reply({ content: errorOrException.message, ephemeral: true });
     }
-  }
-}
+  },
+};

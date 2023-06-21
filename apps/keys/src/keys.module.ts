@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig } from '@app/configuration';
-import { Key, KeysSchema } from '@app/mongo';
+import { postgresConfig } from '@app/configuration';
 import { KeysService } from './keys.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity } from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([{ name: Key.name, schema: KeysSchema }]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity]),
   ],
   controllers: [],
   providers: [KeysService],

@@ -1,3 +1,3 @@
-export interface MongoInterface {
-  readonly connection_string: string;
+export interface IMongo {
+  readonly connectionString: string;
 }

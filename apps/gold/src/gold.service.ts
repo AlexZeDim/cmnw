@@ -84,7 +84,7 @@ export class GoldService {
           } catch (error) {
             this.logger.error(`indexGold: error ${error}`);
           }
-        }, 5)
+        }, 5),
       ));
 
       if (!orders.length) {
@@ -96,7 +96,7 @@ export class GoldService {
       await this.RealmModel.updateMany({ connected_realm_id: { $in: Array.from(realms) } }, { golds: now });
       this.logger.log(`indexGold: ${orders.length} orders on timestamp: ${now} successfully inserted`);
     } catch (errorException) {
-      this.logger.error(`indexGold: ${errorException}`)
+      this.logger.error(`indexGold: ${errorException}`);
     }
   }
 }

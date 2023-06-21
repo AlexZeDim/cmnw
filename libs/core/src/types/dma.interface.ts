@@ -1,7 +1,6 @@
-import { LeanDocument, Model } from 'mongoose';
-import { Auction, Contract, Gold } from '@app/mongo';
+import { Model } from 'mongoose';
+import { Auction, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
-import { BattleNetOptions } from 'blizzapi';
 
 class ItemNames {
   en_US: string;
@@ -25,15 +24,15 @@ export interface IAuctionsItem {
   context?: number;
   bonus_lists?: number[];
   modifiers?: Array<IActionsModifier>;
-  pet_breed_id?: number,
-  pet_level?: number,
-  pet_quality_id?: number,
-  pet_species_id?: number
+  pet_breed_id?: number;
+  pet_level?: number;
+  pet_quality_id?: number;
+  pet_species_id?: number;
 }
 
 export interface IAuctionsOrder {
-  id: number
-  item: IAuctionsItem
+  id: number;
+  item: IAuctionsItem;
   bid?: number;
   unit_price?: number;
   buyout?: number;
@@ -47,16 +46,16 @@ export interface IAuctionsOrder {
 }
 
 export interface IAuctionsResponse {
-  auctions: Array<IAuctionsOrder>,
-  lastModified: string
-  commodities: { href: string },
+  auctions: Array<IAuctionsOrder>;
+  lastModified: string;
+  commodities: { href: string };
 }
 
 export interface IQItemValuation {
-  _id: number,
-  last_modified: number,
-  connected_realm_id: number,
-  iteration: number,
+  _id: number;
+  last_modified: number;
+  connected_realm_id: number;
+  iteration: number;
 }
 
 export class IAAuctionOrder {
@@ -79,7 +78,7 @@ export class IAAuctionOrders {
   readonly orders_t1: IAAuctionOrder[];
 }
 
-export class IQPricing implements BattleNetOptions {
+export class IQPricing {
   readonly recipe_id: number;
 
   readonly profession: string | number;
@@ -95,7 +94,7 @@ export class IQPricing implements BattleNetOptions {
   readonly accessToken: string;
 }
 
-export class IQItem implements BattleNetOptions {
+export class IQItem {
   readonly _id: number;
 
   readonly region: string;
@@ -107,7 +106,7 @@ export class IQItem implements BattleNetOptions {
   readonly accessToken: string;
 }
 
-export class IQAuction implements BattleNetOptions {
+export class IQAuction {
   readonly connected_realm_id?: number;
 
   auctions?: number;
@@ -132,9 +131,9 @@ export class IVAItem implements IQItemValuation {
 
   readonly quality: string;
 
-  readonly asset_class: LeanDocument<String>[];
+  readonly asset_class: string[];
 
-  readonly tags: LeanDocument<String>[];
+  readonly tags: string[];
 
   readonly ilvl: number;
 
@@ -178,45 +177,45 @@ export class IVAItem implements IQItemValuation {
 }
 
 export interface IItem {
-  quality: string,
-  item_class: string,
-  item_subclass: string,
-  inventory_type: string,
-  purchase_price: number,
-  sell_price: number,
-  preview_item: string,
-  loot_type: string
+  quality: string;
+  item_class: string;
+  item_subclass: string;
+  inventory_type: string;
+  purchase_price: number;
+  sell_price: number;
+  preview_item: string;
+  loot_type: string;
 }
 
 export interface IPricing {
-  recipe_id: number,
-  expansion: string,
-  profession: number,
+  recipe_id: number;
+  expansion: string;
+  profession: number;
 }
 
 export interface IPricingMethods {
-  faction?: string,
-  recipe_id: number,
-  reagents: Record<string, any>[],
-  item_id: number,
-  expansion: string,
-  item_quantity: number,
+  faction?: string;
+  recipe_id: number;
+  reagents: Record<string, any>[];
+  item_id: number;
+  expansion: string;
+  item_quantity: number;
 }
 
 export interface IChartOrder {
-  x: number,
-  y: number,
-  orders: number,
-  value: number,
-  oi: number,
+  x: number;
+  y: number;
+  orders: number;
+  value: number;
+  oi: number;
 }
 
 export interface IOrderQuotes {
-  readonly id: number,
-  readonly price: number,
-  readonly quantity: number,
-  readonly open_interest: number,
-  readonly size: number,
+  readonly id: number;
+  readonly price: number;
+  readonly quantity: number;
+  readonly open_interest: number;
+  readonly size: number;
 }
 
 export interface IOrderXrs {
@@ -229,9 +228,9 @@ export interface IOrderXrs {
 }
 
 export interface IARealm {
-  readonly _id: number,
-  readonly realms: string[],
-  readonly slug: string,
+  readonly _id: number;
+  readonly realms: string[];
+  readonly slug: string;
   readonly connected_realm_id: number;
   readonly golds: number;
   readonly auctions: number;
@@ -240,8 +239,8 @@ export interface IARealm {
 
 export interface IAARealm {
   readonly _id: {
-    readonly connected_realm_id: number,
-    readonly auctions: number,
+    readonly connected_realm_id: number;
+    readonly auctions: number;
   };
   readonly name: string;
 }
@@ -254,7 +253,7 @@ export interface IVARealm {
 
 export interface IVAAuctions {
   readonly _id: number;
-  readonly data: LeanDocument<Auction>;
+  readonly data: Auction;
 }
 
 export interface IFunPayGold {
@@ -271,16 +270,15 @@ export interface IFunPayGold {
  * for Auction Valuation Adjustable
  */
 export interface IMarketData {
-  _id: number,
-  quantity: number,
-  open_interest: number,
-  value: number,
-  min: number,
-  orders: number[]
+  _id: number;
+  quantity: number;
+  open_interest: number;
+  value: number;
+  min: number;
+  orders: number[];
 }
 
-
-export interface ContractAggregation extends LeanDocument<Contract> {
+export interface ContractAggregation {
   _id: string;
   item_id: number;
   connected_realm_id: number;
@@ -342,9 +340,9 @@ export class IReagentItem implements ItemPricing {
 
   readonly ticker: string;
 
-  readonly asset_class: LeanDocument<String>[];
+  readonly asset_class: Array<string>;
 
-  readonly tags: LeanDocument<String>[];
+  readonly tags: Array<string>;
   // ItemPricing
   quantity: number;
   // Implement Value
@@ -372,7 +370,6 @@ export interface IGetCommdtyOrders {
 }
 
 export class MethodEvaluation {
-
   queue_cost: number;
 
   derivatives_cost: number;
@@ -399,5 +396,5 @@ export class MethodEvaluation {
 
   single_premium: boolean;
 
-  premium_clearance: boolean
+  premium_clearance: boolean;
 }

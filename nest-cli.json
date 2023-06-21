@@ -5,7 +5,8 @@
   "root": "apps/conglomerat",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+    "tsConfigPath": "apps/conglomerat/tsconfig.app.json",
+    "assets": [{"include": "../config/*.yaml", "outDir": "./dist/config"}]
   },
   "projects": {
     "conglomerat": {
@@ -222,6 +223,15 @@
       "sourceRoot": "libs/e2e/src",
       "compilerOptions": {
         "tsConfigPath": "libs/e2e/tsconfig.lib.json"
+      }
+    },
+    "pg": {
+      "type": "library",
+      "root": "libs/pg",
+      "entryFile": "index",
+      "sourceRoot": "libs/pg/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/pg/tsconfig.lib.json"
       }
     }
   }

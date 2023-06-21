@@ -5,6 +5,6 @@ export const databaseProviders = [
   {
     provide: 'DATABASE_CONNECTION',
     useFactory: (): Promise<typeof mongoose> =>
-      mongoose.connect(mongoConfig.connection_string, mongoOptionsConfig),
+      mongoose.connect(mongoConfig.connectionString, mongoOptionsConfig),
   },
 ];

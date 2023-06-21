@@ -1,4 +1,4 @@
-import { Document, Schema as MongooseSchema, Types } from "mongoose";
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LFG, OSINT_SOURCE } from '@app/core';
 import { Guild } from '@app/mongo/schemas/guilds.schema';
@@ -9,7 +9,7 @@ import { Realm } from '@app/mongo/schemas/realms.schema';
  * https://wow.gamepedia.com/GUID
  */
 @Schema()
-class Mount extends Document  {
+class Mount extends Document {
   @Prop({ type: Number })
   _id: number;
 
@@ -20,7 +20,7 @@ class Mount extends Document  {
 export const MountsSchema = SchemaFactory.createForClass(Mount);
 
 @Schema()
-class Pet extends Document  {
+class Pet extends Document {
   @Prop({ type: Number })
   _id: number;
 
@@ -56,10 +56,10 @@ export const ProfessionSchema = SchemaFactory.createForClass(Profession);
 @Schema()
 class RaidProgress extends Document {
   @Prop({ required: true, type: String })
-  _id: string
+  _id: string;
 
   @Prop({ required: true, type: String })
-  progress: string
+  progress: string;
 }
 
 export const RaidProgressSchema = SchemaFactory.createForClass(RaidProgress);
@@ -172,7 +172,7 @@ export class Character extends Document {
   mounts_score: number;
 
   @Prop({ type: [PetsSchema] })
-  pets:  Types.Array<Pet>;
+  pets: Types.Array<Pet>;
 
   @Prop({ type: Number, index: true })
   pets_score: number;

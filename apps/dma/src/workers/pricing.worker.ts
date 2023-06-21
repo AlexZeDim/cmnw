@@ -1,21 +1,26 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_SOURCE, DMA_TIMEOUT_TOLERANCE, FACTION, PRICING_TYPE, pricingQueue } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI, BattleNetOptions } from 'blizzapi';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
 import { Job } from 'bullmq';
-import { IPricing, IPricingMethods } from '@app/core/interfaces/dma.interface';
+import { IPricing, IPricingMethods } from '@app/core/types/dma.interface';
 import { PROFESSION_TICKER } from '@app/core/constants/dma.constants';
+
+import {
+  DMA_SOURCE,
+  DMA_TIMEOUT_TOLERANCE,
+  FACTION,
+  PRICING_TYPE,
+  pricingQueue,
+} from '@app/core';
 
 @BullWorker({ queueName: pricingQueue.name })
 export class PricingWorker {
-  private readonly logger = new Logger(
-    PricingWorker.name, { timestamp: true },
-  );
+  private readonly logger = new Logger(PricingWorker.name, { timestamp: true });
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     @InjectModel(Pricing.name)
@@ -40,25 +45,26 @@ export class PricingWorker {
         region: 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
-        accessToken: args.accessToken
+        accessToken: args.accessToken,
       });
 
       const [recipe_data, recipe_media]: Record<string, any>[] = await Promise.all([
         this.BNet.query(`/data/wow/recipe/${args.recipe_id}`, {
           timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
+          headers: { 'Battlenet-Namespace': 'static-eu' },
         }),
         this.BNet.query(`/data/wow/media/recipe/${args.recipe_id}`, {
           timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
-        })
+          headers: { 'Battlenet-Namespace': 'static-eu' },
+        }),
       ]);
       /**
        * Skip Mass mill and prospect
        * because they are bugged
        */
       await job.updateProgress(25);
-      if (recipe_data?.name?.en_GB && recipe_data.name.en_GB.includes('Mass')) return 203;
+      if (recipe_data?.name?.en_GB && recipe_data.name.en_GB.includes('Mass'))
+        return 203;
 
       if (recipe_data?.alliance_crafted_item?.id) {
         writeConcerns.push({
@@ -67,8 +73,8 @@ export class PricingWorker {
           item_id: recipe_data.alliance_crafted_item.id,
           reagents: recipe_data.reagents,
           expansion: args.expansion,
-          item_quantity: 0
-        })
+          item_quantity: 0,
+        });
       }
 
       if (recipe_data?.horde_crafted_item?.id) {
@@ -88,19 +94,22 @@ export class PricingWorker {
           item_id: recipe_data.crafted_item.id,
           reagents: recipe_data.reagents,
           expansion: args.expansion,
-          item_quantity: 0
-        })
+          item_quantity: 0,
+        });
       }
 
       await job.updateProgress(35);
       for (const concern of writeConcerns) {
-        let pricing_method = await this.PricingModel.findOne({ 'derivatives._id': concern.item_id, 'recipe_id': concern.recipe_id });
+        let pricing_method = await this.PricingModel.findOne({
+          'derivatives._id': concern.item_id,
+          recipe_id: concern.recipe_id,
+        });
 
         if (!pricing_method) {
           pricing_method = new this.PricingModel({
             recipe_id: concern.recipe_id,
-            create_by: DMA_SOURCE.API
-          })
+            create_by: DMA_SOURCE.API,
+          });
         }
 
         Object.assign(pricing_method, concern);
@@ -110,26 +119,38 @@ export class PricingWorker {
          * Only SkillLineDB stores recipes by it's ID
          * so we need that spell_id later
          */
-        const recipe_spell = await this.SkillLineModel.findById(pricing_method.recipe_id);
+        const recipe_spell = await this.SkillLineModel.findById(
+          pricing_method.recipe_id,
+        );
         if (!recipe_spell) {
-          this.logger.error(`Consensus not found for ${pricing_method.recipe_id}`)
-          continue
+          this.logger.error(`Consensus not found for ${pricing_method.recipe_id}`);
+          continue;
         }
 
         if (PROFESSION_TICKER.has(args.profession)) {
-          pricing_method.profession = PROFESSION_TICKER.get(args.profession)
+          pricing_method.profession = PROFESSION_TICKER.get(args.profession);
         } else if (PROFESSION_TICKER.has(recipe_spell.skill_line)) {
-          pricing_method.profession = PROFESSION_TICKER.get(recipe_spell.skill_line)
+          pricing_method.profession = PROFESSION_TICKER.get(recipe_spell.skill_line);
         }
 
         pricing_method.spell_id = recipe_spell.spell_id;
         await job.updateProgress(50);
 
-        const pricing_spell = await this.SpellEffectModel.findOne({ spell_id: pricing_method.spell_id });
-        if (recipe_data.modified_crafting_slots && Array.isArray(recipe_data.modified_crafting_slots)) {
-           recipe_data.modified_crafting_slots.map((mrs: { slot_type: { id: number } }) => {
-             if (mrs.slot_type?.id) pricing_method.modified_crafting_slots.addToSet({ _id: mrs.slot_type.id })
-           });
+        const pricing_spell = await this.SpellEffectModel.findOne({
+          spell_id: pricing_method.spell_id,
+        });
+        if (
+          recipe_data.modified_crafting_slots &&
+          Array.isArray(recipe_data.modified_crafting_slots)
+        ) {
+          recipe_data.modified_crafting_slots.map(
+            (mrs: { slot_type: { id: number } }) => {
+              if (mrs.slot_type?.id)
+                pricing_method.modified_crafting_slots.addToSet({
+                  _id: mrs.slot_type.id,
+                });
+            },
+          );
         }
 
         /**
@@ -160,14 +181,19 @@ export class PricingWorker {
             quantity: parseInt(item.quantity, 10),
           }));
         } else {
-          const reagents = await this.SpellReagentsModel.findOne({ spell_id: pricing_method.spell_id });
+          const reagents = await this.SpellReagentsModel.findOne({
+            spell_id: pricing_method.spell_id,
+          });
           if (reagents) pricing_method.reagents = reagents.reagents;
         }
 
         /**
          * Derivatives from write concern
          */
-        pricing_method.derivatives.addToSet({ _id: concern.item_id, quantity: concern.item_quantity });
+        pricing_method.derivatives.addToSet({
+          _id: concern.item_id,
+          quantity: concern.item_quantity,
+        });
 
         if (recipe_media) pricing_method.media = recipe_media.assets[0].value;
 
@@ -178,7 +204,7 @@ export class PricingWorker {
         await pricing_method.save();
       }
       await job.updateProgress(100);
-      return 200
+      return 200;
     } catch (errorException) {
       await job.log(errorException);
       this.logger.error(`${PricingWorker.name}: ${errorException}`);

@@ -14,7 +14,7 @@ import {
   delay,
   FACTION,
   GLOBAL_OSINT_KEY,
-  guildsQueue, IQCharacter,
+  guildsQueue, CharacterJobQueue,
   IQGuild, MYTHIC_PLUS_SEASONS, OSINT_SOURCE,
   RAID_FACTIONS,
   RAIDS, toSlug,
@@ -27,7 +27,7 @@ export class LadderService implements OnApplicationBootstrap {
     LadderService.name, { timestamp: true },
   );
 
-  private BNet: BlizzAPI
+  private BNet: BlizzAPI;
 
   constructor(
     @InjectRedis()
@@ -43,7 +43,7 @@ export class LadderService implements OnApplicationBootstrap {
     @BullQueueInject(guildsQueue.name)
     private readonly queueGuilds: Queue<IQGuild, number>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queueCharacters: Queue<IQCharacter, number>,
+    private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -55,7 +55,7 @@ export class LadderService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
   async indexPvpLadder(
     clearance: string = GLOBAL_OSINT_KEY,
-    onlyLast: boolean = true
+    onlyLast: boolean = true,
   ): Promise<void> {
     try {
       const keys = await this.KeyModel.find({ tags: clearance });
@@ -69,12 +69,12 @@ export class LadderService implements OnApplicationBootstrap {
         region: 'eu',
         clientId: key._id,
         clientSecret: key.secret,
-        accessToken: key.token
+        accessToken: key.token,
       });
 
       const { seasons } = await this.BNet.query('/data/wow/pvp-season/index', {
         timeout: 10000,
-        headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+        headers: { 'Battlenet-Namespace': 'dynamic-eu' },
       });
 
       let i: number = 0;
@@ -89,7 +89,7 @@ export class LadderService implements OnApplicationBootstrap {
 
           const { entries } = await this.BNet.query(`/data/wow/pvp-season/${season.id}/pvp-leaderboard/${bracket}`, {
             timeout: 10000,
-            headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+            headers: { 'Battlenet-Namespace': 'dynamic-eu' },
           });
 
           for (const player of entries) {
@@ -110,8 +110,8 @@ export class LadderService implements OnApplicationBootstrap {
                 clientId: keys[i]._id,
                 clientSecret: keys[i].secret,
                 accessToken: keys[i].token,
-                created_by: OSINT_SOURCE.PVPLADDER,
-                updated_by: OSINT_SOURCE.PVPLADDER,
+                created_by: OSINT_SOURCE.PVP_LADDER,
+                updated_by: OSINT_SOURCE.PVP_LADDER,
                 faction,
                 iteration: player.rank,
                 guildRank: false,
@@ -119,8 +119,8 @@ export class LadderService implements OnApplicationBootstrap {
               },
               {
                 jobId: _id,
-                priority: 2
-              }
+                priority: 2,
+              },
             );
 
             i++;
@@ -130,14 +130,14 @@ export class LadderService implements OnApplicationBootstrap {
       }
 
     } catch (errorException) {
-      this.logger.error(`indexPvpLadder: ${errorException}`)
+      this.logger.error(`indexPvpLadder: ${errorException}`);
     }
   }
 
   @Cron(CronExpression.EVERY_WEEKEND)
   async indexMythicPlusLadder(
     clearance: string = GLOBAL_OSINT_KEY,
-    onlyLast: boolean = true
+    onlyLast: boolean = true,
   ): Promise<void> {
     try {
       const keys = await this.KeyModel.find({ tags: clearance });
@@ -151,7 +151,7 @@ export class LadderService implements OnApplicationBootstrap {
         region: 'eu',
         clientId: key._id,
         clientSecret: key.secret,
-        accessToken: key.token
+        accessToken: key.token,
       });
 
       const mythicPlusDungeons: Map<number, string> = new Map([]);
@@ -160,12 +160,12 @@ export class LadderService implements OnApplicationBootstrap {
 
       const { dungeons } = await this.BNet.query('/data/wow/mythic-keystone/dungeon/index', {
         timeout: 10000,
-        headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+        headers: { 'Battlenet-Namespace': 'dynamic-eu' },
       });
 
       const { seasons } = await this.BNet.query('/data/wow/mythic-keystone/season/index', {
         timeout: 10000,
-        headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+        headers: { 'Battlenet-Namespace': 'dynamic-eu' },
       });
 
       dungeons.map(dungeon => mythicPlusDungeons.set(dungeon.id, dungeon.name.en_GB));
@@ -181,7 +181,7 @@ export class LadderService implements OnApplicationBootstrap {
 
         const { periods } = await this.BNet.query(`/data/wow/mythic-keystone/season/${mythicPlusSeason}`, {
           timeout: 10000,
-          headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+          headers: { 'Battlenet-Namespace': 'dynamic-eu' },
         });
 
         if (onlyLast) {
@@ -213,7 +213,7 @@ export class LadderService implements OnApplicationBootstrap {
 
             const { leading_groups } = await this.BNet.query(`/data/wow/connected-realm/${connectedRealmId}/mythic-leaderboard/${dungeonId}/period/${period}`, {
               timeout: 10000,
-              headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+              headers: { 'Battlenet-Namespace': 'dynamic-eu' },
             });
 
             if (!leading_groups || !Array.isArray(leading_groups)) continue;
@@ -239,8 +239,8 @@ export class LadderService implements OnApplicationBootstrap {
                     clientId: keys[i]._id,
                     clientSecret: keys[i].secret,
                     accessToken: keys[i].token,
-                    created_by: OSINT_SOURCE.MYTHICPLUS,
-                    updated_by: OSINT_SOURCE.MYTHICPLUS,
+                    created_by: OSINT_SOURCE.MYTHIC_PLUS,
+                    updated_by: OSINT_SOURCE.MYTHIC_PLUS,
                     faction,
                     iteration,
                     guildRank: false,
@@ -248,8 +248,8 @@ export class LadderService implements OnApplicationBootstrap {
                   },
                   {
                     jobId: _id,
-                    priority: 3
-                  }
+                    priority: 3,
+                  },
                 );
 
                 i++;
@@ -262,14 +262,14 @@ export class LadderService implements OnApplicationBootstrap {
 
       await this.redisService.set(`week:${w}`, iteration);
     } catch (errorException) {
-      this.logger.error(`indexMythicPlusLadder: ${errorException}`)
+      this.logger.error(`indexMythicPlusLadder: ${errorException}`);
     }
   }
 
   @Cron(CronExpression.EVERY_WEEK)
   async indexHallOfFame(
     clearance: string = GLOBAL_OSINT_KEY,
-    onlyLast: boolean = true
+    onlyLast: boolean = true,
   ): Promise<void> {
     try {
       const keys = await this.KeyModel.find({ tags: clearance });
@@ -285,7 +285,7 @@ export class LadderService implements OnApplicationBootstrap {
         region: 'eu',
         clientId: key._id,
         clientSecret: key.secret,
-        accessToken: key.token
+        accessToken: key.token,
       });
 
       for (const raid of RAIDS) {
@@ -296,7 +296,7 @@ export class LadderService implements OnApplicationBootstrap {
         for (const raidFaction of RAID_FACTIONS) {
           const { entries } = await this.BNet.query(`/data/wow/leaderboard/hall-of-fame/${raid}/${raidFaction}`, {
             timeout: 10000,
-            headers: { 'Battlenet-Namespace': 'dynamic-eu' }
+            headers: { 'Battlenet-Namespace': 'dynamic-eu' },
           });
 
           for (const entry of entries) {
@@ -329,9 +329,9 @@ export class LadderService implements OnApplicationBootstrap {
               },
               {
                 jobId: _id,
-                priority: 2
-              }
-            )
+                priority: 2,
+              },
+            );
 
             i++;
             if (i >= keys.length) i = 0;
@@ -340,7 +340,7 @@ export class LadderService implements OnApplicationBootstrap {
       }
 
     } catch (errorException) {
-      this.logger.error(`indexHallOfFame: ${errorException}`)
+      this.logger.error(`indexHallOfFame: ${errorException}`);
     }
   }
 }

@@ -42,5 +42,5 @@ module.exports = {
     const { data: hash } = await axios.get<Partial<CharacterDto[]>>(encodeURI(`${discordConfig.basename}/api/osint/character/hash?hash=${type}@${hashValue}`));
     const embed = HashEmbedMessage(`${type}@${hashValue}`, hash);
     await interaction.reply({ embeds: [ embed ] });
-  }
-}
+  },
+};

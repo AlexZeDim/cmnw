@@ -31,4 +31,3 @@ export const SWAGGER_ACCOUNT_CRYPTONYM: ApiPropertyOptions = {
   required: false,
   example: 'AlexZeDim',
 };
-

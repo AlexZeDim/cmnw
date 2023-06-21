@@ -13,10 +13,10 @@ export class Key extends Document {
   token: string;
 
   @Prop({ type: Number })
-  expired_in: number;
+  expiresIn: number;
 
   @Prop({ type: [String] })
-  tags: Types.Array<String>;
+  tags: Types.Array<string>;
 }
 
 export const KeysSchema = SchemaFactory.createForClass(Key);

@@ -4,6 +4,7 @@ import { mongoConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
+import { charactersQueue, guildsQueue } from '@app/core';
 import {
   Character,
   CharactersSchema,
@@ -20,11 +21,11 @@ import {
   Subscription,
   SubscriptionsSchema,
 } from '@app/mongo';
-import { charactersQueue, guildsQueue } from '@app/core';
+
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
+    MongooseModule.forRoot(mongoConfig.connectionString),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },
       { name: Key.name, schema: KeysSchema },

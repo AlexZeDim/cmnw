@@ -82,16 +82,15 @@ RealmsSchema.index(
   },
   {
     default_language: 'english',
-    weights:
-      {
-        slug: 10,
-        name: 1,
-        slug_locale: 1,
-        name_locale: 1,
-        ticker: 3,
-        region: 1,
-        locale: 1,
-      },
+    weights: {
+      slug: 10,
+      name: 1,
+      slug_locale: 1,
+      name_locale: 1,
+      ticker: 3,
+      region: 1,
+      locale: 1,
+    },
     name: 'SQ',
   },
 );

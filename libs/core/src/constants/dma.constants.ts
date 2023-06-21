@@ -4,7 +4,7 @@ export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
 export enum DMA_SOURCE {
   API = 'DMA-API',
-  LAB = 'DMA-LAB'
+  LAB = 'DMA-LAB',
 }
 
 export enum VALUATION_TYPE {
@@ -24,9 +24,8 @@ export enum VALUATION_TYPE {
 
 export enum ORDER_FLOW {
   C = 'created',
-  R = 'removed'
+  R = 'removed',
 }
-
 
 export enum FLAG_TYPE {
   B = 'BUY',
@@ -94,7 +93,8 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
   // WOWTOKEN
   [2, { asset_class: VALUATION_TYPE.WOWTOKEN }],
   // ACTUAL NON DERIVATIVE REAGENT & MARKET & COMMDTY
-  [3,
+  [
+    3,
     {
       $and: [
         { expansion: 'SHDW' },
@@ -105,14 +105,19 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
         },
         {
           asset_class: {
-            $all: [VALUATION_TYPE.REAGENT, VALUATION_TYPE.MARKET, VALUATION_TYPE.COMMDTY],
+            $all: [
+              VALUATION_TYPE.REAGENT,
+              VALUATION_TYPE.MARKET,
+              VALUATION_TYPE.COMMDTY,
+            ],
           },
         },
       ],
     },
   ],
   // ACTUAL ALL REAGENT & DERIVATIVE
-  [4,
+  [
+    4,
     {
       $and: [
         { expansion: 'SHDW' },
@@ -125,7 +130,8 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
     },
   ],
   // PURE DERIVATIVE
-  [5,
+  [
+    5,
     {
       $and: [
         { expansion: 'SHDW' },

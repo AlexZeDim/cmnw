@@ -9,6 +9,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Guild, Item, Key, Log, Realm, Subscription } from '@app/mongo';
 import { FilterQuery, LeanDocument, Model } from 'mongoose';
+import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { Queue } from 'bullmq';
 import {
   CharacterHashDto,
   CharacterIdDto,
@@ -25,8 +27,6 @@ import {
   RealmDto,
   toSlug,
 } from '@app/core';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { Queue } from 'bullmq';
 
 @Injectable()
 export class OsintService {
@@ -91,8 +91,8 @@ export class OsintService {
           },
           {
             jobId: _id,
-            priority: 1
-          }
+            priority: 1,
+          },
         );
 
         i++;
@@ -129,16 +129,16 @@ export class OsintService {
         clientId: key._id,
         clientSecret: key.secret,
         accessToken: key.token,
-        created_by: OSINT_SOURCE.REQUESTCHARACTER,
-        updated_by: OSINT_SOURCE.REQUESTCHARACTER,
+        created_by: OSINT_SOURCE.CHARACTER_REQUEST,
+        updated_by: OSINT_SOURCE.CHARACTER_REQUEST,
         guildRank: false,
         createOnlyUnique: false,
         forceUpdate: 3600000,
       },
       {
         jobId: _id,
-        priority: 1
-      }
+        priority: 1,
+      },
     );
     if (!character) {
       throw new NotFoundException(`Character: ${_id} not found, but will be added to OSINT-DB on existence shortly`);
@@ -213,46 +213,46 @@ export class OsintService {
     const matchStage = { $match: { _id: _id } };
     const lookupStage = {
       $lookup: {
-        from: "characters",
-        localField: "members._id",
-        foreignField: "_id",
-        as: "guild_members"
-      }
+        from: 'characters',
+        localField: 'members._id',
+        foreignField: '_id',
+        as: 'guild_members',
+      },
     };
     const projectStage = {
       $project: {
-        "guild_members.pets": 0,
-        "guild_members.professions": 0,
-        "guild_members.mounts": 0,
-        "guild_members.languages": 0,
-        "guild_members.raid_progress": 0,
-      }
+        'guild_members.pets': 0,
+        'guild_members.professions': 0,
+        'guild_members.mounts': 0,
+        'guild_members.languages': 0,
+        'guild_members.raid_progress': 0,
+      },
     };
     const addFieldStage = {
       $addFields: {
-        "members": {
+        'members': {
           $map: {
-            input: "$members",
-            as: "member",
+            input: '$members',
+            as: 'member',
             in: {
               $mergeObjects: [
-                "$$member",
+                '$$member',
                 {
                   $arrayElemAt: [
                     {
                       $filter: {
-                        input: "$guild_members",
-                        cond: { $eq: ["$$this._id", "$$member._id"] }
-                      }
+                        input: '$guild_members',
+                        cond: { $eq: ['$$this._id', '$$member._id'] },
+                      },
                     },
-                    0
-                  ]
-                }
-              ]
-            }
-          }
-        }
-      }
+                    0,
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
     };
 
     // TODO add interface
@@ -275,15 +275,15 @@ export class OsintService {
           forceUpdate: 60000,
           createOnlyUnique: true,
           region: 'eu',
-          created_by: OSINT_SOURCE.REQUESTGUILD,
-          updated_by: OSINT_SOURCE.REQUESTGUILD,
+          created_by: OSINT_SOURCE.GUILD_REQUEST,
+          updated_by: OSINT_SOURCE.GUILD_REQUEST,
           clientId: key._id,
           clientSecret: key.secret,
-          accessToken: key.token
+          accessToken: key.token,
         }, {
           jobId: _id,
-          priority: 1
-        }
+          priority: 1,
+        },
       );
       throw new NotFoundException(`Guild: ${_id} not found, but will be added to OSINT-DB on existence shortly`);
     }
@@ -308,7 +308,7 @@ export class OsintService {
   }
 
   async getRealmPopulation(_id: string): Promise<string[]> {
-    return [_id, _id]
+    return [_id, _id];
   }
 
   async getRealms(input: RealmDto): Promise<LeanDocument<Realm>[]> {
@@ -342,7 +342,7 @@ export class OsintService {
           auctions: realm.auctions,
           golds: realm.golds,
         });
-      })
+      });
     }
 
     if (input.type === NOTIFICATIONS.MARKET || input.type === NOTIFICATIONS.ORDERS) {
@@ -368,7 +368,7 @@ export class OsintService {
       return this.SubscriptionModel.findOneAndReplace(
         { _id: `${input.discord_id}${input.channel_id}` },
         subscription.toObject(),
-        { new: true, lean: true }
+        { new: true, lean: true },
       );
     } else {
       const subscriptionCreated = await this.SubscriptionModel.create(subscription);

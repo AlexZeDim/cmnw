@@ -3,9 +3,6 @@ FROM arm64v8/node:lts
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
-ARG KEY
-ENV KEY=$KEY
-
 # Set image labels #
 LABEL org.opencontainers.image.title = "Keys"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"

@@ -8,6 +8,7 @@ services:
       replicas: 3
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   keys:
     image: ghcr.io/alexzedim/keys:latest
@@ -15,6 +16,7 @@ services:
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   realms:
     image: ghcr.io/alexzedim/realms:latest
@@ -22,6 +24,7 @@ services:
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   characters:
     image: ghcr.io/alexzedim/characters:latest
@@ -29,3 +32,4 @@ services:
     command: [ 'node', 'dist/apps/characters/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}

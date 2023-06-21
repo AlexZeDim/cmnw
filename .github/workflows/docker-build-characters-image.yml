@@ -56,7 +56,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}
-            KEY=${{ secrets.KEY }}
 
       - name: Image digest
         run: echo ${{ steps.build-push-action.outputs.digest }}

@@ -4,6 +4,8 @@ import { decrypt } from '@app/core';
 
 const DISCORD_CONFIG = config.get<IDiscord>('discord');
 
+console.log(DISCORD_CONFIG);
+
 export const discordConfig: IDiscord = {
   id: decrypt(DISCORD_CONFIG.id),
   secret: decrypt(DISCORD_CONFIG.secret),

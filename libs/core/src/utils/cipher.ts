@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv } from 'crypto';
 import { CIPHER_ALGO_AES } from '@app/core/clearance';
+import process from 'node:process';
 
 export const encrypt = (sensitive: string) => {
   const key = Buffer.from(process.env.KEY);

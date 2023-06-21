@@ -4,6 +4,8 @@ import { decrypt } from '@app/core';
 
 const COMMONWEALTH_CONFIG = config.get<ICommonwealth>('commonwealth');
 
+console.log(COMMONWEALTH_CONFIG)
+
 export const commonwealthConfig: ICommonwealth = {
   clientId: decrypt(COMMONWEALTH_CONFIG.clientId),
   clientSecret: decrypt(COMMONWEALTH_CONFIG.clientSecret),

@@ -19,8 +19,7 @@ RUN rm -rf cmnw-secrets
 
 COPY package.json ./
 
-# Notice part below this line
-# This is needed for installing private github packages
+# Installing private github packages #
 RUN echo //npm.pkg.github.com/:_authToken=${CR_PAT} >> ~/.npmrc
 RUN echo @alexzedim:registry=https://npm.pkg.github.com/ >> ~/.npmrc
 

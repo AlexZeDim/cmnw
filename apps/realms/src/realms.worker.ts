@@ -71,8 +71,8 @@ export class RealmsWorker {
       await job.updateProgress(25);
 
       const name = isFieldNamed(response.name)
-        ? response.name
-        : get(response, 'name.name', null);
+        ? get(response, 'name.name', null)
+        : response.name;
 
       if (name) realmEntity.name = name;
 

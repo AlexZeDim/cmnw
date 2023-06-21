@@ -1,19 +1,14 @@
 import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Character, Key, Realm } from '@app/mongo';
-import { Model } from 'mongoose';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
-import {
   CharacterJobQueue,
   charactersQueue,
   GLOBAL_OSINT_KEY,
   OSINT_SOURCE,
 } from '@app/core';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Character, Key, Realm } from '@app/mongo';
+import { Model } from 'mongoose';
+import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';

@@ -6,7 +6,6 @@ import {
   BlizzardApiResponse,
   IRGuildRoster,
 } from '@app/core/types';
-import { response } from 'express';
 
 export const isBlizzardApiResponse = (
   response: unknown,

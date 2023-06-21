@@ -11,10 +11,14 @@ export type BlizzardApiValue = string | number | boolean;
 
 export type BlizzardApiNamedField = Record<string, BlizzardApiValue>;
 
+export type BlizzardApiArray = Array<BlizzardApiValue | BlizzardApiNamedField>;
+
 export type BlizzardApiResponse = Record<
   string,
-  BlizzardApiValue | BlizzardApiNamedField
+  BlizzardApiValue | BlizzardApiNamedField | BlizzardApiArray
 >;
+
+export type BlizzardApiArrayResponse = Record<string, BlizzardApiArray>;
 
 export type BlizzardApiPetsCollection = Record<'pets', Array<IPetType>>;
 

@@ -12,7 +12,7 @@ export const encrypt = (sensitive: string) => {
 };
 
 export const decrypt = (sensitiveEnc: string) => {
-  if (!sensitiveEnc) return sensitiveEnc;
+  if (!sensitiveEnc || process.env.NODE_ENV !== 'production') return sensitiveEnc;
   const key = Buffer.from(process.env.KEY);
   const [s, encryptedData] = sensitiveEnc.split(':');
   if (s !== 'enc') return sensitiveEnc;

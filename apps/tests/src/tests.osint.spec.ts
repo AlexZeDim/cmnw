@@ -3,17 +3,19 @@ import { TestsOsint } from './tests.osint';
 import {
   characterSummary,
   TCharacterSummary,
-  mountsSummary,
-  petsSummary,
   objectPet,
-  objectMount, statusObj, members_guildRosterObj, guildRosterObj, guildObj, professionObj,
+  objectMount,
+  statusObj,
+  guildMembersRosterObj,
+  guildObj,
+  professionObj,
+  guildRosterObj,
 } from '@app/e2e/characters';
-
 
 describe('OSINT', () => {
   let testsService: TestsOsint;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [],
       providers: [TestsOsint],
@@ -36,53 +38,54 @@ describe('OSINT', () => {
   });
 
   describe('mounts', () => {
-    it('return Character Mounts Collection Summary', async () => {
+    it('return character mount collection', async () => {
       const response = await testsService.mounts('лисаорк', 'howling-fjord');
-      const [ mount ] = response.mounts;
-      response.mounts.map(mount => expect(response).toMatchObject(objectMount));
+      expect(response).toHaveProperty('mounts');
+      expect(Array.isArray(response.mounts)).toBeTruthy();
+      response.mounts.map((mount) => expect(mount).toMatchObject(objectMount));
     });
   });
 
   describe('pets', () => {
-    it('return Character Pets Collection Summary', async () => {
+    it('return character pets collection', async () => {
       const response = await testsService.pets('лисаорк', 'howling-fjord');
       expect(response).toHaveProperty('pets');
-      expect(response.pets.length).not.toBeLessThan(0);
-      const [ pet ] = response.pets;
-      response.pets.map(pet => expect(pet).toMatchObject(objectPet));
+      expect(Array.isArray(response.pets)).toBeTruthy();
+      response.pets.map((pet) => expect(pet).toMatchObject(objectPet));
     });
   });
 
   describe('status', () => {
-    it('haracter Profile Status', async () => {
+    it('return character profile status', async () => {
       const response = await testsService.status('лисаорк', 'howling-fjord');
       expect(response).toMatchObject(statusObj);
     });
   });
 
+  describe('professions', () => {
+    it('return character professions summary', async () => {
+      const response = await testsService.professions('лисаорк', 'howling-fjord');
+      expect(response).toMatchObject(professionObj);
+    });
+  });
+
   describe('guild', () => {
-    it('return Guild', async () => {
+    it('return guild', async () => {
       const response = await testsService.guild('рак-гейминг', 'soulflayer');
       expect(response).toMatchObject(guildObj);
     });
   });
 
-  describe('guild_roster', () => {
-    it('return Guild Roster', async () => {
-      const response = await testsService.guild_roster('рак-гейминг', 'soulflayer');
-      const [ member ] = response.members;
-
+  describe('guildRoster', () => {
+    it('return guild roster', async () => {
+      const response = await testsService.guildRoster('рак-гейминг', 'soulflayer');
+      expect(response).toHaveProperty('members');
+      expect(Array.isArray(response.members)).toBeTruthy();
       expect(response).toMatchObject(guildRosterObj);
       expect(['Allicane', 'Horde']).toContain(response.guild.faction.name);
-      response.members.map(member => expect(member.character).toMatchObject(members_guildRosterObj));
-    });
-  });
-
-  describe('professions', () => {
-    it('Character Professions Summary', async () => {
-      const response = await testsService.professions('лисаорк', 'howling-fjord');
-      expect(response).toMatchObject(professionObj);
+      response.members.map((member) =>
+        expect(member).toMatchObject(guildMembersRosterObj),
+      );
     });
   });
 });
-

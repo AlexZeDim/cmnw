@@ -6,7 +6,7 @@ describe('DMA', () => {
   let testsService: TestDma;
   jest.setTimeout(600_000);
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [],
       providers: [TestDma],
@@ -15,17 +15,15 @@ describe('DMA', () => {
     testsService = app.get<TestDma>(TestDma);
   });
 
-  describe('commodities', () => {
-    it('return COMMDTY response', async () => {
+  describe('COMMDTY', () => {
+    it('commodities response', async () => {
       const response = await testsService.commodity();
       expect(response).toHaveProperty('auctions');
-      expect(response.auctions.length).not.toBeLessThan(0);
+      expect(Array.isArray(response.auctions)).toBeTruthy();
 
-      const [ item ] = response.auctions;
+      const [item] = response.auctions;
 
       expect(item).toMatchObject<TCommodityItem>(commodityItem);
     });
   });
 });
-
-

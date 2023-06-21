@@ -18,36 +18,36 @@ import {
 
 import {
   ACTION_LOG,
-  capitalize,
+  BlizzardApiCharacterMedia,
+  BlizzardApiCharacterSummary,
+  BlizzardApiPetsCollection,
+  CHARACTER_MEDIA_FIELD_MAPPING,
+  CHARACTER_SUMMARY_FIELD_MAPPING,
   CharacterExistsOrCreate,
+  CharacterJobQueue,
   charactersQueue,
   CharacterStatus,
-  EVENT_LOG,
-  CharacterJobQueue,
   CharacterSummary,
-  Media,
+  EVENT_LOG,
+  findRealm,
   IMounts,
   IPets,
   IPetType,
   IProfessions,
   IRaiderIO,
   IRaidProgressRIO,
+  isCharacterMedia,
+  isCharacterSummary,
+  isMountCollection,
+  isPetsCollection,
   IWarcraftLog,
   IWowProgress,
+  lowercase,
+  Media,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
-  toSlug,
-  findRealm,
   toGuid,
-  isPetsCollection,
-  isMountCollection,
-  BlizzardApiPetsCollection,
-  isCharacterSummary,
-  BlizzardApiCharacterSummary,
-  CHARACTER_SUMMARY_FIELD_MAPPING,
-  BlizzardApiCharacterMedia,
-  isCharacterMedia,
-  CHARACTER_MEDIA_FIELD_MAPPING,
+  toSlug,
 } from '@app/core';
 
 import {
@@ -121,6 +121,7 @@ export class CharactersWorker {
        * from args in any case
        * summary overwrite later
        */
+      // TODO rework for safe implement
       if (args.race) characterEntity.race = args.race;
       if (args.level) characterEntity.level = args.level;
       if (args.gender) characterEntity.gender = args.gender;
@@ -258,7 +259,7 @@ export class CharactersWorker {
       const characterNew = this.charactersRepository.create({
         id: character.id || 1,
         guid: character.guid,
-        name: capitalize(nameSlug),
+        name: lowercase(nameSlug),
         statusCode: 100,
         realm: realmEntity.slug,
         realmId: realmEntity.id,
@@ -272,7 +273,9 @@ export class CharactersWorker {
       if (character.guild) characterNew.guild = character.guild;
       if (character.guildGuid) characterNew.guildGuid = character.guildGuid;
       if (character.guildId) characterNew.guildId = character.guildId;
-      if (character.createdBy) characterNew.createdBy = character.createdBy;
+      characterNew.createdBy = character.createdBy
+        ? character.createdBy
+        : OSINT_SOURCE.CHARACTER_GET;
 
       return { characterEntity: characterNew, isNew: true };
     }
@@ -609,14 +612,14 @@ export class CharactersWorker {
   }
 
   private async getProfessions(
-    name_slug: string,
-    realm_slug: string,
+    nameSlug: string,
+    realmSlug: string,
     BNet: BlizzAPI,
   ): Promise<Partial<IProfessions>> {
     const professions: Partial<IProfessions> = {};
     try {
       const response: Record<string, any> = await BNet.query(
-        `/profile/wow/character/${realm_slug}/${name_slug}/professions`,
+        `/profile/wow/character/${realmSlug}/${nameSlug}/professions`,
         {
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' },
@@ -722,20 +725,20 @@ export class CharactersWorker {
 
       return professions;
     } catch (error) {
-      this.logger.error(`professions: ${name_slug}@${realm_slug}:${error}`);
+      this.logger.error(`professions: ${nameSlug}@${realmSlug}:${error}`);
       return professions;
     }
   }
 
   private async getSummary(
-    name_slug: string,
-    realm_slug: string,
+    nameSlug: string,
+    realmSlug: string,
     BNet: BlizzAPI,
   ): Promise<Partial<CharacterSummary>> {
     const summary: Partial<CharacterSummary> = {};
     try {
       const response = await BNet.query<BlizzardApiCharacterSummary>(
-        `/profile/wow/character/${realm_slug}/${name_slug}`,
+        `/profile/wow/character/${realmSlug}/${nameSlug}`,
         {
           params: { locale: 'en_GB' },
           headers: { 'Battlenet-Namespace': 'profile-eu' },
@@ -767,7 +770,7 @@ export class CharactersWorker {
 
       return summary;
     } catch (error) {
-      this.logger.error(`getSummary: ${name_slug}@${realm_slug}:${error}`);
+      this.logger.error(`getSummary: ${nameSlug}@${realmSlug}:${error}`);
       return summary;
     }
   }

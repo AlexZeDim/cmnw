@@ -8,7 +8,14 @@ export const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * @description returns Uppercased string, with replaces dash for spaces
+ * @description Returns capitalized string
+ * @param s {string}
+ * @return {string}
+ */
+export const lowercase = (s: string): string => s.toLowerCase();
+
+/**
+ * @description returns uppercase string, with replaces dash for spaces
  * @param s {string}
  * @return {string}
  */

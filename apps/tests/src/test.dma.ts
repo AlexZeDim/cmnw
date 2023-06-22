@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { dynamicParams } from '@app/e2e/params/';
 import { commonwealthConfig } from '@app/configuration';
+import { API_HEADERS_ENUM, apiConstParams } from '@app/core';
 
 @Injectable()
 export class TestDma {
@@ -14,6 +14,16 @@ export class TestDma {
   });
 
   async commodity(): Promise<any> {
-    return this.BNet.query('/data/wow/auctions/commodities', dynamicParams);
+    return this.BNet.query(
+      '/data/wow/auctions/commodities',
+      apiConstParams(API_HEADERS_ENUM.DYNAMIC),
+    );
+  }
+
+  async auctions(connectedRealmId: number): Promise<any> {
+    return this.BNet.query(
+      `/data/wow/connected-realm/${connectedRealmId}/auctions`,
+      apiConstParams(API_HEADERS_ENUM.DYNAMIC),
+    );
   }
 }

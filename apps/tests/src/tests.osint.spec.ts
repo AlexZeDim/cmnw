@@ -11,7 +11,7 @@ import {
   guildRosterObj,
   objectRealm,
   objectConnectedRealm,
-} from '@app/e2e/characters';
+} from '@app/core';
 
 describe('OSINT', () => {
   let testsService: TestsOsint;

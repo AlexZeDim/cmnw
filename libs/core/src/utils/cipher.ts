@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv } from 'crypto';
+import { createCipheriv, createDecipheriv, randomInt } from 'crypto';
 import { CIPHER_ALGO_AES } from '@app/core/clearance';
 import process from 'node:process';
 
@@ -22,3 +22,11 @@ export const decrypt = (sensitiveEnc: string) => {
     decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8')
   );
 };
+
+/**
+ * @description Gives a random int number in-between requested values
+ * @param min {number} Minimal number
+ * @param max {number} Maximum number
+ */
+export const cryptoRandomIntBetween = (min: number, max: number) =>
+  randomInt(min, max + 1);

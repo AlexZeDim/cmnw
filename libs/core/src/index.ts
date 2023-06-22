@@ -6,4 +6,3 @@ export * from './clearance';
 export * from './queues';
 export * from './utils';
 export * from './swagger';
-export * from './mocks';

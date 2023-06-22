@@ -27,6 +27,12 @@ export enum ORDER_FLOW {
   R = 'removed',
 }
 
+export enum MARKET_TYPE {
+  A = 'AUCTION',
+  C = 'COMMDTY',
+  G = 'GOLD',
+}
+
 export enum FLAG_TYPE {
   B = 'BUY',
   S = 'SELL',

@@ -307,6 +307,7 @@ export const REALM_TICKER = new Map<string, string>([
   ['Ysondre', 'YSONDRE'],
   ['Ashenvale', 'ASHNVLE'],
   ['Gordunni', 'GRDNNI'],
+  ['Eversong', 'EVERSNG'],
   ['Lich King', 'LCHKNG'],
   ['Soulflayer', 'SLFLYR'],
   ['Deathguard', 'DTHGRD'],
@@ -460,4 +461,5 @@ export enum MYTHIC_PLUS_SEASONS {
 export enum API_HEADERS_ENUM {
   PROFILE = 'profile-eu',
   DYNAMIC = 'dynamic-eu',
+  STATIC = 'static-eu',
 }

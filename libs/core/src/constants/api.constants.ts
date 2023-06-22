@@ -1,7 +1,17 @@
-import { API_HEADERS_ENUM, OSINT_TIMEOUT_TOLERANCE } from '@app/core';
+import {
+  API_HEADERS_ENUM,
+  DMA_TIMEOUT_TOLERANCE,
+  OSINT_TIMEOUT_TOLERANCE,
+} from '@app/core';
+
+export enum TOLERANCE_ENUM {
+  DMA = DMA_TIMEOUT_TOLERANCE,
+  OSINT = OSINT_TIMEOUT_TOLERANCE,
+}
 
 export const apiConstParams = (
   header: API_HEADERS_ENUM,
+  tolerance: TOLERANCE_ENUM = TOLERANCE_ENUM.OSINT,
   ifModifiedSince?: string,
 ) => ({
   params: { locale: 'en_GB' },
@@ -13,5 +23,5 @@ export const apiConstParams = (
     : {
         'Battlenet-Namespace': header,
       },
-  timeout: OSINT_TIMEOUT_TOLERANCE,
+  timeout: tolerance,
 });

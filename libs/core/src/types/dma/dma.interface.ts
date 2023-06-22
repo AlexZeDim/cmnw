@@ -19,6 +19,13 @@ export interface IActionsModifier {
   value: number;
 }
 
+export interface IPetList {
+  petBreedId: number;
+  petLevel: number;
+  petQualityId: number;
+  petSpeciesId: number;
+}
+
 export interface IAuctionsItem {
   id: number;
   context: number;
@@ -92,30 +99,14 @@ export class IQPricing {
   readonly accessToken: string;
 }
 
-export class IQItem {
-  readonly _id: number;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
+export interface IQItem {
+  id: number;
 }
 
-export class IQAuction {
-  readonly connected_realm_id?: number;
-
-  auctions?: number;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
+export interface IQAuction {
+  connectedRealmId: number;
+  auctionsTimestamp: number;
+  commoditiesTimestamp: number;
 }
 
 /**
@@ -255,12 +246,12 @@ export interface IVAAuctions {
 }
 
 export interface IFunPayGold {
-  readonly realm: string;
-  readonly faction: string;
-  readonly status: boolean;
-  readonly quantity: string;
-  readonly owner: string;
-  readonly price: string;
+  realm: string;
+  faction: string;
+  status: boolean;
+  quantity: string;
+  owner: string;
+  price: string;
 }
 
 /**

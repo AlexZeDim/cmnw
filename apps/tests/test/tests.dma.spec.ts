@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TestDma } from './test.dma';
 import { DateTime } from 'luxon';
-import { commodityItem } from '@app/core';
+import { TestsDma } from '../src/tests.dma';
+import { commodityItem } from '../mocks';
 
 describe('DMA', () => {
-  let testsService: TestDma;
+  let testsService: TestsDma;
   jest.setTimeout(600_000);
 
   beforeAll(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [],
-      providers: [TestDma],
+      providers: [TestsDma],
     }).compile();
 
-    testsService = app.get<TestDma>(TestDma);
+    testsService = app.get<TestsDma>(TestsDma);
   });
 
   describe('COMMDTY', () => {
@@ -24,10 +24,9 @@ describe('DMA', () => {
       expect(Array.isArray(response.auctions)).toBeTruthy();
 
       const lastModified = DateTime.fromRFC2822(response.lastModified).toJSDate();
-      expect(lastModified).toBe(Date);
+      expect(lastModified).toEqual(expect.any(Date));
 
       const [item] = response.auctions;
-      console.log(item.item);
       expect(item).toMatchObject(commodityItem);
     });
   });

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TestsOsint } from './tests.osint';
+import { TestsOsint } from '../src/tests.osint';
 import {
   characterSummary,
   objectPet,
@@ -11,7 +11,7 @@ import {
   guildRosterObj,
   objectRealm,
   objectConnectedRealm,
-} from '@app/core';
+} from '../mocks';
 
 describe('OSINT', () => {
   let testsService: TestsOsint;

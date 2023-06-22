@@ -4,8 +4,8 @@ import { commonwealthConfig } from '@app/configuration';
 import { API_HEADERS_ENUM, apiConstParams } from '@app/core';
 
 @Injectable()
-export class TestDma {
-  private readonly logger = new Logger(TestDma.name, { timestamp: true });
+export class TestsDma {
+  private readonly logger = new Logger(TestsDma.name, { timestamp: true });
 
   private BNet: BlizzAPI = new BlizzAPI({
     region: 'eu',

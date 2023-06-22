@@ -456,3 +456,8 @@ export enum MYTHIC_PLUS_SEASONS {
   SHDW_S2 = 6,
   SHDW_S3 = 7,
 }
+
+export enum API_HEADERS_ENUM {
+  PROFILE = 'profile-eu',
+  DYNAMIC = 'dynamic-eu',
+}

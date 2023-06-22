@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon';
+
 export const toGuid = (name: string, realm: string) => `${name}@${realm}`;
 /**
  * @description Returns capitalized string
@@ -48,3 +50,13 @@ export const toKey = (s: string): string =>
   s.replace(/\s+/g, '_').replace(/'+/g, '').toLowerCase();
 
 export const toLocale = (s: string): string => s.substr(0, 2) + '_' + s.substr(2);
+
+export const toDate = (lastModified: unknown): Date => {
+  if (lastModified instanceof Date) return lastModified;
+
+  if (DateTime.fromRFC2822(<string>lastModified).isValid) {
+    return DateTime.fromRFC2822(<string>lastModified).toJSDate();
+  }
+
+  return new Date('1999-09-11T20:00:30');
+};

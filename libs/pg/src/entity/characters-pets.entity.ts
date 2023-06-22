@@ -24,6 +24,13 @@ export class CharactersPetsEntity {
 
   @Column({
     nullable: false,
+    type: 'int',
+    name: 'creature_id',
+  })
+  creatureId: number;
+
+  @Column({
+    nullable: false,
     type: 'varchar',
     name: 'character_guid',
   })
@@ -35,6 +42,20 @@ export class CharactersPetsEntity {
     name: 'pet_name',
   })
   petName: string;
+
+  @Column({
+    nullable: true,
+    type: 'varchar',
+    name: 'pet_quality',
+  })
+  petQuality: string;
+
+  @Column({
+    nullable: true,
+    type: 'int',
+    name: 'breed_id',
+  })
+  breedId: number;
 
   @Column({
     default: 1,

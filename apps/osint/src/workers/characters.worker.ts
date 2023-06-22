@@ -519,7 +519,8 @@ export class CharactersWorker {
               const isActive = 'is_active' in pet;
               const petQuality = 'quality' in pet ? pet.quality.name : null;
               const breedId = 'stats' in pet ? pet.stats.breed_id : null;
-              const isIndexNotUnique = isIndex && creatureId && !petsEntities.has(creatureId);
+              const isIndexNotUnique =
+                isIndex && creatureId && !petsEntities.has(creatureId);
 
               updatedPetIds.add(pet.id);
               if (isActive) {

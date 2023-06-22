@@ -18,9 +18,12 @@ import {
 
 import {
   ACTION_LOG,
+  API_HEADERS_ENUM,
+  apiConstParams,
   BlizzardApiCharacterMedia,
   BlizzardApiCharacterSummary,
   BlizzardApiPetsCollection,
+  capitalize,
   CHARACTER_MEDIA_FIELD_MAPPING,
   CHARACTER_SUMMARY_FIELD_MAPPING,
   CharacterExistsOrCreate,
@@ -42,10 +45,9 @@ import {
   isPetsCollection,
   IWarcraftLog,
   IWowProgress,
-  lowercase,
   Media,
   OSINT_SOURCE,
-  OSINT_TIMEOUT_TOLERANCE,
+  toDate,
   toGuid,
   toSlug,
 } from '@app/core';
@@ -120,18 +122,14 @@ export class CharactersWorker {
        * Inherit safe values
        * from args in any case
        * summary overwrite later
+       * TODO probably add lfg status
        */
-      // TODO rework for safe implement
-      if (args.race) characterEntity.race = args.race;
-      if (args.level) characterEntity.level = args.level;
-      if (args.gender) characterEntity.gender = args.gender;
-      if (args.faction) characterEntity.faction = args.faction;
-      // TODO
-      // if (args.lookingForGuild) character.lookingForGuild = args.lookingForGuild;
-      if (args.class) characterEntity.class = args.class;
-      if (args.lastModified) characterEntity.lastModified = args.lastModified;
-      if (args.updatedBy) characterEntity.updatedBy = args.updatedBy;
-      if (args.specialization) characterEntity.specialization = args.specialization;
+      for (const key of CHARACTER_SUMMARY_FIELD_MAPPING.keys()) {
+        const isInheritKeyValue = args[key] && !characterEntity[key];
+        if (isInheritKeyValue) {
+          characterEntity[key] = args[key];
+        }
+      }
 
       await job.updateProgress(10);
 
@@ -153,7 +151,7 @@ export class CharactersWorker {
 
       await job.updateProgress(20);
 
-      if (status.isValid === true) {
+      if (status.isValid) {
         const [summary, petsCollection, mountsCollection, media] =
           await Promise.allSettled([
             this.getSummary(nameSlug, characterEntity.realm, this.BNet),
@@ -244,7 +242,6 @@ export class CharactersWorker {
     character: CharacterJobQueue,
   ): Promise<CharacterExistsOrCreate> {
     const forceUpdate = character.forceUpdate || 86400 * 1000;
-    const nameSlug = toSlug(character.name);
     const timestampNow = new Date().getTime();
     const realmEntity = await findRealm(this.realmsRepository, character.realm);
     if (!realmEntity) {
@@ -257,19 +254,23 @@ export class CharactersWorker {
 
     if (!characterEntity) {
       const characterNew = this.charactersRepository.create({
+        ...character,
         id: character.id || 1,
         guid: character.guid,
-        name: lowercase(nameSlug),
-        statusCode: 100,
+        name: capitalize(character.name),
         realm: realmEntity.slug,
         realmId: realmEntity.id,
         realmName: realmEntity.name,
       });
 
+      if (character.lastModified)
+        characterNew.lastModified = toDate(character.lastModified);
+
       /**
        * Assign values from queue
        * only if they were passed
        */
+      characterNew.statusCode = 100;
       if (character.guild) characterNew.guild = character.guild;
       if (character.guildGuid) characterNew.guildGuid = character.guildGuid;
       if (character.guildId) characterNew.guildId = character.guildId;
@@ -327,21 +328,14 @@ export class CharactersWorker {
     try {
       const statusResponse: Record<string, any> = await BNet.query(
         `/profile/wow/character/${realmSlug}/${nameSlug}/status`,
-        {
-          params: {
-            locale: 'en_GB',
-            timeout: OSINT_TIMEOUT_TOLERANCE,
-          },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
-
       characterStatus.isValid = false;
 
       if (statusResponse.id) characterStatus.id = statusResponse.id;
       if (statusResponse.is_valid) characterStatus.isValid = statusResponse.is_valid;
       if (statusResponse.last_modified)
-        characterStatus.lastModified = statusResponse.last_modified;
+        characterStatus.lastModified = toDate(statusResponse.last_modified);
 
       characterStatus.statusCode = 201;
 
@@ -370,11 +364,7 @@ export class CharactersWorker {
     try {
       const response = await BNet.query<BlizzardApiCharacterMedia>(
         `/profile/wow/character/${realmSlug}/${nameSlug}/character-media`,
-        {
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!isCharacterMedia(response)) return media;
@@ -406,11 +396,7 @@ export class CharactersWorker {
 
       const response = await BNet.query(
         `/profile/wow/character/${realmSlug}/${nameSlug}/collections/mounts`,
-        {
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!isMountCollection(response)) return mountsCollection;
@@ -463,7 +449,7 @@ export class CharactersWorker {
 
       const isNewEntityPets = Boolean(isIndex && mountEntities.length);
       if (isNewEntityPets) {
-        await this.charactersMountsRepository.save(mountEntities);
+        await this.mountsRepository.save(mountEntities);
       }
 
       const removeMountIds = difference(
@@ -497,14 +483,10 @@ export class CharactersWorker {
       const hashB: Array<string | number> = [];
       const hashA: Array<string | number> = [];
       const characterPetsEntities: Array<CharactersPetsEntity> = [];
-      const petsEntities: Array<PetsEntity> = [];
+      const petsEntities = new Map<number, PetsEntity>([]);
       const response = await BNet.query<BlizzardApiPetsCollection>(
         `/profile/wow/character/${realmSlug}/${nameSlug}/collections/pets`,
-        {
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!isPetsCollection(response)) return petsCollection;
@@ -529,11 +511,17 @@ export class CharactersWorker {
               const isAddedToCollection = originalPetIds.has(pet.id);
               const isNamed = 'name' in pet;
 
-              updatedPetIds.add(pet.id);
-
+              const creatureId =
+                'creature_display' in pet ? pet.creature_display.id : null;
+              const petId = pet.id;
               const petName = isNamed ? pet.name : pet.species.name;
               const petLevel = Number(pet.level) || 1;
               const isActive = 'is_active' in pet;
+              const petQuality = 'quality' in pet ? pet.quality.name : null;
+              const breedId = 'stats' in pet ? pet.stats.breed_id : null;
+              const isIndexNotUnique = isIndex && creatureId && !petsEntities.has(creatureId);
+
+              updatedPetIds.add(pet.id);
               if (isActive) {
                 hashA.push(
                   isNamed
@@ -548,24 +536,27 @@ export class CharactersWorker {
                 pet.level,
               );
 
-              if (isIndex) {
+              if (isIndexNotUnique) {
                 const isPetExists = await this.petsRepository.exist({
-                  where: { id: pet.id },
+                  where: { id: creatureId },
                 });
 
                 if (!isPetExists) {
                   const petEntity = this.petsRepository.create({
-                    id: pet.id,
+                    id: creatureId,
                     name: pet.species.name,
                   });
 
-                  petsEntities.push(petEntity);
+                  petsEntities.set(creatureId, petEntity);
                 }
               }
 
               if (!isAddedToCollection) {
                 const characterPetEntity = this.charactersPetsRepository.create({
-                  petId: pet.id,
+                  petId,
+                  creatureId,
+                  petQuality,
+                  breedId,
                   characterGuid,
                   petName,
                   petLevel,
@@ -581,9 +572,9 @@ export class CharactersWorker {
         ),
       );
 
-      const isNewEntityPets = Boolean(isIndex && petsEntities.length);
+      const isNewEntityPets = Boolean(isIndex && petsEntities.size);
       if (isNewEntityPets) {
-        await this.charactersPetsRepository.save(petsEntities);
+        await this.petsRepository.save(Array.from(petsEntities.values()));
       }
 
       const removePetIds = difference(
@@ -620,11 +611,7 @@ export class CharactersWorker {
     try {
       const response: Record<string, any> = await BNet.query(
         `/profile/wow/character/${realmSlug}/${nameSlug}/professions`,
-        {
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!response) return professions;
@@ -739,11 +726,7 @@ export class CharactersWorker {
     try {
       const response = await BNet.query<BlizzardApiCharacterSummary>(
         `/profile/wow/character/${realmSlug}/${nameSlug}`,
-        {
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!isCharacterSummary(response)) return summary;
@@ -751,11 +734,11 @@ export class CharactersWorker {
       for (const [key, path] of CHARACTER_SUMMARY_FIELD_MAPPING.entries()) {
         const value = get(response, path, null);
         if (!value) continue;
-        // TODO guard type if exists
         summary[key] = value;
       }
 
-      summary.guid = toGuid(summary.name, summary.realm);
+      summary.guid = toGuid(nameSlug, summary.realm);
+      summary.lastModified = toDate(summary.lastModified);
 
       if (!summary.guild) {
         summary.guildId = null;
@@ -925,8 +908,8 @@ export class CharactersWorker {
           updated: updated[actionLogField],
           action: actionLogField,
           event: EVENT_LOG.CHARACTER,
-          originalAt: original.lastModified || original.updatedAt,
-          updatedAt: updated.lastModified || updated.updatedAt,
+          originalAt: toDate(original.lastModified || original.updatedAt),
+          updatedAt: toDate(updated.lastModified || updated.updatedAt),
         });
 
         await this.logsRepository.save(logEntity);

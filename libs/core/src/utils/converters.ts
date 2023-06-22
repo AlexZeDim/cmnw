@@ -1,6 +1,13 @@
 import { DateTime } from 'luxon';
 
-export const toGuid = (name: string, realm: string) => `${name}@${realm}`;
+/**
+ * @description Returns lowercase string
+ * @param s {string}
+ * @return {string}
+ */
+export const lowercase = (s: string): string => s.toLowerCase();
+
+export const toGuid = (name: string, realm: string) => `${lowercase(name)}@${realm}`;
 /**
  * @description Returns capitalized string
  * @param s {string}
@@ -8,13 +15,6 @@ export const toGuid = (name: string, realm: string) => `${name}@${realm}`;
  */
 export const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
-
-/**
- * @description Returns capitalized string
- * @param s {string}
- * @return {string}
- */
-export const lowercase = (s: string): string => s.toLowerCase();
 
 /**
  * @description returns uppercase string, with replaces dash for spaces
@@ -54,8 +54,18 @@ export const toLocale = (s: string): string => s.substr(0, 2) + '_' + s.substr(2
 export const toDate = (lastModified: unknown): Date => {
   if (lastModified instanceof Date) return lastModified;
 
-  if (DateTime.fromRFC2822(<string>lastModified).isValid) {
+  if (
+    typeof lastModified === 'string' &&
+    DateTime.fromRFC2822(<string>lastModified).isValid
+  ) {
     return DateTime.fromRFC2822(<string>lastModified).toJSDate();
+  }
+
+  if (
+    typeof lastModified === 'number' &&
+    DateTime.fromMillis(lastModified).isValid
+  ) {
+    return DateTime.fromMillis(<number>lastModified).toJSDate();
   }
 
   return new Date('1999-09-11T20:00:30');

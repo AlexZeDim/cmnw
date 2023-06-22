@@ -7,6 +7,8 @@ import { RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import { get } from 'lodash';
 import {
+  API_HEADERS_ENUM,
+  apiConstParams,
   BlizzardApiResponse,
   IConnectedRealm,
   isFieldNamed,
@@ -14,6 +16,7 @@ import {
   RealmJobQueue,
   realmsQueue,
   toLocale,
+  toSlug,
   transformConnectedRealmId,
   transformNamedField,
 } from '@app/core';
@@ -90,11 +93,7 @@ export class RealmsWorker {
       if (realmEntity.locale != 'enGB') {
         const realmLocale = await this.BNet.query<BlizzardApiResponse>(
           `/data/wow/realm/${args.slug}`,
-          {
-            timeout: 10000,
-            params: { locale: realmEntity.locale },
-            headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-          },
+          apiConstParams(API_HEADERS_ENUM.DYNAMIC),
         );
 
         await job.updateProgress(40);
@@ -103,7 +102,7 @@ export class RealmsWorker {
         const localeName = get(realmLocale, `name.${locale}`, null);
         if (localeName) realmEntity.localeName = localeName;
 
-        const localeSlug = get(realmLocale, `slug.${locale}`, null);
+        const localeSlug = get(realmLocale, toSlug(`name.${locale}`), null);
         if (localeSlug) realmEntity.localeSlug = localeSlug;
       } else {
         const localeNameSlug = get(response, 'name', null);
@@ -125,11 +124,7 @@ export class RealmsWorker {
       if (connectedRealmId) {
         const connectedRealm = await this.BNet.query<IConnectedRealm>(
           `/data/wow/connected-realm/${connectedRealmId}`,
-          {
-            timeout: 10000,
-            params: { locale: 'en_GB' },
-            headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-          },
+          apiConstParams(API_HEADERS_ENUM.DYNAMIC),
         );
 
         realmEntity.connectedRealmId = get(connectedRealm, 'id', null);

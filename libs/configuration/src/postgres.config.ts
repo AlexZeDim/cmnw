@@ -3,6 +3,7 @@ import { IPostgresConfig } from '@app/configuration/interfaces';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { readFileSync } from 'fs';
 import { decrypt } from '@app/core';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import {
   CharactersEntity,
   CharactersGuildsMembersEntity,
@@ -10,8 +11,10 @@ import {
   CharactersPetsEntity,
   CharactersProfessionsEntity,
   GuildsEntity,
+  ItemsEntity,
   KeysEntity,
   LogsEntity,
+  MarketEntity,
   MountsEntity,
   PetsEntity,
   ProfessionsEntity,
@@ -41,9 +44,12 @@ export const postgresConfig: TypeOrmModuleOptions = {
     ProfessionsEntity,
     RealmsEntity,
     LogsEntity,
+    MarketEntity,
+    ItemsEntity,
   ],
   synchronize: false,
   keepConnectionAlive: true,
+  namingStrategy: new SnakeNamingStrategy(),
   ssl: !!POSTGRES_DB_CONFIG.ssl
     ? {
         ca: readFileSync(POSTGRES_DB_CONFIG.ssl?.ca, 'utf-8'),

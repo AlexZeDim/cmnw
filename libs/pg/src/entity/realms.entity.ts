@@ -128,6 +128,14 @@ export class RealmsEntity {
     default: null,
     nullable: true,
     type: 'bigint',
+    name: 'commodities_timestamp',
+  })
+  commoditiesTimestamp: number;
+
+  @Column({
+    default: null,
+    nullable: true,
+    type: 'bigint',
     name: 'valuations_timestamp',
   })
   valuationsTimestamp: number;

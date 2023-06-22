@@ -10,3 +10,5 @@ export * from './characters-guilds-members.entity';
 export * from './characters-mounts.entity';
 export * from './realms.entity';
 export * from './logs.entity';
+export * from './market.entity';
+export * from './items.entity';

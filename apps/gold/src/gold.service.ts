@@ -1,100 +1,131 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Gold, Realm } from '@app/mongo';
-import { LeanDocument, Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { FACTION, IFunPayGold } from '@app/core';
+import { FACTION, findRealm, IFunPayGold, MARKET_TYPE } from '@app/core';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
+import { MarketEntity, RealmsEntity } from '@app/pg';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import cheerio from 'cheerio';
 
 @Injectable()
 export class GoldService {
-  private readonly logger = new Logger(
-    GoldService.name, { timestamp: true },
-  );
+  private readonly logger = new Logger(GoldService.name, { timestamp: true });
 
   constructor(
     private httpService: HttpService,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Gold.name)
-    private readonly GoldModel: Model<Gold>,
-  ) { }
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(MarketEntity)
+    private readonly marketRepository: Repository<MarketEntity>,
+  ) {}
 
   @Cron(CronExpression.EVERY_HOUR)
   private async indexGold(): Promise<void> {
     try {
-      const response = await lastValueFrom(this.httpService.get('https://funpay.ru/chips/2/'));
+      const response = await this.httpService.axiosRef.get<string>(
+        'https://funpay.ru/chips/2/',
+      );
 
-      const funPayHTML = cheerio.load(response.data);
-      const listingHTML = funPayHTML
-        .html('a.tc-item');
+      const exchangeListingPage = cheerio.load(response.data);
+      const goldListingMarkup = exchangeListingPage.html('a.tc-item');
 
-      const listing: Partial<IFunPayGold>[] = [];
-      const orders: Gold[] = [];
-      const realms: Set<number> = new Set<number>();
-      const now: number = new Date().getTime();
+      const goldOrders: Array<Partial<IFunPayGold>> = [];
+      const marketOrders: Array<MarketEntity> = [];
+      const realmsEntity = new Map<string, RealmsEntity>([]);
+      const connectedRealmIds = new Set<number>();
+      const timestamp = new Date().getTime();
 
-      funPayHTML(listingHTML).map((_x, node) => {
-        const realm = funPayHTML(node).find('.tc-server').text();
-        const faction = funPayHTML(node).find('.tc-side').text();
-        const status = !!funPayHTML(node).attr('data-online');
-        const quantity = funPayHTML(node).find('.tc-amount').text();
-        const owner = funPayHTML(node).find('.media-user-name').text();
-        const price = funPayHTML(node).find('.tc-price div').text();
-        listing.push({ realm, faction, status, quantity, owner, price });
+      exchangeListingPage(goldListingMarkup).each((index, element) => {
+        const realm = exchangeListingPage(element).find('.tc-server').text();
+        const faction = exchangeListingPage(element).find('.tc-side').text();
+        const status = Boolean(exchangeListingPage(element).attr('data-online'));
+        const quantity = exchangeListingPage(element).find('.tc-amount').text();
+        const owner = exchangeListingPage(element).find('.media-user-name').text();
+        const price = exchangeListingPage(element).find('.tc-price div').text();
+        goldOrders.push({ realm, faction, status, quantity, owner, price });
       });
 
-      await lastValueFrom(from(listing).pipe(
-        mergeMap(async (order) => {
-          try {
-            const realm: LeanDocument<Realm> = await this.RealmModel
-              .findOne({ $text: { $search: order.realm } })
-              .select('connected_realm_id')
-              .lean();
+      await lastValueFrom(
+        from(goldOrders).pipe(
+          mergeMap(async (order) => {
+            try {
+              const realmEntity = realmsEntity.has(order.realm)
+                ? realmsEntity.get(order.realm)
+                : await findRealm(this.realmsRepository, order.realm);
 
-            if (realm?.connected_realm_id && order?.price && order?.quantity) {
-              const
-                price: number = parseFloat(order.price.replace(/ ₽/g, '')),
-                quantity: number = parseInt(order.quantity.replace(/\s/g, ''));
+              const connectedRealmId =
+                !realmEntity && order.realm === 'Любой'
+                  ? 1
+                  : realmEntity
+                  ? realmEntity.connectedRealmId
+                  : 0;
+
+              const isValid = Boolean(
+                connectedRealmId && order.price && order.quantity,
+              );
+              if (!isValid) {
+                this.logger.log(order.realm);
+                return;
+              }
+
+              realmsEntity.set(order.realm, realmEntity);
+              connectedRealmIds.add(realmEntity.connectedRealmId);
+
+              const price = parseFloat(order.price.replace(/ ₽/g, ''));
+              const quantity = parseInt(order.quantity.replace(/\s/g, ''));
+              const counterparty = order.owner.replace('\n', '').trim();
+              const isQuantityLimit = quantity > 15_000_000;
+              if (isQuantityLimit) {
+                this.logger.log(quantity);
+                return;
+              }
 
               let faction: FACTION = FACTION.ANY;
+              const isOnline = order.status;
+              const isHorde = [FACTION.H, 'Орда'].includes(order.faction);
+              const isAlliance = [FACTION.A, 'Альянсa', 'Альянс'].includes(
+                order.faction,
+              );
 
-              if (order.faction === FACTION.A || order.faction === 'Альянс') faction = FACTION.A;
-              if (order.faction === FACTION.H || order.faction === 'Орда') faction = FACTION.H;
+              if (isAlliance) faction = FACTION.A;
+              if (isHorde) faction = FACTION.H;
 
-              if (quantity < 15000000) {
-                const gold = new this.GoldModel({
-                  connected_realm_id: realm.connected_realm_id,
-                  faction: faction,
-                  quantity: quantity,
-                  status: order.status ? 'Online' : 'Offline',
-                  owner: order.owner,
-                  price: price,
-                  last_modified: now,
-                });
-                realms.add(realm.connected_realm_id);
-                orders.push(gold);
-              } else {
-                this.logger.log(`indexGold: order quantity: ${quantity} found`);
-              }
+              const marketEntity = this.marketRepository.create({
+                connectedRealmId,
+                itemId: 1,
+                type: MARKET_TYPE.G,
+                faction,
+                quantity,
+                isOnline,
+                counterparty,
+                price,
+                timestamp,
+              });
+
+              marketOrders.push(marketEntity);
+            } catch (error) {
+              this.logger.error(`indexGold: error ${error}`);
             }
-          } catch (error) {
-            this.logger.error(`indexGold: error ${error}`);
-          }
-        }, 5),
-      ));
+          }, 5),
+        ),
+      );
 
-      if (!orders.length) {
-        this.logger.warn(`indexGold: ${orders.length} found`);
-        return;
-      }
+      const ordersCount = marketOrders.length;
+      this.logger.log(
+        `indexGold: ${marketOrders.length} orders on timestamp: ${timestamp} successfully inserted`,
+      );
 
-      await this.GoldModel.insertMany(orders, { rawResult: false });
-      await this.RealmModel.updateMany({ connected_realm_id: { $in: Array.from(realms) } }, { golds: now });
-      this.logger.log(`indexGold: ${orders.length} orders on timestamp: ${now} successfully inserted`);
+      if (!ordersCount) return;
+
+      await this.marketRepository.save(marketOrders);
+      await this.realmsRepository.update(
+        {
+          connectedRealmId: In(Array.from(connectedRealmIds)),
+        },
+        { goldTimestamp: timestamp },
+      );
     } catch (errorException) {
       this.logger.error(`indexGold: ${errorException}`);
     }

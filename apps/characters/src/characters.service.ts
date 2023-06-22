@@ -1,13 +1,14 @@
 import {
   CharacterJobQueue,
   charactersQueue,
+  getKeys,
   GLOBAL_OSINT_KEY,
   OSINT_SOURCE,
 } from '@app/core';
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Character, Key, Realm } from '@app/mongo';
+import { Character } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
@@ -15,7 +16,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { KeysEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ArrayContains, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { RegionIdOrName } from 'blizzapi';
 import ms from 'ms';
 
@@ -28,10 +29,6 @@ export class CharactersService {
     private readonly redisService: Redis,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
-    @InjectModel(Key.name)
-    private readonly KeyModel: Model<Key>,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(charactersQueue.name)
@@ -49,12 +46,7 @@ export class CharactersService {
         return;
       }
 
-      const keyEntities = await this.keysRepository.findBy({
-        tags: ArrayContains([clearance]),
-      });
-      if (!keyEntities.length) {
-        throw new NotFoundException(`${keyEntities.length} keys found`);
-      }
+      const keyEntities = await getKeys(this.keysRepository, clearance);
 
       let i = 0;
       let iteration = 0;

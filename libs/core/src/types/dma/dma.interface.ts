@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { Auction, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 
-class ItemNames {
+export interface ItemNames {
   en_US: string;
   es_MX: string;
   pt_BR: string;
@@ -21,34 +21,32 @@ export interface IActionsModifier {
 
 export interface IAuctionsItem {
   id: number;
-  context?: number;
-  bonus_lists?: number[];
-  modifiers?: Array<IActionsModifier>;
-  pet_breed_id?: number;
-  pet_level?: number;
-  pet_quality_id?: number;
-  pet_species_id?: number;
+  context: number;
+  bonus_lists: number[];
+  modifiers: Array<IActionsModifier>;
+  pet_breed_id: number;
+  pet_level: number;
+  pet_quality_id: number;
+  pet_species_id: number;
 }
 
 export interface IAuctionsOrder {
   id: number;
   item: IAuctionsItem;
   bid?: number;
-  unit_price?: number;
   buyout?: number;
   quantity: number;
   time_left: string;
   // extend by transformOrders
-  item_id?: number;
-  price?: number;
-  connected_realm_id: number;
-  last_modified?: number;
+  // item_id?: number;
+  // price?: number;
+  // connected_realm_id: number;
+  // last_modified?: number;
 }
 
 export interface IAuctionsResponse {
   auctions: Array<IAuctionsOrder>;
   lastModified: string;
-  commodities: { href: string };
 }
 
 export interface IQItemValuation {

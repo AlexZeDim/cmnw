@@ -3,7 +3,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
-import { AuctionsWorker, ItemsWorker, PricingWorker, ValuationsWorker } from './workers';
+import {
+  AuctionsWorker,
+  ItemsWorker,
+  PricingWorker,
+  ValuationsWorker,
+} from './workers';
 
 import {
   Auction,
@@ -24,7 +29,8 @@ import {
   SpellEffectSchema,
   SpellReagents,
   SpellReagentsSchema,
-  Token, TokenSchema,
+  Token,
+  TokenSchema,
   Valuations,
   ValuationsSchema,
 } from '@app/mongo';
@@ -55,10 +61,22 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: auctionsQueue.name, options: auctionsQueue.options }),
-    BullModule.registerQueue({ queueName: itemsQueue.name, options: itemsQueue.options }),
-    BullModule.registerQueue({ queueName: pricingQueue.name, options: pricingQueue.options }),
-    BullModule.registerQueue({ queueName: valuationsQueue.name, options: valuationsQueue.options }),
+    BullModule.registerQueue({
+      queueName: auctionsQueue.name,
+      options: auctionsQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: itemsQueue.name,
+      options: itemsQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: pricingQueue.name,
+      options: pricingQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: valuationsQueue.name,
+      options: valuationsQueue.options,
+    }),
   ],
   controllers: [],
   providers: [AuctionsWorker, ValuationsWorker, PricingWorker, ItemsWorker],

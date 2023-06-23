@@ -8,7 +8,7 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
-import { In, Not, Repository } from "typeorm";
+import { Repository } from 'typeorm';
 import {
   API_HEADERS_ENUM,
   apiConstParams,
@@ -23,7 +23,6 @@ import {
   isAuctions,
   toGold,
   transformPrice,
-  VALUATION_TYPE,
 } from '@app/core';
 
 @BullWorker({ queueName: auctionsQueue.name })
@@ -33,8 +32,6 @@ export class AuctionsWorker {
   });
 
   private BNet: BlizzAPI;
-  private isCommodity = new Set<number>();
-  private isItem = new Set<number>();
 
   constructor(
     @InjectRedis()
@@ -100,8 +97,6 @@ export class AuctionsWorker {
 
       let iterator = 0;
 
-      const marketItemsId = new Set<number>();
-
       await lastValueFrom(
         from(auctions).pipe(
           bufferCount(5_000),
@@ -114,26 +109,9 @@ export class AuctionsWorker {
                 isCommdty,
               );
 
-              const isItemStorage = this.isItem.has(marketEntity.itemId);
-              if (!isItemStorage) {
-                marketItemsId.add(marketItemsId.)
-                this.isItem.add(marketEntity.itemId);
-              }
-
-              if (!isItemStorage) this.isItem.add(marketEntity.itemId);
-
-              this.isItem.add(marketEntity.itemId);
-
               await this.marketRepository.save(ordersBulkAuctions);
               iterator += ordersBulkAuctions.length;
               this.logger.log(`ordersBatch: ${connectedRealmId}| ${iterator}`);
-
-              await this.itemsRepository.update(
-                { id: In(Array.from(marketItemsId)), assetClass: Not(In([VALUATION_TYPE.ITEM])) },
-                {
-                  assetClass: VALUATION_TYPE.ITEM,
-                },
-              );
             } catch (errorException) {
               this.logger.error(`ordersBatch: ${errorException}`);
             }

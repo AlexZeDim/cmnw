@@ -327,6 +327,19 @@ export const REALM_TICKER = new Map<string, string>([
   ['Blackscar', 'BLKSCR'],
 ]);
 
+export const REALM_ENTITY_ANY = {
+  id: 1,
+  slug: 'any',
+  name: 'Any',
+  region: 'Europe',
+  localeName: 'Любой',
+  localeSlug: 'любой',
+  ticker: 'AANNYY',
+  status: 'Down',
+  timezone: 'Europe/Paris',
+  connectedRealmId: 1,
+};
+
 export const EXPANSION_LIST_ID = new Map<string, string>([
   ['Classic', 'CLSC'],
   ['Burning', 'TBC'],

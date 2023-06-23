@@ -8,8 +8,14 @@ import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
 import { ArrayContains, Repository } from 'typeorm';
-import { findRealm, GLOBAL_KEY, RealmJobQueue, realmsQueue } from '@app/core';
 import { lastValueFrom, mergeMap, range } from 'rxjs';
+import {
+  findRealm,
+  GLOBAL_KEY,
+  REALM_ENTITY_ANY,
+  RealmJobQueue,
+  realmsQueue,
+} from '@app/core';
 
 @Injectable()
 export class RealmsService implements OnApplicationBootstrap {
@@ -28,7 +34,15 @@ export class RealmsService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    await this.init();
     await this.indexRealms(GLOBAL_KEY);
+    await this.getRealmsWarcraftLogsID();
+  }
+
+  async init() {
+    const anyRealmEntity = this.realmsRepository.create(REALM_ENTITY_ANY);
+    await this.realmsRepository.save(anyRealmEntity);
+    this.logger.log(`init: Realm AANNYY was seeded`);
   }
 
   @Cron(CronExpression.EVERY_WEEK)
@@ -89,7 +103,7 @@ export class RealmsService implements OnApplicationBootstrap {
    * @param end
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  private async getRealmsWarcraftLogsID(start = 1, end = 517): Promise<void> {
+  private async getRealmsWarcraftLogsID(start = 246, end = 517): Promise<void> {
     if (start < 1) start = 1;
 
     await lastValueFrom(
@@ -120,7 +134,7 @@ export class RealmsService implements OnApplicationBootstrap {
           } catch (errorOrException) {
             this.logger.error(`getRealmsWarcraftLogsID: ${errorOrException}`);
           }
-        }),
+        }, 2),
       ),
     );
   }

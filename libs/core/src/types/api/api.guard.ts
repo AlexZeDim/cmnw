@@ -4,6 +4,7 @@ import {
   BlizzardApiMountsCollection,
   BlizzardApiPetsCollection,
   BlizzardApiResponse,
+  BlizzardApiWowToken,
   IRGuildRoster,
 } from '@app/core/types';
 
@@ -51,3 +52,11 @@ export const isCharacterMedia = (
   'assets' in response &&
   Array.isArray(response.assets) &&
   Boolean(response.assets.length);
+
+export const isWowToken = (
+  response: unknown,
+): response is Readonly<BlizzardApiWowToken> =>
+  typeof response === 'object' &&
+  'price' in response &&
+  'lastModified' in response &&
+  'last_updated_timestamp' in response;

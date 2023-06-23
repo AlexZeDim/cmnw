@@ -31,6 +31,7 @@ export enum MARKET_TYPE {
   A = 'AUCTION',
   C = 'COMMDTY',
   G = 'GOLD',
+  T = 'TOKEN',
 }
 
 export enum FLAG_TYPE {

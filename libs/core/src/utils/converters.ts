@@ -30,8 +30,10 @@ export const fromSlug = (s: string): string =>
  * @param digits {number}
  * @return {string}
  */
-export const round = (n: number, digits = 2): number =>
-  parseFloat(n.toFixed(digits));
+export const round = (n: number, digits = 2) => parseFloat(n.toFixed(digits));
+
+export const toGold = (n: number, digits = 2) =>
+  parseFloat((n / 10000).toFixed(digits));
 
 /**
  * @description Return force lowercased slug format string

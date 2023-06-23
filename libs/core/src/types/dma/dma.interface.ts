@@ -246,6 +246,7 @@ export interface IVAAuctions {
 }
 
 export interface IFunPayGold {
+  orderId: string;
   realm: string;
   faction: string;
   status: boolean;
@@ -386,4 +387,10 @@ export class MethodEvaluation {
   single_premium: boolean;
 
   premium_clearance: boolean;
+}
+
+export interface IWowToken {
+  last_updated_timestamp: number;
+  price: number;
+  lastModified: string;
 }

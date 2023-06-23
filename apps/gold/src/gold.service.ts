@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { FACTION, findRealm, IFunPayGold, MARKET_TYPE } from '@app/core';
+import { FACTION, findRealm, IGold, isGold, MARKET_TYPE, round } from '@app/core';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
@@ -32,7 +32,7 @@ export class GoldService {
       const exchangeListingPage = cheerio.load(response.data);
       const goldListingMarkup = exchangeListingPage.html('a.tc-item');
 
-      const goldOrders: Array<Partial<IFunPayGold>> = [];
+      const goldOrders: Array<Partial<IGold>> = [];
       const marketOrders: Array<MarketEntity> = [];
       const realmsEntity = new Map<string, RealmsEntity>([]);
       const connectedRealmIds = new Set<number>();
@@ -46,7 +46,7 @@ export class GoldService {
         const quantity = exchangeListingPage(element).find('.tc-amount').text();
         const owner = exchangeListingPage(element).find('.media-user-name').text();
         const price = exchangeListingPage(element).find('.tc-price div').text();
-        goldOrders.push({ realm, faction, status, quantity, owner, price });
+        goldOrders.push({ realm, faction, status, quantity, owner, price, orderId });
       });
 
       await lastValueFrom(
@@ -79,6 +79,17 @@ export class GoldService {
               const price = parseFloat(order.price.replace(/ ₽/g, ''));
               const quantity = parseInt(order.quantity.replace(/\s/g, ''));
               const counterparty = order.owner.replace('\n', '').trim();
+
+              const isGoldValid = isGold({
+                orderId,
+                price,
+                quantity,
+                counterparty,
+              });
+
+              if (!isGoldValid) return;
+              const value = round(price * (quantity / 1000), 2);
+
               const isQuantityLimit = quantity > 15_000_000;
               if (isQuantityLimit) return;
 
@@ -98,6 +109,7 @@ export class GoldService {
                 type: MARKET_TYPE.G,
                 orderId,
                 faction,
+                value,
                 quantity,
                 isOnline,
                 counterparty,

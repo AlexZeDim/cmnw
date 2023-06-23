@@ -10,8 +10,8 @@ import { FACTION, findRealm, IFunPayGold, MARKET_TYPE } from '@app/core';
 import { mergeMap } from 'rxjs/operators';
 
 @Injectable()
-export class TestsEntity implements OnApplicationBootstrap {
-  private readonly logger = new Logger(TestsEntity.name, { timestamp: true });
+export class TestsBench implements OnApplicationBootstrap {
+  private readonly logger = new Logger(TestsBench.name, { timestamp: true });
 
   constructor(
     private httpService: HttpService,
@@ -22,7 +22,7 @@ export class TestsEntity implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.getGold();
+    await this.testWarcraftLogRealms(1000);
   }
 
   async getUniqueRealms() {
@@ -51,13 +51,14 @@ export class TestsEntity implements OnApplicationBootstrap {
     const timestamp = new Date().getTime();
 
     exchangeListingPage(goldListingMarkup).each((index, element) => {
+      const orderId = exchangeListingPage(element).attr('href');
       const realm = exchangeListingPage(element).find('.tc-server').text();
       const faction = exchangeListingPage(element).find('.tc-side').text();
       const status = Boolean(exchangeListingPage(element).attr('data-online'));
       const quantity = exchangeListingPage(element).find('.tc-amount').text();
       const owner = exchangeListingPage(element).find('.media-user-name').text();
       const price = exchangeListingPage(element).find('.tc-price div').text();
-      goldOrders.push({ realm, faction, status, quantity, owner, price });
+      goldOrders.push({ orderId, realm, faction, status, quantity, owner, price });
     });
 
     await lastValueFrom(
@@ -85,10 +86,11 @@ export class TestsEntity implements OnApplicationBootstrap {
 
             realmsEntity.set(order.realm, realmEntity);
 
+            const [url, orderId] = order.orderId.split('=');
             const price = parseFloat(order.price.replace(/ ₽/g, ''));
             const quantity = parseInt(order.quantity.replace(/\s/g, ''));
             const counterparty = order.owner.replace('\n', '').trim();
-            const isQuantityLimit = quantity > 15_000_000;
+            const isQuantityLimit = quantity > 15_000_000 && price;
             if (isQuantityLimit) {
               this.logger.log(quantity);
               return;
@@ -108,6 +110,7 @@ export class TestsEntity implements OnApplicationBootstrap {
               connectedRealmId,
               itemId: 1,
               type: MARKET_TYPE.G,
+              orderId,
               faction,
               quantity,
               isOnline,
@@ -125,5 +128,20 @@ export class TestsEntity implements OnApplicationBootstrap {
     );
 
     await this.marketRepository.save(marketOrders);
+  }
+
+  async testWarcraftLogRealms(warcraftLogsId: number) {
+    const response = await this.httpService.axiosRef.get<string>(
+      `https://www.warcraftlogs.com/server/id/${warcraftLogsId}`,
+    );
+    const wclHTML = cheerio.load(response.data);
+    console.log(wclHTML);
+    const serverElement = wclHTML.html('.server-name');
+    console.log(serverElement);
+    const realmName = wclHTML(serverElement).text();
+    console.log(realmName);
+
+    const realmEntity = await findRealm(this.realmsRepository, realmName);
+    console.log(realmEntity);
   }
 }

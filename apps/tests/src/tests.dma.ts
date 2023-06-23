@@ -26,4 +26,11 @@ export class TestsDma {
       apiConstParams(API_HEADERS_ENUM.DYNAMIC),
     );
   }
+
+  async wowToken(): Promise<any> {
+    return this.BNet.query(
+      '/data/wow/token/index',
+      apiConstParams(API_HEADERS_ENUM.DYNAMIC),
+    );
+  }
 }

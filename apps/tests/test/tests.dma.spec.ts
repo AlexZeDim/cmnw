@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DateTime } from 'luxon';
 import { TestsDma } from '../src/tests.dma';
-import { commodityItem } from '../mocks';
+import { commodityItem, wowTokenItem } from "../mocks";
 
 describe('DMA', () => {
   let testsService: TestsDma;
@@ -44,6 +44,17 @@ describe('DMA', () => {
       response.auctions.map((auction) =>
         expect(auction.item.id).toEqual(expect.any(Number)),
       );
+    });
+  });
+
+  describe('WOWTOKEN', () => {
+    it('wowtoken response', async () => {
+      const response = await testsService.wowToken();
+      console.log(response);
+      expect(response).toMatchObject(wowTokenItem);
+      expect(response).toHaveProperty('lastModified');
+      const lastModified = DateTime.fromRFC2822(response.lastModified).toJSDate();
+      expect(lastModified).toEqual(expect.any(Date));
     });
   });
 });

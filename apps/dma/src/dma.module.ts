@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import {
+  mongoConfig,
+  mongoOptionsConfig,
+  postgresConfig,
+  redisConfig,
+} from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
 import {
@@ -34,9 +39,13 @@ import {
   Valuations,
   ValuationsSchema,
 } from '@app/mongo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ItemsEntity, KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity, ItemsEntity, MarketEntity]),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },

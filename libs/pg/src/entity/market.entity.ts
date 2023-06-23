@@ -17,6 +17,13 @@ export class MarketEntity {
   readonly uuid: string;
 
   @Column({
+    nullable: true,
+    type: 'varchar',
+    name: 'order_id',
+  })
+  orderId?: string;
+
+  @Column({
     nullable: false,
     type: 'int',
     name: 'item_id',
@@ -73,6 +80,7 @@ export class MarketEntity {
   bid: number;
 
   @Column({
+    default: 1,
     nullable: true,
     type: 'int',
   })

@@ -1,4 +1,5 @@
-import { BlizzardApiNamedField } from '@app/core/types';
+import { toGold } from '@app/core/utils/converters';
+import { BlizzardApiNamedField, ConvertPrice } from '@app/core/types';
 
 export const transformNamedField = <T extends object>(value: T, key = 'name') => {
   if (!value) return null;
@@ -36,4 +37,11 @@ export const transformConnectedRealmId = <T extends object>(value: T) => {
   if (!isNaNConnectedRealmId) return null;
 
   return connectedRealmId;
+};
+
+export const transformPrice = (order: ConvertPrice) => {
+  if (order.unit_price) return toGold(order.unit_price);
+  if (order.buyout) return toGold(order.buyout);
+  if (order.bid) return toGold(order.bid);
+  return undefined;
 };

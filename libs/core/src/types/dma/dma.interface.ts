@@ -96,13 +96,14 @@ export class IQPricing {
 }
 
 export interface IQItem {
-  id: number;
+  itemId: number;
 }
 
 export interface IQAuction {
   connectedRealmId: number;
   auctionsTimestamp: number;
   commoditiesTimestamp: number;
+  isAssetClassIndex: boolean;
 }
 
 /**
@@ -389,4 +390,10 @@ export interface IWowToken {
   last_updated_timestamp: number;
   price: number;
   lastModified: string;
+}
+
+export interface IItemsParse {
+  ID: number;
+  Stackable: number;
+  ExpansionID: number;
 }

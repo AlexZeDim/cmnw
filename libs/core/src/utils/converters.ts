@@ -72,3 +72,6 @@ export const toDate = (lastModified: unknown): Date => {
 
   return new Date('1999-09-11T20:00:30');
 };
+
+export const toStringOrNumber = (value: string | number) =>
+  Number.isNaN(Number(value)) ? value : Number(value);

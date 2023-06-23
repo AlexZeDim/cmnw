@@ -1,18 +1,15 @@
 import { Module } from '@nestjs/common';
 import { WowtokenService } from './wowtoken.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig } from '@app/configuration';
-import { Key, KeysSchema, Token, TokenSchema } from '@app/mongo';
+import { postgresConfig } from '@app/configuration';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, MarketEntity } from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connectionString),
-    MongooseModule.forFeature([
-      { name: Token.name, schema: TokenSchema },
-      { name: Key.name, schema: KeysSchema },
-    ]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, MarketEntity]),
   ],
   controllers: [],
   providers: [WowtokenService],

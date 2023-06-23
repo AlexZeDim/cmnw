@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { from, lastValueFrom } from 'rxjs';
 import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
-import { FACTION, findRealm, IFunPayGold, MARKET_TYPE } from '@app/core';
+import { FACTION, findRealm, IGold, MARKET_TYPE } from '@app/core';
 import { mergeMap } from 'rxjs/operators';
 
 @Injectable()
@@ -45,7 +45,7 @@ export class TestsBench implements OnApplicationBootstrap {
     const exchangeListingPage = cheerio.load(response.data);
     const goldListingMarkup = exchangeListingPage.html('a.tc-item');
 
-    const goldOrders: Array<Partial<IFunPayGold>> = [];
+    const goldOrders: Array<Partial<IGold>> = [];
     const marketOrders: Array<MarketEntity> = [];
     const realmsEntity = new Map<string, RealmsEntity>([]);
     const timestamp = new Date().getTime();

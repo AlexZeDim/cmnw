@@ -40,8 +40,8 @@ export interface IAuctionsItem {
 export interface IAuctionsOrder {
   id: number;
   item: IAuctionsItem;
-  bid?: number;
-  buyout?: number;
+  bid: number;
+  buyout: number;
   quantity: number;
   time_left: string;
   // extend by transformOrders
@@ -51,8 +51,16 @@ export interface IAuctionsOrder {
   // last_modified?: number;
 }
 
-export interface IAuctionsResponse {
-  auctions: Array<IAuctionsOrder>;
+export interface ICommodityOrder {
+  id: number;
+  item: { id: number };
+  quantity: number;
+  unit_price: number;
+  time_left: string;
+}
+
+export interface IAuctions {
+  auctions: Array<IAuctionsOrder | ICommodityOrder>;
   lastModified: string;
 }
 
@@ -65,37 +73,25 @@ export interface IQItemValuation {
 
 export class IAAuctionOrder {
   readonly id: number;
-
   readonly quantity: number;
-
   readonly price?: number;
-
   readonly bid?: number;
-
   readonly buyout?: number;
 }
 
 export class IAAuctionOrders {
   readonly _id: number;
-
   readonly orders_t0: IAAuctionOrder[];
-
   readonly orders_t1: IAAuctionOrder[];
 }
 
 export class IQPricing {
   readonly recipe_id: number;
-
   readonly profession: string | number;
-
   readonly expansion: string;
-
   readonly region: string;
-
   readonly clientId: string;
-
   readonly clientSecret: string;
-
   readonly accessToken: string;
 }
 
@@ -245,7 +241,7 @@ export interface IVAAuctions {
   readonly data: Auction;
 }
 
-export interface IFunPayGold {
+export interface IGold {
   orderId: string;
   realm: string;
   faction: string;

@@ -1,5 +1,7 @@
 import {
+  IAuctions,
   ICharacterSummary,
+  IGold,
   IMedia,
   IMountsNameWithId,
   IPetType,
@@ -30,3 +32,7 @@ export type BlizzardApiCharacterSummary = Readonly<ICharacterSummary>;
 export type BlizzardApiCharacterMedia = Readonly<IMedia>;
 
 export type BlizzardApiWowToken = Readonly<IWowToken>;
+
+export type BlizzardApiAuctions = Readonly<IAuctions>;
+
+export type GoldApiListing = Readonly<IGold>;

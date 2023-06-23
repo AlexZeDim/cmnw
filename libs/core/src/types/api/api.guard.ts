@@ -1,10 +1,12 @@
 import {
+  BlizzardApiAuctions,
   BlizzardApiCharacterMedia,
   BlizzardApiCharacterSummary,
   BlizzardApiMountsCollection,
   BlizzardApiPetsCollection,
   BlizzardApiResponse,
   BlizzardApiWowToken,
+  GoldApiListing,
   IRGuildRoster,
 } from '@app/core/types';
 
@@ -39,7 +41,7 @@ export const isMountCollection = (
 
 export const isCharacterSummary = (
   response: unknown,
-): response is Readonly<BlizzardApiCharacterSummary> =>
+): response is BlizzardApiCharacterSummary =>
   typeof response === 'object' &&
   !('error' in response) &&
   'id' in response &&
@@ -47,16 +49,32 @@ export const isCharacterSummary = (
 
 export const isCharacterMedia = (
   response: unknown,
-): response is Readonly<BlizzardApiCharacterMedia> =>
+): response is BlizzardApiCharacterMedia =>
   typeof response === 'object' &&
   'assets' in response &&
   Array.isArray(response.assets) &&
   Boolean(response.assets.length);
 
-export const isWowToken = (
-  response: unknown,
-): response is Readonly<BlizzardApiWowToken> =>
+export const isWowToken = (response: unknown): response is BlizzardApiWowToken =>
   typeof response === 'object' &&
   'price' in response &&
   'lastModified' in response &&
   'last_updated_timestamp' in response;
+
+export const isAuctions = (response: unknown): response is BlizzardApiAuctions =>
+  typeof response === 'object' &&
+  'lastModified' in response &&
+  'auctions' in response &&
+  Array.isArray(response.auctions) &&
+  Boolean(response.auctions.length);
+
+export const isGold = (response: unknown): response is GoldApiListing =>
+  typeof response === 'object' &&
+  'price' in response &&
+  typeof response.price === 'number' &&
+  'quantity' in response &&
+  typeof response.quantity === 'number' &&
+  'orderId' in response &&
+  typeof response.orderId === 'string' &&
+  'counterparty' in response &&
+  typeof response.counterparty === 'string';

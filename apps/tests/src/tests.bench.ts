@@ -1,12 +1,12 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MarketEntity, RealmsEntity } from '@app/pg';
-import { LessThan, Repository } from 'typeorm';
+import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
+import { ArrayContains, In, LessThan, Not, Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import { from, lastValueFrom } from 'rxjs';
 import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
-import { FACTION, findRealm, IGold, MARKET_TYPE } from '@app/core';
+import { FACTION, findRealm, IGold, MARKET_TYPE, VALUATION_TYPE } from '@app/core';
 import { mergeMap } from 'rxjs/operators';
 
 @Injectable()
@@ -19,10 +19,12 @@ export class TestsBench implements OnApplicationBootstrap {
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(MarketEntity)
     private readonly marketRepository: Repository<MarketEntity>,
+    @InjectRepository(ItemsEntity)
+    private readonly itemsRepository: Repository<ItemsEntity>,
   ) {}
 
   async onApplicationBootstrap() {
-    await this.testWarcraftLogRealms(1000);
+    await this.testAssetClassFromMarket();
   }
 
   async getUniqueRealms() {
@@ -143,5 +145,15 @@ export class TestsBench implements OnApplicationBootstrap {
 
     const realmEntity = await findRealm(this.realmsRepository, realmName);
     console.log(realmEntity);
+  }
+
+  async testAssetClassFromMarket() {
+    const t = await this.itemsRepository.find({
+      where: {
+        id: In([1, 2]),
+        assetClass: Not(ArrayContains([VALUATION_TYPE.ITEM])),
+      },
+    });
+    console.log(t);
   }
 }

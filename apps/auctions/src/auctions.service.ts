@@ -76,11 +76,16 @@ export class AuctionsService implements OnApplicationBootstrap {
     try {
       const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
 
+      const realmEntity = await this.realmsRepository.findOneBy({
+        connectedRealmId: 1,
+      });
+
       await this.queue.add('COMMDTY', {
         region: 'eu',
         clientId: keyEntity.client,
         clientSecret: keyEntity.secret,
         accessToken: keyEntity.token,
+        commoditiesTimestamp: realmEntity.commoditiesTimestamp,
       });
     } catch (errorException) {
       this.logger.error(`indexCommodity: ${errorException}`);

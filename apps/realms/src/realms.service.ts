@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { range } from 'lodash';
 import * as cheerio from 'cheerio';
 import { BlizzAPI } from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -9,7 +8,8 @@ import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
 import { ArrayContains, Repository } from 'typeorm';
-import { GLOBAL_KEY, RealmJobQueue, realmsQueue } from '@app/core';
+import { findRealm, GLOBAL_KEY, RealmJobQueue, realmsQueue } from '@app/core';
+import { lastValueFrom, mergeMap, range } from 'rxjs';
 
 @Injectable()
 export class RealmsService implements OnApplicationBootstrap {
@@ -90,41 +90,39 @@ export class RealmsService implements OnApplicationBootstrap {
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   private async getRealmsWarcraftLogsID(start = 1, end = 517): Promise<void> {
-    try {
-      if (start < 1) start = 1;
-      const warcraftLogsIds: number[] = range(start, end + 1, 1);
-      for (const warcraftLogsId of warcraftLogsIds) {
-        const response = await this.httpService.axiosRef.get<any>(
-          `https://www.warcraftlogs.com/server/id/${warcraftLogsId}`,
-        );
-        const wclHTML = cheerio.load(response.data);
-        const serverElement = wclHTML.html('.server-name');
-        const realmName = wclHTML(serverElement).text();
-        if (!!realmName) {
-          let realmEntity = await this.realmsRepository.findOneBy({
-            name: realmName,
-          });
+    if (start < 1) start = 1;
 
-          if (!realmEntity) {
-            realmEntity = await this.realmsRepository.findOneBy({
-              localeName: realmName,
-            });
-          }
+    await lastValueFrom(
+      range(start, end + 1).pipe(
+        mergeMap(async (realmId) => {
+          try {
+            const response = await this.httpService.axiosRef.get<string>(
+              `https://www.warcraftlogs.com/server/id/${realmId}`,
+            );
+            const warcraftLogsPage = cheerio.load(response.data);
+            const warcraftLogsRealmElement = warcraftLogsPage.html('.server-name');
+            const realmName = warcraftLogsPage(warcraftLogsRealmElement).text();
+            const realmEntity = await findRealm(this.realmsRepository, realmName);
+            if (!realmEntity) {
+              this.logger.log(
+                `getRealmsWarcraftLogsID: ${realmId}:${realmName} not found!`,
+              );
+            }
 
-          if (realmEntity) {
             await this.realmsRepository.update(
               { id: realmEntity.id },
-              { warcraftLogsId: warcraftLogsId },
+              { warcraftLogsId: realmId },
             );
+
+            this.logger.debug(
+              `getRealmsWarcraftLogsID: ${realmId}:${realmName} | ${realmEntity.id} updated!`,
+            );
+          } catch (errorOrException) {
+            this.logger.error(`getRealmsWarcraftLogsID: ${errorOrException}`);
           }
-
-          this.logger.debug(`${warcraftLogsId}:${realmName}, ${realmEntity.id}`);
-        }
-      }
-    } catch (errorException) {
-      this.logger.error(`getRealmsWarcraftLogsID: ${errorException}`);
-    }
+        }),
+      ),
+    );
   }
-
   // TODO populations & stats
 }

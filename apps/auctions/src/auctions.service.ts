@@ -11,12 +11,10 @@ import {
   delay,
   getKeys,
   GLOBAL_DMA_KEY,
-  IAARealm,
-  IPetType,
 } from '@app/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
@@ -62,6 +60,7 @@ export class AuctionsService implements OnApplicationBootstrap {
               clientId: keyEntity.client,
               clientSecret: keyEntity.secret,
               accessToken: keyEntity.token,
+              isAssetClassIndex: true,
             });
           }),
         ),
@@ -86,6 +85,7 @@ export class AuctionsService implements OnApplicationBootstrap {
         clientSecret: keyEntity.secret,
         accessToken: keyEntity.token,
         commoditiesTimestamp: realmEntity.commoditiesTimestamp,
+        isAssetClassIndex: true,
       });
     } catch (errorException) {
       this.logger.error(`indexCommodity: ${errorException}`);

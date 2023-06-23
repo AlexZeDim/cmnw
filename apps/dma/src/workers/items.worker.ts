@@ -1,17 +1,24 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_TIMEOUT_TOLERANCE, IItem, IQItem, itemsQueue, round, VALUATION_TYPE } from '@app/core';
 import { Logger } from '@nestjs/common';
-import { BlizzAPI, BattleNetOptions } from 'blizzapi';
+import { BlizzAPI } from 'blizzapi';
 import { Job } from 'bullmq';
 import { InjectModel } from '@nestjs/mongoose';
 import { Item } from '@app/mongo';
 import { Model } from 'mongoose';
+import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  IItem,
+  ItemJobQueue,
+  itemsQueue,
+  round,
+  TOLERANCE_ENUM,
+  VALUATION_TYPE,
+} from '@app/core';
 
 @BullWorker({ queueName: itemsQueue.name })
 export class ItemsWorker {
-  private readonly logger = new Logger(
-    ItemsWorker.name, { timestamp: true },
-  );
+  private readonly logger = new Logger(ItemsWorker.name, { timestamp: true });
 
   private BNet: BlizzAPI;
 
@@ -21,9 +28,9 @@ export class ItemsWorker {
   ) {}
 
   @BullWorkerProcess(itemsQueue.workerOptions)
-  public async process(job: Job<IQItem, number>): Promise<number> {
+  public async process(job: Job<ItemJobQueue, number>): Promise<number> {
     try {
-      const args: IQItem = { ...job.data };
+      const args = { ...job.data };
 
       /** Check is exits */
       let item = await this.ItemModel.findById(args._id);
@@ -44,20 +51,19 @@ export class ItemsWorker {
 
       /** Request item data */
       const [getItemSummary, getItemMedia] = await Promise.allSettled([
-        this.BNet.query(`/data/wow/item/${args._id}`, {
-          timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' },
-        }),
-        this.BNet.query(`/data/wow/media/item/${args._id}`, {
-          timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' },
-        }),
+        this.BNet.query(
+          `/data/wow/item/${args._id}`,
+          apiConstParams(API_HEADERS_ENUM.STATIC, TOLERANCE_ENUM.DMA),
+        ),
+        this.BNet.query(
+          `/data/wow/media/item/${args._id}`,
+          apiConstParams(API_HEADERS_ENUM.STATIC, TOLERANCE_ENUM.DMA),
+        ),
       ]);
 
       if (getItemSummary.status === 'fulfilled' && getItemSummary.value) {
         /** Schema fields */
-        const
-          requested_item: Partial<IItem> = {},
+        const requested_item: Partial<IItem> = {},
           fields: string[] = [
             'quality',
             'item_class',
@@ -75,13 +81,13 @@ export class ItemsWorker {
             }
           }
 
-          if (fields.some(f => f === key)) {
+          if (fields.some((f) => f === key)) {
             requested_item[key] = getItemSummary.value[key].name.en_GB;
           } else {
             requested_item[key] = getItemSummary.value[key];
           }
 
-          if (gold.some(f => f === key)) {
+          if (gold.some((f) => f === key)) {
             if (key === 'sell_price') {
               item.asset_class.addToSet(VALUATION_TYPE.VSP);
             }

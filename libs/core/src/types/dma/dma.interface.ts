@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { Auction, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 
-class ItemNames {
+export interface ItemNames {
   en_US: string;
   es_MX: string;
   pt_BR: string;
@@ -19,36 +19,49 @@ export interface IActionsModifier {
   value: number;
 }
 
+export interface IPetList {
+  petBreedId: number;
+  petLevel: number;
+  petQualityId: number;
+  petSpeciesId: number;
+}
+
 export interface IAuctionsItem {
   id: number;
-  context?: number;
-  bonus_lists?: number[];
-  modifiers?: Array<IActionsModifier>;
-  pet_breed_id?: number;
-  pet_level?: number;
-  pet_quality_id?: number;
-  pet_species_id?: number;
+  context: number;
+  bonus_lists: number[];
+  modifiers: Array<IActionsModifier>;
+  pet_breed_id: number;
+  pet_level: number;
+  pet_quality_id: number;
+  pet_species_id: number;
 }
 
 export interface IAuctionsOrder {
   id: number;
   item: IAuctionsItem;
-  bid?: number;
-  unit_price?: number;
-  buyout?: number;
+  bid: number;
+  buyout: number;
   quantity: number;
   time_left: string;
   // extend by transformOrders
-  item_id?: number;
-  price?: number;
-  connected_realm_id: number;
-  last_modified?: number;
+  // item_id?: number;
+  // price?: number;
+  // connected_realm_id: number;
+  // last_modified?: number;
 }
 
-export interface IAuctionsResponse {
-  auctions: Array<IAuctionsOrder>;
+export interface ICommodityOrder {
+  id: number;
+  item: { id: number };
+  quantity: number;
+  unit_price: number;
+  time_left: string;
+}
+
+export interface IAuctions {
+  auctions: Array<IAuctionsOrder | ICommodityOrder>;
   lastModified: string;
-  commodities: { href: string };
 }
 
 export interface IQItemValuation {
@@ -60,64 +73,37 @@ export interface IQItemValuation {
 
 export class IAAuctionOrder {
   readonly id: number;
-
   readonly quantity: number;
-
   readonly price?: number;
-
   readonly bid?: number;
-
   readonly buyout?: number;
 }
 
 export class IAAuctionOrders {
   readonly _id: number;
-
   readonly orders_t0: IAAuctionOrder[];
-
   readonly orders_t1: IAAuctionOrder[];
 }
 
 export class IQPricing {
   readonly recipe_id: number;
-
   readonly profession: string | number;
-
   readonly expansion: string;
-
   readonly region: string;
-
   readonly clientId: string;
-
   readonly clientSecret: string;
-
   readonly accessToken: string;
 }
 
-export class IQItem {
-  readonly _id: number;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
+export interface IQItem {
+  itemId: number;
 }
 
-export class IQAuction {
-  readonly connected_realm_id?: number;
-
-  auctions?: number;
-
-  readonly region: string;
-
-  readonly clientId: string;
-
-  readonly clientSecret: string;
-
-  readonly accessToken: string;
+export interface IQAuction {
+  connectedRealmId: number;
+  auctionsTimestamp: number;
+  commoditiesTimestamp: number;
+  isAssetClassIndex: boolean;
 }
 
 /**
@@ -256,13 +242,14 @@ export interface IVAAuctions {
   readonly data: Auction;
 }
 
-export interface IFunPayGold {
-  readonly realm: string;
-  readonly faction: string;
-  readonly status: boolean;
-  readonly quantity: string;
-  readonly owner: string;
-  readonly price: string;
+export interface IGold {
+  orderId: string;
+  realm: string;
+  faction: string;
+  status: boolean;
+  quantity: string;
+  owner: string;
+  price: string;
 }
 
 /**
@@ -397,4 +384,16 @@ export class MethodEvaluation {
   single_premium: boolean;
 
   premium_clearance: boolean;
+}
+
+export interface IWowToken {
+  last_updated_timestamp: number;
+  price: number;
+  lastModified: string;
+}
+
+export interface IItemsParse {
+  ID: number;
+  Stackable: number;
+  ExpansionID: number;
 }

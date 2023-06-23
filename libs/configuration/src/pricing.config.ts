@@ -1,7 +1,7 @@
-import { get } from 'config';
+import config from 'config';
 import { IPrice } from '@app/configuration/interfaces';
 
-const PRICING_CONFIG = get<IPrice>('valuations');
+const PRICING_CONFIG = config.get<IPrice>('valuations');
 
 export const pricingConfig: IPrice = {
   init: PRICING_CONFIG.init,

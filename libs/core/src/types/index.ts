@@ -1,5 +1,5 @@
 export * from './queue';
 export * from './osint';
 export * from './api';
-export * from './dma.interface';
+export * from './dma';
 export * from './discord.interface';

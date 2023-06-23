@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AuctionsService } from './auctions.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Key.name, schema: KeysSchema },
-    ]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,
@@ -32,7 +29,10 @@ import { RedisModule } from '@nestjs-modules/ioredis';
         },
       },
     }),
-    BullModule.registerQueue({ queueName: auctionsQueue.name, options: auctionsQueue.options }),
+    BullModule.registerQueue({
+      queueName: auctionsQueue.name,
+      options: auctionsQueue.options,
+    }),
   ],
   controllers: [],
   providers: [AuctionsService],

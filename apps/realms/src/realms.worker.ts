@@ -7,12 +7,16 @@ import { RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import { get } from 'lodash';
 import {
+  API_HEADERS_ENUM,
+  apiConstParams,
   BlizzardApiResponse,
   IConnectedRealm,
   isFieldNamed,
   REALM_TICKER,
   RealmJobQueue,
   realmsQueue,
+  toLocale,
+  toSlug,
   transformConnectedRealmId,
   transformNamedField,
 } from '@app/core';
@@ -70,13 +74,17 @@ export class RealmsWorker {
 
       await job.updateProgress(25);
 
-      realmEntity.name = isFieldNamed(response.name)
-        ? response.name
-        : get(response, 'name.name', null);
+      const name = isFieldNamed(response.name)
+        ? get(response, 'name.name', null)
+        : response.name;
 
-      realmEntity.ticker = REALM_TICKER.has(realmEntity.name)
+      if (name) realmEntity.name = name;
+
+      const ticker = REALM_TICKER.has(realmEntity.name)
         ? REALM_TICKER.get(realmEntity.name)
         : null;
+
+      if (ticker) realmEntity.ticker = ticker;
 
       await job.updateProgress(30);
 
@@ -85,41 +93,43 @@ export class RealmsWorker {
       if (realmEntity.locale != 'enGB') {
         const realmLocale = await this.BNet.query<BlizzardApiResponse>(
           `/data/wow/realm/${args.slug}`,
-          {
-            timeout: 10000,
-            params: { locale: realmEntity.locale },
-            headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-          },
+          apiConstParams(API_HEADERS_ENUM.DYNAMIC),
         );
 
         await job.updateProgress(40);
+        const locale = toLocale(realmEntity.locale);
 
-        realmEntity.localeName = get(realmLocale, 'name', null);
-        realmEntity.localeSlug = get(realmLocale, 'name', null);
+        const localeName = get(realmLocale, `name.${locale}`, null);
+        if (localeName) realmEntity.localeName = localeName;
+
+        const localeSlug = get(realmLocale, toSlug(`name.${locale}`), null);
+        if (localeSlug) realmEntity.localeSlug = localeSlug;
       } else {
-        realmEntity.localeName = get(response, 'name', null);
-        realmEntity.localeSlug = get(response, 'name', null);
+        const localeNameSlug = get(response, 'name', null);
+        if (localeNameSlug) {
+          realmEntity.localeName = localeNameSlug;
+          realmEntity.localeSlug = localeNameSlug;
+        }
         await job.updateProgress(45);
       }
 
-      realmEntity.region = transformNamedField(response.region);
-      realmEntity.timezone = response.timezone || null;
+      const region = transformNamedField(response.region);
+      if (region) realmEntity.region = region;
+      if (response.timezone) realmEntity.timezone = response.timezone;
+
+      const category = get(response, 'category', null);
+      if (category) realmEntity.category = category;
 
       const connectedRealmId = transformConnectedRealmId(response);
       if (connectedRealmId) {
         const connectedRealm = await this.BNet.query<IConnectedRealm>(
           `/data/wow/connected-realm/${connectedRealmId}`,
-          {
-            timeout: 10000,
-            params: { locale: 'en_GB' },
-            headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-          },
+          apiConstParams(API_HEADERS_ENUM.DYNAMIC),
         );
 
         realmEntity.connectedRealmId = get(connectedRealm, 'id', null);
         realmEntity.status = get(connectedRealm, 'status.name', null);
         realmEntity.populationStatus = get(connectedRealm, 'population.name', null);
-        realmEntity.category = get(connectedRealm, 'category', null);
         await job.updateProgress(50);
 
         const isRealmsExists =

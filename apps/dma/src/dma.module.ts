@@ -1,9 +1,19 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import {
+  mongoConfig,
+  mongoOptionsConfig,
+  postgresConfig,
+  redisConfig,
+} from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
-import { AuctionsWorker, ItemsWorker, PricingWorker, ValuationsWorker } from './workers';
+import {
+  AuctionsWorker,
+  ItemsWorker,
+  PricingWorker,
+  ValuationsWorker,
+} from './workers';
 
 import {
   Auction,
@@ -24,13 +34,18 @@ import {
   SpellEffectSchema,
   SpellReagents,
   SpellReagentsSchema,
-  Token, TokenSchema,
+  Token,
+  TokenSchema,
   Valuations,
   ValuationsSchema,
 } from '@app/mongo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ItemsEntity, KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity, ItemsEntity, MarketEntity]),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Key.name, schema: KeysSchema },
@@ -55,10 +70,22 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: auctionsQueue.name, options: auctionsQueue.options }),
-    BullModule.registerQueue({ queueName: itemsQueue.name, options: itemsQueue.options }),
-    BullModule.registerQueue({ queueName: pricingQueue.name, options: pricingQueue.options }),
-    BullModule.registerQueue({ queueName: valuationsQueue.name, options: valuationsQueue.options }),
+    BullModule.registerQueue({
+      queueName: auctionsQueue.name,
+      options: auctionsQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: itemsQueue.name,
+      options: itemsQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: pricingQueue.name,
+      options: pricingQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: valuationsQueue.name,
+      options: valuationsQueue.options,
+    }),
   ],
   controllers: [],
   providers: [AuctionsWorker, ValuationsWorker, PricingWorker, ItemsWorker],

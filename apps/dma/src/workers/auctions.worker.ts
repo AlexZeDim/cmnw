@@ -1,41 +1,57 @@
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { auctionsQueue, DMA_TIMEOUT_TOLERANCE, IAuctionsOrder, IAuctionsResponse, IQAuction, round } from '@app/core';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Realm } from '@app/mongo';
 import { Job } from 'bullmq';
-import moment from 'moment';
-import { Model } from 'mongoose';
 import { bufferCount, concatMap } from 'rxjs/operators';
 import { from, lastValueFrom } from 'rxjs';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { DateTime } from 'luxon';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
+import { In, Not, Repository } from "typeorm";
+import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  AuctionItemExtra,
+  AuctionJobQueue,
+  auctionsQueue,
+  BlizzardApiAuctions,
+  DMA_TIMEOUT_TOLERANCE,
+  IAuctionsOrder,
+  ICommodityOrder,
+  IPetList,
+  isAuctions,
+  toGold,
+  transformPrice,
+  VALUATION_TYPE,
+} from '@app/core';
 
 @BullWorker({ queueName: auctionsQueue.name })
 export class AuctionsWorker {
-  private readonly logger = new Logger(
-    AuctionsWorker.name, { timestamp: true },
-  );
+  private readonly logger = new Logger(AuctionsWorker.name, {
+    timestamp: true,
+  });
 
   private BNet: BlizzAPI;
+  private isCommodity = new Set<number>();
+  private isItem = new Set<number>();
 
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
-    @InjectModel(Auction.name)
-    private readonly AuctionModel: Model<Auction>,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(ItemsEntity)
+    private readonly itemsRepository: Repository<ItemsEntity>,
+    @InjectRepository(MarketEntity)
+    private readonly marketRepository: Repository<MarketEntity>,
   ) {}
 
   @BullWorkerProcess(auctionsQueue.workerOptions)
-  public async process(job: Job<IQAuction, number>): Promise<number> {
+  public async process(job: Job<AuctionJobQueue, number>): Promise<number> {
     try {
-      const args: IQAuction = { ...job.data };
+      const { data: args } = job;
       await job.updateProgress(5);
-
-      let ifModifiedSince: string = `${moment(0).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
-      let getAuctionsMethodApi: string = '/data/wow/auctions/commodities';
 
       this.BNet = new BlizzAPI({
         region: args.region,
@@ -47,57 +63,95 @@ export class AuctionsWorker {
        * @description If no connected realm passed, then deal with it, as COMMDTY
        * @description Else, it's an auctions request
        */
-      if (!args.connected_realm_id) {
-        const isModifiedSinceExists = !!(await this.redisService.exists('COMMDTY'));
-        if (isModifiedSinceExists) {
-          const ifModifiedSinceTimestamp = await this.redisService.get('COMMDTY');
+      const isCommdty = job.name === 'COMMDTY' && args.connectedRealmId === 1;
 
-          ifModifiedSince = `${moment(ifModifiedSinceTimestamp).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
-        }
-      } else {
-        /**
-         * @description Check auction timestamp for each realm
-         */
-        if (!args.auctions || args.auctions === 0) {
-          const realm = await this.RealmModel.findOne({ connected_realm_id: args.connected_realm_id }).select('auctions').lean();
+      const previousTimestamp = isCommdty
+        ? args.commoditiesTimestamp
+        : args.auctionsTimestamp;
 
-          realm ? args.auctions = realm.auctions : args.auctions = 0;
+      const ifModifiedSince = DateTime.fromMillis(previousTimestamp).toHTTP();
 
-          await job.updateProgress(10);
+      const getMarketApiEndpoint = isCommdty
+        ? '/data/wow/auctions/commodities'
+        : `/data/wow/connected-realm/${args.connectedRealmId}/auctions`;
 
-          ifModifiedSince = `${moment(args.auctions).utc().format('ddd, DD MMM YYYY HH:mm:ss')} GMT`;
-        }
-        getAuctionsMethodApi = `/data/wow/connected-realm/${args.connected_realm_id}/auctions`;
-      }
+      await job.updateProgress(10);
 
-      const auctionsResponse: IAuctionsResponse = await this.BNet.query(getAuctionsMethodApi, {
-        timeout: DMA_TIMEOUT_TOLERANCE,
-        params: { locale: 'en_GB' },
-        headers: {
-          'Battlenet-Namespace': 'dynamic-eu',
-          'If-Modified-Since': ifModifiedSince,
-        },
-      });
+      const auctionsResponse = await this.BNet.query<BlizzardApiAuctions>(
+        getMarketApiEndpoint,
+        apiConstParams(
+          API_HEADERS_ENUM.DYNAMIC,
+          DMA_TIMEOUT_TOLERANCE,
+          ifModifiedSince,
+        ),
+      );
+
+      const isAuctionsValid = isAuctions(auctionsResponse);
+      if (!isAuctionsValid) return 504;
 
       await job.updateProgress(15);
-      if (!auctionsResponse || !Array.isArray(auctionsResponse.auctions) || !auctionsResponse.auctions.length) return 504;
 
-      const ts: number = parseInt(moment(auctionsResponse.lastModified).format('x'));
+      const connectedRealmId = isCommdty ? args.connectedRealmId : 1;
+      const timestamp = DateTime.fromRFC2822(
+        auctionsResponse.lastModified,
+      ).toMillis();
 
-      const orders = await this.writeBulkOrders(auctionsResponse.auctions, ts, args.connected_realm_id);
+      const { auctions } = auctionsResponse;
 
-      if (args.connected_realm_id) {
-        await job.log(`${AuctionsWorker.name}: ${args.connected_realm_id}:${orders}`);
-        await job.updateProgress(90);
-        await this.RealmModel.updateMany({ connected_realm_id: args.connected_realm_id }, { auctions: ts });
-        await job.updateProgress(100);
-      } else {
-        await job.log(`${AuctionsWorker.name}: COMMDTY:${orders}`);
-        await job.updateProgress(90);
-        await this.redisService.set('COMMDTY', ts);
-        await this.redisService.set(`COMMDTY:TS:${ts}`, ts, 'EX', 86400);
-        await job.updateProgress(100);
-      }
+      let iterator = 0;
+
+      const marketItemsId = new Set<number>();
+
+      await lastValueFrom(
+        from(auctions).pipe(
+          bufferCount(5_000),
+          concatMap(async (ordersBatch) => {
+            try {
+              const ordersBulkAuctions = this.transformOrders(
+                ordersBatch,
+                timestamp,
+                connectedRealmId,
+                isCommdty,
+              );
+
+              const isItemStorage = this.isItem.has(marketEntity.itemId);
+              if (!isItemStorage) {
+                marketItemsId.add(marketItemsId.)
+                this.isItem.add(marketEntity.itemId);
+              }
+
+              if (!isItemStorage) this.isItem.add(marketEntity.itemId);
+
+              this.isItem.add(marketEntity.itemId);
+
+              await this.marketRepository.save(ordersBulkAuctions);
+              iterator += ordersBulkAuctions.length;
+              this.logger.log(`ordersBatch: ${connectedRealmId}| ${iterator}`);
+
+              await this.itemsRepository.update(
+                { id: In(Array.from(marketItemsId)), assetClass: Not(In([VALUATION_TYPE.ITEM])) },
+                {
+                  assetClass: VALUATION_TYPE.ITEM,
+                },
+              );
+            } catch (errorException) {
+              this.logger.error(`ordersBatch: ${errorException}`);
+            }
+          }),
+        ),
+      );
+
+      const updateQuery = isCommdty
+        ? { auctionsTimestamp: timestamp }
+        : { commoditiesTimestamp: timestamp };
+
+      await job.updateProgress(90);
+      await this.realmsRepository.update(
+        { connectedRealmId: connectedRealmId },
+        updateQuery,
+      );
+
+      await job.updateProgress(100);
 
       return 200;
     } catch (errorException) {
@@ -107,41 +161,61 @@ export class AuctionsWorker {
     }
   }
 
-  private transformOrders(orders: IAuctionsOrder[], last_modified: number, connected_realm_id?: number): Auction[] {
-    return orders.map(order => {
-      if (order.item && order.item.id) {
-        order.item_id = order.item.id;
-        if (order.item.id === 82800) {
-          // TODO pet fix
+  private transformOrders(
+    orders: Array<IAuctionsOrder | ICommodityOrder>,
+    timestamp: number,
+    connectedRealmId: number,
+    isCommdty: boolean,
+  ) {
+    return orders.map((order) => {
+      if (!order.item.id) return;
+      const marketEntity = this.marketRepository.create({
+        itemId: order.item.id,
+        connectedRealmId: connectedRealmId,
+        timestamp: timestamp,
+      });
+
+      const isPetOrder = marketEntity.itemId === 82800;
+
+      const bid = 'bid' in order ? toGold((order as IAuctionsOrder).bid) : null;
+
+      const price = transformPrice(order);
+      if (!price) return;
+
+      if (!isCommdty) {
+        const itemKeyGuard = new Map<string, keyof AuctionItemExtra>([
+          ['bonus_lists', 'bonusList'],
+          ['context', 'context'],
+          ['modifiers', 'modifiers'],
+        ]);
+
+        for (const [path, key] of itemKeyGuard.entries()) {
+          if (path in order.item) marketEntity[key] = order.item[path];
+        }
+
+        if (isPetOrder) {
+          // TODO pet fix for pet cage item
+          const petsKeyGuard = new Map<string, keyof IPetList>([
+            ['pet_breed_id', 'petBreedId'],
+            ['pet_level', 'petLevel'],
+            ['pet_quality_id', 'petQualityId'],
+            ['pet_species_id', 'petSpeciesId'],
+          ]);
+
+          const petList: Partial<IPetList> = {};
+          for (const [path, key] of petsKeyGuard.entries()) {
+            if (path in order.item) petList[key] = order.item[path];
+          }
         }
       }
-      if (order.bid) order.bid = round(order.bid / 10000);
-      if (order.buyout) order.buyout = round(order.buyout / 10000);
-      if (order.unit_price) order.price = round(order.unit_price / 10000);
-      if (connected_realm_id) order.connected_realm_id = connected_realm_id;
-      order.last_modified = last_modified;
-      return new this.AuctionModel(order);
-    });
-  }
 
-  private async writeBulkOrders(orders: IAuctionsOrder[], last_modified: number, connected_realm_id?: number): Promise<number> {
-    let iterator: number = 0;
-    try {
-      await lastValueFrom(
-        from(orders).pipe(
-          bufferCount(10000),
-          concatMap(async (ordersBulk) => {
-            const ordersBulkAuctions = this.transformOrders(ordersBulk, last_modified, connected_realm_id);
-            await this.AuctionModel.insertMany(ordersBulkAuctions, { rawResult: false, lean: true });
-            iterator += ordersBulkAuctions.length;
-            this.logger.debug(`writeBulkOrders: ${connected_realm_id}:${iterator}`);
-          }),
-        ),
-      );
-      return iterator;
-    } catch (errorException) {
-      this.logger.error(`writeBulkOrders: ${errorException}`);
-      return iterator;
-    }
+      const quantity = 'quantity' in order ? (order as ICommodityOrder).quantity : 1;
+
+      if (bid) marketEntity.bid = bid;
+      if (price) marketEntity.price = price;
+      if (quantity) marketEntity.quantity = quantity;
+
+      return marketEntity;
+    });
   }
 }

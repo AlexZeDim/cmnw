@@ -11,4 +11,6 @@ export enum CMNW_ENTITY_ENUM {
   KEYS = 'keys',
   REALMS = 'realms',
   LOGS = 'logs',
+  ITEMS = 'items',
+  MARKET = 'market',
 }

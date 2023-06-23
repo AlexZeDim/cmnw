@@ -4,121 +4,121 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema()
 class ItemNames {
   @Prop({ type: String })
-    en_US: string;
+  en_US: string;
 
   @Prop({ type: String })
-    es_MX: string;
+  es_MX: string;
 
   @Prop({ type: String })
-    pt_BR: string;
+  pt_BR: string;
 
   @Prop({ type: String })
-    de_DE: string;
+  de_DE: string;
 
   @Prop({ type: String })
-    en_GB: string;
+  en_GB: string;
 
   @Prop({ type: String })
-    es_ES: string;
+  es_ES: string;
 
   @Prop({ type: String })
-    fr_FR: string;
+  fr_FR: string;
 
   @Prop({ type: String })
-    it_IT: string;
+  it_IT: string;
 
   @Prop({ type: String })
-    ru_RU: string;
+  ru_RU: string;
 }
 
 @Schema()
 export class Item extends Document {
   @Prop({ type: Number, required: true })
-    _id: number;
+  _id: number;
 
   @Prop({ _id: false, timestamps: false })
-    name: ItemNames;
+  name: ItemNames;
 
   @Prop({ type: String })
-    quality: string;
+  quality: string;
 
   @Prop({ type: Number })
-    ilvl: number;
+  ilvl: number;
 
   @Prop({ type: Number })
-    level: number;
+  level: number;
 
   @Prop({ type: String })
-    icon: string;
+  icon: string;
 
   @Prop({ type: String })
-    item_class: string;
+  item_class: string;
 
   @Prop({ type: String })
-    item_subclass: string;
+  item_subclass: string;
 
   @Prop({ type: Number })
-    purchase_price: number;
+  purchase_price: number;
 
   @Prop({ type: Number })
-    purchase_quantity: number;
+  purchase_quantity: number;
 
   @Prop({ type: Number })
-    sell_price: number;
+  sell_price: number;
 
   @Prop({ type: Boolean })
-    is_equippable: boolean;
+  is_equippable: boolean;
 
   @Prop({ type: Boolean })
-    is_stackable: boolean;
+  is_stackable: boolean;
 
   @Prop({ type: String })
-    inventory_type: string;
+  inventory_type: string;
 
   @Prop({ type: String })
-    loot_type: string;
+  loot_type: string;
 
   @Prop({ required: true, default: false })
-    contracts: boolean;
+  contracts: boolean;
 
   /** add via indexAssetClass - csv import */
   @Prop({ default: [], type: [String] })
-    asset_class: Types.Array<String>;
+  asset_class: Types.Array<string>;
 
   /** add via importTaxonomy_CSV('itemsparse') */
   @Prop({ type: String })
-    expansion: string;
+  expansion: string;
 
   @Prop({ type: Number })
-    stackable: number;
+  stackable: number;
 
   /** add via importTaxonomy_CSV('taxonomy') */
   @Prop({ type: String })
-    profession_class: string;
+  profession_class: string;
 
   @Prop({ type: String })
-    ticker: string;
+  ticker: string;
 
   @Prop({ default: [], type: [String] })
-    tags: Types.Array<String>;
+  tags: Types.Array<string>;
 }
 
 export const ItemsSchema = SchemaFactory.createForClass(Item);
-ItemsSchema.index({ 'expansion': 1 }, { name: 'C' });
+ItemsSchema.index({ expansion: 1 }, { name: 'C' });
 ItemsSchema.index(
   {
-    'ticker': 'text',
+    ticker: 'text',
     'name.en_GB': 'text',
     'name.ru_RU': 'text',
-    'tags': 'text',
+    tags: 'text',
   },
   {
-    weights:
-      {
-        'ticker': 2,
-        'name.en_GB': 2,
-        'name.ru_RU': 2,
-        'tags': 1,
-      },
+    weights: {
+      ticker: 2,
+      'name.en_GB': 2,
+      'name.ru_RU': 2,
+      tags: 1,
+    },
     name: 'SQ',
-  });
+  },
+);

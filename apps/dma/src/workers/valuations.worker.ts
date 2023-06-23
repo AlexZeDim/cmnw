@@ -1,8 +1,25 @@
-import { InternalServerErrorException, Logger, ServiceUnavailableException } from '@nestjs/common';
-import { BullQueueInject, BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import {
+  InternalServerErrorException,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import {
+  BullQueueInject,
+  BullWorker,
+  BullWorkerProcess,
+} from '@anchan828/nest-bullmq';
 import { Job, Queue } from 'bullmq';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Gold, Item, Key, Pricing, Realm, Token, Valuations } from '@app/mongo';
+import {
+  Auction,
+  Gold,
+  Item,
+  Key,
+  Pricing,
+  Realm,
+  Token,
+  Valuations,
+} from '@app/mongo';
 import { LeanDocument, Model } from 'mongoose';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { from, lastValueFrom } from 'rxjs';
@@ -24,12 +41,9 @@ import {
   IQItem,
 } from '@app/core';
 
-
 @BullWorker({ queueName: valuationsQueue.name })
 export class ValuationsWorker {
-  private readonly logger = new Logger(
-    ValuationsWorker.name, { timestamp: true },
-  );
+  private readonly logger = new Logger(ValuationsWorker.name, { timestamp: true });
 
   constructor(
     @InjectModel(Key.name)
@@ -96,21 +110,31 @@ export class ValuationsWorker {
     }
   }
 
-  private checkAssetClass(item_id: number, asset_class: LeanDocument<String>[], check: VALUATION_TYPE) {
+  private checkAssetClass(
+    item_id: number,
+    asset_class: LeanDocument<string>[],
+    check: VALUATION_TYPE,
+  ) {
     if (!asset_class.includes(check)) {
-      throw new InternalServerErrorException(`item: ${item_id} asset_class not ${check}`);
+      throw new InternalServerErrorException(
+        `item: ${item_id} asset_class not ${check}`,
+      );
     }
   }
 
-  private async checkDerivativeItems(
-    derivatives: ItemPricing[],
-  ) {
+  private async checkDerivativeItems(derivatives: ItemPricing[]) {
     await lastValueFrom(
       from(derivatives).pipe(
         mergeMap(async (derivative) => {
-          const derivativeItem = await this.ItemModel.findById(derivative._id).lean();
+          const derivativeItem = await this.ItemModel.findById(
+            derivative._id,
+          ).lean();
           if (!derivativeItem) await this.addMissingItemToQueue(derivativeItem._id);
-          this.checkAssetClass(derivativeItem._id, derivativeItem.asset_class, VALUATION_TYPE.MARKET);
+          this.checkAssetClass(
+            derivativeItem._id,
+            derivativeItem.asset_class,
+            VALUATION_TYPE.MARKET,
+          );
         }, 8),
       ),
     );
@@ -134,13 +158,12 @@ export class ValuationsWorker {
             if (!reagentItem) await this.addMissingItemToQueue(reagent._id);
 
             if (!reagentItem.asset_class.includes(VALUATION_TYPE.PREMIUM)) {
-              const ctdItem = await this.ValuationsModel
-                .findOne({
-                  item_id: reagentItem._id,
-                  last_modified: last_modified,
-                  connected_realm_id: connected_realm_id,
-                  flag: FLAG_TYPE.B,
-                })
+              const ctdItem = await this.ValuationsModel.findOne({
+                item_id: reagentItem._id,
+                last_modified: last_modified,
+                connected_realm_id: connected_realm_id,
+                flag: FLAG_TYPE.B,
+              })
                 .sort({ value: 1 })
                 .lean();
 
@@ -208,17 +231,20 @@ export class ValuationsWorker {
     );
   }
 
-  private async getCVA <T extends IVAItem>(args: T): Promise<void> {
+  private async getCVA<T extends IVAItem>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.GOLD);
       /** Request timestamp for gold */
-      const ts = await this.RealmModel
-        .findOne({ connected_realm_id: args.connected_realm_id })
+      const ts = await this.RealmModel.findOne({
+        connected_realm_id: args.connected_realm_id,
+      })
         .select('auctions golds')
         .lean();
 
       if (!ts) {
-        this.logger.error(`getCVA: realm ${args.connected_realm_id} timestamp not found`);
+        this.logger.error(
+          `getCVA: realm ${args.connected_realm_id} timestamp not found`,
+        );
         return;
       }
       /** Check existing pricing */
@@ -242,7 +268,9 @@ export class ValuationsWorker {
       }).sort('price');
 
       if (!goldCTD) {
-        this.logger.warn(`getCVA: item ${args._id} on timestamp: ${ts.golds} ctd not found`);
+        this.logger.warn(
+          `getCVA: item ${args._id} on timestamp: ${ts.golds} ctd not found`,
+        );
         return;
       }
 
@@ -259,9 +287,15 @@ export class ValuationsWorker {
           connected_realm_id: args.connected_realm_id,
           type: flag === FLAG_TYPE.S ? VALUATION_TYPE.OTC : VALUATION_TYPE.FUNPAY,
           last_modified: args.last_modified,
-          value: flag === FLAG_TYPE.S ? round(goldCTD.price * 0.75) : round(goldCTD.price),
+          value:
+            flag === FLAG_TYPE.S
+              ? round(goldCTD.price * 0.75)
+              : round(goldCTD.price),
           details: {
-            description: flag === FLAG_TYPE.S ? 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.' : 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.',
+            description:
+              flag === FLAG_TYPE.S
+                ? 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.'
+                : 'Price nominated in RUB for every x1000 gold (lot) and it represents the exact figure that the buyer will pay to the seller in a moment of time, in exchange for x1000 gold (lot) with at least 100 000+ g buy order. Quotes are provided by Funpay.ru — the hugest currency exchange in CIS region.',
             quotation: 'RUB per x1000',
             lot_size: 1000,
             minimal_settlement_amount: 100000,
@@ -270,8 +304,9 @@ export class ValuationsWorker {
       }
 
       /** Request WoWToken price */
-      const
-        wtPrice = await this.TokenModel.findOne({ region: 'eu' }).sort({ _id: -1 }),
+      const wtPrice = await this.TokenModel.findOne({ region: 'eu' }).sort({
+          _id: -1,
+        }),
         wtExt = await this.ValuationsModel.findOne({
           item_id: args._id,
           last_modified: args.last_modified,
@@ -296,12 +331,16 @@ export class ValuationsWorker {
         ];
 
       if (!wtPrice) {
-        this.logger.warn(`getCVA: wowtoken data on timestamp: ${args.last_modified} not found`);
+        this.logger.warn(
+          `getCVA: wowtoken data on timestamp: ${args.last_modified} not found`,
+        );
         return;
       }
 
       if (wtExt) {
-        this.logger.warn(`getCVA: wowtoken already have a valuation on timestamp: ${args.last_modified} already exists`);
+        this.logger.warn(
+          `getCVA: wowtoken already have a valuation on timestamp: ${args.last_modified} already exists`,
+        );
         return;
       }
       /**
@@ -310,7 +349,9 @@ export class ValuationsWorker {
        * Only if existing price not found
        */
       for (const { flag, wt_value, currency, description } of wtConst) {
-        const value: number = parseFloat((wt_value / Math.floor(wtPrice.price / 1000)).toFixed(2));
+        const value: number = parseFloat(
+          (wt_value / Math.floor(wtPrice.price / 1000)).toFixed(2),
+        );
         await this.ValuationsModel.create({
           name: `GOLD/${currency} ${flag} WOWTOKEN`,
           flag: flag,
@@ -332,7 +373,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getVVA <T extends IVAItem>(args: T): Promise<void> {
+  private async getVVA<T extends IVAItem>(args: T): Promise<void> {
     try {
       if (args.asset_class.includes(VALUATION_TYPE.VENDOR)) {
         const vendor = await this.ValuationsModel.findOne({
@@ -377,7 +418,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getTVA <T extends IVAItem>(args: T): Promise<void> {
+  private async getTVA<T extends IVAItem>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.WOWTOKEN);
       /** CONSTANT AMOUNT */
@@ -413,29 +454,26 @@ export class ValuationsWorker {
             { last_modified: args.last_modified },
           );
         } else {
-          await this.RealmModel
-            .find({ locale: 'en_GB' })
+          await this.RealmModel.find({ locale: 'en_GB' })
             .cursor()
             .eachAsync(async (realm: Realm) => {
               for (const { flag, currency, wt_value } of wtConst) {
                 if (flag === FLAG_TYPE.FIX) {
-                  await this.ValuationsModel.create(
-                    {
-                      name: `PAY FIX ${currency} / RECEIVE FLOAT GOLD`,
-                      flag: flag,
-                      item_id: args._id,
-                      connected_realm_id: realm.connected_realm_id,
-                      type: VALUATION_TYPE.WOWTOKEN,
-                      last_modified: args.last_modified,
-                      value: wt_value,
-                      details: {
-                        quotation: `${currency} per WoWToken`,
-                        swap_type: 'PAY FIX / RECEIVE FLOAT',
-                        description:
-                          'You pay the fixed amount of real-money currency (based on your region) to receive in exchange a WoWToken, which could be converted to gold value of WoWToken, any time further.',
-                      },
+                  await this.ValuationsModel.create({
+                    name: `PAY FIX ${currency} / RECEIVE FLOAT GOLD`,
+                    flag: flag,
+                    item_id: args._id,
+                    connected_realm_id: realm.connected_realm_id,
+                    type: VALUATION_TYPE.WOWTOKEN,
+                    last_modified: args.last_modified,
+                    value: wt_value,
+                    details: {
+                      quotation: `${currency} per WoWToken`,
+                      swap_type: 'PAY FIX / RECEIVE FLOAT',
+                      description:
+                        'You pay the fixed amount of real-money currency (based on your region) to receive in exchange a WoWToken, which could be converted to gold value of WoWToken, any time further.',
                     },
-                  );
+                  });
                 }
               }
             });
@@ -457,16 +495,16 @@ export class ValuationsWorker {
         }
 
         /** Request existing WT price */
-        const wtPrice = await this.TokenModel
-          .findOne({ region: 'eu' })
-          .sort({ _id: -1 });
+        const wtPrice = await this.TokenModel.findOne({ region: 'eu' }).sort({
+          _id: -1,
+        });
 
         if (!wtPrice) {
           this.logger.warn(`getTVA: wowtoken ${args._id} price not found`);
           return;
         }
 
-        for (let { flag, currency, wt_value } of wtConst) {
+        for (const { flag, currency, wt_value } of wtConst) {
           if (flag === FLAG_TYPE.FLOAT) {
             await this.ValuationsModel.create({
               name: `PAY FLOAT GOLD / RECEIVE FIX ${currency}`,
@@ -490,7 +528,7 @@ export class ValuationsWorker {
     }
   }
 
-  private async getAVA <T extends IVAItem>(args: T): Promise<void> {
+  private async getAVA<T extends IVAItem>(args: T): Promise<void> {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.MARKET);
 
@@ -531,7 +569,9 @@ export class ValuationsWorker {
               value: {
                 $min: {
                   $cond: [
-                    { $gte: ['$quantity', (args.stackable || 1)] }, '$price', { $min: '$price' },
+                    { $gte: ['$quantity', args.stackable || 1] },
+                    '$price',
+                    { $min: '$price' },
                   ],
                 },
               },
@@ -549,9 +589,15 @@ export class ValuationsWorker {
         /** Initiate constants */
         const flags = ['BUY', 'SELL'];
 
-        for (let flag of flags) {
-          const value: number = flag === FLAG_TYPE.S ? round(market_data.value * 0.95) : round(market_data.value);
-          const min_price: number = flag === FLAG_TYPE.S ? round(market_data.min * 0.95) : round(market_data.min);
+        for (const flag of flags) {
+          const value: number =
+            flag === FLAG_TYPE.S
+              ? round(market_data.value * 0.95)
+              : round(market_data.value);
+          const min_price: number =
+            flag === FLAG_TYPE.S
+              ? round(market_data.min * 0.95)
+              : round(market_data.min);
           await this.ValuationsModel.create({
             name: `AUCTION ${flag}`,
             flag: flag,
@@ -568,7 +614,6 @@ export class ValuationsWorker {
             },
           });
         }
-
       }
     } catch (errorException) {
       this.logger.error(`getAVA: item ${args._id}, ${errorException}`);
@@ -579,15 +624,15 @@ export class ValuationsWorker {
     try {
       this.checkAssetClass(args._id, args.asset_class, VALUATION_TYPE.DERIVATIVE);
 
-      const primary_methods = await this.PricingModel
-        .find({
-          'derivatives._id': args._id,
-          type: { $ne: PRICING_TYPE.REVIEW },
-        })
-        .lean();
+      const primary_methods = await this.PricingModel.find({
+        'derivatives._id': args._id,
+        type: { $ne: PRICING_TYPE.REVIEW },
+      }).lean();
 
       if (primary_methods.length === 0) {
-        this.logger.warn(`getPMVA: item ${args._id}, ${primary_methods.length} pricing methods found`);
+        this.logger.warn(
+          `getPMVA: item ${args._id}, ${primary_methods.length} pricing methods found`,
+        );
         return;
       }
       /**
@@ -597,12 +642,13 @@ export class ValuationsWorker {
        * and iterate them one-by-one
        */
       for (const price_method of primary_methods) {
-
         if (
-          price_method.reagents.length === 0
-          || price_method.derivatives.length === 0
+          price_method.reagents.length === 0 ||
+          price_method.derivatives.length === 0
         ) {
-          this.logger.warn(`getPMVA: item ${args._id} pricing method: ${price_method._id} reagents: ${price_method.reagents.length} derivatives: ${price_method.derivatives.length}`);
+          this.logger.warn(
+            `getPMVA: item ${args._id} pricing method: ${price_method._id} reagents: ${price_method.reagents.length} derivatives: ${price_method.derivatives.length}`,
+          );
           continue;
         }
         /**
@@ -618,12 +664,20 @@ export class ValuationsWorker {
         });
 
         if (dva) {
-          this.logger.warn(`getPMVA: item ${args._id} pricing method: ${price_method._id} already have valuation`);
+          this.logger.warn(
+            `getPMVA: item ${args._id} pricing method: ${price_method._id} already have valuation`,
+          );
           continue;
         }
 
-        const sumReagentsQuantity: number = price_method.reagents.reduce((accum, reagent ) => accum + reagent.quantity, 0);
-        const sumDerivativesQuantity: number = price_method.derivatives.reduce((accum, derivative ) => accum + derivative.quantity, 0);
+        const sumReagentsQuantity: number = price_method.reagents.reduce(
+          (accum, reagent) => accum + reagent.quantity,
+          0,
+        );
+        const sumDerivativesQuantity: number = price_method.derivatives.reduce(
+          (accum, derivative) => accum + derivative.quantity,
+          0,
+        );
         const singleDerivative: boolean = price_method.derivatives.length === 1;
         const singleReagent: boolean = price_method.reagents.length === 1;
 
@@ -722,13 +776,12 @@ export class ValuationsWorker {
           methodEvaluation.reagent_items.push(reagentItem);
         } else {
           /** Find cheapest to delivery method for item on current timestamp */
-          const ctdValuation = await this.ValuationsModel
-            .findOne({
-              item_id: reagentItem._id,
-              last_modified: args.last_modified,
-              connected_realm_id: args.connected_realm_id,
-              flag: FLAG_TYPE.B,
-            })
+          const ctdValuation = await this.ValuationsModel.findOne({
+            item_id: reagentItem._id,
+            last_modified: args.last_modified,
+            connected_realm_id: args.connected_realm_id,
+            flag: FLAG_TYPE.B,
+          })
             .sort({ value: 1 })
             .lean();
 
@@ -737,7 +790,12 @@ export class ValuationsWorker {
            * stop evaluation, start recursive?
            */
           if (!ctdValuation) {
-            await this.checkReagentItems(price_method.reagents, args._id, args.last_modified, args.connected_realm_id);
+            await this.checkReagentItems(
+              price_method.reagents,
+              args._id,
+              args.last_modified,
+              args.connected_realm_id,
+            );
             await this.addValuationToQueue({
               _id: args._id,
               last_modified: args.last_modified,
@@ -748,20 +806,31 @@ export class ValuationsWorker {
           }
 
           if (
-            ctdValuation.type === VALUATION_TYPE.DERIVATIVE
-            && ctdValuation.details
+            ctdValuation.type === VALUATION_TYPE.DERIVATIVE &&
+            ctdValuation.details
           ) {
             for (const underlyingItem of ctdValuation.details.reagent_items) {
               /** Queue_quantity x Underlying_item.quantity */
-              const underlyingReagentItemValue = round(underlyingItem.value * reagentItem.quantity);
-              const underlyingReagentItemQuantity = underlyingItem.quantity * reagentItem.quantity;
+              const underlyingReagentItemValue = round(
+                underlyingItem.value * reagentItem.quantity,
+              );
+              const underlyingReagentItemQuantity =
+                underlyingItem.quantity * reagentItem.quantity;
               /** if this item is already in reagent_items, then + quantity */
-              if (methodEvaluation.reagent_items.some(reagent_item => reagent_item._id === underlyingItem._id)) {
+              if (
+                methodEvaluation.reagent_items.some(
+                  (reagent_item) => reagent_item._id === underlyingItem._id,
+                )
+              ) {
                 /** take in focus by arrayIndex and edit properties */
-                const reagentItemIndex = methodEvaluation.reagent_items.findIndex(item => item._id === underlyingItem._id);
+                const reagentItemIndex = methodEvaluation.reagent_items.findIndex(
+                  (item) => item._id === underlyingItem._id,
+                );
                 if (reagentItemIndex !== -1) {
-                  methodEvaluation.reagent_items[reagentItemIndex].value += underlyingReagentItemValue;
-                  methodEvaluation.reagent_items[reagentItemIndex].quantity += underlyingReagentItemQuantity;
+                  methodEvaluation.reagent_items[reagentItemIndex].value +=
+                    underlyingReagentItemValue;
+                  methodEvaluation.reagent_items[reagentItemIndex].quantity +=
+                    underlyingReagentItemQuantity;
                 }
               } else {
                 methodEvaluation.reagent_items.push(underlyingItem);
@@ -773,7 +842,9 @@ export class ValuationsWorker {
           }
 
           /** We add value to queue_cost */
-          methodEvaluation.queue_cost += round(ctdValuation.value * reagentItem.quantity);
+          methodEvaluation.queue_cost += round(
+            ctdValuation.value * reagentItem.quantity,
+          );
         }
       }
 
@@ -789,12 +860,18 @@ export class ValuationsWorker {
     methodEvaluation: MethodEvaluation,
   ): Promise<MethodEvaluation> {
     try {
-
-      if (methodEvaluation.premium_items.length && methodEvaluation.single_derivative) {
-        this.logger.log(`getPRVA: single_derivative ${methodEvaluation.single_derivative}`);
+      if (
+        methodEvaluation.premium_items.length &&
+        methodEvaluation.single_derivative
+      ) {
+        this.logger.log(
+          `getPRVA: single_derivative ${methodEvaluation.single_derivative}`,
+        );
         /** Pre-valuate nominal value w/o premium part */
         const [firstPremiumItem] = methodEvaluation.premium_items;
-        methodEvaluation.nominal_value = round(methodEvaluation.queue_cost / firstPremiumItem.quantity);
+        methodEvaluation.nominal_value = round(
+          methodEvaluation.queue_cost / firstPremiumItem.quantity,
+        );
 
         /** Request market price from method item_id */
         const ava = await this.ValuationsModel.findOne({
@@ -806,7 +883,8 @@ export class ValuationsWorker {
         });
 
         /** Single Premium Flag */
-        methodEvaluation.single_premium = methodEvaluation.premium_items.length === 1;
+        methodEvaluation.single_premium =
+          methodEvaluation.premium_items.length === 1;
         this.logger.log(`single_premium: ${methodEvaluation.single_premium}`);
 
         /** If ava.exists and premium_items is one */
@@ -817,7 +895,9 @@ export class ValuationsWorker {
         for (const premium_item of methodEvaluation.premium_items) {
           /** Single Name Valuation */
           if (methodEvaluation.single_premium) {
-            await this.PricingModel.findByIdAndUpdate(price_method._id, { single_premium: premium_item._id });
+            await this.PricingModel.findByIdAndUpdate(price_method._id, {
+              single_premium: premium_item._id,
+            });
             const prva = await this.ValuationsModel.findOne({
               item_id: premium_item._id,
               last_modified: args.last_modified,
@@ -826,7 +906,9 @@ export class ValuationsWorker {
             }).sort({ 'details.wi': -1 });
 
             if (prva) {
-              methodEvaluation.queue_cost += round(prva.value * premium_item.quantity);
+              methodEvaluation.queue_cost += round(
+                prva.value * premium_item.quantity,
+              );
             } else {
               methodEvaluation.unsorted_items.push(premium_item);
             }
@@ -855,8 +937,9 @@ export class ValuationsWorker {
               continue;
             }
 
-            methodEvaluation.queue_cost += round(ctdValuation.value * premium_item.quantity);
-
+            methodEvaluation.queue_cost += round(
+              ctdValuation.value * premium_item.quantity,
+            );
           } else {
             /**
              * CTD FOR PREMIUM
@@ -865,7 +948,9 @@ export class ValuationsWorker {
              * require additional research
              */
             if (methodEvaluation.premium_clearance && ava) {
-              methodEvaluation.premium = round(ava.value - methodEvaluation.queue_cost);
+              methodEvaluation.premium = round(
+                ava.value - methodEvaluation.queue_cost,
+              );
               methodEvaluation.premium_clearance = false;
             }
 
@@ -877,7 +962,9 @@ export class ValuationsWorker {
             }).sort({ 'details.wi': -1 });
 
             if (prva) {
-              methodEvaluation.queue_cost += round(prva.value * premium_item.quantity);
+              methodEvaluation.queue_cost += round(
+                prva.value * premium_item.quantity,
+              );
             } else {
               methodEvaluation.unsorted_items.push(premium_item);
             }
@@ -897,15 +984,14 @@ export class ValuationsWorker {
     methodEvaluation: MethodEvaluation,
   ): Promise<MethodEvaluation> {
     try {
-
       /**
        * POST-REAGENT, pricing method type reverse
        * && derivative length > 1 && reagent = 1
        */
       if (
-        price_method.type === PRICING_TYPE.REVERSE
-        && methodEvaluation.single_derivative === false
-        && methodEvaluation.single_reagent === true
+        price_method.type === PRICING_TYPE.REVERSE &&
+        methodEvaluation.single_derivative === false &&
+        methodEvaluation.single_reagent === true
       ) {
         this.logger.log(`getDVA: single_reagent ${methodEvaluation.single_reagent}`);
 
@@ -914,11 +1000,16 @@ export class ValuationsWorker {
         for (const derivative of price_method.derivatives) {
           //`DR:${derivative._id}:${price_method.spell_id}:${reagentItem._id}`
           const derivativeItemName = price_method._id.toString();
-          const derivativeItemShare = round(derivative.quantity / methodEvaluation.derivative_quantity_sum);
-          const derivativeValuationShare = round(methodEvaluation.queue_cost * derivativeItemShare);
-          const derivativeItemValuation = derivative.quantity < 1
-            ? round((1 / derivative.quantity) * derivativeValuationShare)
-            : round(derivativeValuationShare / derivative.quantity);
+          const derivativeItemShare = round(
+            derivative.quantity / methodEvaluation.derivative_quantity_sum,
+          );
+          const derivativeValuationShare = round(
+            methodEvaluation.queue_cost * derivativeItemShare,
+          );
+          const derivativeItemValuation =
+            derivative.quantity < 1
+              ? round((1 / derivative.quantity) * derivativeValuationShare)
+              : round(derivativeValuationShare / derivative.quantity);
 
           const dva = await this.ValuationsModel.findOne({
             item_id: args._id,
@@ -951,13 +1042,15 @@ export class ValuationsWorker {
       }
 
       if (
-        price_method.type === PRICING_TYPE.PRIMARY
-        && methodEvaluation.single_derivative === true
+        price_method.type === PRICING_TYPE.PRIMARY &&
+        methodEvaluation.single_derivative === true
       ) {
         const [singleDerivative] = price_method.derivatives;
         // `DP:${singleDerivative._id}:${price_method.spell_id}`
         const derivativeItemName = price_method._id.toString();
-        methodEvaluation.nominal_value = round(methodEvaluation.queue_cost / singleDerivative.quantity);
+        methodEvaluation.nominal_value = round(
+          methodEvaluation.queue_cost / singleDerivative.quantity,
+        );
 
         // TODO proc chance
         if (
@@ -965,7 +1058,9 @@ export class ValuationsWorker {
           price_method.profession === 'ALCH' &&
           price_method.rank === 3
         ) {
-          methodEvaluation.nominal_value = round(methodEvaluation.nominal_value * 0.6);
+          methodEvaluation.nominal_value = round(
+            methodEvaluation.nominal_value * 0.6,
+          );
         }
 
         await this.ValuationsModel.create({

@@ -230,7 +230,17 @@ export interface IPets {
 
 export interface IPetType {
   id: number;
-  species: { name: string };
+  species: {
+    key: ISelfKeyHref;
+    id: number;
+    name: string;
+  };
+  stats: { breed_id: number; health: number; speed: number };
+  quality: INameWithType;
+  creature_display: {
+    key: ISelfKeyHref;
+    id: number;
+  };
   name?: string;
   is_active: boolean;
   level: string | number;
@@ -275,7 +285,7 @@ export interface CharacterSummary {
   guildRank: number;
   level: number;
   achievementPoints: number;
-  lastModified: number;
+  lastModified: Date;
   averageItemLevel: number;
   equippedItemLevel: number;
   covenantId: string;

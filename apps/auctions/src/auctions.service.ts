@@ -1,13 +1,21 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { delay } from '@app/core/utils/converters';
 import { Queue } from 'bullmq';
-import { auctionsQueue, GLOBAL_DMA_KEY, IAARealm, IQAuction } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import moment from 'moment';
+import { DateTime } from 'luxon';
+import {
+  AuctionJobQueue,
+  auctionsQueue,
+  delay,
+  getKeys,
+  GLOBAL_DMA_KEY,
+} from '@app/core';
+import { InjectRepository } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
+import { LessThan, Repository } from 'typeorm';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {
@@ -16,64 +24,47 @@ export class AuctionsService implements OnApplicationBootstrap {
   });
 
   constructor(
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Key.name)
-    private readonly KeyModel: Model<Key>,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
     @BullQueueInject(auctionsQueue.name)
-    private readonly queue: Queue<IQAuction, number>,
+    private readonly queue: Queue<AuctionJobQueue, number>,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
     await this.indexCommodity(GLOBAL_DMA_KEY);
   }
 
-  private async indexAuctions(
-    clearance: string = GLOBAL_DMA_KEY,
-  ): Promise<void> {
+  private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);
-
-      const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key || !key.token) {
-        this.logger.error(
-          `indexAuctions: clearance: ${clearance} key not found`,
-        );
-        return;
-      }
-
       await this.queue.drain(true);
-      const offsetTime: number = parseInt(
-        moment().subtract(30, 'minutes').format('x'),
-      );
 
-      await this.RealmModel.aggregate<IAARealm>([
-        {
-          $match: {
-            auctions: { $lt: offsetTime },
-          },
-        },
-        {
-          $group: {
-            _id: {
-              connected_realm_id: '$connected_realm_id',
-              auctions: '$auctions',
-            },
-            name: { $first: '$name' },
-          },
-        },
-      ])
-        .cursor({ batchSize: 5 })
-        .eachAsync(async (realm: IAARealm) => {
-          await this.queue.add(`${realm.name}`, {
-            connected_realm_id: realm._id.connected_realm_id,
-            auctions: realm._id.auctions,
-            region: 'eu',
-            clientId: key._id,
-            clientSecret: key.secret,
-            accessToken: key.token,
-          });
-        });
+      const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
+      const offsetTime = DateTime.now().minus({ minutes: 30 }).toMillis();
+
+      const realmsEntity = await this.realmsRepository
+        .createQueryBuilder('realms')
+        .where({ id: LessThan(offsetTime) })
+        .distinctOn(['realms.connectedRealmId'])
+        .getMany();
+
+      await lastValueFrom(
+        from(realmsEntity).pipe(
+          mergeMap(async (realmEntity) => {
+            await this.queue.add(`${realmEntity.name}`, {
+              connectedRealmId: realmEntity.connectedRealmId,
+              auctionsTimestamp: realmEntity.auctionsTimestamp,
+              region: 'eu',
+              clientId: keyEntity.client,
+              clientSecret: keyEntity.secret,
+              accessToken: keyEntity.token,
+              isAssetClassIndex: true,
+            });
+          }),
+        ),
+      );
     } catch (errorException) {
       this.logger.error(`indexAuctions: ${errorException}`);
     }
@@ -82,19 +73,19 @@ export class AuctionsService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async indexCommodity(clearance: string = GLOBAL_DMA_KEY) {
     try {
-      const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key || !key.token) {
-        this.logger.error(
-          `indexCommodity: clearance: ${clearance} key not found`,
-        );
-        return;
-      }
+      const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
+
+      const realmEntity = await this.realmsRepository.findOneBy({
+        connectedRealmId: 1,
+      });
 
       await this.queue.add('COMMDTY', {
         region: 'eu',
-        clientId: key._id,
-        clientSecret: key.secret,
-        accessToken: key.token,
+        clientId: keyEntity.client,
+        clientSecret: keyEntity.secret,
+        accessToken: keyEntity.token,
+        commoditiesTimestamp: realmEntity.commoditiesTimestamp,
+        isAssetClassIndex: true,
       });
     } catch (errorException) {
       this.logger.error(`indexCommodity: ${errorException}`);

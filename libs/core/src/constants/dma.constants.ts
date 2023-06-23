@@ -8,23 +8,30 @@ export enum DMA_SOURCE {
 }
 
 export enum VALUATION_TYPE {
-  VSP = 'vsp',
-  VENDOR = 'vendor',
-  DERIVATIVE = 'derivative',
-  REAGENT = 'reagent',
-  MARKET = 'market',
-  PREMIUM = 'premium',
-  FUNPAY = 'funpay',
-  COMMDTY = 'commdty',
-  ITEM = 'item',
-  OTC = 'otc',
-  WOWTOKEN = 'wowtoken',
-  GOLD = 'gold',
+  VSP = 'VSP',
+  VENDOR = 'VENDOR',
+  DERIVATIVE = 'DERIVATIVE',
+  REAGENT = 'REAGENT',
+  MARKET = 'MARKET',
+  PREMIUM = 'PREMIUM',
+  FUNPAY = 'FUNPAY',
+  COMMDTY = 'COMMDTY',
+  ITEM = 'ITEM',
+  OTC = 'OTC',
+  WOWTOKEN = 'WOWTOKEN',
+  GOLD = 'GOLD',
 }
 
 export enum ORDER_FLOW {
   C = 'created',
   R = 'removed',
+}
+
+export enum MARKET_TYPE {
+  A = 'AUCTION',
+  C = 'COMMDTY',
+  G = 'GOLD',
+  T = 'TOKEN',
 }
 
 export enum FLAG_TYPE {
@@ -86,6 +93,18 @@ export const PROFESSION_TICKER: Map<number, string> = new Map([
   [773, 'INSC'],
   [794, 'ARCH'],
 ]);
+
+export const GOLD_ITEM_ENTITY = {
+  id: 1,
+  name: 'GOLD',
+  quality: 'Currency',
+  itemClass: 'Currency',
+  hasContracts: true,
+  assetClass: [VALUATION_TYPE.GOLD],
+  ticker: VALUATION_TYPE.GOLD,
+  tags: ['gold', 'currency', 'funpay'],
+  indexBy: DMA_SOURCE.LAB,
+};
 
 export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
   // GOLD

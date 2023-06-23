@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
 import { Job } from 'bullmq';
-import { IPricing, IPricingMethods } from '@app/core/types/dma.interface';
+import { IPricing, IPricingMethods } from '@app/core';
 import { PROFESSION_TICKER } from '@app/core/constants/dma.constants';
 
 import {

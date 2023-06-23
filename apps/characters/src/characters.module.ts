@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import {
+  mongoConfig,
+  mongoOptionsConfig,
+  postgresConfig,
+  redisConfig,
+} from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity } from '@app/pg';
 import {
   Character,
   CharactersSchema,
@@ -20,6 +27,8 @@ import {
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity]),
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,

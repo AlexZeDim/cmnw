@@ -307,6 +307,7 @@ export const REALM_TICKER = new Map<string, string>([
   ['Ysondre', 'YSONDRE'],
   ['Ashenvale', 'ASHNVLE'],
   ['Gordunni', 'GRDNNI'],
+  ['Eversong', 'EVERSNG'],
   ['Lich King', 'LCHKNG'],
   ['Soulflayer', 'SLFLYR'],
   ['Deathguard', 'DTHGRD'],
@@ -325,6 +326,19 @@ export const REALM_TICKER = new Map<string, string>([
   ['Goldrinn', 'GLDRNN'],
   ['Blackscar', 'BLKSCR'],
 ]);
+
+export const REALM_ENTITY_ANY = {
+  id: 1,
+  slug: 'any',
+  name: 'Any',
+  region: 'Europe',
+  localeName: 'Любой',
+  localeSlug: 'любой',
+  ticker: 'AANNYY',
+  status: 'Down',
+  timezone: 'Europe/Paris',
+  connectedRealmId: 1,
+};
 
 export const EXPANSION_LIST_ID = new Map<string, string>([
   ['Classic', 'CLSC'],
@@ -455,4 +469,10 @@ export enum MYTHIC_PLUS_SEASONS {
   SHDW_S1 = 5,
   SHDW_S2 = 6,
   SHDW_S3 = 7,
+}
+
+export enum API_HEADERS_ENUM {
+  PROFILE = 'profile-eu',
+  DYNAMIC = 'dynamic-eu',
+  STATIC = 'static-eu',
 }

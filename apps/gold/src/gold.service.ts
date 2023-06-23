@@ -7,6 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { MarketEntity, RealmsEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { DateTime } from 'luxon';
 import cheerio from 'cheerio';
 
 @Injectable()
@@ -35,9 +36,10 @@ export class GoldService {
       const marketOrders: Array<MarketEntity> = [];
       const realmsEntity = new Map<string, RealmsEntity>([]);
       const connectedRealmIds = new Set<number>();
-      const timestamp = new Date().getTime();
+      const timestamp = DateTime.now().toMillis();
 
       exchangeListingPage(goldListingMarkup).each((index, element) => {
+        const orderId = exchangeListingPage(element).attr('href');
         const realm = exchangeListingPage(element).find('.tc-server').text();
         const faction = exchangeListingPage(element).find('.tc-side').text();
         const status = Boolean(exchangeListingPage(element).attr('data-online'));
@@ -73,14 +75,12 @@ export class GoldService {
               realmsEntity.set(order.realm, realmEntity);
               connectedRealmIds.add(realmEntity.connectedRealmId);
 
+              const [url, orderId] = order.orderId.split('=') || null;
               const price = parseFloat(order.price.replace(/ ₽/g, ''));
               const quantity = parseInt(order.quantity.replace(/\s/g, ''));
               const counterparty = order.owner.replace('\n', '').trim();
               const isQuantityLimit = quantity > 15_000_000;
-              if (isQuantityLimit) {
-                this.logger.log(quantity);
-                return;
-              }
+              if (isQuantityLimit) return;
 
               let faction: FACTION = FACTION.ANY;
               const isOnline = order.status;
@@ -96,6 +96,7 @@ export class GoldService {
                 connectedRealmId,
                 itemId: 1,
                 type: MARKET_TYPE.G,
+                orderId,
                 faction,
                 quantity,
                 isOnline,

@@ -1,17 +1,26 @@
 import { Module } from '@nestjs/common';
 import { GuildsService } from './guilds.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity } from '@app/pg';
+import {
+  mongoConfig,
+  mongoOptionsConfig,
+  postgresConfig,
+  redisConfig,
+} from '@app/configuration';
+
 import {
   Character,
   CharactersSchema,
   Guild,
   GuildsSchema,
   Key,
-  KeysSchema, Log,
+  KeysSchema,
+  Log,
   LogsSchema,
   Realm,
   RealmsSchema,
@@ -20,6 +29,8 @@ import {
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity]),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },
@@ -37,7 +48,10 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
+    BullModule.registerQueue({
+      queueName: guildsQueue.name,
+      options: guildsQueue.options,
+    }),
   ],
   controllers: [],
   providers: [GuildsService],

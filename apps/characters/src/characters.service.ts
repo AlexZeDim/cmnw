@@ -6,7 +6,7 @@ import {
   OSINT_SOURCE,
 } from '@app/core';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -42,8 +42,7 @@ export class CharactersService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 10000) {
-        this.logger.warn(`indexCharactersFromMongo: ${jobs} jobs found`);
-        return;
+        throw new NotFoundException(`indexCharactersFromMongo: ${jobs} jobs found`);
       }
 
       const keyEntities = await getKeys(this.keysRepository, clearance);

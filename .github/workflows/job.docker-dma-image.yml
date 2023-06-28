@@ -11,6 +11,7 @@ on:
       - 'apps/keys/**'
       - 'apps/realms/**'
       - 'apps/dma/**'
+      - 'libs/**'
 
 jobs:
   publish:

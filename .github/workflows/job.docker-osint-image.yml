@@ -9,6 +9,7 @@ on:
       - 'apps/keys/**'
       - 'apps/osint/**'
       - 'apps/realms/**'
+      - 'libs/**'
 
 jobs:
   publish:

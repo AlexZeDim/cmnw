@@ -119,7 +119,7 @@ export class RealmsService implements OnModuleInit {
             const realmName = warcraftLogsPage(warcraftLogsRealmElement).text();
             const realmEntity = await findRealm(this.realmsRepository, realmName);
             if (!realmEntity) {
-              throw new NotFoundException(` ${realmId}:${realmName} not found!`);
+              throw new NotFoundException(`${realmId}:${realmName} not found!`);
             }
 
             await this.realmsRepository.update(

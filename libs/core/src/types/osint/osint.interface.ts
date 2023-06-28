@@ -396,12 +396,13 @@ export interface IGuildSummary {
   lastModified: Date;
 }
 
-export interface ICharacterWpLfg {
+export interface ICharacterQueueWP {
+  guid: string;
   name: string;
   guild: string;
   raid: string;
   realm: string;
-  ilvl: string;
+  itemLevel: string;
   timestamp: string;
 }
 

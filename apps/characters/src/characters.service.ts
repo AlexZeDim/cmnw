@@ -52,7 +52,7 @@ export class CharactersService {
 
       await this.CharacterModel.find<Character>()
         .sort({ hash_b: 1 })
-        .limit(250000)
+        .limit(50000)
         .cursor()
         .eachAsync(
           async (character) => {

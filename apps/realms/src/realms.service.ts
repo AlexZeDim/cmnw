@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import { BlizzAPI } from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -119,9 +119,7 @@ export class RealmsService implements OnModuleInit {
             const realmName = warcraftLogsPage(warcraftLogsRealmElement).text();
             const realmEntity = await findRealm(this.realmsRepository, realmName);
             if (!realmEntity) {
-              this.logger.log(
-                `getRealmsWarcraftLogsID: ${realmId}:${realmName} not found!`,
-              );
+              throw new NotFoundException(` ${realmId}:${realmName} not found!`);
             }
 
             await this.realmsRepository.update(

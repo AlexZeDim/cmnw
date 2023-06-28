@@ -32,7 +32,7 @@ COPY . .
 RUN npm install -g @nestjs/cli
 RUN nest build keys
 
-CMD wait && ["node", "dist/apps/keys/main.js"]
+CMD ["node", "dist/apps/keys/main.js"]
 
 
 

@@ -27,6 +27,7 @@ RUN yarn install --network-timeout 1000000
 COPY . .
 
 RUN npm install -g @nestjs/cli
+
 RUN nest build auctions \
   && nest build items \
   && nest build dma \

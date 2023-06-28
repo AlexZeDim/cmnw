@@ -10,6 +10,7 @@ on:
       - 'apps/wowtoken/**'
       - 'apps/keys/**'
       - 'apps/realms/**'
+      - 'apps/dma/**'
 
 jobs:
   publish:

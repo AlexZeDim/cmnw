@@ -18,6 +18,8 @@ RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 RUN mv cmnw-secrets/* .
 RUN rm -rf cmnw-secrets
 
+COPY package.json ./
+
 # Installing private github packages #
 RUN echo //npm.pkg.github.com/:_authToken=${CR_PAT} >> ~/.npmrc
 RUN echo @alexzedim:registry=https://npm.pkg.github.com/ >> ~/.npmrc

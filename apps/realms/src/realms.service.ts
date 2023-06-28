@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import { BlizzAPI } from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -18,7 +18,7 @@ import {
 } from '@app/core';
 
 @Injectable()
-export class RealmsService implements OnApplicationBootstrap {
+export class RealmsService implements OnModuleInit {
   private readonly logger = new Logger(RealmsService.name, { timestamp: true });
 
   private BNet: BlizzAPI;
@@ -33,7 +33,7 @@ export class RealmsService implements OnApplicationBootstrap {
     private readonly queue: Queue<RealmJobQueue, number>,
   ) {}
 
-  async onApplicationBootstrap(): Promise<void> {
+  async onModuleInit(): Promise<void> {
     await this.init();
     await this.indexRealms(GLOBAL_KEY);
     await this.getRealmsWarcraftLogsID();

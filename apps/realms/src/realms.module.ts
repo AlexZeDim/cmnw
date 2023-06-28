@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
 import { realmsQueue } from '@app/core';
@@ -7,7 +8,6 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
-import { postgresConfig, redisConfig } from '@app/configuration';
 
 @Module({
   imports: [

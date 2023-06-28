@@ -1,44 +1,43 @@
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Snowflake } from 'discord.js';
 
 @Schema({ timestamps: true })
 export class Account extends Document {
   @Prop({ type: String, default: 'Anonymous' })
-    nickname: string;
+  nickname: string;
 
   @Prop({ type: String, default: 'Anonymous' })
-    cryptonym: string;
+  cryptonym: string;
 
   /**
    * Channel with file or management
    */
   @Prop({ type: String })
-    oraculum_id: Snowflake;
+  oraculum_id: string;
 
   @Prop({ type: String })
-    discord_id: Snowflake;
+  discord_id: string;
 
   @Prop({ type: String })
-    battle_tag: string;
+  battle_tag: string;
 
   @Prop({ type: [String] })
-    characters_id: string[];
+  characters_id: string[];
 
   @Prop({ type: [String] })
-    clearance: string[];
+  clearance: string[];
 
   @Prop({ type: [String] })
-    tags: string[];
+  tags: string[];
 
   @Prop({ type: Boolean, default: false, index: true })
-    is_index: boolean;
+  is_index: boolean;
 
   @Prop({ type: Date })
-    updatedAt: Date;
+  updatedAt: Date;
 
   @Prop({ type: Date })
-    createdAt: Date;
+  createdAt: Date;
 }
 
 export const AccountsSchema = SchemaFactory.createForClass(Account);

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import { BlizzAPI } from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -18,7 +18,7 @@ import {
 } from '@app/core';
 
 @Injectable()
-export class RealmsService implements OnApplicationBootstrap {
+export class RealmsService implements OnModuleInit {
   private readonly logger = new Logger(RealmsService.name, { timestamp: true });
 
   private BNet: BlizzAPI;
@@ -33,7 +33,7 @@ export class RealmsService implements OnApplicationBootstrap {
     private readonly queue: Queue<RealmJobQueue, number>,
   ) {}
 
-  async onApplicationBootstrap(): Promise<void> {
+  async onModuleInit(): Promise<void> {
     await this.init();
     await this.indexRealms(GLOBAL_KEY);
     await this.getRealmsWarcraftLogsID();
@@ -99,15 +99,16 @@ export class RealmsService implements OnApplicationBootstrap {
 
   /**
    * Index every realm for WCL id, US:0,246 EU:247,517 (RU: 492) Korea: 517
-   * @param start
-   * @param end
+   * @param from
+   * @param to
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  private async getRealmsWarcraftLogsID(start = 246, end = 517): Promise<void> {
-    if (start < 1) start = 1;
+  private async getRealmsWarcraftLogsID(from = 246, to = 517): Promise<void> {
+    if (from < 1) from = 1;
+    const count = Math.abs(from - to);
 
     await lastValueFrom(
-      range(start, end + 1).pipe(
+      range(from, count).pipe(
         mergeMap(async (realmId) => {
           try {
             const response = await this.httpService.axiosRef.get<string>(
@@ -118,9 +119,7 @@ export class RealmsService implements OnApplicationBootstrap {
             const realmName = warcraftLogsPage(warcraftLogsRealmElement).text();
             const realmEntity = await findRealm(this.realmsRepository, realmName);
             if (!realmEntity) {
-              this.logger.log(
-                `getRealmsWarcraftLogsID: ${realmId}:${realmName} not found!`,
-              );
+              throw new NotFoundException(`${realmId}:${realmName} not found!`);
             }
 
             await this.realmsRepository.update(

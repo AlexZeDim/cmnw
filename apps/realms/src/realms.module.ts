@@ -1,10 +1,5 @@
 import { Module } from '@nestjs/common';
-import {
-  mongoConfig,
-  mongoOptionsConfig,
-  postgresConfig,
-  redisConfig,
-} from '@app/configuration';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
 import { realmsQueue } from '@app/core';

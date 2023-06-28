@@ -66,7 +66,7 @@ export class ItemsEntity {
 
   @Column({
     nullable: true,
-    type: 'int',
+    type: 'real',
     name: 'purchase_price',
   })
   purchasePrice?: number;
@@ -74,13 +74,13 @@ export class ItemsEntity {
   @Column({
     nullable: true,
     type: 'int',
-    name: 'purchase_quality',
+    name: 'purchase_quantity',
   })
-  purchaseQuality?: number;
+  purchaseQuantity?: number;
 
   @Column({
     nullable: true,
-    type: 'int',
+    type: 'real',
     name: 'vendor_sell_price',
   })
   vendorSellPrice?: number;

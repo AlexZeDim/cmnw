@@ -4,10 +4,10 @@ import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { ArrayContains, In, LessThan, Not, Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import { from, lastValueFrom } from 'rxjs';
-import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
 import { FACTION, findRealm, IGold, MARKET_TYPE, VALUATION_TYPE } from '@app/core';
 import { mergeMap } from 'rxjs/operators';
+import cheerio from 'cheerio';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {

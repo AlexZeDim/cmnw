@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   dma:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     deploy:
@@ -16,20 +16,6 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
 
-  contracts:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/contracts/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
-  valuations:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/valuations/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
   gold:
     image: ghcr.io/alexzedim/cmnw:latest
     restart: always
@@ -41,13 +27,6 @@ services:
     image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     command: [ 'node', 'dist/apps/items/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-
-  pricing:
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    command: [ 'node', 'dist/apps/pricing/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 

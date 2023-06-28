@@ -734,8 +734,7 @@ export class CharactersWorker {
 
       for (const [key, path] of CHARACTER_SUMMARY_FIELD_MAPPING.entries()) {
         const value = get(response, path, null);
-        if (!value) continue;
-        summary[key] = value;
+        if (value) summary[key] = value;
       }
 
       summary.guid = toGuid(nameSlug, summary.realm);

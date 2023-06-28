@@ -1,6 +1,18 @@
 import { Model } from 'mongoose';
 import { Auction, Gold } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
+import { ItemsEntity } from '@app/pg';
+import {
+  INameWithType,
+  ISelfKeyHref,
+  ISelfWithId,
+  ISelfWithNameAndId,
+} from '@app/core/types';
+
+export interface IItemFieldMap {
+  key: Partial<keyof Omit<ItemsEntity, 'id'>>;
+  path: string;
+}
 
 export interface ItemNames {
   en_US: string;
@@ -163,14 +175,40 @@ export class IVAItem implements IQItemValuation {
 }
 
 export interface IItem {
-  quality: string;
-  item_class: string;
-  item_subclass: string;
-  inventory_type: string;
+  id: number;
+  name: ItemNames;
+  quality: INameWithType;
+  level: number;
+  required_level: number;
+  media: ISelfWithId;
+  item_class: ISelfWithNameAndId;
+  item_subclass: ISelfWithNameAndId;
+  inventory_type: INameWithType;
   purchase_price: number;
   sell_price: number;
-  preview_item: string;
+  max_count: number;
+  is_equippable: boolean;
+  is_stackable: boolean;
+  preview_item: any;
+  purchase_quantity: number;
   loot_type: string;
+  // modified_crafting: any;
+  lastModified: string;
+}
+
+export interface IItemMedia {
+  _links: {
+    self: ISelfKeyHref;
+  };
+  assets: Array<IItemMediaAssets>;
+  id: number;
+  lastModified: string;
+}
+
+export interface IItemMediaAssets {
+  key: 'icon';
+  value: string;
+  file_data_id: number;
 }
 
 export interface IPricing {

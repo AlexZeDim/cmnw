@@ -3,13 +3,12 @@ FROM arm64v8/node:lts
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
-# Set image labels #
-LABEL org.opencontainers.image.title = "Realms"
+LABEL org.opencontainers.image.title = "OSINT"
+LABEL org.opencontainers.image.licenses = "MPL-2.0"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
 LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
-LABEL org.opencontainers.image.licenses = "MPL-2.0"
-LABEL org.opencontainers.image.description = "CMNW"
+LABEL org.opencontainers.image.description = "Intelligence always wins"
 
 WORKDIR /usr/src/app
 
@@ -30,9 +29,12 @@ RUN yarn install --network-timeout 1000000
 COPY . .
 
 RUN npm install -g @nestjs/cli
-RUN nest build realms
 
-CMD ["node", "dist/apps/realms/main.js"]
+RUN nest build characters \
+  && nest build guilds \
+  && nest build keys \
+  && nest build osint \
+  && nest build realms
 
-
+CMD ["node"]
 

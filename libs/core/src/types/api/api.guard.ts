@@ -2,6 +2,8 @@ import {
   BlizzardApiAuctions,
   BlizzardApiCharacterMedia,
   BlizzardApiCharacterSummary,
+  BlizzardApiItem,
+  BlizzardApiItemMedia,
   BlizzardApiMountsCollection,
   BlizzardApiPetsCollection,
   BlizzardApiResponse,
@@ -14,6 +16,9 @@ export const isBlizzardApiResponse = (
   response: unknown,
 ): response is Readonly<BlizzardApiResponse> =>
   typeof response === 'object' && !('error' in response);
+
+export const isNamedField = (response: unknown) =>
+  response && typeof response === 'object' && 'en_GB' in response;
 
 export const isGuildRoster = (
   response: unknown,
@@ -78,3 +83,21 @@ export const isGold = (response: unknown): response is GoldApiListing =>
   typeof response.orderId === 'string' &&
   'counterparty' in response &&
   typeof response.counterparty === 'string';
+
+export const isItem = (
+  response: PromiseSettledResult<any>,
+): response is PromiseFulfilledResult<BlizzardApiItem> =>
+  typeof response === 'object' &&
+  response.status === 'fulfilled' &&
+  'value' in response &&
+  Boolean(response.value);
+
+export const isItemMedia = (
+  response: PromiseSettledResult<any>,
+): response is PromiseFulfilledResult<BlizzardApiItemMedia> =>
+  typeof response === 'object' &&
+  response.status === 'fulfilled' &&
+  'value' in response &&
+  'assets' in response.value &&
+  Boolean(response.value.assets) &&
+  Array.isArray(response.value.assets);

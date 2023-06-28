@@ -31,7 +31,7 @@ export interface IQGuild {
   guid: string;
   name: string;
   realm: string;
-  createdBy: OSINT_SOURCE;
+  createdBy?: OSINT_SOURCE;
   updatedBy: OSINT_SOURCE;
 }
 

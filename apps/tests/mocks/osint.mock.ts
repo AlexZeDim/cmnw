@@ -6,6 +6,11 @@ export const keyPropRefLink = {
   key: expect.objectContaining(propRefLink),
 };
 
+export const objectPropRefId = {
+  id: expect.any(Number),
+  key: expect.objectContaining(propRefLink),
+};
+
 export const objectPropRef = {
   id: expect.any(Number),
   name: expect.any(String),

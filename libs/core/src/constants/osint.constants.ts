@@ -2,6 +2,13 @@ export const MAX_LEVEL = 70;
 
 export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
+export const OSINT_SOURCE_WOW_PROGRESS = 'https://www.wowprogress.com/export/ranks/';
+
+export const OSINT_LFG_WOW_PROGRESS = [
+  'https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts',
+  'https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts',
+];
+
 export const REALM_LOCALES: string[] = [
   'ru_ru',
   'en_gb',

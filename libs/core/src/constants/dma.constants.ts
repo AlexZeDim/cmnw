@@ -1,4 +1,5 @@
 import { mquery } from 'mongoose';
+import { IItem, IItemFieldMap } from '@app/core/types';
 
 export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
@@ -96,15 +97,32 @@ export const PROFESSION_TICKER: Map<number, string> = new Map([
 
 export const GOLD_ITEM_ENTITY = {
   id: 1,
-  name: 'GOLD',
+  name: 'Gold',
   quality: 'Currency',
   itemClass: 'Currency',
+  itemSubClass: 'Currency',
   hasContracts: true,
   assetClass: [VALUATION_TYPE.GOLD],
   ticker: VALUATION_TYPE.GOLD,
   tags: ['gold', 'currency', 'funpay'],
   indexBy: DMA_SOURCE.LAB,
 };
+
+export const ITEM_FIELD_MAPPING = new Map<keyof Partial<IItem>, IItemFieldMap>([
+  ['name', { key: 'name', path: 'name' }],
+  ['quality', { key: 'quality', path: 'quality.name' }],
+  ['level', { key: 'itemLevel', path: 'level' }],
+  ['item_class', { key: 'itemClass', path: 'item_class.name' }],
+  ['item_subclass', { key: 'itemSubClass', path: 'item_subclass.name' }],
+  ['purchase_price', { key: 'purchasePrice', path: 'purchase_price' }],
+  ['purchase_quantity', { key: 'purchaseQuantity', path: 'purchase_quantity' }],
+  ['sell_price', { key: 'vendorSellPrice', path: 'sell_price' }],
+  ['is_equippable', { key: 'isEquip', path: 'is_equippable' }],
+  ['is_stackable', { key: 'isStackable', path: 'is_stackable' }],
+  ['inventory_type', { key: 'inventoryType', path: 'inventory_type.name' }],
+  ['required_level', { key: 'level', path: 'required_level' }],
+  ['preview_item', { key: 'lootType', path: 'preview_item.binding.type' }],
+]);
 
 export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
   // GOLD

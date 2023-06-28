@@ -10,6 +10,7 @@ import {
   API_HEADERS_ENUM,
   apiConstParams,
   BlizzardApiItem,
+  DMA_SOURCE,
   IItem,
   isItem,
   isItemMedia,
@@ -46,6 +47,7 @@ export class ItemsWorker {
       if (isNew) {
         itemEntity = this.itemsRepository.create({
           id: args.itemId,
+          indexBy: DMA_SOURCE.API,
         });
       }
 
@@ -94,9 +96,7 @@ export class ItemsWorker {
           if (isFieldName) value = get(value, `en_GB`, null);
 
           if (gold.has(key)) {
-            console.log(value);
             value = toGold(value);
-            console.log(value);
           }
 
           if (value && value !== itemEntity[property.key])

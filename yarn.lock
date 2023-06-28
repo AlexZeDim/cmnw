@@ -1074,7 +1074,7 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.4.tgz#0b92dcc0cc1c81f6f306a381f28e31b1a56536e9"
   integrity sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==
 
-"@types/async-csv@^2.1.1":
+"@types/async-csv@2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@types/async-csv/-/async-csv-2.1.1.tgz#c66dd1fc8bea349f6affcc90680114b22375f654"
   integrity sha512-f2kvy473oPAbhXVv7Dw5x4/F5CssF8HY5T4ZUW4bNgB/x8JeMWbeUDzBR4ZViOUExVKc/f6meBXwWEevemoYdw==
@@ -6348,13 +6348,6 @@ run-script-webpack-plugin@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/run-script-webpack-plugin/-/run-script-webpack-plugin-0.2.0.tgz#45bfdd4e11345c8619eabaef8113c2a4f26dc653"
   integrity sha512-SVNNq4jxzjfnaW+HkdTlyH1CWwCuSb/weYfic0D7Y/KnhY27YRYkzgybdzTDEPJlpQ73FDCRDbyBFwNsJMmwWQ==
-
-rxjs@7.8.0:
-  version "7.8.0"
-  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.0.tgz#90a938862a82888ff4c7359811a595e14e1e09a4"
-  integrity sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==
-  dependencies:
-    tslib "^2.1.0"
 
 rxjs@7.8.1, rxjs@^7.5.5:
   version "7.8.1"

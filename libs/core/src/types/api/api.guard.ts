@@ -17,6 +17,9 @@ export const isBlizzardApiResponse = (
 ): response is Readonly<BlizzardApiResponse> =>
   typeof response === 'object' && !('error' in response);
 
+export const isNamedField = (response: unknown) =>
+  response && typeof response === 'object' && 'en_GB' in response;
+
 export const isGuildRoster = (
   response: unknown,
 ): response is Readonly<IRGuildRoster> =>
@@ -82,7 +85,7 @@ export const isGold = (response: unknown): response is GoldApiListing =>
   typeof response.counterparty === 'string';
 
 export const isItem = (
-  response: PromiseSettledResult<unknown>,
+  response: PromiseSettledResult<any>,
 ): response is PromiseFulfilledResult<BlizzardApiItem> =>
   typeof response === 'object' &&
   response.status === 'fulfilled' &&
@@ -90,10 +93,11 @@ export const isItem = (
   Boolean(response.value);
 
 export const isItemMedia = (
-  response: PromiseSettledResult<unknown>,
+  response: PromiseSettledResult<any>,
 ): response is PromiseFulfilledResult<BlizzardApiItemMedia> =>
   typeof response === 'object' &&
   response.status === 'fulfilled' &&
   'value' in response &&
-  Boolean(response.value) &&
-  Array.isArray(response.value);
+  'assets' in response.value &&
+  Boolean(response.value.assets) &&
+  Array.isArray(response.value.assets);

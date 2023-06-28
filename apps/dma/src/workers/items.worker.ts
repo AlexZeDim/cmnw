@@ -13,6 +13,7 @@ import {
   IItem,
   isItem,
   isItemMedia,
+  isNamedField,
   ITEM_FIELD_MAPPING,
   ItemJobQueue,
   itemsQueue,
@@ -41,7 +42,8 @@ export class ItemsWorker {
        * @description If not, create
        */
       let itemEntity = await this.itemsRepository.findOneBy({ id: args.itemId });
-      if (!itemEntity) {
+      const isNew = !itemEntity;
+      if (isNew) {
         itemEntity = this.itemsRepository.create({
           id: args.itemId,
         });
@@ -56,10 +58,11 @@ export class ItemsWorker {
       });
 
       /** Request item data */
+      const isMultiLocale = true;
       const [getItemSummary, getItemMedia] = await Promise.allSettled([
         this.BNet.query<BlizzardApiItem>(
           `/data/wow/item/${args.itemId}`,
-          apiConstParams(API_HEADERS_ENUM.STATIC, TOLERANCE_ENUM.DMA),
+          apiConstParams(API_HEADERS_ENUM.STATIC, TOLERANCE_ENUM.DMA, isMultiLocale),
         ),
         this.BNet.query(
           `/data/wow/media/item/${args.itemId}`,
@@ -68,35 +71,48 @@ export class ItemsWorker {
       ]);
 
       const isItemValid = isItem(getItemSummary);
-
       if (!isItemValid) {
         return 404;
       }
 
-      const gold = ['sell_price', 'purchase_price'];
-      const fields = ['quality', 'item_class', 'item_subclass', 'inventory_type'];
+      const gold = new Set(['sell_price', 'purchase_price']);
+      const namedFields = new Set([
+        'name',
+        'quality',
+        'item_class',
+        'item_subclass',
+        'inventory_type',
+      ]);
 
       Object.keys(getItemSummary.value).forEach((key: keyof IItem) => {
         const isKeyInPath = ITEM_FIELD_MAPPING.has(key);
         if (isKeyInPath) {
           const property = ITEM_FIELD_MAPPING.get(key);
           let value = get(getItemSummary.value, property.path, null);
-          if (!value && fields.includes(key))
-            value = get(getItemSummary.value, `${key}.name.en_GB`, null);
+          const isFieldName = namedFields.has(key) ? isNamedField(value) : false;
+
+          if (isFieldName) value = get(value, `en_GB`, null);
+
+          if (gold.has(key)) {
+            console.log(value);
+            value = toGold(value);
+            console.log(value);
+          }
 
           if (value && value !== itemEntity[property.key])
             (itemEntity[property.key] as string | number) = value;
-
-          if (gold.includes(key))
-            (itemEntity[property.key] as number) = toGold(
-              itemEntity[property.key] as number,
-            );
         }
       });
 
+      if (isMultiLocale) {
+        itemEntity.names = getItemSummary.value.name as unknown as string;
+      }
+
       const isVSP =
-        itemEntity.vendorSellPrice &&
-        !itemEntity.assetClass.includes(VALUATION_TYPE.VSP);
+        (itemEntity.vendorSellPrice && isNew) ||
+        (itemEntity.vendorSellPrice &&
+          itemEntity.assetClass &&
+          !itemEntity.assetClass.includes(VALUATION_TYPE.VSP));
 
       if (isVSP) {
         const assetClass = new Set(itemEntity.assetClass).add(VALUATION_TYPE.VSP);
@@ -104,13 +120,16 @@ export class ItemsWorker {
       }
 
       const isItemMediaValid = isItemMedia(getItemMedia);
-
       if (isItemMediaValid) {
         const [icon] = getItemMedia.value.assets;
         itemEntity.icon = icon.value;
       }
 
       await this.itemsRepository.save(itemEntity);
+      this.logger.log(
+        `${ItemsWorker.name}: item ${itemEntity.name} | ${itemEntity.id}`,
+      );
+
       return 200;
     } catch (errorException) {
       await job.log(errorException);

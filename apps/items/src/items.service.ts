@@ -20,6 +20,7 @@ import {
   itemsQueue,
   toStringOrNumber,
 } from '@app/core';
+import c from "config";
 
 @Injectable()
 export class ItemsService implements OnApplicationBootstrap {
@@ -37,8 +38,8 @@ export class ItemsService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     await this.indexItems(
       GLOBAL_KEY,
-      191340,
-      191345,
+      0,
+      250000,
       itemsConfig.updateForce,
       itemsConfig.index,
     );
@@ -57,15 +58,16 @@ export class ItemsService implements OnApplicationBootstrap {
       this.logger.log(`indexItems: init: ${init}, updateForce: ${updateForce}`);
       if (!init) return;
 
+      const count = Math.abs(from - to);
       const key = await getKey(this.keysRepository, clearance);
 
       const goldItemEntity = this.itemsRepository.create(GOLD_ITEM_ENTITY);
       await this.itemsRepository.save(goldItemEntity);
 
       await lastValueFrom(
-        range(from, to).pipe(
+        range(from, count).pipe(
           mergeMap(async (itemId) => {
-            if (updateForce) {
+            if (!updateForce) {
               const isItemExists = await this.itemsRepository.exist({
                 where: { id: itemId },
               });

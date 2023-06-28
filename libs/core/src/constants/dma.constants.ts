@@ -97,9 +97,10 @@ export const PROFESSION_TICKER: Map<number, string> = new Map([
 
 export const GOLD_ITEM_ENTITY = {
   id: 1,
-  name: 'GOLD',
+  name: 'Gold',
   quality: 'Currency',
   itemClass: 'Currency',
+  itemSubClass: 'Currency',
   hasContracts: true,
   assetClass: [VALUATION_TYPE.GOLD],
   ticker: VALUATION_TYPE.GOLD,

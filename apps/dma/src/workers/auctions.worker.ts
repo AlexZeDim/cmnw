@@ -4,7 +4,6 @@ import { BlizzAPI } from 'blizzapi';
 import { Job } from 'bullmq';
 import { bufferCount, concatMap } from 'rxjs/operators';
 import { from, lastValueFrom } from 'rxjs';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
@@ -34,8 +33,6 @@ export class AuctionsWorker {
   private BNet: BlizzAPI;
 
   constructor(
-    @InjectRedis()
-    private readonly redisService: Redis,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(ItemsEntity)
@@ -79,6 +76,7 @@ export class AuctionsWorker {
         apiConstParams(
           API_HEADERS_ENUM.DYNAMIC,
           DMA_TIMEOUT_TOLERANCE,
+          false,
           ifModifiedSince,
         ),
       );

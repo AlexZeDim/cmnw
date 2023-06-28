@@ -12,9 +12,10 @@ export enum TOLERANCE_ENUM {
 export const apiConstParams = (
   header: API_HEADERS_ENUM,
   tolerance: TOLERANCE_ENUM = TOLERANCE_ENUM.OSINT,
+  isMultiLocale?: boolean,
   ifModifiedSince?: string,
 ) => ({
-  params: { locale: 'en_GB' },
+  params: isMultiLocale ? {} : { locale: 'en_GB' },
   headers: ifModifiedSince
     ? {
         'Battlenet-Namespace': header,

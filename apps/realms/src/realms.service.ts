@@ -99,15 +99,16 @@ export class RealmsService implements OnApplicationBootstrap {
 
   /**
    * Index every realm for WCL id, US:0,246 EU:247,517 (RU: 492) Korea: 517
-   * @param start
-   * @param end
+   * @param from
+   * @param to
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  private async getRealmsWarcraftLogsID(start = 246, end = 517): Promise<void> {
-    if (start < 1) start = 1;
+  private async getRealmsWarcraftLogsID(from = 246, to = 517): Promise<void> {
+    if (from < 1) from = 1;
+    const count = Math.abs(from - to);
 
     await lastValueFrom(
-      range(start, end + 1).pipe(
+      range(from, count).pipe(
         mergeMap(async (realmId) => {
           try {
             const response = await this.httpService.axiosRef.get<string>(

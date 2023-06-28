@@ -176,7 +176,7 @@ export class IVAItem implements IQItemValuation {
 
 export interface IItem {
   id: number;
-  name: number;
+  name: ItemNames;
   quality: INameWithType;
   level: number;
   required_level: number;

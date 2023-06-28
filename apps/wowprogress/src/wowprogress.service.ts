@@ -1,10 +1,3 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character, Key, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -15,7 +8,6 @@ import path from 'path';
 import zlib from 'zlib';
 import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { delay } from '@app/core/utils/converters';
 import { wowProgressConfig } from '@app/configuration';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
@@ -23,27 +15,54 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
 import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+  UnsupportedMediaTypeException,
+} from '@nestjs/common';
+
+import {
   CharacterJobQueue,
   charactersQueue,
+  delay,
+  findRealm,
+  getKeys,
   GLOBAL_KEY,
-  IQGuild,
+  GuildJobQueue,
   guildsQueue,
-  ICharacterWpLfg,
+  ICharacterQueueWP,
+  IQGuild,
   LFG,
+  OSINT_LFG_WOW_PROGRESS,
   OSINT_SOURCE,
+  OSINT_SOURCE_WOW_PROGRESS,
   randomInt,
+  toGuid,
   toSlug,
 } from '@app/core';
 import ms from 'ms';
+import { InjectRepository } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
+import { Repository } from 'typeorm';
+import { pipeline } from 'node:stream/promises';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
-  private readonly logger = new Logger(WowprogressService.name, { timestamp: true });
+  private readonly logger = new Logger(WowprogressService.name, {
+    timestamp: true,
+  });
 
   constructor(
     private httpService: HttpService,
     @InjectRedis()
     private readonly redisService: Redis,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+
     @InjectModel(Key.name)
     private readonly KeyModel: Model<Key>,
     @InjectModel(Realm.name)
@@ -51,7 +70,7 @@ export class WowprogressService implements OnApplicationBootstrap {
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(guildsQueue.name)
-    private readonly queueGuilds: Queue<IQGuild, number>,
+    private readonly queueGuilds: Queue<GuildJobQueue, number>,
     @BullQueueInject(charactersQueue.name)
     private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) {}
@@ -70,144 +89,141 @@ export class WowprogressService implements OnApplicationBootstrap {
         throw new BadRequestException(`init: ${init}`);
       }
 
-      const response = await lastValueFrom(
-          this.httpService.get('https://www.wowprogress.com/export/ranks/'),
-        ),
-        key = await this.KeyModel.findOne({ tags: clearance });
+      const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+      await fs.ensureDir(dirPath);
 
-      if (!key || !key.token) {
-        throw new NotFoundException(`clearance: ${clearance} key not found`);
-      }
+      const files = await this.getWowProgress(dirPath);
+      await this.unzipWowProgress(clearance, files);
 
-      const dir: string = path.join(__dirname, '..', '..', 'files', 'wowprogress');
-      await fs.ensureDir(dir);
-
-      const page = cheerio.load(response.data);
-      const wpPage = page.html('body > pre:nth-child(3) > a');
-
-      page(wpPage).map(async (x, node) => {
-        if ('attribs' in node) {
-          const url = node.attribs.href;
-          if (!url.includes('eu_')) return;
-
-          const download: string = encodeURI(decodeURI(url)),
-            fileName: string = decodeURIComponent(
-              url.substr(url.lastIndexOf('/') + 1),
-            ),
-            match = fileName.match(/(?<=_)(.*?)(?=_)/g);
-
-          if (!match || !match.length) return;
-
-          const [realmQuery] = match,
-            realm = await this.RealmModel.findOne(
-              { $text: { $search: realmQuery } },
-              { score: { $meta: 'textScore' } },
-              { projection: { slug_locale: 1 } },
-            )
-              .sort({ score: { $meta: 'textScore' } })
-              .lean();
-
-          if (!realm) return;
-
-          await lastValueFrom(
-            this.httpService.request({
-              url: download,
-              responseType: 'stream',
-            }),
-          ).then(async (response) =>
-            response.data.pipe(fs.createWriteStream(`${dir}/${fileName}`)),
-          );
-        }
-      });
-
-      const files: string[] = await fs.readdir(dir);
-
-      await lastValueFrom(
-        from(files).pipe(
-          mergeMap(async (file) => {
-            try {
-              if (!file.match(/gz$/g)) {
-                this.logger.warn(
-                  `indexWowProgress: file ${file} not match pattern #1`,
-                );
-                return;
-              }
-
-              const match = file.match(/(?<=_)(.*?)(?=_)/g);
-
-              if (!match || !match.length) {
-                this.logger.warn(
-                  `indexWowProgress: file ${file} not match pattern #2`,
-                );
-                return;
-              }
-
-              const [realmQuery] = match,
-                realm = await this.RealmModel.findOne(
-                  { $text: { $search: realmQuery } },
-                  { score: { $meta: 'textScore' } },
-                  { projection: { slug: 1 } },
-                )
-                  .sort({ score: { $meta: 'textScore' } })
-                  .lean();
-
-              if (!realm) {
-                this.logger.warn(`indexWowProgress: realm ${realmQuery} not found!`);
-                return;
-              }
-
-              const buffer = await fs.readFile(`${dir}/${file}`),
-                data = zlib
-                  .unzipSync(buffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH })
-                  .toString(),
-                json = JSON.parse(data);
-
-              if (json && Array.isArray(json) && json.length) {
-                for (const guild of json) {
-                  if (!guild.name || guild.name.includes('[Raid]')) {
-                    this.logger.log(
-                      `indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`,
-                    );
-                    continue;
-                  }
-
-                  const _id: string = toSlug(`${guild.name}@${realm.slug}`);
-
-                  await this.queueGuilds.add(
-                    _id,
-                    {
-                      _id,
-                      name: guild.name,
-                      realm: realm.slug,
-                      forceUpdate: ms('4h'),
-                      created_by: OSINT_SOURCE.WOWPROGRESS,
-                      updated_by: OSINT_SOURCE.WOWPROGRESS,
-                      region: 'eu',
-                      clientId: key._id,
-                      clientSecret: key.secret,
-                      accessToken: key.token,
-                      guildRank: false,
-                      createOnlyUnique: false,
-                    },
-                    {
-                      jobId: _id,
-                      priority: 4,
-                    },
-                  );
-                }
-              }
-            } catch (error) {
-              this.logger.warn(`indexWowProgress: file ${file} has error: ${error}`);
-            }
-          }, 1),
-        ),
-      );
-
-      await fs.rmdirSync(dir, { recursive: true });
-      this.logger.warn(`indexWowProgress: directory ${dir} has been removed!`);
+      await fs.rm(dirPath, { recursive: true, force: true });
+      this.logger.warn(`indexWowProgress: directory ${dirPath} has been removed!`);
     } catch (errorException) {
       this.logger.error(`indexWowProgress: ${errorException}`);
     }
+  }
+
+  private async getWowProgress(dirPath: string) {
+    const response = await this.httpService.axiosRef.get<string>(
+      OSINT_SOURCE_WOW_PROGRESS,
+    );
+
+    const page = cheerio.load(response.data);
+    const wpPage = page.html('body > pre:nth-child(3) > a');
+
+    await Promise.allSettled(
+      page(wpPage).map(async (x, node) => {
+        const isEuGuild = 'attribs' in node && node.attribs.href.includes('eu_');
+
+        if (!isEuGuild) return;
+
+        const url = node.attribs.href;
+
+        const downloadLink = encodeURI(decodeURI(OSINT_SOURCE_WOW_PROGRESS + url));
+        const fileName = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
+        const realmMatch = fileName.match(/(?<=_)(.*?)(?=_)/g);
+        const isMatchExists = realmMatch && realmMatch.length;
+
+        if (!isMatchExists) return;
+
+        const [realmSlug] = realmMatch;
+
+        const realmEntity = await findRealm(this.realmsRepository, realmSlug);
+
+        if (!realmEntity) return;
+
+        const realmGuildsZip = await this.httpService.axiosRef.request({
+          url: downloadLink,
+          responseType: 'stream',
+        });
+
+        const filePath = `${dirPath}/${fileName}`;
+
+        await pipeline(realmGuildsZip.data, fs.createWriteStream(filePath));
+      }),
+    );
+
+    return await fs.readdir(dirPath);
+  }
+
+  private async unzipWowProgress(clearance = GLOBAL_KEY, files: string[]) {
+    const [keyEntity] = await getKeys(this.keysRepository, clearance);
+    const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+
+    await lastValueFrom(
+      from(files).pipe(
+        mergeMap(async (file) => {
+          try {
+            const isNotGzip = !file.match(/gz$/g);
+            if (isNotGzip) {
+              throw new UnsupportedMediaTypeException(`file ${file} is not gz`);
+            }
+
+            const realmMatch = file.match(/(?<=_)(.*?)(?=_)/g);
+            const isMatchExists = realmMatch && realmMatch.length;
+            if (!isMatchExists) {
+              throw new NotFoundException(`file ${file} doesn't have a realm`);
+            }
+
+            const [realmSlug] = realmMatch;
+
+            const realmEntity = await findRealm(this.realmsRepository, realmSlug);
+
+            if (!realmEntity) {
+              throw new NotFoundException(`realm ${realmSlug} not found!`);
+            }
+
+            const buffer = await fs.readFile(`${dirPath}/${file}`);
+            const data = zlib
+              .unzipSync(buffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH })
+              .toString();
+
+            // TODO interface type
+            const json = JSON.parse(data);
+            const isJsonValid = json && Array.isArray(json) && json.length;
+
+            if (!isJsonValid) {
+              throw new UnsupportedMediaTypeException(`json not valid`);
+            }
+
+            for (const guild of json) {
+              const isGuildValid = guild.name && !guild.name.includes('[Raid]');
+              if (!isGuildValid) {
+                this.logger.log(
+                  `indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`,
+                );
+                continue;
+              }
+
+              const guildGuid: string = toSlug(`${guild.name}@${realmEntity.slug}`);
+
+              await this.queueGuilds.add(
+                guildGuid,
+                {
+                  guid: guildGuid,
+                  name: guild.name,
+                  realm: realmEntity.slug,
+                  createdBy: OSINT_SOURCE.WOW_PROGRESS,
+                  updatedBy: OSINT_SOURCE.WOW_PROGRESS,
+                  forceUpdate: ms('4h'),
+                  region: 'eu',
+                  clientId: keyEntity.client,
+                  clientSecret: keyEntity.secret,
+                  accessToken: keyEntity.token,
+                  createOnlyUnique: true,
+                  requestGuildRank: true,
+                },
+                {
+                  jobId: guildGuid,
+                  priority: 4,
+                },
+              );
+            }
+          } catch (error) {
+            this.logger.warn(`unzipWowProgress: ${error}`);
+          }
+        }, 1),
+      ),
+    );
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -218,6 +234,7 @@ export class WowprogressService implements OnApplicationBootstrap {
        * Revoke characters status from old NOW => to PREV
        */
       await delay(60);
+      // TODO refactor
       const charactersRevoked = await this.CharacterModel.updateMany(
         { looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } },
         { looking_for_guild: LFG.PREV },
@@ -227,37 +244,27 @@ export class WowprogressService implements OnApplicationBootstrap {
         `indexLookingForGuild: status LFG-${LFG.NOW} & LFG-${LFG.NEW} revoke from ${charactersRevoked.modifiedCount} characters`,
       );
 
-      const keys = await this.KeyModel.find({ tags: clearance });
-      if (!keys.length) {
-        throw new NotFoundException(`${keys.length} keys found`);
-      }
+      const keysEntity = await getKeys(this.keysRepository, clearance);
+      const [firstPageUrl, secondPageUrl] = OSINT_LFG_WOW_PROGRESS;
 
       const [firstPage, secondPage] = await Promise.all([
-        await this.getWowProgressLfg(
-          'https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts',
-        ),
-        await this.getWowProgressLfg(
-          'https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts',
-        ),
+        await this.getWowProgressLfg(firstPageUrl),
+        await this.getWowProgressLfg(secondPageUrl),
       ]);
 
-      const characters: ICharacterWpLfg[] = union(firstPage, secondPage);
+      const isCharacterPageValid = Boolean(firstPage.length && secondPage.length);
+      if (!isCharacterPageValid) return; // TODO
 
-      const charactersFilter: string[] = characters.map((character) => {
-        const name = character.name.trim(),
-          realm = character.realm.split('-')[1].trim();
-
-        return toSlug(`${name}@${realm}`);
-      });
+      const characters = union(firstPage, secondPage);
 
       /**
        * If WowProgress result > 0
        * overwrite LFG.NOW
        */
       this.logger.log(
-        `indexLookingForGuild: ${charactersFilter.length} characters found in LFG-${LFG.NOW}`,
+        `indexLookingForGuild: ${characters.length} characters found in LFG-${LFG.NOW}`,
       );
-      if (charactersFilter.length > 0) {
+      if (characters.length > 0) {
         await this.redisService.del(LFG.NOW);
         await this.redisService.sadd(LFG.NOW, charactersFilter);
       }
@@ -379,29 +386,49 @@ export class WowprogressService implements OnApplicationBootstrap {
     }
   }
 
-  private async getWowProgressLfg(url: string): Promise<ICharacterWpLfg[]> {
+  private async getWowProgressLfg(url: string) {
+    const wpCharactersQueue: Array<ICharacterQueueWP> = [];
     try {
-      const charactersInQueue: ICharacterWpLfg[] = [];
-      const response = await lastValueFrom(this.httpService.get(url));
-      const page = cheerio.load(response.data);
+      const response = await this.httpService.axiosRef.get(url);
 
-      const lfgPage = page.html('table.rating tbody tr');
+      const wowProgressHTML = cheerio.load(response.data);
+      const listingLookingForGuild = wowProgressHTML.html('table.rating tbody tr');
 
-      page(lfgPage).map(async (x, node) => {
-        const td = page(node).find('td');
-        const name = page(td[0]).text();
-        const guild = page(td[1]).text();
-        const raid = page(td[2]).text();
-        const realm = page(td[3]).text();
-        const ilvl = page(td[4]).text();
-        const timestamp = page(td[5]).text();
-        if (!!name)
-          charactersInQueue.push({ name, guild, raid, realm, ilvl, timestamp });
-      });
+      await Promise.allSettled(
+        wowProgressHTML(listingLookingForGuild).map(async (x, node) => {
+          const tableRowElement = wowProgressHTML(node).find('td');
+          const [preName, preGuild, preRaid, preRealm, preItemLevel, preTimestamp] =
+            tableRowElement;
 
-      return charactersInQueue;
-    } catch (e) {
-      this.logger.error(e);
+          const name = wowProgressHTML(preName).text().trim();
+          const guild = wowProgressHTML(preGuild).text();
+          const raid = wowProgressHTML(preRaid).text();
+          const [region, rawRealm] = wowProgressHTML(preRealm).text().split('-');
+          const itemLevel = wowProgressHTML(preItemLevel).text();
+          const timestamp = wowProgressHTML(preTimestamp).text();
+
+          const realm = rawRealm.trim();
+          const isCharacterValid = Boolean(name && realm);
+          if (!isCharacterValid) return;
+
+          const guid = toSlug(`${name}@${realm}`);
+
+          wpCharactersQueue.push({
+            guid,
+            name,
+            guild,
+            raid,
+            realm,
+            itemLevel,
+            timestamp,
+          });
+        }),
+      );
+
+      return wpCharactersQueue;
+    } catch (errorException) {
+      this.logger.error(`getWowProgressLfg: ${errorException}`);
+      return wpCharactersQueue;
     }
   }
 }

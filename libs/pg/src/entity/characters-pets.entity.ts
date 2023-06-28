@@ -23,11 +23,11 @@ export class CharactersPetsEntity {
   petId: number;
 
   @Column({
-    nullable: false,
+    nullable: true,
     type: 'int',
     name: 'creature_id',
   })
-  creatureId: number;
+  creatureId?: number;
 
   @Column({
     nullable: false,

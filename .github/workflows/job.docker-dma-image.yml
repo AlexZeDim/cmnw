@@ -55,7 +55,7 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/arm64.dma.Dockerfile
+          file: ./arm64.dma.Dockerfile
           platforms: linux/arm64
           push: true
           tags: ghcr.io/alexzedim/dma:latest

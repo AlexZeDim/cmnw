@@ -11,7 +11,7 @@ services:
       - KEY=${KEY}
 
   keys:
-    image: ghcr.io/alexzedim/keys:latest
+    image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:
@@ -19,7 +19,7 @@ services:
       - KEY=${KEY}
 
   realms:
-    image: ghcr.io/alexzedim/realms:latest
+    image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
@@ -27,7 +27,7 @@ services:
       - KEY=${KEY}
 
   characters:
-    image: ghcr.io/alexzedim/characters:latest
+    image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/characters/main.js' ]
     environment:

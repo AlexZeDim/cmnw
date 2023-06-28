@@ -37,8 +37,8 @@ export class ItemsService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     await this.indexItems(
       GLOBAL_KEY,
-      0,
-      200000,
+      191340,
+      191345,
       itemsConfig.updateForce,
       itemsConfig.index,
     );
@@ -83,9 +83,11 @@ export class ItemsService implements OnApplicationBootstrap {
                 accessToken: key.token,
               },
               {
-                jobId: `${itemId}`,
+                jobId: `item:${itemId}`,
               },
             );
+
+            this.logger.log(`indexItems: item ${itemId} placed in queue`);
           }),
         ),
       );

@@ -20,6 +20,11 @@ export interface ISelfWithNameAndId {
   id: number;
 }
 
+export interface ISelfWithId {
+  key: ISelfKeyHref;
+  id: number;
+}
+
 export interface ISelfRealm {
   slug: string;
 }
@@ -189,19 +194,19 @@ export interface Media {
   mainImage: string;
 }
 
-export interface IMediaAssets {
+export interface ICharacterMediaAssets {
   key: 'avatar' | 'main-raw' | 'inset';
   value: string;
 }
 
-export interface IMedia {
+export interface ICharacterMedia {
   character: {
     key: ISelfKeyHref;
     id: number;
     name: string;
     realm: ISelfWithNameAndId & ISelfRealm;
   };
-  assets: Array<IMediaAssets>;
+  assets: Array<ICharacterMediaAssets>;
 }
 
 export interface IMountsNameWithId {

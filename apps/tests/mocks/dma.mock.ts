@@ -1,4 +1,9 @@
-import { propRefLink } from './osint.mock';
+import {
+  objectNamedProperty,
+  objectPropRef,
+  objectPropRefId,
+  propRefLink,
+} from './osint.mock';
 
 export const itemRef = {
   id: expect.any(Number),
@@ -19,6 +24,30 @@ export const wowTokenItem = {
   lastModified: expect.any(String),
 };
 
-export const commodityListing = {
-  auctions: expect.arrayContaining([expect.objectContaining(commodityItem)]),
+export const item = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  id: expect.any(Number),
+  name: expect.any(String),
+  quality: expect.objectContaining(objectNamedProperty),
+  level: expect.any(Number),
+  required_level: expect.any(Number),
+  media: expect.objectContaining(objectPropRefId),
+  item_class: expect.objectContaining(objectPropRef),
+  item_subclass: expect.objectContaining(objectPropRef),
+  inventory_type: expect.objectContaining(objectNamedProperty),
+  purchase_price: expect.any(Number),
+  sell_price: expect.any(Number),
+  max_count: expect.any(Number),
+  preview_item: expect.anything(),
+  is_equippable: expect.any(Boolean),
+  is_stackable: expect.any(Boolean),
+  purchase_quantity: expect.any(Number),
+  modified_crafting: expect.anything(),
+  lastModified: expect.any(String),
+};
+
+export const itemMedia = {
+  _links: { self: expect.objectContaining(propRefLink) },
+  id: expect.any(Number),
+  lastModified: expect.any(String),
 };

@@ -74,9 +74,9 @@ export class ItemsEntity {
   @Column({
     nullable: true,
     type: 'int',
-    name: 'purchase_quality',
+    name: 'purchase_quantity',
   })
-  purchaseQuality?: number;
+  purchaseQuantity?: number;
 
   @Column({
     nullable: true,

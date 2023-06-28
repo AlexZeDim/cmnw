@@ -2,10 +2,12 @@ import {
   IAuctions,
   ICharacterSummary,
   IGold,
-  IMedia,
+  ICharacterMedia,
   IMountsNameWithId,
   IPetType,
   IWowToken,
+  IItem,
+  IItemMedia,
 } from '@app/core/types';
 
 export type BlizzardApiStringNumber = string | number;
@@ -29,10 +31,14 @@ export type BlizzardApiMountsCollection = Record<'mounts', Array<IMountsNameWith
 
 export type BlizzardApiCharacterSummary = Readonly<ICharacterSummary>;
 
-export type BlizzardApiCharacterMedia = Readonly<IMedia>;
+export type BlizzardApiCharacterMedia = Readonly<ICharacterMedia>;
 
 export type BlizzardApiWowToken = Readonly<IWowToken>;
 
 export type BlizzardApiAuctions = Readonly<IAuctions>;
 
 export type GoldApiListing = Readonly<IGold>;
+
+export type BlizzardApiItem = Partial<IItem>;
+
+export type BlizzardApiItemMedia = IItemMedia;

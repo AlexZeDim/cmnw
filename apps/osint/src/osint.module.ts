@@ -5,12 +5,14 @@ import { charactersQueue, guildsQueue } from '@app/core';
 import { HttpModule } from '@nestjs/axios';
 import { CharactersWorker, GuildsWorker } from './workers';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import {
   CharactersEntity,
   CharactersGuildsMembersEntity,
   CharactersMountsEntity,
   CharactersPetsEntity,
   CharactersProfessionsEntity,
+  CharactersProfileEntity,
   GuildsEntity,
   KeysEntity,
   LogsEntity,
@@ -30,6 +32,7 @@ import {
       CharactersMountsEntity,
       CharactersPetsEntity,
       CharactersProfessionsEntity,
+      CharactersProfileEntity,
       GuildsEntity,
       KeysEntity,
       MountsEntity,
@@ -38,6 +41,13 @@ import {
       RealmsEntity,
       LogsEntity,
     ]),
+    RedisModule.forRoot({
+      config: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      },
+    }),
     BullModule.forRoot({
       options: {
         connection: {

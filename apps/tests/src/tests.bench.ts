@@ -12,15 +12,16 @@ import { DateTime } from 'luxon';
 import { from, lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { pipeline } from 'node:stream/promises';
+import { chromium, devices } from 'playwright';
 import {
   FACTION,
   findRealm,
-  ICharacterQueueWP,
+  ICharacterRaiderIo,
   IGold,
+  isRaiderIoProfile,
   MARKET_TYPE,
-  OSINT_LFG_WOW_PROGRESS,
-  OSINT_SOURCE,
-  OSINT_SOURCE_WOW_PROGRESS,
+  OSINT_SOURCE_RAIDER_IO,
+  OSINT_SOURCE_WOW_PROGRESS_RANKS,
   toSlug,
   VALUATION_TYPE,
 } from '@app/core';
@@ -29,7 +30,6 @@ import cheerio from 'cheerio';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
-import ms from 'ms';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
@@ -46,7 +46,7 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.getLfgWowProgress();
+    await this.getRaiderIoProfile();
   }
 
   async getUniqueRealms() {
@@ -155,7 +155,9 @@ export class TestsBench implements OnApplicationBootstrap {
   }
 
   async getWowProgress() {
-    const response = await this.httpService.axiosRef.get(OSINT_SOURCE_WOW_PROGRESS);
+    const response = await this.httpService.axiosRef.get(
+      OSINT_SOURCE_WOW_PROGRESS_RANKS,
+    );
 
     const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
     await fs.ensureDir(dirPath);
@@ -171,7 +173,9 @@ export class TestsBench implements OnApplicationBootstrap {
         const url = node.attribs.href;
         console.log(url);
 
-        const downloadLink = encodeURI(decodeURI(OSINT_SOURCE_WOW_PROGRESS + url));
+        const downloadLink = encodeURI(
+          decodeURI(OSINT_SOURCE_WOW_PROGRESS_RANKS + url),
+        );
         const fileName = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
         const realmMatch = fileName.match(/(?<=_)(.*?)(?=_)/g);
         const isMatchExists = realmMatch && realmMatch.length;
@@ -201,44 +205,25 @@ export class TestsBench implements OnApplicationBootstrap {
 
   async getLfgWowProgress() {
     try {
-      const wpCharactersQueue = new Map<string, ICharacterQueueWP>([]);
-      const response = await this.httpService.axiosRef.get(
-        OSINT_LFG_WOW_PROGRESS[0],
+      const browser = await chromium.launch();
+      const context = await browser.newContext(devices['iPhone 11']);
+      const page = await context.newPage();
+      const url = encodeURI(
+        'https://www.warcraftlogs.com/character/eu/howling-fjord/хайзуро#difficulty=5',
       );
 
-      const wowProgressHTML = cheerio.load(response.data);
-      const listingLookingForGuild = wowProgressHTML.html('table.rating tbody tr');
+      await page.goto(url);
+      const getBestPerfAvg = await page.getByText('Best Perf. Avg').allInnerTexts();
+      const [getBestPerfAvgValue] = getBestPerfAvg;
 
-      await Promise.allSettled(
-        wowProgressHTML(listingLookingForGuild).map(async (x, node) => {
-          const tableRowElement = wowProgressHTML(node).find('td');
-          const [preName, preGuild, preRaid, preRealm, preItemLevel, preTimestamp] =
-            tableRowElement;
+      const [text, value] = getBestPerfAvgValue.trim().split('\n');
 
-          const name = wowProgressHTML(preName).text();
-          const guild = wowProgressHTML(preGuild).text();
-          const raid = wowProgressHTML(preRaid).text();
-          const realm = wowProgressHTML(preRealm).text();
-          const itemLevel = wowProgressHTML(preItemLevel).text();
-          const timestamp = wowProgressHTML(preTimestamp).text();
+      const isMythicLogsValid = !isNaN(Number(value.trim()));
+      if (isMythicLogsValid) {
+        console.log(parseFloat(value));
+      }
 
-          const isCharacterValid = Boolean(name && realm);
-          if (!isCharacterValid) return;
-
-          const preGuid = `${name}@${realm}`;
-
-          wpCharactersQueue.set(preGuid, {
-            name,
-            guild,
-            raid,
-            realm,
-            itemLevel,
-            timestamp,
-          });
-        }),
-      );
-
-      return wpCharactersQueue;
+      await browser.close();
     } catch (e) {
       this.logger.error(e);
     }
@@ -302,6 +287,20 @@ export class TestsBench implements OnApplicationBootstrap {
         }, 1),
       ),
     );
+  }
+
+  async getRaiderIoProfile() {
+    const { data: raiderIoProfile } =
+      await this.httpService.axiosRef.get<ICharacterRaiderIo>(
+        encodeURI(
+          `${OSINT_SOURCE_RAIDER_IO}?region=eu&realm=howling-fjord&name=ниалайт&fields=mythic_plus_scores_by_season:current,raid_progression`,
+        ),
+      );
+
+    const isRaiderIoProfileValid = isRaiderIoProfile(raiderIoProfile);
+    if (!isRaiderIoProfileValid) return;
+
+    console.log(raiderIoProfile.mythic_plus_scores_by_season);
   }
 
   async testWarcraftLogRealms(warcraftLogsId: number) {

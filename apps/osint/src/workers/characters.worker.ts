@@ -1,9 +1,6 @@
 import { BlizzAPI } from 'blizzapi';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
-import puppeteer from 'puppeteer';
-import cheerio from 'cheerio';
-import { HttpService } from '@nestjs/axios';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -37,14 +34,10 @@ import {
   IPets,
   IPetType,
   IProfessions,
-  IRaiderIO,
-  IRaidProgressRIO,
   isCharacterMedia,
   isCharacterSummary,
   isMountCollection,
   isPetsCollection,
-  IWarcraftLog,
-  IWowProgress,
   Media,
   OSINT_SOURCE,
   toDate,
@@ -78,7 +71,6 @@ export class CharactersWorker {
   private BNet: BlizzAPI;
 
   constructor(
-    private httpService: HttpService,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(ProfessionsEntity)
@@ -122,7 +114,6 @@ export class CharactersWorker {
        * Inherit safe values
        * from args in any case
        * summary overwrite later
-       * TODO probably add lfg status
        */
       for (const key of CHARACTER_SUMMARY_FIELD_MAPPING.keys()) {
         const isInheritKeyValue = args[key] && !characterEntity[key];
@@ -174,39 +165,6 @@ export class CharactersWorker {
       }
 
       await job.updateProgress(50);
-      /**
-       * update RIO, WCL & Progress
-       * by request from args
-       */
-      if (args.updateRIO) {
-        const raiderIo = await this.getRaiderIO(
-          characterEntity.name,
-          characterEntity.realm,
-        );
-
-        Object.assign(characterEntity, raiderIo);
-        await job.updateProgress(60);
-      }
-
-      if (args.updateWCL) {
-        const warcraftLogs = await this.getWarcraftLogs(
-          characterEntity.name,
-          characterEntity.realm,
-        );
-
-        Object.assign(characterEntity, warcraftLogs);
-        await job.updateProgress(70);
-      }
-
-      if (args.updateWP) {
-        const wowProgress = await this.getWowProgressProfile(
-          characterEntity.name,
-          characterEntity.realm,
-        );
-
-        Object.assign(characterEntity, wowProgress);
-        await job.updateProgress(80);
-      }
 
       /**
        * TODO detective after transfer / rename
@@ -243,6 +201,7 @@ export class CharactersWorker {
   ): Promise<CharacterExistsOrCreate> {
     const forceUpdate = character.forceUpdate || 86400 * 1000;
     const timestampNow = new Date().getTime();
+
     const realmEntity = await findRealm(this.realmsRepository, character.realm);
     if (!realmEntity) {
       throw new NotFoundException(`Realm ${character.realm} not found`);
@@ -755,130 +714,6 @@ export class CharactersWorker {
     } catch (error) {
       this.logger.error(`getSummary: ${nameSlug}@${realmSlug}:${error}`);
       return summary;
-    }
-  }
-
-  private async getRaiderIO(
-    name: string,
-    realmSlug: string,
-  ): Promise<Partial<IRaiderIO>> {
-    const raiderIO: Partial<IRaiderIO> = {};
-    try {
-      const { data } = await this.httpService.axiosRef.get<any>(
-        encodeURI(
-          `https://raider.io/api/v1/characters/profile?region=eu&realm=${realmSlug}&name=${name}&fields=mythic_plus_scores_by_season:current,raid_progression`,
-        ),
-      );
-
-      if (!data) return raiderIO;
-
-      if ('raid_progression' in data) {
-        const raidProgress: Record<string, any> = data.raid_progression;
-        const raidTiers: Array<IRaidProgressRIO> = [];
-        for (const [key, value] of Object.entries(raidProgress)) {
-          raidTiers.push({
-            id: key,
-            progress: value.getSummary,
-          });
-        }
-        raiderIO.raidProgress = raidTiers;
-      }
-
-      if ('mythic_plus_scores_by_season' in data) {
-        const rio_score = data.mythic_plus_scores_by_season;
-        if (rio_score && Array.isArray(rio_score) && rio_score.length) {
-          for (const rio of rio_score) {
-            if ('scores' in rio) {
-              raiderIO.rioScore = rio.scores.all;
-            }
-          }
-        }
-      }
-
-      return raiderIO;
-    } catch (errorOrException) {
-      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorOrException}`);
-      return raiderIO;
-    }
-  }
-
-  private async getWowProgressProfile(
-    name: string,
-    realmSlug: string,
-  ): Promise<Partial<IWowProgress>> {
-    const wowProgress: Partial<IWowProgress> = {};
-    try {
-      const { data } = await this.httpService.axiosRef.get<any>(
-        encodeURI(`https://www.wowprogress.com/character/eu/${realmSlug}/${name}`),
-      );
-
-      if (!data) {
-        return wowProgress;
-      }
-
-      const wpRoot = cheerio.load(data);
-      const wpHTML = wpRoot.html('.language');
-
-      wpRoot(wpHTML).each((_x, node) => {
-        const characterText = wpRoot(node).text();
-        const [key, value] = characterText.split(':');
-        if (key === 'Battletag') wowProgress.battleTag = value.trim();
-        if (key === 'Looking for guild')
-          wowProgress.transfer = value.includes('ready to transfer');
-        if (key === 'Raids per week') {
-          if (value.includes(' - ')) {
-            const [from, to] = value.split(' - ');
-            wowProgress.daysFrom = parseInt(from);
-            wowProgress.daysTo = parseInt(to);
-          }
-        }
-        if (key === 'Specs playing') wowProgress.role = value.trim();
-        if (key === 'Languages')
-          wowProgress.languages = value
-            .split(',')
-            .map((s: string) => s.toLowerCase().trim());
-      });
-
-      return wowProgress;
-    } catch (errorOrException) {
-      this.logger.error(
-        `getWowProgressProfile: ${name}@${realmSlug}:${errorOrException}`,
-      );
-      return wowProgress;
-    }
-  }
-
-  private async getWarcraftLogs(
-    name: string,
-    realmSlug: string,
-  ): Promise<Partial<IWarcraftLog>> {
-    const warcraftLogs: Partial<IWarcraftLog> = {};
-    try {
-      const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      });
-      const page = await browser.newPage();
-      await page.goto(
-        `https://www.warcraftlogs.com/character/eu/${realmSlug}/${name}#difficulty=5`,
-      );
-      const [getXpath] = await page.$x("//div[@class='best-perf-avg']/b");
-
-      if (getXpath) {
-        const bestPrefAvg = await page.evaluate(
-          (nodeName: any) => nodeName.innerText,
-          getXpath,
-        );
-        if (bestPrefAvg && bestPrefAvg !== '-') {
-          warcraftLogs.wclMythicPercentile = parseFloat(bestPrefAvg);
-        }
-      }
-
-      await browser.close();
-
-      return warcraftLogs;
-    } catch (errorOrException) {
-      this.logger.error(`getWarcraftLogs: ${name}@${realmSlug}:${errorOrException}`);
-      return warcraftLogs;
     }
   }
 

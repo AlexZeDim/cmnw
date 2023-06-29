@@ -9,6 +9,7 @@ import {
   BlizzardApiResponse,
   BlizzardApiWowToken,
   GoldApiListing,
+  ICharacterRaiderIo,
   IRGuildRoster,
 } from '@app/core/types';
 
@@ -101,3 +102,11 @@ export const isItemMedia = (
   'assets' in response.value &&
   Boolean(response.value.assets) &&
   Array.isArray(response.value.assets);
+
+export const isRaiderIoProfile = (
+  response: unknown,
+): response is ICharacterRaiderIo =>
+  typeof response === 'object' &&
+  'mythic_plus_scores_by_season' in response &&
+  'raid_progression' in response &&
+  Array.isArray(response.mythic_plus_scores_by_season);

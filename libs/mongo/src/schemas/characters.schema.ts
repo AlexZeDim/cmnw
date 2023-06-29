@@ -1,6 +1,6 @@
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { LFG, OSINT_SOURCE } from '@app/core';
+import { CHARACTER_LFG_STATUS, OSINT_SOURCE } from '@app/core';
 import { Guild } from '@app/mongo/schemas/guilds.schema';
 import { Realm } from '@app/mongo/schemas/realms.schema';
 
@@ -180,7 +180,7 @@ export class Character extends Document {
   @Prop({ _id: false, type: [ProfessionSchema] })
   professions: Types.Array<Profession>;
 
-  @Prop({ index: true, type: String, enum: LFG })
+  @Prop({ index: true, type: String, enum: CHARACTER_LFG_STATUS })
   looking_for_guild: string;
 
   @Prop({ type: Number })

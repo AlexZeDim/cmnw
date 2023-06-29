@@ -13,7 +13,6 @@ import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { KeysEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -25,8 +24,6 @@ export class CharactersService {
   private readonly logger = new Logger(CharactersService.name, { timestamp: true });
 
   constructor(
-    @InjectRedis()
-    private readonly redisService: Redis,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectModel(Character.name)

@@ -34,10 +34,10 @@ import {
   guildsQueue,
   ICharacterQueueWP,
   IQGuild,
-  LFG,
+  CHARACTER_LFG_STATUS,
   OSINT_LFG_WOW_PROGRESS,
   OSINT_SOURCE,
-  OSINT_SOURCE_WOW_PROGRESS,
+  OSINT_SOURCE_WOW_PROGRESS_RANKS,
   randomInt,
   toGuid,
   toSlug,
@@ -104,7 +104,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
   private async getWowProgress(dirPath: string) {
     const response = await this.httpService.axiosRef.get<string>(
-      OSINT_SOURCE_WOW_PROGRESS,
+      OSINT_SOURCE_WOW_PROGRESS_RANKS,
     );
 
     const page = cheerio.load(response.data);
@@ -118,7 +118,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
         const url = node.attribs.href;
 
-        const downloadLink = encodeURI(decodeURI(OSINT_SOURCE_WOW_PROGRESS + url));
+        const downloadLink = encodeURI(decodeURI(OSINT_SOURCE_WOW_PROGRESS_RANKS + url));
         const fileName = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
         const realmMatch = fileName.match(/(?<=_)(.*?)(?=_)/g);
         const isMatchExists = realmMatch && realmMatch.length;
@@ -236,12 +236,12 @@ export class WowprogressService implements OnApplicationBootstrap {
       await delay(60);
       // TODO refactor
       const charactersRevoked = await this.CharacterModel.updateMany(
-        { looking_for_guild: { $in: [LFG.NOW, LFG.NEW] } },
-        { looking_for_guild: LFG.PREV },
+        { looking_for_guild: { $in: [CHARACTER_LFG_STATUS.NOW, CHARACTER_LFG_STATUS.NEW] } },
+        { looking_for_guild: CHARACTER_LFG_STATUS.OLD },
       );
 
       this.logger.debug(
-        `indexLookingForGuild: status LFG-${LFG.NOW} & LFG-${LFG.NEW} revoke from ${charactersRevoked.modifiedCount} characters`,
+        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.NOW} & LFG-${CHARACTER_LFG_STATUS.NEW} revoke from ${charactersRevoked.modifiedCount} characters`,
       );
 
       const keysEntity = await getKeys(this.keysRepository, clearance);
@@ -262,43 +262,43 @@ export class WowprogressService implements OnApplicationBootstrap {
        * overwrite LFG.NOW
        */
       this.logger.log(
-        `indexLookingForGuild: ${characters.length} characters found in LFG-${LFG.NOW}`,
+        `indexLookingForGuild: ${characters.length} characters found in LFG-${CHARACTER_LFG_STATUS.NOW}`,
       );
       if (characters.length > 0) {
-        await this.redisService.del(LFG.NOW);
-        await this.redisService.sadd(LFG.NOW, charactersFilter);
+        await this.redisService.del(CHARACTER_LFG_STATUS.NOW);
+        await this.redisService.sadd(CHARACTER_LFG_STATUS.NOW, charactersFilter);
       }
 
       /**
        * If LFG.PREV not found
        * then write NOW to PREV
        */
-      const OLD_PREV = await this.redisService.smembers(LFG.PREV);
+      const OLD_PREV = await this.redisService.smembers(CHARACTER_LFG_STATUS.OLD);
       this.logger.log(
-        `indexLookingForGuild: ${OLD_PREV.length} characters found for LFG-${LFG.PREV}`,
+        `indexLookingForGuild: ${OLD_PREV.length} characters found for LFG-${CHARACTER_LFG_STATUS.OLD}`,
       );
       if (OLD_PREV.length === 0) {
-        await this.redisService.sadd(LFG.PREV, charactersFilter);
+        await this.redisService.sadd(CHARACTER_LFG_STATUS.OLD, charactersFilter);
       }
 
-      const NOW = await this.redisService.smembers(LFG.NOW);
-      const PREV = await this.redisService.smembers(LFG.PREV);
+      const NOW = await this.redisService.smembers(CHARACTER_LFG_STATUS.NOW);
+      const PREV = await this.redisService.smembers(CHARACTER_LFG_STATUS.OLD);
 
       const charactersDiffLeave = difference(PREV, NOW);
       const charactersDiffNew = difference(NOW, PREV);
 
       this.logger.log(
-        `indexLookingForGuild: ${PREV.length} characters removed from LFG-${LFG.PREV}`,
+        `indexLookingForGuild: ${PREV.length} characters removed from LFG-${CHARACTER_LFG_STATUS.OLD}`,
       );
       if (PREV.length > 0) {
-        await this.redisService.del(LFG.PREV);
-        await this.redisService.sadd(LFG.PREV, charactersFilter);
+        await this.redisService.del(CHARACTER_LFG_STATUS.OLD);
+        await this.redisService.sadd(CHARACTER_LFG_STATUS.OLD, charactersFilter);
       }
 
       let index = 0;
 
       this.logger.log(
-        `indexLookingForGuild: ${charactersDiffNew.length} characters added to queue with LFG-${LFG.NOW}`,
+        `indexLookingForGuild: ${charactersDiffNew.length} characters added to queue with LFG-${CHARACTER_LFG_STATUS.NOW}`,
       );
       if (charactersDiffNew.length > 0) {
         await lastValueFrom(
@@ -361,23 +361,23 @@ export class WowprogressService implements OnApplicationBootstrap {
         { $unset: { looking_for_guild: 1 } },
       );
       this.logger.debug(
-        `indexLookingForGuild: status LFG-${LFG.PREV} unset from ${charactersUnset.modifiedCount} characters`,
+        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.OLD} unset from ${charactersUnset.modifiedCount} characters`,
       );
 
       await this.CharacterModel.updateMany(
         { _id: { $in: NOW } },
-        { looking_for_guild: LFG.NOW },
+        { looking_for_guild: CHARACTER_LFG_STATUS.NOW },
       );
       this.logger.debug(
-        `indexLookingForGuild: status LFG-${LFG.NOW} set to ${NOW} characters`,
+        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.NOW} set to ${NOW} characters`,
       );
 
       await this.CharacterModel.updateMany(
         { _id: { $in: charactersDiffNew } },
-        { looking_for_guild: LFG.NEW },
+        { looking_for_guild: CHARACTER_LFG_STATUS.NEW },
       );
       this.logger.debug(
-        `indexLookingForGuild: status LFG-${LFG.NEW} set to ${charactersDiffNew.length} characters`,
+        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.NEW} set to ${charactersDiffNew.length} characters`,
       );
 
       this.logger.log('————————————————————————————————————');

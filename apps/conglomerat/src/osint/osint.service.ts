@@ -21,7 +21,7 @@ import {
   GLOBAL_OSINT_KEY,
   GuildIdDto,
   guildsQueue,
-  LFG,
+  CHARACTER_LFG_STATUS,
   NOTIFICATIONS,
   OSINT_SOURCE,
   RealmDto,
@@ -161,7 +161,7 @@ export class OsintService {
 
   async getCharactersLfg(input: CharactersLfgDto): Promise<LeanDocument<Character[]>> {
     try {
-      const query = { looking_for_guild: LFG.NEW };
+      const query = { looking_for_guild: CHARACTER_LFG_STATUS.NEW };
       if (input.faction) Object.assign(query, { faction: input.faction });
       if (input.average_item_level) Object.assign(query, { average_item_level: { '$gte': input.average_item_level } });
       if (input.rio_score) Object.assign(query, { rio_score: { '$gte': input.rio_score } });

@@ -1,19 +1,20 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Character, Key, Realm } from '@app/mongo';
-import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
+import ms from 'ms';
+import cheerio from 'cheerio';
 import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { wowProgressConfig } from '@app/configuration';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
-import cheerio from 'cheerio';
 import { HttpService } from '@nestjs/axios';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CharactersProfileEntity, KeysEntity, RealmsEntity } from '@app/pg';
+import { In, Repository } from 'typeorm';
+import { pipeline } from 'node:stream/promises';
 import {
   BadRequestException,
   Injectable,
@@ -33,20 +34,14 @@ import {
   GuildJobQueue,
   guildsQueue,
   ICharacterQueueWP,
-  IQGuild,
-  CHARACTER_LFG_STATUS,
+  LFG_STATUS,
   OSINT_LFG_WOW_PROGRESS,
   OSINT_SOURCE,
   OSINT_SOURCE_WOW_PROGRESS_RANKS,
-  randomInt,
-  toGuid,
   toSlug,
+  ProfileJobQueue,
+  profileQueue,
 } from '@app/core';
-import ms from 'ms';
-import { InjectRepository } from '@nestjs/typeorm';
-import { KeysEntity, RealmsEntity } from '@app/pg';
-import { Repository } from 'typeorm';
-import { pipeline } from 'node:stream/promises';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {
@@ -56,21 +51,16 @@ export class WowprogressService implements OnApplicationBootstrap {
 
   constructor(
     private httpService: HttpService,
-    @InjectRedis()
-    private readonly redisService: Redis,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
-
-    @InjectModel(Key.name)
-    private readonly KeyModel: Model<Key>,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Character.name)
-    private readonly CharacterModel: Model<Character>,
+    @InjectRepository(CharactersProfileEntity)
+    private readonly charactersProfileRepository: Repository<CharactersProfileEntity>,
     @BullQueueInject(guildsQueue.name)
     private readonly queueGuilds: Queue<GuildJobQueue, number>,
+    @BullQueueInject(profileQueue.name)
+    private readonly queueProfile: Queue<ProfileJobQueue, number>,
     @BullQueueInject(charactersQueue.name)
     private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) {}
@@ -118,7 +108,9 @@ export class WowprogressService implements OnApplicationBootstrap {
 
         const url = node.attribs.href;
 
-        const downloadLink = encodeURI(decodeURI(OSINT_SOURCE_WOW_PROGRESS_RANKS + url));
+        const downloadLink = encodeURI(
+          decodeURI(OSINT_SOURCE_WOW_PROGRESS_RANKS + url),
+        );
         const fileName = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
         const realmMatch = fileName.match(/(?<=_)(.*?)(?=_)/g);
         const isMatchExists = realmMatch && realmMatch.length;
@@ -234,14 +226,29 @@ export class WowprogressService implements OnApplicationBootstrap {
        * Revoke characters status from old NOW => to PREV
        */
       await delay(60);
-      // TODO refactor
-      const charactersRevoked = await this.CharacterModel.updateMany(
-        { looking_for_guild: { $in: [CHARACTER_LFG_STATUS.NOW, CHARACTER_LFG_STATUS.NEW] } },
-        { looking_for_guild: CHARACTER_LFG_STATUS.OLD },
+      const charactersLfgRemoveOld = await this.charactersProfileRepository.update(
+        {
+          lfgStatus: LFG_STATUS.OLD,
+        },
+        {
+          lfgStatus: null,
+        },
+      );
+      this.logger.log(
+        `${charactersLfgRemoveOld.affected} characters removed from LFG-${LFG_STATUS.OLD}`,
+      );
+
+      const updateResult = await this.charactersProfileRepository.update(
+        {
+          lfgStatus: LFG_STATUS.NOW,
+        },
+        {
+          lfgStatus: LFG_STATUS.OLD,
+        },
       );
 
       this.logger.debug(
-        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.NOW} & LFG-${CHARACTER_LFG_STATUS.NEW} revoke from ${charactersRevoked.modifiedCount} characters`,
+        `status LFG-${LFG_STATUS.NOW} revoke from ${updateResult.affected} characters`,
       );
 
       const keysEntity = await getKeys(this.keysRepository, clearance);
@@ -252,142 +259,134 @@ export class WowprogressService implements OnApplicationBootstrap {
         await this.getWowProgressLfg(secondPageUrl),
       ]);
 
-      const isCharacterPageValid = Boolean(firstPage.length && secondPage.length);
-      if (!isCharacterPageValid) return; // TODO
+      const isCharacterPageValid = Boolean(firstPage.size && secondPage.size);
+      if (!isCharacterPageValid) {
+        this.logger.debug(
+          `LFG page ${firstPage.size} & ${secondPage.size} | return`,
+        );
+        return;
+      }
 
-      const characters = union(firstPage, secondPage);
-
+      const charactersLfg = new Map([...firstPage, ...secondPage]);
+      const charactersLfgNow = union(
+        Array.from(firstPage.keys()),
+        Array.from(secondPage.keys()),
+      );
       /**
-       * If WowProgress result > 0
-       * overwrite LFG.NOW
+       * @description If LFG.OLD not found then write NOW to PREV
+       * @description Overwrite LFG status NOW
        */
       this.logger.log(
-        `indexLookingForGuild: ${characters.length} characters found in LFG-${CHARACTER_LFG_STATUS.NOW}`,
+        `${charactersLfgNow.length} characters found in LFG-${LFG_STATUS.NOW}`,
       );
-      if (characters.length > 0) {
-        await this.redisService.del(CHARACTER_LFG_STATUS.NOW);
-        await this.redisService.sadd(CHARACTER_LFG_STATUS.NOW, charactersFilter);
-      }
-
-      /**
-       * If LFG.PREV not found
-       * then write NOW to PREV
-       */
-      const OLD_PREV = await this.redisService.smembers(CHARACTER_LFG_STATUS.OLD);
+      const characterProfileLfgOld = await this.charactersProfileRepository.findBy({
+        lfgStatus: LFG_STATUS.OLD,
+      });
       this.logger.log(
-        `indexLookingForGuild: ${OLD_PREV.length} characters found for LFG-${CHARACTER_LFG_STATUS.OLD}`,
+        `${characterProfileLfgOld.length} characters found for LFG-${LFG_STATUS.OLD}`,
       );
-      if (OLD_PREV.length === 0) {
-        await this.redisService.sadd(CHARACTER_LFG_STATUS.OLD, charactersFilter);
-      }
 
-      const NOW = await this.redisService.smembers(CHARACTER_LFG_STATUS.NOW);
-      const PREV = await this.redisService.smembers(CHARACTER_LFG_STATUS.OLD);
+      const charactersLfgOld = characterProfileLfgOld.map(
+        (character) => character.guid,
+      );
 
-      const charactersDiffLeave = difference(PREV, NOW);
-      const charactersDiffNew = difference(NOW, PREV);
+      const charactersDiffNew = difference(charactersLfgNow, charactersLfgOld);
+      const charactersDiffNow = difference(charactersLfgNow, charactersDiffNew);
+      const isLfgNewExists = charactersDiffNew.length;
+
+      await this.charactersProfileRepository.update(
+        {
+          guid: In(charactersDiffNow),
+        },
+        {
+          lfgStatus: LFG_STATUS.NOW,
+        },
+      );
 
       this.logger.log(
-        `indexLookingForGuild: ${PREV.length} characters removed from LFG-${CHARACTER_LFG_STATUS.OLD}`,
+        `${isLfgNewExists} characters added to queue with LFG-${LFG_STATUS.NOW}`,
       );
-      if (PREV.length > 0) {
-        await this.redisService.del(CHARACTER_LFG_STATUS.OLD);
-        await this.redisService.sadd(CHARACTER_LFG_STATUS.OLD, charactersFilter);
-      }
+
+      if (!isLfgNewExists) return;
 
       let index = 0;
 
-      this.logger.log(
-        `indexLookingForGuild: ${charactersDiffNew.length} characters added to queue with LFG-${CHARACTER_LFG_STATUS.NOW}`,
-      );
-      if (charactersDiffNew.length > 0) {
-        await lastValueFrom(
-          from(charactersDiffNew).pipe(
-            mergeMap(async (character, i) => {
-              const [name, realmQuery] = character.split('@');
+      const realmsEntity = new Map<string, RealmsEntity>([]);
 
-              const realm = await this.RealmModel.findOne(
-                { $text: { $search: realmQuery } },
-                { score: { $meta: 'textScore' } },
-                { projection: { slug: 1 } },
-              )
-                .sort({ score: { $meta: 'textScore' } })
-                .lean();
+      const isLfgOldExists = Boolean(characterProfileLfgOld.length);
 
-              if (!realm) {
-                throw new NotFoundException(`Realm: ${realmQuery} not found`);
-              }
+      const lookingForGuild = isLfgOldExists ? LFG_STATUS.NEW : LFG_STATUS.NOW;
 
-              const characterId = `${name}@${realm.slug}`;
+      await lastValueFrom(
+        from(charactersDiffNew).pipe(
+          mergeMap(async (characterGuid, i) => {
+            const characterQueue = charactersLfg.get(characterGuid);
+            const isRealmInStore = realmsEntity.has(characterQueue.realm);
 
+            const realmEntity = isRealmInStore
+              ? realmsEntity.get(characterQueue.realm)
+              : await findRealm(this.realmsRepository, characterQueue.realm);
+
+            if (!realmEntity) {
+              throw new NotFoundException(
+                `Realm: ${characterQueue.realm} not found`,
+              );
+            }
+
+            if (!isRealmInStore) realmsEntity.set(characterQueue.realm, realmEntity);
+
+            await Promise.allSettled([
+              this.queueProfile.add(characterQueue.guid, {
+                guid: characterQueue.guid,
+                name: characterQueue.name,
+                realm: realmEntity.slug,
+                lookingForGuild,
+                updateRIO: true,
+                updateWCL: true,
+                updateWP: true,
+              }),
               await this.queueCharacters.add(
-                characterId,
+                characterQueue.guid,
                 {
-                  _id: characterId,
-                  name,
-                  realm: realm.slug,
+                  guid: characterQueue.guid,
+                  name: characterQueue.name,
+                  realm: realmEntity.slug,
+                  realmId: realmEntity.id,
+                  realmName: realmEntity.name,
                   region: 'eu',
-                  clientId: keys[index]._id,
-                  clientSecret: keys[index].secret,
-                  accessToken: keys[index].token,
-                  created_by: OSINT_SOURCE.WOW_PROGRESS_LFG,
-                  updated_by: OSINT_SOURCE.WOW_PROGRESS_LFG,
-                  guildRank: false,
+                  clientId: keysEntity[index].client,
+                  clientSecret: keysEntity[index].secret,
+                  accessToken: keysEntity[index].token,
+                  createdBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
+                  updatedBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
+                  requestGuildRank: false,
                   createOnlyUnique: false,
-                  updateRIO: true,
-                  updateWCL: true,
-                  updateWP: true,
-                  forceUpdate: randomInt(1000 * 60 * 30, 1000 * 60 * 60),
+                  forceUpdate: 1000 * 60 * 30,
                   iteration: i,
                 },
                 {
-                  jobId: characterId,
+                  jobId: characterQueue.guid,
                   priority: 2,
                 },
-              );
+              ),
+            ]);
 
-              index++;
-              this.logger.log(
-                `indexLookingForGuild: Added to character queue: ${characterId}`,
-              );
-              if (i >= keys.length) index = 0;
-            }),
-          ),
-        );
-      }
-
-      const charactersUnset = await this.CharacterModel.updateMany(
-        { _id: { $in: charactersDiffLeave } },
-        { $unset: { looking_for_guild: 1 } },
+            index++;
+            this.logger.log(
+              `indexWowProgressLfg: Added to character queue: ${characterQueue.guid}`,
+            );
+            if (i >= keysEntity.length) index = 0;
+          }),
+        ),
       );
-      this.logger.debug(
-        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.OLD} unset from ${charactersUnset.modifiedCount} characters`,
-      );
-
-      await this.CharacterModel.updateMany(
-        { _id: { $in: NOW } },
-        { looking_for_guild: CHARACTER_LFG_STATUS.NOW },
-      );
-      this.logger.debug(
-        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.NOW} set to ${NOW} characters`,
-      );
-
-      await this.CharacterModel.updateMany(
-        { _id: { $in: charactersDiffNew } },
-        { looking_for_guild: CHARACTER_LFG_STATUS.NEW },
-      );
-      this.logger.debug(
-        `indexLookingForGuild: status LFG-${CHARACTER_LFG_STATUS.NEW} set to ${charactersDiffNew.length} characters`,
-      );
-
       this.logger.log('————————————————————————————————————');
     } catch (errorException) {
-      this.logger.error(`indexLookingForGuild: ${errorException}`);
+      this.logger.error(`indexWowProgressLfg: ${errorException}`);
     }
   }
 
   private async getWowProgressLfg(url: string) {
-    const wpCharactersQueue: Array<ICharacterQueueWP> = [];
+    const wpCharactersQueue = new Map<string, ICharacterQueueWP>([]);
     try {
       const response = await this.httpService.axiosRef.get(url);
 
@@ -413,7 +412,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
           const guid = toSlug(`${name}@${realm}`);
 
-          wpCharactersQueue.push({
+          wpCharactersQueue.set(guid, {
             guid,
             name,
             guild,

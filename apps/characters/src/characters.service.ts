@@ -6,7 +6,7 @@ import {
   OSINT_SOURCE,
 } from '@app/core';
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, RequestTimeoutException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -39,7 +39,7 @@ export class CharactersService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 10000) {
-        throw new NotFoundException(`indexCharactersFromMongo: ${jobs} jobs found`);
+        throw new RequestTimeoutException(`${jobs} jobs found`);
       }
 
       const keyEntities = await getKeys(this.keysRepository, clearance);
@@ -49,8 +49,7 @@ export class CharactersService {
 
       await this.CharacterModel.find<Character>()
         .sort({ hash_b: 1 })
-        .limit(50000)
-        .cursor()
+        .cursor({ batchSize: 5000 })
         .eachAsync(
           async (character) => {
             const characterJobArgs = {

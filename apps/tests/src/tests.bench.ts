@@ -1,13 +1,35 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+  UnsupportedMediaTypeException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { ArrayContains, In, LessThan, Not, Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import { from, lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-import { FACTION, findRealm, IGold, MARKET_TYPE, VALUATION_TYPE } from '@app/core';
+import { pipeline } from 'node:stream/promises';
+import { chromium, devices } from 'playwright';
+import {
+  FACTION,
+  findRealm,
+  ICharacterRaiderIo,
+  IGold,
+  isRaiderIoProfile,
+  MARKET_TYPE,
+  OSINT_SOURCE_RAIDER_IO,
+  OSINT_SOURCE_WOW_PROGRESS_RANKS,
+  toSlug,
+  VALUATION_TYPE,
+} from '@app/core';
 import { mergeMap } from 'rxjs/operators';
 import cheerio from 'cheerio';
+import fs from 'fs-extra';
+import path from 'path';
+import zlib from 'zlib';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
@@ -24,7 +46,7 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.testAssetClassFromMarket();
+    await this.getRaiderIoProfile();
   }
 
   async getUniqueRealms() {
@@ -130,6 +152,155 @@ export class TestsBench implements OnApplicationBootstrap {
     );
 
     await this.marketRepository.save(marketOrders);
+  }
+
+  async getWowProgress() {
+    const response = await this.httpService.axiosRef.get(
+      OSINT_SOURCE_WOW_PROGRESS_RANKS,
+    );
+
+    const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+    await fs.ensureDir(dirPath);
+
+    const page = cheerio.load(response.data);
+    const wpPage = page.html('body > pre:nth-child(3) > a');
+
+    await Promise.allSettled(
+      page(wpPage).map(async (x, node) => {
+        const isAttributes = 'attribs' in node && node.attribs.href.includes('eu_');
+        if (!isAttributes) return;
+
+        const url = node.attribs.href;
+        console.log(url);
+
+        const downloadLink = encodeURI(
+          decodeURI(OSINT_SOURCE_WOW_PROGRESS_RANKS + url),
+        );
+        const fileName = decodeURIComponent(url.substr(url.lastIndexOf('/') + 1));
+        const realmMatch = fileName.match(/(?<=_)(.*?)(?=_)/g);
+        const isMatchExists = realmMatch && realmMatch.length;
+
+        if (!isMatchExists) return;
+
+        const [realmSlug] = realmMatch;
+
+        const realmEntity = await findRealm(this.realmsRepository, realmSlug);
+
+        if (!realmEntity) return;
+
+        const realmGuildsZip = await this.httpService.axiosRef.request({
+          url: downloadLink,
+          responseType: 'stream',
+        });
+
+        const filePath = `${dirPath}/${fileName}`;
+        console.log(filePath);
+
+        await pipeline(realmGuildsZip.data, fs.createWriteStream(filePath));
+      }),
+    );
+
+    return await fs.readdir(dirPath);
+  }
+
+  async getLfgWowProgress() {
+    try {
+      const browser = await chromium.launch();
+      const context = await browser.newContext(devices['iPhone 11']);
+      const page = await context.newPage();
+      const url = encodeURI(
+        'https://www.warcraftlogs.com/character/eu/howling-fjord/хайзуро#difficulty=5',
+      );
+
+      await page.goto(url);
+      const getBestPerfAvg = await page.getByText('Best Perf. Avg').allInnerTexts();
+      const [getBestPerfAvgValue] = getBestPerfAvg;
+
+      const [text, value] = getBestPerfAvgValue.trim().split('\n');
+
+      const isMythicLogsValid = !isNaN(Number(value.trim()));
+      if (isMythicLogsValid) {
+        console.log(parseFloat(value));
+      }
+
+      await browser.close();
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+
+  async unpackWowProgress(files: string[]) {
+    const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+
+    await lastValueFrom(
+      from(files).pipe(
+        mergeMap(async (file) => {
+          try {
+            const isNotGzip = !file.match(/gz$/g);
+            if (isNotGzip) {
+              throw new UnsupportedMediaTypeException(`file ${file} is not gz`);
+            }
+
+            const realmMatch = file.match(/(?<=_)(.*?)(?=_)/g);
+            const isMatchExists = realmMatch && realmMatch.length;
+            if (!isMatchExists) {
+              throw new NotFoundException(`file ${file} doesn't have a realm`);
+            }
+
+            const [realmSlug] = realmMatch;
+
+            const realmEntity = await findRealm(this.realmsRepository, realmSlug);
+
+            if (!realmEntity) {
+              throw new NotFoundException(`realm ${realmSlug} not found!`);
+            }
+
+            const buffer = await fs.readFile(`${dirPath}/${file}`);
+            const data = zlib
+              .unzipSync(buffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH })
+              .toString();
+
+            // TODO interface type
+            const json = JSON.parse(data);
+            const isJsonValid = json && Array.isArray(json) && json.length;
+
+            if (!isJsonValid) {
+              throw new UnsupportedMediaTypeException(`json not valid`);
+            }
+
+            for (const guild of json) {
+              const isGuildValid = guild.name && !guild.name.includes('[Raid]');
+              if (!isGuildValid) {
+                this.logger.log(
+                  `indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`,
+                );
+                continue;
+              }
+
+              const guid: string = toSlug(`${guild.name}@${realmEntity.slug}`);
+
+              console.log(guid);
+            }
+          } catch (error) {
+            this.logger.warn(`indexWowProgress: ${error}`);
+          }
+        }, 1),
+      ),
+    );
+  }
+
+  async getRaiderIoProfile() {
+    const { data: raiderIoProfile } =
+      await this.httpService.axiosRef.get<ICharacterRaiderIo>(
+        encodeURI(
+          `${OSINT_SOURCE_RAIDER_IO}?region=eu&realm=howling-fjord&name=ниалайт&fields=mythic_plus_scores_by_season:current,raid_progression`,
+        ),
+      );
+
+    const isRaiderIoProfileValid = isRaiderIoProfile(raiderIoProfile);
+    if (!isRaiderIoProfileValid) return;
+
+    console.log(raiderIoProfile.mythic_plus_scores_by_season);
   }
 
   async testWarcraftLogRealms(warcraftLogsId: number) {

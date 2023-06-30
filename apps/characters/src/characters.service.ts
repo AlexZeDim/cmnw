@@ -6,14 +6,13 @@ import {
   OSINT_SOURCE,
 } from '@app/core';
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, RequestTimeoutException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { KeysEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -25,8 +24,6 @@ export class CharactersService {
   private readonly logger = new Logger(CharactersService.name, { timestamp: true });
 
   constructor(
-    @InjectRedis()
-    private readonly redisService: Redis,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectModel(Character.name)
@@ -42,7 +39,7 @@ export class CharactersService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 10000) {
-        throw new NotFoundException(`indexCharactersFromMongo: ${jobs} jobs found`);
+        throw new RequestTimeoutException(`${jobs} jobs found`);
       }
 
       const keyEntities = await getKeys(this.keysRepository, clearance);
@@ -52,8 +49,7 @@ export class CharactersService {
 
       await this.CharacterModel.find<Character>()
         .sort({ hash_b: 1 })
-        .limit(50000)
-        .cursor()
+        .cursor({ batchSize: 5000 })
         .eachAsync(
           async (character) => {
             const characterJobArgs = {

@@ -30,13 +30,6 @@ import {
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([KeysEntity]),
-    RedisModule.forRoot({
-      config: {
-        host: redisConfig.host,
-        port: redisConfig.port,
-        password: redisConfig.password,
-      },
-    }),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },

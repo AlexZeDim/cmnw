@@ -12,4 +12,4 @@ export const pricingQueue: IQueue = {
   options: {
     defaultJobOptions: queueOptions,
   },
-}
+};

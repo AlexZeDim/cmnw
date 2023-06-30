@@ -1,8 +1,24 @@
+import {
+  IWarcraftLogsMap,
+  IWowProgress,
+  RaiderIoCharacterMappingField,
+  RaiderIoCharacterMappingKey,
+  WowProgressProfile,
+} from '@app/core/types';
+import { Partials } from 'discord.js';
+
 export const MAX_LEVEL = 70;
 
 export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
-export const OSINT_SOURCE_WOW_PROGRESS = 'https://www.wowprogress.com/export/ranks/';
+export const OSINT_SOURCE_WCL = 'https://www.warcraftlogs.com/character/eu';
+
+export const OSINT_SOURCE_WOW_PROGRESS_RANKS =
+  'https://www.wowprogress.com/export/ranks/';
+
+export const OSINT_SOURCE_WOW_PROGRESS = 'https://www.wowprogress.com/character/eu';
+
+export const OSINT_SOURCE_RAIDER_IO = 'https://raider.io/api/v1/characters/profile';
 
 export const OSINT_LFG_WOW_PROGRESS = [
   'https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts',
@@ -57,6 +73,32 @@ export const CHARACTER_MEDIA_FIELD_MAPPING = new Map<string, string>([
   ['avatar', 'avatarImage'],
   ['main-raw', 'insetImage'],
   ['inset', 'mainImage'],
+]);
+
+export const CHARACTER_RAID_DIFFICULTY = new Map<string, IWarcraftLogsMap>([
+  ['heroic', { wclId: 4, fieldName: 'heroicLogs' }],
+  ['mythic', { wclId: 5, fieldName: 'mythicLogs' }],
+]);
+
+export const CHARACTER_PROFILE_MAPPING = new Map<string, keyof WowProgressProfile>([
+  ['Battletag', 'battleTag'],
+  ['Looking for guild', 'readyToTransfer'],
+  ['Raids per week', 'raidDays'],
+  ['Specs playing', 'playRole'],
+  ['Languages', 'languages'],
+]);
+
+export const CHARACTER_PROFILE_RIO_MAPPING = new Map<
+  RaiderIoCharacterMappingKey,
+  RaiderIoCharacterMappingField
+>([
+  ['name', 'name'],
+  ['realm', 'realm'],
+  ['race', 'race'],
+  ['class', 'class'],
+  ['active_spec_name', 'activeSpec'],
+  ['active_spec_role', 'activeRole'],
+  ['gender', 'gender'],
 ]);
 
 export const REALM_TICKER = new Map<string, string>([
@@ -450,10 +492,10 @@ export enum OSINT_SOURCE {
   OSINT_LUA = 'OSINT-LUA',
 }
 
-export enum LFG {
+export enum LFG_STATUS {
   NEW = 'NEW',
   NOW = 'NOW',
-  PREV = 'PREV',
+  OLD = 'OLD',
 }
 
 export enum EXPANSIONS {

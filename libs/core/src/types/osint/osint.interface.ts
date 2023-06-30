@@ -1,3 +1,5 @@
+import { CharactersProfileEntity } from '@app/pg';
+
 export interface IWarcraftLogsActors {
   type: 'NPC' | 'Player' | 'Pet';
   name: string;
@@ -339,6 +341,63 @@ export interface ICharacterSummary {
   };
 }
 
+export interface ICharacterRaiderIo {
+  name: string;
+  race: string;
+  class: string;
+  active_spec_name: string;
+  active_spec_role: string;
+  gender: string;
+  faction: string;
+  achievement_points: number;
+  honorable_kills: number;
+  thumbnail_url: string;
+  region: string;
+  realm: string;
+  last_crawled_at: string;
+  profile_url: string;
+  profile_banner: string;
+  mythic_plus_scores_by_season: Array<IRaiderIoMythicPlus>;
+  raid_progression: IRaiderIORaidProgress;
+}
+
+export interface IRaiderIoRaid {
+  summary: string;
+  total_bosses: number;
+  normal_bosses_killed: number;
+  heroic_bosses_killed: number;
+  mythic_bosses_killed: number;
+}
+
+export interface IRaiderIORaidProgress {
+  [key: string]: IRaiderIoRaid;
+}
+
+export interface IRaiderIoMythicPlusScores {
+  all: number;
+  dps: number;
+  healer: number;
+  tank: number;
+  spec_0: number;
+  spec_1: number;
+  spec_2: number;
+  spec_3: number;
+}
+
+export interface IRaiderIoMythicPlusSegmentsValue {
+  score: number;
+  color: string;
+}
+
+export interface IRaiderIoMythicPlus {
+  season: string;
+  scores: IRaiderIoMythicPlusScores;
+  segments: Record<
+    keyof IRaiderIoMythicPlusScores,
+    IRaiderIoMythicPlusSegmentsValue
+  >;
+}
+
 export interface ICharacterStatus {
   id: number;
   is_valid: boolean;
@@ -348,15 +407,21 @@ export interface ICharacterStatus {
 
 export interface IWowProgress {
   battleTag: string;
-  transfer: boolean;
-  daysFrom: number;
-  daysTo: number;
-  role: string;
+  readyToTransfer: boolean;
+  raidDays: string[];
+  playRole: string;
   languages: string[];
 }
 
+export interface IWarcraftLogsMap {
+  wclId: number;
+  fieldName: keyof Pick<CharactersProfileEntity, 'heroicLogs' | 'mythicLogs'>;
+}
+
 export interface IWarcraftLog {
-  wclMythicPercentile: number;
+  normalLogs: number;
+  heroicLogs: number;
+  mythicLogs: number;
 }
 
 export interface IWarcraftLogsConfig {
@@ -365,11 +430,6 @@ export interface IWarcraftLogsConfig {
   to: number;
   page: number;
   logs: number;
-}
-
-export interface ICharactersExported {
-  readonly name: string;
-  readonly server: string;
 }
 
 export interface ICharacterGuildMember {

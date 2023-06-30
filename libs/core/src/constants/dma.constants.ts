@@ -3,6 +3,8 @@ import { IItem, IItemFieldMap } from '@app/core/types';
 
 export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
+export const DMA_SOURCE_GOLD = 'https://funpay.ru/chips/2/';
+
 export enum DMA_SOURCE {
   API = 'DMA-API',
   LAB = 'DMA-LAB',

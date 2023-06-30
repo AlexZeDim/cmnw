@@ -33,3 +33,20 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - KEY=${KEY}
+
+  guilds:
+    image: ghcr.io/alexzedim/osint:latest
+    restart: always
+    command: [ 'node', 'dist/apps/guilds/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
+
+
+  wowprogress:
+    image: ghcr.io/alexzedim/osint:latest
+    restart: always
+    command: [ 'node', 'dist/apps/wowprogress/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}

@@ -1,5 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg/enum';
-import { CHARACTER_LFG_STATUS, IRaiderIORaidProgress } from '@app/core';
+import { LFG_STATUS, IRaiderIORaidProgress } from '@app/core';
 import {
   Column,
   CreateDateColumn,
@@ -141,7 +141,7 @@ export class CharactersProfileEntity {
     type: 'varchar',
     name: 'lfg_status',
   })
-  lfgStatus: CHARACTER_LFG_STATUS;
+  lfgStatus: LFG_STATUS;
 
   @Column('timestamp with time zone', {
     name: 'modified_by_rio',

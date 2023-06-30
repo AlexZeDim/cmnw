@@ -492,7 +492,7 @@ export enum OSINT_SOURCE {
   OSINT_LUA = 'OSINT-LUA',
 }
 
-export enum CHARACTER_LFG_STATUS {
+export enum LFG_STATUS {
   NEW = 'NEW',
   NOW = 'NOW',
   OLD = 'OLD',

@@ -1,5 +1,5 @@
 import { QueueOptions, WorkerOptions } from 'bullmq';
-import { CHARACTER_LFG_STATUS, OSINT_SOURCE } from '@app/core/constants';
+import { LFG_STATUS, OSINT_SOURCE } from '@app/core/constants';
 
 export interface IQueue {
   readonly name: string;
@@ -25,7 +25,7 @@ export interface IQCharacterOptions {
 
 export interface IQCharacterProfile {
   guid: string;
-  lookingForGuild?: CHARACTER_LFG_STATUS;
+  lookingForGuild?: LFG_STATUS;
   updateRIO?: boolean;
   updateWCL?: boolean;
   updateWP?: boolean;

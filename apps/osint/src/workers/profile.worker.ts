@@ -14,10 +14,6 @@ import {
 
 import {
   CHARACTER_RAID_DIFFICULTY,
-  IRaiderIO,
-  IRaidProgressRIO,
-  IWarcraftLog,
-  IWowProgress,
   OSINT_SOURCE_RAIDER_IO,
   OSINT_SOURCE_WOW_PROGRESS,
   OSINT_SOURCE_WCL,
@@ -80,6 +76,8 @@ export class ProfileWorker {
           guid: args.guid,
         });
       }
+
+      if (args.lookingForGuild) profileEntity.lfgStatus = args.lookingForGuild;
 
       /**
        * update RIO, WCL & Progress

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { postgresConfig, redisConfig } from '@app/configuration';
-import { charactersQueue, guildsQueue } from '@app/core';
+import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
 import { HttpModule } from '@nestjs/axios';
-import { CharactersWorker, GuildsWorker } from './workers';
+import { CharactersWorker, GuildsWorker, ProfileWorker } from './workers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import {
@@ -65,8 +65,12 @@ import {
       queueName: charactersQueue.name,
       options: charactersQueue.options,
     }),
+    BullModule.registerQueue({
+      queueName: profileQueue.name,
+      options: profileQueue.options,
+    }),
   ],
   controllers: [],
-  providers: [CharactersWorker, GuildsWorker],
+  providers: [CharactersWorker, GuildsWorker, ProfileWorker],
 })
 export class OsintModule {}

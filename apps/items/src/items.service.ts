@@ -20,7 +20,6 @@ import {
   itemsQueue,
   toStringOrNumber,
 } from '@app/core';
-import c from "config";
 
 @Injectable()
 export class ItemsService implements OnApplicationBootstrap {

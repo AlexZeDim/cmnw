@@ -10,28 +10,28 @@ services:
       - NODE_ENV=${NODE_ENV}
 
   auctions:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/auctions/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   gold:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/gold/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   items:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/items/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
 
   wowtoken:
-    image: ghcr.io/alexzedim/cmnw:latest
+    image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/wowtoken/main.js' ]
     environment:

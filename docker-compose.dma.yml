@@ -8,6 +8,7 @@ services:
       replicas: 3
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   auctions:
     image: ghcr.io/alexzedim/dma:latest
@@ -15,6 +16,7 @@ services:
     command: [ 'node', 'dist/apps/auctions/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   gold:
     image: ghcr.io/alexzedim/dma:latest
@@ -22,6 +24,7 @@ services:
     command: [ 'node', 'dist/apps/gold/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   items:
     image: ghcr.io/alexzedim/dma:latest
@@ -29,6 +32,7 @@ services:
     command: [ 'node', 'dist/apps/items/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
 
   wowtoken:
     image: ghcr.io/alexzedim/dma:latest
@@ -36,3 +40,4 @@ services:
     command: [ 'node', 'dist/apps/wowtoken/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}

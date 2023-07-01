@@ -118,7 +118,7 @@ export class CharactersProfileEntity {
   @Column({
     nullable: true,
     type: 'real',
-    name: 'mythic_logs',
+    name: 'heroic_logs',
   })
   heroicLogs?: number;
 

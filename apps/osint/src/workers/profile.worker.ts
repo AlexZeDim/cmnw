@@ -183,9 +183,13 @@ export class ProfileWorker {
           if (fieldValueName === 'readyToTransfer')
             wowProgressProfile.readyToTransfer = value.includes('ready to transfer');
 
-          if (fieldValueName === 'raidDays') {
-            const [daysFrom, daysTo] = value.split(' - ');
-            wowProgressProfile.raidDays = [parseInt(daysFrom), parseInt(daysTo)];
+          if (fieldValueName === 'raidDays' && value) {
+            const [from, to] = value.split(' - ');
+            const daysFrom = parseInt(from);
+            const daysTo = parseInt(to);
+            const isNumber =
+              typeof daysFrom === 'number' && typeof daysTo === 'number';
+            if (isNumber) wowProgressProfile.raidDays = [daysFrom, daysTo];
           }
 
           if (fieldValueName === 'languages') {

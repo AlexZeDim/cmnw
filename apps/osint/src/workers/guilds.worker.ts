@@ -572,6 +572,9 @@ export class GuildsWorker {
         guildGuid: guildEntity.guid,
         rank: 0,
       });
+
+    if (!guildMasterOriginal) return;
+
     const guildMasterUpdated = updatedRoster.members.find(
       (guildMember) => guildMember.rank === 0,
     );

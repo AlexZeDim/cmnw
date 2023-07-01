@@ -15,7 +15,7 @@ import { BlizzAPI } from 'blizzapi';
 import { Job, Queue } from 'bullmq';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { difference, intersection } from 'lodash';
+import { difference, get, intersection } from 'lodash';
 import { snakeCase } from 'snake-case';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
@@ -445,9 +445,10 @@ export class GuildsWorker {
 
       summary.statusCode = 200;
       return summary;
-    } catch (errorException) {
+    } catch (errorOrException) {
+      summary.statusCode = get(errorOrException, 'response.status', 418);
       this.logger.error(
-        `getSummary: ${guildNameSlug}@${realmSlug}:${errorException}`,
+        `getSummary: ${guildNameSlug}@${realmSlug}:${summary.statusCode}`,
       );
       return summary;
     }
@@ -557,8 +558,9 @@ export class GuildsWorker {
       );
 
       return roster;
-    } catch (errorException) {
-      this.logger.error(`roster: ${guildEntity.guid}:${errorException}`);
+    } catch (errorOrException) {
+      roster.statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`roster: ${guildEntity.guid}:${roster.statusCode}`);
       return roster;
     }
   }

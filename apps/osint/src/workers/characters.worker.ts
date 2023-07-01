@@ -265,9 +265,12 @@ export class CharactersWorker {
     /**
      * ...or character was updated recently
      */
-    if (timestampNow - forceUpdate < characterEntity.updatedAt.getTime()) {
-      throw new GatewayTimeoutException(
-        `forceUpdate: ${forceUpdate} | ${character.guid}`,
+    const updateSafe = timestampNow - forceUpdate;
+    const updatedAt = characterEntity.updatedAt.getTime();
+    const isUpdateSafe = updateSafe < updatedAt;
+    if (isUpdateSafe) {
+      throw new Error(
+        `forceUpdate: ${character.guid} | ${updateSafe} < ${updatedAt}`,
       );
     }
 
@@ -300,11 +303,7 @@ export class CharactersWorker {
 
       return characterStatus;
     } catch (errorOrException) {
-      if (errorOrException.response) {
-        if (errorOrException.response.data && errorOrException.response.data.code) {
-          characterStatus.statusCode = errorOrException.response.data.code;
-        }
-      }
+      characterStatus.statusCode = get(errorOrException, 'response.status', 418);
       if (status)
         throw new NotFoundException(
           `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
@@ -337,7 +336,8 @@ export class CharactersWorker {
 
       return media;
     } catch (errorOrException) {
-      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${errorOrException}`);
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${statusCode}`);
       return media;
     }
   }
@@ -426,7 +426,8 @@ export class CharactersWorker {
 
       return mountsCollection;
     } catch (errorOrException) {
-      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${errorOrException}`);
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${statusCode}`);
       return mountsCollection;
     }
   }
@@ -556,8 +557,9 @@ export class CharactersWorker {
         petsCollection.hashA = BigInt(hash64(hashA.join('.'))).toString(16);
 
       return petsCollection;
-    } catch (error) {
-      this.logger.error(`getPets: ${nameSlug}@${realmSlug}:${error}`);
+    } catch (errorOrException) {
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`getPets: ${nameSlug}@${realmSlug}:${statusCode}`);
       return petsCollection;
     }
   }
@@ -671,8 +673,9 @@ export class CharactersWorker {
       }
 
       return professions;
-    } catch (error) {
-      this.logger.error(`professions: ${nameSlug}@${realmSlug}:${error}`);
+    } catch (errorOrException) {
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`professions: ${nameSlug}@${realmSlug}:${statusCode}`);
       return professions;
     }
   }
@@ -711,8 +714,11 @@ export class CharactersWorker {
       summary.statusCode = 200;
 
       return summary;
-    } catch (error) {
-      this.logger.error(`getSummary: ${nameSlug}@${realmSlug}:${error}`);
+    } catch (errorOrException) {
+      summary.statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(
+        `getSummary: ${nameSlug}@${realmSlug}:${summary.statusCode}`,
+      );
       return summary;
     }
   }

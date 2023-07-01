@@ -41,6 +41,7 @@ export const characterAsGuildMember = async (
   if (!characterEntity) {
     characterEntity = repository.create({
       id: guildMember.id,
+      guid: guildMember.guid,
       name: guildMember.name,
       realm: guildEntity.realm,
       realmId: guildEntity.realmId,

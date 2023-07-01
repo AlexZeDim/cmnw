@@ -480,7 +480,8 @@ export class GuildsWorker {
               if (!isMember) return;
 
               const isGM = member.rank === 0;
-              const guid = toSlug(`${member.character.name}@${guildEntity.realm}`);
+              const realmSlug = member.character.realm.slug ?? guildEntity.realm;
+              const guid = toSlug(`${member.character.name}@${realmSlug}`);
               const level = member.character.level ? member.character.level : null;
               const characterClass = PLAYABLE_CLASS.has(
                 member.character.playable_class.id,

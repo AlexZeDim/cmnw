@@ -14,4 +14,5 @@ export enum CMNW_ENTITY_ENUM {
   ITEMS = 'items',
   MARKET = 'market',
   PROFILE = 'profile',
+  CONTRACTS = 'contracts',
 }

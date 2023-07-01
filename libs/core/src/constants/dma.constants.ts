@@ -30,6 +30,14 @@ export enum ORDER_FLOW {
   R = 'removed',
 }
 
+export enum CONTRACT_TYPE {
+  I = 'intraday',
+  D = 'day',
+  W = 'week',
+  M = 'month',
+  Y = 'year',
+}
+
 export enum MARKET_TYPE {
   A = 'AUCTION',
   C = 'COMMDTY',

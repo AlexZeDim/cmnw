@@ -18,3 +18,4 @@ export * from './realms.entity';
 /** DMA ENTITY */
 export * from './market.entity';
 export * from './items.entity';
+export * from './contract.entity';

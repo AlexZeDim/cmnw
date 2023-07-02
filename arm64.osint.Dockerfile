@@ -1,4 +1,8 @@
-FROM arm64v8/node:lts
+FROM arm64v8/node:lts AS node_arm
+
+FROM arm64v8/ubuntu:20.04
+
+COPY --from=node_arm / /
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT

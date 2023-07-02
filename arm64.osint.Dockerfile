@@ -32,14 +32,11 @@ RUN yarn install --network-timeout 1000000
 
 COPY . .
 
-RUN npm install -g @nestjs/cli \
-  && apt-get update \
-  && apt-get install -y wget gnupg ca-certificates \
-  && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-  && apt-get update \
-  && apt-get install -y google-chrome-stable
+RUN apt-get install -y wget libfreetype6 libfontconfig1 libxrender1 libXext6 libXdamage1 libXfixes-dev libXcomposite-dev libasound-dev libdbus-glib-1-dev libgtk2.0-0 libxt6 python-pip
 
+RUN npm install -g @nestjs/cli \
+  && add-apt-repository ppa:mozillateam/firefox-next \
+  && apt-get update
 
 # Installing playwright #
 RUN npx playwright install-deps --dry-run

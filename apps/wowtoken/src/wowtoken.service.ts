@@ -84,8 +84,8 @@ export class WowtokenService {
       });
 
       await this.marketRepository.save(wowTokenEntity);
-    } catch (errorException) {
-      this.logger.error(`${WowtokenService.name}: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`${WowtokenService.name}: ${errorOrException}`);
     }
   }
 }

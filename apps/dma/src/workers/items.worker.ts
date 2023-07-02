@@ -129,9 +129,9 @@ export class ItemsWorker {
       this.logger.log(`${ItemsWorker.name}: ${itemEntity.id} | ${itemEntity.name}`);
 
       return 200;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${ItemsWorker.name}: ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(errorOrException);
       return 500;
     }
   }

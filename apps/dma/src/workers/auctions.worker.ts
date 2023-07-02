@@ -64,7 +64,6 @@ export class AuctionsWorker {
         : args.auctionsTimestamp;
 
       const ifModifiedSince = DateTime.fromMillis(previousTimestamp ?? 0).toHTTP();
-
       const getMarketApiEndpoint = isCommdty
         ? '/data/wow/auctions/commodities'
         : `/data/wow/connected-realm/${args.connectedRealmId}/auctions`;
@@ -86,7 +85,7 @@ export class AuctionsWorker {
 
       await job.updateProgress(15);
 
-      const connectedRealmId = isCommdty ? args.connectedRealmId : 1;
+      const connectedRealmId = isCommdty ? 1 : args.connectedRealmId;
       const timestamp = DateTime.fromRFC2822(
         auctionsResponse.lastModified,
       ).toMillis();
@@ -110,8 +109,8 @@ export class AuctionsWorker {
               await this.marketRepository.save(ordersBulkAuctions);
               iterator += ordersBulkAuctions.length;
               this.logger.log(`ordersBatch: ${connectedRealmId}| ${iterator}`);
-            } catch (errorException) {
-              this.logger.error(`ordersBatch: ${errorException}`);
+            } catch (errorOrException) {
+              this.logger.error(`ordersBatch ${errorOrException}`);
             }
           }),
         ),
@@ -130,9 +129,9 @@ export class AuctionsWorker {
       await job.updateProgress(100);
 
       return 200;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${AuctionsWorker.name}: ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(errorOrException);
       return 500;
     }
   }

@@ -135,7 +135,7 @@ export class GoldService {
 
               marketOrders.push(marketEntity);
             } catch (error) {
-              this.logger.error(`indexGold: error ${error}`);
+              this.logger.error(`indexGold ${error}`);
             }
           }, 5),
         ),
@@ -149,14 +149,9 @@ export class GoldService {
       if (!ordersCount) return;
 
       await this.marketRepository.save(marketOrders);
-      await this.realmsRepository.update(
-        {
-          connectedRealmId: In(Array.from(connectedRealmIds)),
-        },
-        { goldTimestamp: timestamp },
-      );
-    } catch (errorException) {
-      this.logger.error(`indexGold: ${errorException}`);
+      await this.realmsRepository.update({}, { goldTimestamp: timestamp });
+    } catch (errorOrException) {
+      this.logger.error(`indexGold ${errorOrException}`);
     }
   }
 }

@@ -92,8 +92,8 @@ export class ItemsService implements OnApplicationBootstrap {
           }),
         ),
       );
-    } catch (errorException) {
-      this.logger.error(`indexItems: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexItems ${errorOrException}`);
     }
   }
 
@@ -112,8 +112,8 @@ export class ItemsService implements OnApplicationBootstrap {
 
       if (isItemsParseExists)
         await this.extendItemsParse(filesPath, `itemsparse.csv`);
-    } catch (errorException) {
-      this.logger.error(`buildItems: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`buildItems ${errorOrException}`);
     }
   }
 

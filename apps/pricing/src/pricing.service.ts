@@ -140,8 +140,8 @@ export class PricingService implements OnApplicationBootstrap {
         );
       }
 
-    } catch (errorException) {
-      this.logger.error(`libPricing: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`libPricing: ${errorOrException}`);
     }
   }
 
@@ -211,8 +211,8 @@ export class PricingService implements OnApplicationBootstrap {
         }
       }
 
-    } catch (errorException) {
-      this.logger.error(`indexPricing: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexPricing: ${errorOrException}`);
     }
   }
 
@@ -318,8 +318,8 @@ export class PricingService implements OnApplicationBootstrap {
           }
         }
       }
-    } catch (errorException) {
-      this.logger.error(`buildPricing: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`buildPricing: ${errorOrException}`);
     }
   }
 }

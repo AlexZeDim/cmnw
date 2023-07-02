@@ -481,7 +481,8 @@ export class CharactersWorker {
 
               const creatureId =
                 'creature_display' in pet ? pet.creature_display.id : null;
-              const petId = pet.id;
+              const characterPetId = pet.id;
+              const petId = pet.species.id;
               const petName = isNamed ? pet.name : pet.species.name;
               const petLevel = Number(pet.level) || 1;
               const isActive = 'is_active' in pet;
@@ -512,7 +513,8 @@ export class CharactersWorker {
 
                 if (!isPetExists) {
                   const petEntity = this.petsRepository.create({
-                    id: creatureId,
+                    id: petId,
+                    creatureId: creatureId,
                     name: pet.species.name,
                   });
 
@@ -523,6 +525,7 @@ export class CharactersWorker {
               if (!isAddedToCollection) {
                 const characterPetEntity = this.charactersPetsRepository.create({
                   petId,
+                  characterPetId,
                   creatureId,
                   petQuality,
                   breedId,

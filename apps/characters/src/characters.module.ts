@@ -4,7 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { RedisModule } from '@nestjs-modules/ioredis';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
 import {

@@ -6,12 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { difference, get } from 'lodash';
-import {
-  BadRequestException,
-  GatewayTimeoutException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 
 import {
   ACTION_LOG,

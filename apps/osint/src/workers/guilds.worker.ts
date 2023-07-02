@@ -1,11 +1,4 @@
-import { GatewayTimeoutException, Logger, NotFoundException } from '@nestjs/common';
-
-import {
-  BullQueueInject,
-  BullWorker,
-  BullWorkerProcess,
-} from '@anchan828/nest-bullmq';
-
+import { Logger, NotFoundException } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { Job, Queue } from 'bullmq';
 import { from, lastValueFrom } from 'rxjs';
@@ -14,6 +7,11 @@ import { difference, get, intersection } from 'lodash';
 import { snakeCase } from 'snake-case';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
+import {
+  BullQueueInject,
+  BullWorker,
+  BullWorkerProcess,
+} from '@anchan828/nest-bullmq';
 
 import {
   ACTION_LOG,

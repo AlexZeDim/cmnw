@@ -259,7 +259,7 @@ export class CharactersWorker {
      * and createOnlyUnique initiated
      */
     if (character.createOnlyUnique) {
-      throw new BadRequestException(
+      throw new Error(
         `createOnlyUnique: ${character.createOnlyUnique} | ${character.guid}`,
       );
     }

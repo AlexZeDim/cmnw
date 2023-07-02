@@ -760,10 +760,11 @@ export class GuildsWorker {
     /**
      * ...or guild was updated recently
      */
-    if (timestampNow - forceUpdate < guildEntity.updatedAt.getTime()) {
-      throw new GatewayTimeoutException(
-        `forceUpdate: ${forceUpdate} | ${guild.guid}`,
-      );
+    const updateSafe = timestampNow - forceUpdate;
+    const updatedAt = guildEntity.updatedAt.getTime();
+    const isUpdateSafe = updateSafe < updatedAt;
+    if (isUpdateSafe) {
+      throw new Error(`forceUpdate: ${forceUpdate} | ${guild.guid}`);
     }
 
     guildEntity.statusCode = 100;

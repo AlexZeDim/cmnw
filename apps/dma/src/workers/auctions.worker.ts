@@ -108,7 +108,7 @@ export class AuctionsWorker {
 
               await this.marketRepository.save(ordersBulkAuctions);
               iterator += ordersBulkAuctions.length;
-              this.logger.log(`ordersBatch: ${connectedRealmId}| ${iterator}`);
+              this.logger.log(`${connectedRealmId} | ${iterator}`);
             } catch (errorOrException) {
               this.logger.error(`ordersBatch ${errorOrException}`);
             }

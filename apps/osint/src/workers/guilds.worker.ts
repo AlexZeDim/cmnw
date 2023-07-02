@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  GatewayTimeoutException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { GatewayTimeoutException, Logger, NotFoundException } from '@nestjs/common';
 
 import {
   BullQueueInject,
@@ -760,9 +755,7 @@ export class GuildsWorker {
      * and createOnlyUnique initiated
      */
     if (guild.createOnlyUnique) {
-      throw new BadRequestException(
-        `createOnlyUnique: ${guild.createOnlyUnique} | ${guild.guid}`,
-      );
+      throw new Error(`createOnlyUnique: ${guild.createOnlyUnique} | ${guild.guid}`);
     }
     /**
      * ...or guild was updated recently

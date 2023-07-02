@@ -138,7 +138,10 @@ export class WowprogressService implements OnApplicationBootstrap {
   }
 
   private async unzipWowProgress(clearance = GLOBAL_KEY, files: string[]) {
-    const [keyEntity] = await getKeys(this.keysRepository, clearance);
+    let guildIteration = 0;
+
+    const keysEntities = await getKeys(this.keysRepository, clearance);
+    const keysLength = keysEntities.length;
     const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
 
     await lastValueFrom(
@@ -188,6 +191,9 @@ export class WowprogressService implements OnApplicationBootstrap {
 
               const guildGuid: string = toSlug(`${guild.name}@${realmEntity.slug}`);
 
+              const { client, secret, token } =
+                keysEntities[guildIteration % keysLength];
+
               await this.queueGuilds.add(
                 guildGuid,
                 {
@@ -198,9 +204,9 @@ export class WowprogressService implements OnApplicationBootstrap {
                   updatedBy: OSINT_SOURCE.WOW_PROGRESS,
                   forceUpdate: ms('4h'),
                   region: 'eu',
-                  clientId: keyEntity.client,
-                  clientSecret: keyEntity.secret,
-                  accessToken: keyEntity.token,
+                  clientId: client,
+                  clientSecret: secret,
+                  accessToken: token,
                   createOnlyUnique: true,
                   requestGuildRank: true,
                 },
@@ -209,6 +215,8 @@ export class WowprogressService implements OnApplicationBootstrap {
                   priority: 4,
                 },
               );
+
+              guildIteration = guildIteration + 1;
             }
           } catch (error) {
             this.logger.warn(`unzipWowProgress: ${error}`);

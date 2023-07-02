@@ -6,9 +6,12 @@ import {
   RaiderIoCharacterMappingKey,
   WowProgressProfile,
 } from '@app/core/types';
-import { Partials } from 'discord.js';
 
 export const MAX_LEVEL = 70;
+
+export const OSINT_CHARACTER_LIMIT = 10000;
+
+export const OSINT_GUILD_LIMIT = 10000;
 
 export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
@@ -102,7 +105,10 @@ export const CHARACTER_PROFILE_RIO_MAPPING = new Map<
   ['gender', 'gender'],
 ]);
 
-export const CHARACTER_HASH_FIELDS = new Map<CharacterHashFieldType, CharactersHashType>([
+export const CHARACTER_HASH_FIELDS = new Map<
+  CharacterHashFieldType,
+  CharactersHashType
+>([
   ['a', 'hashA'],
   ['b', 'hashB'],
   ['f', 'hashF'],

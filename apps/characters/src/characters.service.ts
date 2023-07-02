@@ -3,10 +3,11 @@ import {
   charactersQueue,
   getKeys,
   GLOBAL_OSINT_KEY,
+  OSINT_CHARACTER_LIMIT,
   OSINT_SOURCE,
 } from '@app/core';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -20,8 +21,12 @@ import { RegionIdOrName } from 'blizzapi';
 import ms from 'ms';
 
 @Injectable()
-export class CharactersService {
-  private readonly logger = new Logger(CharactersService.name, { timestamp: true });
+export class CharactersService implements OnApplicationBootstrap {
+  private offset = 0;
+  private keyEntities: KeysEntity[];
+  private readonly logger = new Logger(CharactersService.name, {
+    timestamp: true,
+  });
 
   constructor(
     @InjectRepository(KeysEntity)
@@ -31,6 +36,10 @@ export class CharactersService {
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue<CharacterJobQueue, number>,
   ) {}
+
+  async onApplicationBootstrap() {
+    await this.indexCharactersFromMongo(GLOBAL_OSINT_KEY);
+  }
 
   @Cron(CronExpression.EVERY_HOUR)
   private async indexCharactersFromMongo(
@@ -42,16 +51,21 @@ export class CharactersService {
         throw new Error(`${jobs} jobs found`);
       }
 
-      const keyEntities = await getKeys(this.keysRepository, clearance);
+      let characterIteration = 0;
+      this.keyEntities = await getKeys(this.keysRepository, clearance);
 
-      let i = 0;
-      let iteration = 0;
+      let length = this.keyEntities.length;
 
       await this.CharacterModel.find<Character>()
         .sort({ hash_b: 1 })
+        .skip(this.offset)
+        .limit(OSINT_CHARACTER_LIMIT)
         .cursor({ batchSize: 5000 })
         .eachAsync(
           async (character) => {
+            const { client, secret, token } =
+              this.keyEntities[characterIteration % length];
+
             const characterJobArgs = {
               guid: character._id,
               id: character.id,
@@ -78,27 +92,33 @@ export class CharactersService {
               petsNumber: character.pets_score,
               lastModified: character.last_modified,
               region: <RegionIdOrName>'eu',
-              clientId: keyEntities[i].client,
-              clientSecret: keyEntities[i].secret,
-              accessToken: keyEntities[i].token,
+              clientId: client,
+              clientSecret: secret,
+              accessToken: token,
               createdBy: OSINT_SOURCE.CHARACTER_INDEX,
               updatedBy: OSINT_SOURCE.CHARACTER_INDEX,
               requestGuildRank: false,
               createOnlyUnique: false,
               forceUpdate: ms('12h'),
-              iteration: iteration,
+              iteration: characterIteration,
             };
 
             await this.queue.add(character._id, characterJobArgs, {
               jobId: character._id,
               priority: 5,
             });
-            i++;
-            iteration++;
-            if (i >= keyEntities.length) i = 0;
+
+            characterIteration = characterIteration + 1;
+            const isKeyRequest = characterIteration % 1000 == 0;
+            if (isKeyRequest) {
+              this.keyEntities = await getKeys(this.keysRepository, clearance);
+              length = this.keyEntities.length;
+            }
           },
           { parallel: 50 },
         );
+
+      this.offset = this.offset + OSINT_CHARACTER_LIMIT;
     } catch (errorException) {
       this.logger.error(`indexCharactersFromMongo: ${errorException}`);
     }

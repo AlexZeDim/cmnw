@@ -17,7 +17,7 @@ export class CharactersPetsEntity {
   readonly uuid: string;
 
   @Column({
-    nullable: false,
+    nullable: true,
     type: 'int',
     name: 'pet_id',
   })

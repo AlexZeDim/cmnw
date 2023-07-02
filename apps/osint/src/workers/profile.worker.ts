@@ -148,6 +148,7 @@ export class ProfileWorker {
         warcraftLogsProfile[difficulty.fieldName] = parseFloat(value);
       }
 
+      warcraftLogsProfile.updatedByWarcraftLogs = new Date();
       return warcraftLogsProfile;
     } catch (errorOrException) {
       this.logger.error(`getWarcraftLogs ${name}@${realmSlug}:${errorOrException}`);
@@ -204,6 +205,7 @@ export class ProfileWorker {
         }),
       );
 
+      wowProgressProfile.updatedByWowProgress = new Date();
       return wowProgressProfile;
     } catch (errorOrException) {
       this.logger.error(
@@ -255,6 +257,7 @@ export class ProfileWorker {
       const [season] = raiderIoProfile.mythic_plus_scores_by_season;
 
       rioProfileCharacter.raiderIoScore = season.scores.all;
+      rioProfileCharacter.updatedByRaiderIo = new Date();
 
       return rioProfileCharacter;
     } catch (errorOrException) {

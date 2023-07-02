@@ -144,6 +144,12 @@ export class CharactersProfileEntity {
   lfgStatus: LFG_STATUS;
 
   @Column('timestamp with time zone', {
+    name: 'modified_by_wcl',
+    nullable: true,
+  })
+  updatedByWarcraftLogs: Date;
+
+  @Column('timestamp with time zone', {
     name: 'modified_by_rio',
     nullable: true,
   })

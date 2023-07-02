@@ -68,7 +68,7 @@ export class WowtokenService {
 
       if (isWowTokenExists) {
         this.logger.debug(
-          `${WowtokenService.name}: Token exists on timestamp ${timestamp} | ${lastModified}`,
+          `Token exists on timestamp ${timestamp} | ${lastModified}`,
         );
         return;
       }
@@ -85,7 +85,7 @@ export class WowtokenService {
 
       await this.marketRepository.save(wowTokenEntity);
     } catch (errorOrException) {
-      this.logger.error(`${WowtokenService.name}: ${errorOrException}`);
+      this.logger.error(errorOrException);
     }
   }
 }

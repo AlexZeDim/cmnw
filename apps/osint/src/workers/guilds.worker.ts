@@ -142,7 +142,7 @@ export class GuildsWorker {
       return guildEntity.statusCode;
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(`${GuildsWorker.name}, ${errorOrException}`);
+      this.logger.error(`${errorOrException}`);
       return 500;
     }
   }

@@ -187,7 +187,7 @@ export class CharactersWorker {
       return characterEntity.statusCode;
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(`${CharactersWorker.name}: ${errorOrException}`);
+      this.logger.error(errorOrException);
       return 500;
     }
   }

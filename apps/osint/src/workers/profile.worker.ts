@@ -110,7 +110,7 @@ export class ProfileWorker {
       await this.charactersProfileRepository.save(profileEntity);
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(`${ProfileWorker.name}: ${errorOrException}`);
+      this.logger.error(errorOrException);
       return 500;
     }
   }
@@ -150,7 +150,7 @@ export class ProfileWorker {
 
       return warcraftLogsProfile;
     } catch (errorOrException) {
-      this.logger.error(`getWarcraftLogs: ${name}@${realmSlug}:${errorOrException}`);
+      this.logger.error(`getWarcraftLogs ${name}@${realmSlug}:${errorOrException}`);
       return warcraftLogsProfile;
     }
   }
@@ -207,7 +207,7 @@ export class ProfileWorker {
       return wowProgressProfile;
     } catch (errorOrException) {
       this.logger.error(
-        `getWowProgressProfile: ${name}@${realmSlug}:${errorOrException}`,
+        `getWowProgressProfile ${name}@${realmSlug}:${errorOrException}`,
       );
       return wowProgressProfile;
     }
@@ -258,7 +258,7 @@ export class ProfileWorker {
 
       return rioProfileCharacter;
     } catch (errorOrException) {
-      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorOrException}`);
+      this.logger.error(`getRaiderIO ${name}@${realmSlug}:${errorOrException}`);
       return rioProfileCharacter;
     }
   }

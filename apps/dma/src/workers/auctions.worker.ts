@@ -63,7 +63,7 @@ export class AuctionsWorker {
         ? args.commoditiesTimestamp
         : args.auctionsTimestamp;
 
-      const ifModifiedSince = DateTime.fromMillis(previousTimestamp).toHTTP();
+      const ifModifiedSince = DateTime.fromMillis(previousTimestamp ?? 0).toHTTP();
 
       const getMarketApiEndpoint = isCommdty
         ? '/data/wow/auctions/commodities'

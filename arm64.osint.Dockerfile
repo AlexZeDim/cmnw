@@ -30,11 +30,6 @@ COPY . .
 
 RUN npm install -g @nestjs/cli
 
-RUN apt install --no-install-recommends -y \
-    libatk1.0-0 libglib2.0-0 libnss3 libatk-bridge2.0-0 libcups2 \
-    libdrm2 libdbus-1-3 libxkbcommon0 libxcomposite1 libxdamage1 libxext6 libwayland-client0 \
-    libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0
-
 RUN npx playwright install-deps --dry-run
 RUN npx playwright install
 

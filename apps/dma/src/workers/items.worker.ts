@@ -126,9 +126,7 @@ export class ItemsWorker {
       }
 
       await this.itemsRepository.save(itemEntity);
-      this.logger.log(
-        `${ItemsWorker.name}: item ${itemEntity.name} | ${itemEntity.id}`,
-      );
+      this.logger.log(`${ItemsWorker.name}: ${itemEntity.id} | ${itemEntity.name}`);
 
       return 200;
     } catch (errorException) {

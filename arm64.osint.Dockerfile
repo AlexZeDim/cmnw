@@ -30,6 +30,7 @@ COPY . .
 
 RUN npm install -g @nestjs/cli
 
+# Installing playwright #
 RUN npx playwright install-deps --dry-run
 RUN npx playwright install
 

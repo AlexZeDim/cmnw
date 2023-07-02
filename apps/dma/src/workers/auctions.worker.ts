@@ -20,6 +20,7 @@ import {
   ICommodityOrder,
   IPetList,
   isAuctions,
+  MARKET_TYPE,
   toGold,
   transformPrice,
 } from '@app/core';
@@ -186,6 +187,7 @@ export class AuctionsWorker {
 
       const quantity = 'quantity' in order ? (order as ICommodityOrder).quantity : 1;
 
+      marketEntity.type = isCommdty ? MARKET_TYPE.C : MARKET_TYPE.C;
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;

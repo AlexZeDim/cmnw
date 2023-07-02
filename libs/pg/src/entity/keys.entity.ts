@@ -1,4 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg/enum';
+import { KEY_STATUS } from '@app/core';
 import {
   Column,
   CreateDateColumn,
@@ -34,6 +35,14 @@ export class KeysEntity {
   token?: string;
 
   @Column({
+    default: 0,
+    nullable: true,
+    type: 'int',
+    name: 'error_counts',
+  })
+  errorCounts: number;
+
+  @Column({
     default: null,
     nullable: true,
     type: 'int',
@@ -47,6 +56,21 @@ export class KeysEntity {
     type: 'character varying',
   })
   tags: string[];
+
+  @Column({
+    default: null,
+    nullable: true,
+    type: 'varchar',
+  })
+  status: KEY_STATUS;
+
+  @CreateDateColumn({
+    type: 'timestamp with time zone',
+    name: 'reset_at',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  resetAt?: Date;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

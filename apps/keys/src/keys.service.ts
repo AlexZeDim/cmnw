@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
 import { ArrayContains, Repository } from 'typeorm';
 import {
+  BlizzardApiKeys,
   GLOBAL_BLIZZARD_KEY,
   GLOBAL_WCL_KEY,
   IWarcraftLogsToken,
@@ -84,8 +85,7 @@ export class KeysService implements OnApplicationBootstrap {
           keyEntity.resetAt = now.plus({ hour: 2 }).toJSDate();
         }
 
-        // TODO type
-        const { data } = await this.httpService.axiosRef.request<any>({
+        const { data } = await this.httpService.axiosRef.request<BlizzardApiKeys>({
           url: 'https://eu.battle.net/oauth/token',
           method: 'post',
           headers: {

@@ -109,7 +109,7 @@ export class GoldService {
               const isQuantityLimit = quantity > 15_000_000;
               if (isQuantityLimit) return;
 
-              let faction: FACTION = FACTION.ANY;
+              let faction = FACTION.ANY;
               const isOnline = order.status;
               const isHorde = [FACTION.H, 'Орда'].includes(order.faction);
               const isAlliance = [FACTION.A, 'Альянсa', 'Альянс'].includes(

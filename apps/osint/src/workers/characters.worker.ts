@@ -31,6 +31,7 @@ import {
   EVENT_LOG,
   findRealm,
   IMounts,
+  incErrorCount,
   IPets,
   IPetType,
   IProfessions,
@@ -304,6 +305,13 @@ export class CharactersWorker {
       return characterStatus;
     } catch (errorOrException) {
       characterStatus.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = characterStatus.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+
       if (status)
         throw new NotFoundException(
           `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
@@ -716,6 +724,12 @@ export class CharactersWorker {
       return summary;
     } catch (errorOrException) {
       summary.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = summary.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
       this.logger.error(
         `getSummary: ${nameSlug}@${realmSlug}:${summary.statusCode}`,
       );

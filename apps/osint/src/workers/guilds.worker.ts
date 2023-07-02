@@ -35,6 +35,7 @@ import {
   ICharacterGuildMember,
   IGuildRoster,
   IGuildSummary,
+  incErrorCount,
   IRGuildRoster,
   isGuildRoster,
   OSINT_SOURCE,
@@ -447,6 +448,13 @@ export class GuildsWorker {
       return summary;
     } catch (errorOrException) {
       summary.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = summary.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+
       this.logger.error(
         `getSummary: ${guildNameSlug}@${realmSlug}:${summary.statusCode}`,
       );
@@ -560,6 +568,14 @@ export class GuildsWorker {
       return roster;
     } catch (errorOrException) {
       roster.statusCode = get(errorOrException, 'response.status', 418);
+      roster.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = roster.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+
       this.logger.error(`roster: ${guildEntity.guid}:${roster.statusCode}`);
       return roster;
     }

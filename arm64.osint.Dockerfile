@@ -36,7 +36,8 @@ RUN apt-get install -y wget libfreetype6 libfontconfig1 libxrender1 libXext6 lib
 
 RUN npm install -g @nestjs/cli \
   && add-apt-repository ppa:mozillateam/firefox-next \
-  && apt-get update
+  && apt-get update \
+  && apt-get install -y --no-install-recommends firefox
 
 # Installing playwright #
 RUN npx playwright install-deps --dry-run

@@ -51,8 +51,8 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
         .eachAsync(async (realm: Realm) => {
           await this.indexPage(warcraftLogsConfig, realm);
         });
-    } catch (errorException) {
-      this.logger.error(`${WarcraftlogsService.name},${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`${WarcraftlogsService.name},${errorOrException}`);
     }
   }
 
@@ -122,8 +122,8 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
           break;
         }
       }
-    } catch (errorException) {
-      this.logger.error(`indexLogs: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexLogs: ${errorOrException}`);
     }
   }
 
@@ -203,12 +203,12 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
             }
 
             this.logger.log(`Log: ${log._id}, status: ${log.status}`);
-          } catch (errorException) {
-            this.logger.error(`Log: ${log._id}, ${errorException}`);
+          } catch (errorOrException) {
+            this.logger.error(`Log: ${log._id}, ${errorOrException}`);
           }
         });
-    } catch (errorException) {
-      this.logger.error(`indexLogs: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexLogs: ${errorOrException}`);
     }
   }
 
@@ -249,8 +249,8 @@ export class WarcraftlogsService implements OnApplicationBootstrap {
       await this.queue.addBulk(charactersToJobs);
       this.logger.log(`addCharacterToQueue, add ${charactersToJobs.length} characters to characterQueue`);
       return true;
-    } catch (errorException) {
-      this.logger.error(`addCharacterToQueue: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`addCharacterToQueue: ${errorOrException}`);
       return false;
     }
   }

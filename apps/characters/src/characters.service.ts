@@ -119,8 +119,8 @@ export class CharactersService implements OnApplicationBootstrap {
         );
 
       this.offset = this.offset + OSINT_CHARACTER_LIMIT;
-    } catch (errorException) {
-      this.logger.error(`indexCharactersFromMongo: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexCharactersFromMongo ${errorOrException}`);
     }
   }
 }

@@ -87,8 +87,8 @@ export class RealmsService implements OnModuleInit {
           },
         );
       }
-    } catch (errorException) {
-      this.logger.error(`indexRealms: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexRealms: ${errorOrException}`);
     }
   }
 

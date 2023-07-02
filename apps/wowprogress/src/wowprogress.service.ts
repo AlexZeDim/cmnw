@@ -88,8 +88,8 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       await fs.rm(dirPath, { recursive: true, force: true });
       this.logger.warn(`indexWowProgress: directory ${dirPath} has been removed!`);
-    } catch (errorException) {
-      this.logger.error(`indexWowProgress: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexWowProgress: ${errorOrException}`);
     }
   }
 
@@ -399,8 +399,8 @@ export class WowprogressService implements OnApplicationBootstrap {
         ),
       );
       this.logger.log('————————————————————————————————————');
-    } catch (errorException) {
-      this.logger.error(`indexWowProgressLfg: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexWowProgressLfg: ${errorOrException}`);
     }
   }
 
@@ -444,8 +444,8 @@ export class WowprogressService implements OnApplicationBootstrap {
       );
 
       return wpCharactersQueue;
-    } catch (errorException) {
-      this.logger.error(`getWowProgressLfg: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getWowProgressLfg: ${errorOrException}`);
       return wpCharactersQueue;
     }
   }

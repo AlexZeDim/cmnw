@@ -144,8 +144,8 @@ export class RealmsWorker {
 
       await this.realmsRepository.save(realmEntity);
       await job.updateProgress(100);
-    } catch (errorException) {
-      this.logger.error(`${RealmsWorker.name}: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`${RealmsWorker.name}: ${errorOrException}`);
     }
   }
 }

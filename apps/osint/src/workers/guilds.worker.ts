@@ -140,9 +140,9 @@ export class GuildsWorker {
 
       await job.updateProgress(100);
       return guildEntity.statusCode;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${GuildsWorker.name}, ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(`${GuildsWorker.name}, ${errorOrException}`);
       return 500;
     }
   }
@@ -248,7 +248,7 @@ export class GuildsWorker {
                     ),
                   ]);
                 }
-              } catch (errorException) {
+              } catch (errorOrException) {
                 this.logger.error(
                   `logs: error with ${guildEntity.guid} on intersection`,
                 );
@@ -319,7 +319,7 @@ export class GuildsWorker {
                     },
                   ),
                 ]);
-              } catch (errorException) {
+              } catch (errorOrException) {
                 this.logger.error(
                   `logs: error with ${guildEntity.guid} on intersection`,
                 );
@@ -379,7 +379,7 @@ export class GuildsWorker {
                     },
                   ),
                 ]);
-              } catch (errorException) {
+              } catch (errorOrException) {
                 this.logger.error(
                   `logs: error with ${guildEntity.guid} on intersection`,
                 );
@@ -388,8 +388,8 @@ export class GuildsWorker {
           ),
         );
       }
-    } catch (errorException) {
-      this.logger.error(`updateRoster: ${guildEntity.guid}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`updateRoster: ${guildEntity.guid}:${errorOrException}`);
     }
   }
 
@@ -549,9 +549,9 @@ export class GuildsWorker {
                 rank: member.rank,
                 level,
               });
-            } catch (errorException) {
+            } catch (errorOrException) {
               this.logger.error(
-                `member: ${member.character.id} from ${guildEntity.guid}:${errorException}`,
+                `member: ${member.character.id} from ${guildEntity.guid}:${errorOrException}`,
               );
             }
           }, 20),

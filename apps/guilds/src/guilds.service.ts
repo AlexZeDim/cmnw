@@ -86,8 +86,8 @@ export class GuildsService {
             length = this.keyEntities.length;
           }
         });
-    } catch (errorException) {
-      this.logger.error(`indexGuildsFromMongo: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexGuildsFromMongo ${errorOrException}`);
     }
   }
 }

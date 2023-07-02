@@ -1,5 +1,7 @@
 FROM arm64v8/node:lts
 
+RUN cat /etc/os-release
+
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
@@ -31,6 +33,7 @@ COPY . .
 RUN npm install -g @nestjs/cli
 
 RUN npx playwright install-deps --dry-run
+RUN npx playwright install
 
 RUN nest build characters \
   && nest build guilds \

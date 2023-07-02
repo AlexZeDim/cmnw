@@ -35,7 +35,7 @@ COPY . .
 RUN apt-get install -y wget libfreetype6 libfontconfig1 libxrender1 libXext6 libXdamage1 libXfixes-dev libXcomposite-dev libasound-dev libdbus-glib-1-dev libgtk2.0-0 libxt6 python-pip
 
 RUN npm install -g @nestjs/cli \
-  && add-apt-repository ppa:mozillateam/firefox-next \
+  && add-apt-repository ppa:mozillateam/ppa \
   && apt-get update \
   && apt-get install -y --no-install-recommends firefox
 

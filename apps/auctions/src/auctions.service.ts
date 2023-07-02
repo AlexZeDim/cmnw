@@ -31,9 +31,11 @@ export class AuctionsService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    await this.indexAuctions(GLOBAL_DMA_KEY);
     await this.indexCommodity(GLOBAL_DMA_KEY);
   }
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);

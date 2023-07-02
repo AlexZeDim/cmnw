@@ -30,6 +30,8 @@ COPY . .
 
 RUN npm install -g @nestjs/cli
 
+RUN npx playwright install-deps --dry-run
+
 RUN nest build characters \
   && nest build guilds \
   && nest build keys \

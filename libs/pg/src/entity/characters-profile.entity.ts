@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: CMNW_ENTITY_ENUM.PROFILE })
+@Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_PROFILE })
 export class CharactersProfileEntity {
   @PrimaryColumn('varchar')
   readonly guid: string;

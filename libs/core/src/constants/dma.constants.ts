@@ -108,7 +108,7 @@ export const PROFESSION_TICKER: Map<number, string> = new Map([
 export const GOLD_ITEM_ENTITY = {
   id: 1,
   name: 'Gold',
-  names: JSON.stringify({
+  names: {
     en_US: 'Gold (Currency)',
     es_MX: 'Gold (Currency)',
     pt_BR: 'Gold (Currency)',
@@ -121,7 +121,7 @@ export const GOLD_ITEM_ENTITY = {
     ko_KR: 'Gold (Currency)',
     zh_TW: 'Gold (Currency)',
     zh_CN: 'Gold (Currency)',
-  }),
+  },
   quality: 'Currency',
   itemClass: 'Currency',
   itemSubClass: 'Currency',

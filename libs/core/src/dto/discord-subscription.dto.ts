@@ -8,7 +8,6 @@ import {
   SWAGGER_CHARACTER_FACTION,
   SWAGGER_CHARACTER_LANGUAGES,
   SWAGGER_CHARACTER_RIO,
-  SWAGGER_CHARACTER_WCL,
   SWAGGER_DISCORD_AUTHOR_ID,
   SWAGGER_DISCORD_AUTHOR_NAME,
   SWAGGER_DISCORD_CHANNEL_ID,
@@ -22,9 +21,10 @@ import {
   SWAGGER_CHARACTER_ILVL,
   SWAGGER_REALMS_LOCALE,
   SWAGGER_DISCORD_ID,
+  SWAGGER_MYTHIC_LOGS,
 } from '@app/core';
 
-export class DiscordSubscriptionDto implements IDiscordSubscription{
+export class DiscordSubscriptionDto implements IDiscordSubscription {
   @ApiProperty(SWAGGER_DISCORD_ID)
   readonly _id: string;
 
@@ -73,9 +73,9 @@ export class DiscordSubscriptionDto implements IDiscordSubscription{
   @IsOptional()
   readonly rio_score: number;
 
-  @ApiProperty(SWAGGER_CHARACTER_WCL)
+  @ApiProperty(SWAGGER_MYTHIC_LOGS)
   @IsOptional()
-  readonly wcl_percentile: number;
+  readonly mythicLogs: number;
 
   @ApiProperty(SWAGGER_CHARACTER_FACTION)
   @IsOptional()

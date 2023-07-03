@@ -64,7 +64,7 @@ export class AuctionsWorker {
         ? args.commoditiesTimestamp
         : args.auctionsTimestamp;
 
-      const ifModifiedSince = DateTime.fromMillis(previousTimestamp ?? 0).toHTTP();
+      const ifModifiedSince = DateTime.fromMillis(previousTimestamp).toHTTP();
       const getMarketApiEndpoint = isCommdty
         ? '/data/wow/auctions/commodities'
         : `/data/wow/connected-realm/${args.connectedRealmId}/auctions`;
@@ -117,9 +117,9 @@ export class AuctionsWorker {
         ),
       );
 
-      const updateQuery = isCommdty
-        ? { auctionsTimestamp: timestamp }
-        : { commoditiesTimestamp: timestamp };
+      const updateQuery: Partial<RealmsEntity> = isCommdty
+        ? { commoditiesTimestamp: timestamp }
+        : { auctionsTimestamp: timestamp };
 
       await job.updateProgress(90);
       await this.realmsRepository.update(
@@ -187,7 +187,7 @@ export class AuctionsWorker {
 
       const quantity = 'quantity' in order ? (order as ICommodityOrder).quantity : 1;
 
-      marketEntity.type = isCommdty ? MARKET_TYPE.C : MARKET_TYPE.C;
+      marketEntity.type = isCommdty ? MARKET_TYPE.C : MARKET_TYPE.A;
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;

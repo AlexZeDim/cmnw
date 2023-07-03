@@ -32,6 +32,8 @@ RUN yarn install --network-timeout 1000000
 
 COPY . .
 
+RUN add-apt-repository ppa:ubuntu-mozilla-security/ppa
+RUN apt-get update
 RUN apt install firefox
 RUN apt install chromium-browser
 

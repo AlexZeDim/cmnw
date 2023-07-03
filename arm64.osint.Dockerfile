@@ -34,10 +34,7 @@ COPY . .
 
 RUN apt-get install -y wget libfreetype6 libfontconfig1 libxrender1
 
-RUN npm install -g @nestjs/cli \
-  && add-apt-repository ppa:mozillateam/ppa \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends firefox
+RUN npm install -g @nestjs/cli
 
 # Installing playwright #
 RUN npx playwright install-deps --dry-run

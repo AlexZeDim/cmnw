@@ -27,6 +27,7 @@ import {
   CHARACTER_PROFILE_RIO_MAPPING,
   RaiderIoCharacterMappingKey,
   findRealm,
+  capitalize,
 } from '@app/core';
 
 @BullWorker({
@@ -243,7 +244,8 @@ export class ProfileWorker {
         const fieldProfile = CHARACTER_PROFILE_RIO_MAPPING.get(
           <RaiderIoCharacterMappingKey>key,
         );
-        rioProfileCharacter[fieldProfile] = value;
+        rioProfileCharacter[fieldProfile] =
+          fieldProfile === 'gender' ? capitalize(value) : value;
       });
 
       const realmEntity = await findRealm(

@@ -32,7 +32,9 @@ RUN yarn install --network-timeout 1000000
 
 COPY . .
 
-RUN apt-get install -y wget libfreetype6 libfontconfig1 libxrender1
+RUN apt-get install -y wget libfreetype6 libfontconfig1 libxrender1 firefox-geckodriver
+RUN add-apt-repository ppa:mozillateam/firefox-next
+RUN apt-get update
 
 RUN npm install -g @nestjs/cli
 

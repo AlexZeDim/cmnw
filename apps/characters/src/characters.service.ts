@@ -8,9 +8,6 @@ import {
 } from '@app/core';
 
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Character } from '@app/mongo';
-import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -34,69 +31,12 @@ export class CharactersService implements OnApplicationBootstrap {
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(CharactersEntity)
     private readonly charactersRepository: Repository<CharactersEntity>,
-    @InjectModel(Character.name)
-    private readonly CharacterModel: Model<Character>,
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue<CharacterJobQueue, number>,
   ) {}
 
   async onApplicationBootstrap() {
-    await this.indexCharactersFromMongo();
-  }
-
-  private async indexCharactersFromMongo(): Promise<void> {
-    try {
-      await this.CharacterModel.find<Character>()
-        .sort({ hash_b: 1 })
-        .cursor({ batchSize: 5000 })
-        .eachAsync(
-          async (character) => {
-            const isCharacterExists = await this.charactersRepository.exist({
-              where: { guid: character._id },
-            });
-            if (!isCharacterExists) {
-              const characterEntity = this.charactersRepository.create({
-                guid: character._id,
-                id: character.id,
-                name: character.name,
-                realmId: <number>character.realm_id,
-                realmName: character.realm_name,
-                realm: character.realm,
-                guild: character.guild,
-                guildId: character.guild_guid,
-                guildGuid: character.guild_id,
-                guildRank: character.guild_rank,
-                hashA: character.hash_a,
-                hashB: character.hash_b,
-                race: character.race,
-                class: character.character_class,
-                specialization: character.active_spec,
-                gender: character.gender,
-                faction: character.faction,
-                level: character.level,
-                statusCode: 100,
-                avatarImage: character.avatar,
-                mainImage: character.main,
-                insetImage: character.inset,
-                achievementPoints: character.achievement_points,
-                averageItemLevel: character.average_item_level,
-                equippedItemLevel: character.equipped_item_level,
-                mountsNumber: character.mounts_score,
-                petsNumber: character.pets_score,
-                lastModified: character.last_modified,
-                createdBy: OSINT_SOURCE.CHARACTER_INDEX,
-                updatedBy: OSINT_SOURCE.CHARACTER_INDEX,
-              });
-              await this.charactersRepository.save(characterEntity);
-            }
-          },
-          { parallel: 50 },
-        );
-
-      this.offset = this.offset + OSINT_CHARACTER_LIMIT;
-    } catch (errorOrException) {
-      this.logger.error(`indexCharactersFromMongo ${errorOrException}`);
-    }
+    await this.indexCharacters(GLOBAL_OSINT_KEY);
   }
 
   @Cron(CronExpression.EVERY_HOUR)

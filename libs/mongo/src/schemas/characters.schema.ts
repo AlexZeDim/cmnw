@@ -88,7 +88,7 @@ export class Character extends Document {
   guild: string;
 
   @Prop({ type: String, lowercase: true, index: true, ref: 'Guild' })
-  guild_id: string | Guild;
+  guild_id: string;
 
   @Prop({ type: Number })
   guild_guid: number;

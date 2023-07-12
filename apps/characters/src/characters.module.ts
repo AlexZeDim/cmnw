@@ -5,7 +5,7 @@ import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeysEntity } from '@app/pg';
+import { CharactersEntity, KeysEntity } from '@app/pg';
 import {
   mongoConfig,
   mongoOptionsConfig,
@@ -28,7 +28,7 @@ import {
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
-    TypeOrmModule.forFeature([KeysEntity]),
+    TypeOrmModule.forFeature([KeysEntity, CharactersEntity]),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
       { name: Log.name, schema: LogsSchema },

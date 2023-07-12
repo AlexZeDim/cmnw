@@ -14,10 +14,11 @@ import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { KeysEntity } from '@app/pg';
+import { CharactersEntity, KeysEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegionIdOrName } from 'blizzapi';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 import ms from 'ms';
 
 @Injectable()
@@ -31,6 +32,8 @@ export class CharactersService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(CharactersEntity)
+    private readonly charactersRepository: Repository<CharactersEntity>,
     @InjectModel(Character.name)
     private readonly CharacterModel: Model<Character>,
     @BullQueueInject(charactersQueue.name)
@@ -38,11 +41,66 @@ export class CharactersService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.indexCharactersFromMongo(GLOBAL_OSINT_KEY);
+    await this.indexCharactersFromMongo();
+  }
+
+  private async indexCharactersFromMongo(): Promise<void> {
+    try {
+      await this.CharacterModel.find<Character>()
+        .sort({ hash_b: 1 })
+        .cursor({ batchSize: 5000 })
+        .eachAsync(
+          async (character) => {
+            const isCharacterExists = await this.charactersRepository.exist({
+              where: { guid: character._id },
+            });
+            if (!isCharacterExists) {
+              const characterEntity = this.charactersRepository.create({
+                guid: character._id,
+                id: character.id,
+                name: character.name,
+                realmId: <number>character.realm_id,
+                realmName: character.realm_name,
+                realm: character.realm,
+                guild: character.guild,
+                guildId: character.guild_guid,
+                guildGuid: character.guild_id,
+                guildRank: character.guild_rank,
+                hashA: character.hash_a,
+                hashB: character.hash_b,
+                race: character.race,
+                class: character.character_class,
+                specialization: character.active_spec,
+                gender: character.gender,
+                faction: character.faction,
+                level: character.level,
+                statusCode: 100,
+                avatarImage: character.avatar,
+                mainImage: character.main,
+                insetImage: character.inset,
+                achievementPoints: character.achievement_points,
+                averageItemLevel: character.average_item_level,
+                equippedItemLevel: character.equipped_item_level,
+                mountsNumber: character.mounts_score,
+                petsNumber: character.pets_score,
+                lastModified: character.last_modified,
+                createdBy: OSINT_SOURCE.CHARACTER_INDEX,
+                updatedBy: OSINT_SOURCE.CHARACTER_INDEX,
+              });
+              await this.charactersRepository.save(characterEntity);
+            }
+          },
+          { parallel: 50 },
+        );
+
+      this.offset = this.offset + OSINT_CHARACTER_LIMIT;
+    } catch (errorOrException) {
+      this.logger.error(`indexCharactersFromMongo ${errorOrException}`);
+    }
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  private async indexCharactersFromMongo(
+  private async indexCharacters(
     clearance: string = GLOBAL_OSINT_KEY,
   ): Promise<void> {
     try {
@@ -56,41 +114,20 @@ export class CharactersService implements OnApplicationBootstrap {
 
       let length = this.keyEntities.length;
 
-      await this.CharacterModel.find<Character>()
-        .sort({ hash_b: 1 })
-        .skip(this.offset)
-        .limit(OSINT_CHARACTER_LIMIT)
-        .cursor({ batchSize: 5000 })
-        .eachAsync(
-          async (character) => {
+      const characters = await this.charactersRepository.find({
+        order: { hashB: 'ASC' },
+        take: OSINT_CHARACTER_LIMIT,
+        skip: this.offset,
+      });
+
+      await lastValueFrom(
+        from(characters).pipe(
+          mergeMap(async (character) => {
             const { client, secret, token } =
               this.keyEntities[characterIteration % length];
 
             const characterJobArgs = {
-              guid: character._id,
-              id: character.id,
-              name: character.name,
-              realmId: <number>character.realm_id,
-              realmName: character.realm_name,
-              realm: character.realm,
-              guild: character.guild,
-              guildId: character.guild_guid,
-              guidGuid: character.guild_id,
-              guildRank: character.guild_rank,
-              hashA: character.hash_a,
-              hashB: character.hash_b,
-              race: character.race,
-              class: character.character_class,
-              specialization: character.active_spec,
-              gender: character.gender,
-              faction: character.faction,
-              level: character.level,
-              achievementPoints: character.achievement_points,
-              averageItemLevel: character.average_item_level,
-              equippedItemLevel: character.equipped_item_level,
-              mountsNumber: character.mounts_score,
-              petsNumber: character.pets_score,
-              lastModified: character.last_modified,
+              ...character,
               region: <RegionIdOrName>'eu',
               clientId: client,
               clientSecret: secret,
@@ -103,8 +140,8 @@ export class CharactersService implements OnApplicationBootstrap {
               iteration: characterIteration,
             };
 
-            await this.queue.add(character._id, characterJobArgs, {
-              jobId: character._id,
+            await this.queue.add(character.guid, characterJobArgs, {
+              jobId: character.guid,
               priority: 5,
             });
 
@@ -114,13 +151,11 @@ export class CharactersService implements OnApplicationBootstrap {
               this.keyEntities = await getKeys(this.keysRepository, clearance);
               length = this.keyEntities.length;
             }
-          },
-          { parallel: 50 },
-        );
-
-      this.offset = this.offset + OSINT_CHARACTER_LIMIT;
+          }),
+        ),
+      );
     } catch (errorOrException) {
-      this.logger.error(`indexCharactersFromMongo ${errorOrException}`);
+      this.logger.error(`indexCharacters ${errorOrException}`);
     }
   }
 }

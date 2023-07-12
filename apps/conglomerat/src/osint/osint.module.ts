@@ -22,7 +22,6 @@ import {
   SubscriptionsSchema,
 } from '@app/mongo';
 
-
 @Module({
   imports: [
     MongooseModule.forRoot(mongoConfig.connectionString),
@@ -44,8 +43,14 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
+    BullModule.registerQueue({
+      queueName: charactersQueue.name,
+      options: charactersQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: guildsQueue.name,
+      options: guildsQueue.options,
+    }),
   ],
   controllers: [OsintController],
   providers: [OsintService],

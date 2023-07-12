@@ -33,7 +33,7 @@ RUN yarn install --network-timeout 1000000
 COPY . .
 
 RUN apt update
-RUN apt install chromium-browser
+RUN apt install -y chromium-browser
 
 RUN npm install -g @nestjs/cli
 

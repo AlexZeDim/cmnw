@@ -32,11 +32,8 @@ RUN yarn install --network-timeout 1000000
 
 COPY . .
 
-RUN sudo apt update
-RUN sudo add-apt-repository ppa:ubuntu-mozilla-security/ppa
-RUN sudo apt-get update
-RUN sudo apt install firefox
-RUN sudo apt install chromium-browser
+RUN apt update
+RUN apt install chromium-browser
 
 RUN npm install -g @nestjs/cli
 

@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { Browser, BrowserContext, firefox, devices } from 'playwright';
+import { Browser, BrowserContext, chromium, devices } from 'playwright';
 import { Job, Queue } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CharactersProfileEntity, RealmsEntity } from '@app/pg';
@@ -125,7 +125,7 @@ export class ProfileWorker {
     try {
       const isBrowserLaunched = Boolean(this.browser);
       if (!isBrowserLaunched) {
-        this.browser = await firefox.launch();
+        this.browser = await chromium.launch();
         this.browserContext = await this.browser.newContext(devices['iPhone 11']);
       }
 

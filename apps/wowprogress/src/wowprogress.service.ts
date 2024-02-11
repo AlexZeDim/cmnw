@@ -41,6 +41,7 @@ import {
   toSlug,
   ProfileJobQueue,
   profileQueue,
+  GLOBAL_OSINT_KEY,
 } from '@app/core';
 
 @Injectable()
@@ -66,12 +67,12 @@ export class WowprogressService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexWowProgress(GLOBAL_KEY, wowProgressConfig.init);
+    await this.indexWowProgress(GLOBAL_OSINT_KEY, wowProgressConfig.init);
   }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async indexWowProgress(
-    clearance: string = GLOBAL_KEY,
+    clearance: string = GLOBAL_OSINT_KEY,
     init = true,
   ): Promise<void> {
     try {
@@ -87,8 +88,8 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       await fs.rm(dirPath, { recursive: true, force: true });
       this.logger.warn(`indexWowProgress: directory ${dirPath} has been removed!`);
-    } catch (errorException) {
-      this.logger.error(`indexWowProgress: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexWowProgress: ${errorOrException}`);
     }
   }
 
@@ -137,8 +138,11 @@ export class WowprogressService implements OnApplicationBootstrap {
     return await fs.readdir(dirPath);
   }
 
-  private async unzipWowProgress(clearance = GLOBAL_KEY, files: string[]) {
-    const [keyEntity] = await getKeys(this.keysRepository, clearance);
+  private async unzipWowProgress(clearance = GLOBAL_OSINT_KEY, files: string[]) {
+    let guildIteration = 0;
+
+    const keysEntities = await getKeys(this.keysRepository, clearance);
+    const keysLength = keysEntities.length;
     const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
 
     await lastValueFrom(
@@ -188,6 +192,9 @@ export class WowprogressService implements OnApplicationBootstrap {
 
               const guildGuid: string = toSlug(`${guild.name}@${realmEntity.slug}`);
 
+              const { client, secret, token } =
+                keysEntities[guildIteration % keysLength];
+
               await this.queueGuilds.add(
                 guildGuid,
                 {
@@ -198,9 +205,9 @@ export class WowprogressService implements OnApplicationBootstrap {
                   updatedBy: OSINT_SOURCE.WOW_PROGRESS,
                   forceUpdate: ms('4h'),
                   region: 'eu',
-                  clientId: keyEntity.client,
-                  clientSecret: keyEntity.secret,
-                  accessToken: keyEntity.token,
+                  clientId: client,
+                  clientSecret: secret,
+                  accessToken: token,
                   createOnlyUnique: true,
                   requestGuildRank: true,
                 },
@@ -209,6 +216,8 @@ export class WowprogressService implements OnApplicationBootstrap {
                   priority: 4,
                 },
               );
+
+              guildIteration = guildIteration + 1;
             }
           } catch (error) {
             this.logger.warn(`unzipWowProgress: ${error}`);
@@ -219,7 +228,7 @@ export class WowprogressService implements OnApplicationBootstrap {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  async indexWowProgressLfg(clearance: string = GLOBAL_KEY): Promise<void> {
+  async indexWowProgressLfg(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       this.logger.log('————————————————————————————————————');
       /**
@@ -238,17 +247,27 @@ export class WowprogressService implements OnApplicationBootstrap {
         `${charactersLfgRemoveOld.affected} characters removed from LFG-${LFG_STATUS.OLD}`,
       );
 
-      const updateResult = await this.charactersProfileRepository.update(
-        {
-          lfgStatus: LFG_STATUS.NOW,
-        },
-        {
-          lfgStatus: LFG_STATUS.OLD,
-        },
-      );
+      const [nowUpdatedResult, newUpdatedResult] = await Promise.all([
+        this.charactersProfileRepository.update(
+          {
+            lfgStatus: LFG_STATUS.NOW,
+          },
+          {
+            lfgStatus: LFG_STATUS.OLD,
+          },
+        ),
+        this.charactersProfileRepository.update(
+          {
+            lfgStatus: LFG_STATUS.NEW,
+          },
+          {
+            lfgStatus: LFG_STATUS.OLD,
+          },
+        ),
+      ]);
 
       this.logger.debug(
-        `status LFG-${LFG_STATUS.NOW} revoke from ${updateResult.affected} characters`,
+        `characters status revoked from NOW ${nowUpdatedResult.affected} | NEW ${newUpdatedResult.affected}`,
       );
 
       const keysEntity = await getKeys(this.keysRepository, clearance);
@@ -380,8 +399,8 @@ export class WowprogressService implements OnApplicationBootstrap {
         ),
       );
       this.logger.log('————————————————————————————————————');
-    } catch (errorException) {
-      this.logger.error(`indexWowProgressLfg: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexWowProgressLfg: ${errorOrException}`);
     }
   }
 
@@ -425,8 +444,8 @@ export class WowprogressService implements OnApplicationBootstrap {
       );
 
       return wpCharactersQueue;
-    } catch (errorException) {
-      this.logger.error(`getWowProgressLfg: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`getWowProgressLfg: ${errorOrException}`);
       return wpCharactersQueue;
     }
   }

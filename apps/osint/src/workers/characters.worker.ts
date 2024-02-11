@@ -6,12 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { difference, get } from 'lodash';
-import {
-  BadRequestException,
-  GatewayTimeoutException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 
 import {
   ACTION_LOG,
@@ -31,6 +26,7 @@ import {
   EVENT_LOG,
   findRealm,
   IMounts,
+  incErrorCount,
   IPets,
   IPetType,
   IProfessions,
@@ -191,7 +187,7 @@ export class CharactersWorker {
       return characterEntity.statusCode;
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(`${CharactersWorker.name}: ${errorOrException}`);
+      this.logger.error(errorOrException);
       return 500;
     }
   }
@@ -258,16 +254,19 @@ export class CharactersWorker {
      * and createOnlyUnique initiated
      */
     if (character.createOnlyUnique) {
-      throw new BadRequestException(
+      throw new Error(
         `createOnlyUnique: ${character.createOnlyUnique} | ${character.guid}`,
       );
     }
     /**
      * ...or character was updated recently
      */
-    if (timestampNow - forceUpdate < characterEntity.updatedAt.getTime()) {
-      throw new GatewayTimeoutException(
-        `forceUpdate: ${forceUpdate} | ${character.guid}`,
+    const updateSafe = timestampNow - forceUpdate;
+    const updatedAt = characterEntity.updatedAt.getTime();
+    const isUpdateSafe = updateSafe < updatedAt;
+    if (isUpdateSafe) {
+      throw new Error(
+        `forceUpdate: ${character.guid} | ${updateSafe} < ${updatedAt}`,
       );
     }
 
@@ -300,11 +299,14 @@ export class CharactersWorker {
 
       return characterStatus;
     } catch (errorOrException) {
-      if (errorOrException.response) {
-        if (errorOrException.response.data && errorOrException.response.data.code) {
-          characterStatus.statusCode = errorOrException.response.data.code;
-        }
-      }
+      characterStatus.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = characterStatus.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+
       if (status)
         throw new NotFoundException(
           `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
@@ -337,7 +339,8 @@ export class CharactersWorker {
 
       return media;
     } catch (errorOrException) {
-      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${errorOrException}`);
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${statusCode}`);
       return media;
     }
   }
@@ -426,7 +429,8 @@ export class CharactersWorker {
 
       return mountsCollection;
     } catch (errorOrException) {
-      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${errorOrException}`);
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${statusCode}`);
       return mountsCollection;
     }
   }
@@ -472,7 +476,8 @@ export class CharactersWorker {
 
               const creatureId =
                 'creature_display' in pet ? pet.creature_display.id : null;
-              const petId = pet.id;
+              const characterPetId = pet.id;
+              const petId = pet.species.id;
               const petName = isNamed ? pet.name : pet.species.name;
               const petLevel = Number(pet.level) || 1;
               const isActive = 'is_active' in pet;
@@ -503,7 +508,8 @@ export class CharactersWorker {
 
                 if (!isPetExists) {
                   const petEntity = this.petsRepository.create({
-                    id: creatureId,
+                    id: petId,
+                    creatureId: creatureId,
                     name: pet.species.name,
                   });
 
@@ -514,6 +520,7 @@ export class CharactersWorker {
               if (!isAddedToCollection) {
                 const characterPetEntity = this.charactersPetsRepository.create({
                   petId,
+                  characterPetId,
                   creatureId,
                   petQuality,
                   breedId,
@@ -556,8 +563,9 @@ export class CharactersWorker {
         petsCollection.hashA = BigInt(hash64(hashA.join('.'))).toString(16);
 
       return petsCollection;
-    } catch (error) {
-      this.logger.error(`getPets: ${nameSlug}@${realmSlug}:${error}`);
+    } catch (errorOrException) {
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`getPets: ${nameSlug}@${realmSlug}:${statusCode}`);
       return petsCollection;
     }
   }
@@ -671,8 +679,9 @@ export class CharactersWorker {
       }
 
       return professions;
-    } catch (error) {
-      this.logger.error(`professions: ${nameSlug}@${realmSlug}:${error}`);
+    } catch (errorOrException) {
+      const statusCode = get(errorOrException, 'response.status', 418);
+      this.logger.error(`professions: ${nameSlug}@${realmSlug}:${statusCode}`);
       return professions;
     }
   }
@@ -711,8 +720,17 @@ export class CharactersWorker {
       summary.statusCode = 200;
 
       return summary;
-    } catch (error) {
-      this.logger.error(`getSummary: ${nameSlug}@${realmSlug}:${error}`);
+    } catch (errorOrException) {
+      summary.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = summary.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+      this.logger.error(
+        `getSummary: ${nameSlug}@${realmSlug}:${summary.statusCode}`,
+      );
       return summary;
     }
   }

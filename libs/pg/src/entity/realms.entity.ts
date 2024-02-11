@@ -121,6 +121,10 @@ export class RealmsEntity {
     nullable: true,
     type: 'bigint',
     name: 'auctions_timestamp',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
   })
   auctionsTimestamp: number;
 
@@ -129,6 +133,10 @@ export class RealmsEntity {
     nullable: true,
     type: 'bigint',
     name: 'commodities_timestamp',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
   })
   commoditiesTimestamp: number;
 
@@ -137,6 +145,10 @@ export class RealmsEntity {
     nullable: true,
     type: 'bigint',
     name: 'valuations_timestamp',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
   })
   valuationsTimestamp: number;
 
@@ -145,6 +157,10 @@ export class RealmsEntity {
     nullable: true,
     type: 'bigint',
     name: 'gold_timestamp',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => Number(value),
+    },
   })
   goldTimestamp: number;
 

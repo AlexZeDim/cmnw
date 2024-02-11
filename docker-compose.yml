@@ -398,7 +398,7 @@ services:
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
+    command: [ 'node', 'dist/apps/warcraft-logs/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
     depends_on:

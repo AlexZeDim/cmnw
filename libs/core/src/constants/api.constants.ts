@@ -9,6 +9,14 @@ export enum TOLERANCE_ENUM {
   OSINT = OSINT_TIMEOUT_TOLERANCE,
 }
 
+export enum KEY_STATUS {
+  FREE = 'FREE',
+  TAKEN = 'TAKEN',
+  TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS',
+}
+
+export const KEY_LOCK_ERRORS_NUM = 200;
+
 export const apiConstParams = (
   header: API_HEADERS_ENUM,
   tolerance: TOLERANCE_ENUM = TOLERANCE_ENUM.OSINT,

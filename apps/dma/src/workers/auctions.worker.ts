@@ -20,6 +20,7 @@ import {
   ICommodityOrder,
   IPetList,
   isAuctions,
+  MARKET_TYPE,
   toGold,
   transformPrice,
 } from '@app/core';
@@ -64,7 +65,6 @@ export class AuctionsWorker {
         : args.auctionsTimestamp;
 
       const ifModifiedSince = DateTime.fromMillis(previousTimestamp).toHTTP();
-
       const getMarketApiEndpoint = isCommdty
         ? '/data/wow/auctions/commodities'
         : `/data/wow/connected-realm/${args.connectedRealmId}/auctions`;
@@ -86,7 +86,7 @@ export class AuctionsWorker {
 
       await job.updateProgress(15);
 
-      const connectedRealmId = isCommdty ? args.connectedRealmId : 1;
+      const connectedRealmId = isCommdty ? 1 : args.connectedRealmId;
       const timestamp = DateTime.fromRFC2822(
         auctionsResponse.lastModified,
       ).toMillis();
@@ -109,17 +109,17 @@ export class AuctionsWorker {
 
               await this.marketRepository.save(ordersBulkAuctions);
               iterator += ordersBulkAuctions.length;
-              this.logger.log(`ordersBatch: ${connectedRealmId}| ${iterator}`);
-            } catch (errorException) {
-              this.logger.error(`ordersBatch: ${errorException}`);
+              this.logger.log(`${connectedRealmId} | ${iterator}`);
+            } catch (errorOrException) {
+              this.logger.error(`ordersBatch ${errorOrException}`);
             }
           }),
         ),
       );
 
-      const updateQuery = isCommdty
-        ? { auctionsTimestamp: timestamp }
-        : { commoditiesTimestamp: timestamp };
+      const updateQuery: Partial<RealmsEntity> = isCommdty
+        ? { commoditiesTimestamp: timestamp }
+        : { auctionsTimestamp: timestamp };
 
       await job.updateProgress(90);
       await this.realmsRepository.update(
@@ -130,9 +130,9 @@ export class AuctionsWorker {
       await job.updateProgress(100);
 
       return 200;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${AuctionsWorker.name}: ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(errorOrException);
       return 500;
     }
   }
@@ -187,6 +187,7 @@ export class AuctionsWorker {
 
       const quantity = 'quantity' in order ? (order as ICommodityOrder).quantity : 1;
 
+      marketEntity.type = isCommdty ? MARKET_TYPE.C : MARKET_TYPE.A;
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;

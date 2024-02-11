@@ -42,3 +42,10 @@ export type GoldApiListing = Readonly<IGold>;
 export type BlizzardApiItem = Partial<IItem>;
 
 export type BlizzardApiItemMedia = IItemMedia;
+
+export type BlizzardApiKeys = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  sub: string;
+};

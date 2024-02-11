@@ -44,3 +44,10 @@ export type RaiderIoCharacterMappingField = keyof Pick<
   CharactersProfileEntity,
   'name' | 'realm' | 'race' | 'class' | 'gender' | 'activeSpec' | 'activeRole'
 >;
+
+export type CharactersHashType = keyof Pick<
+  CharactersEntity,
+  'hashA' | 'hashB' | 'hashF'
+>;
+
+export type CharacterHashFieldType = 'a' | 'b' | 'f';

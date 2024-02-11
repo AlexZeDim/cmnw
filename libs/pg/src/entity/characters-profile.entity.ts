@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: CMNW_ENTITY_ENUM.PROFILE })
+@Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_PROFILE })
 export class CharactersProfileEntity {
   @PrimaryColumn('varchar')
   readonly guid: string;
@@ -142,6 +142,12 @@ export class CharactersProfileEntity {
     name: 'lfg_status',
   })
   lfgStatus: LFG_STATUS;
+
+  @Column('timestamp with time zone', {
+    name: 'modified_by_wcl',
+    nullable: true,
+  })
+  updatedByWarcraftLogs: Date;
 
   @Column('timestamp with time zone', {
     name: 'modified_by_rio',

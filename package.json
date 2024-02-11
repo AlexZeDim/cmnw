@@ -74,7 +74,7 @@
     "passport": "0.6.0",
     "passport-oauth2": "1.7.0",
     "pg": "^8.11.0",
-    "playwright": "1.35.1",
+    "playwright": "1.36.0-alpha-jul-2-2023",
     "redis": "4.6.7",
     "reflect-metadata": "0.1.13",
     "rimraf": "5.0.1",

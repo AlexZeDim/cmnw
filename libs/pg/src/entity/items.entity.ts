@@ -1,4 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg';
+import { ItemNames } from '@app/core';
 import {
   Column,
   CreateDateColumn,
@@ -23,7 +24,7 @@ export class ItemsEntity {
     default: {},
     type: 'jsonb',
   })
-  names?: string;
+  names?: string | ItemNames;
 
   @Column({
     nullable: true,

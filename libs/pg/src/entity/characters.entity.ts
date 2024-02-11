@@ -10,6 +10,9 @@ import {
 } from 'typeorm';
 
 @Index('ix__characters__guid', ['guid'], {})
+@Index('ix__characters__guild_guild', ['guildGuid'], {})
+@Index('ix__characters__hash_a', ['hashA'], {})
+@Index('ix__characters__hash_b', ['hashB'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS })
 export class CharactersEntity {
   @PrimaryGeneratedColumn('uuid')

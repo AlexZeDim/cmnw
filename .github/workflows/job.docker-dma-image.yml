@@ -12,6 +12,7 @@ on:
       - 'apps/realms/**'
       - 'apps/dma/**'
       - 'libs/**'
+      - 'arm64.dma.Dockerfile'
 
 jobs:
   publish:

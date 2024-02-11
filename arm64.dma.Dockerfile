@@ -30,8 +30,6 @@ COPY . .
 
 RUN npm install -g @nestjs/cli
 
-RUN npx playwright install-deps
-
 RUN nest build auctions \
   && nest build items \
   && nest build dma \

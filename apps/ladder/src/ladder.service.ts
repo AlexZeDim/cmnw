@@ -129,8 +129,8 @@ export class LadderService implements OnApplicationBootstrap {
         }
       }
 
-    } catch (errorException) {
-      this.logger.error(`indexPvpLadder: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexPvpLadder ${errorOrException}`);
     }
   }
 
@@ -261,8 +261,8 @@ export class LadderService implements OnApplicationBootstrap {
       }
 
       await this.redisService.set(`week:${w}`, iteration);
-    } catch (errorException) {
-      this.logger.error(`indexMythicPlusLadder: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexMythicPlusLadder: ${errorOrException}`);
     }
   }
 
@@ -339,8 +339,8 @@ export class LadderService implements OnApplicationBootstrap {
         }
       }
 
-    } catch (errorException) {
-      this.logger.error(`indexHallOfFame: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexHallOfFame: ${errorOrException}`);
     }
   }
 }

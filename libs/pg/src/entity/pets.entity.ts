@@ -18,6 +18,13 @@ export class PetsEntity {
   })
   name?: string;
 
+  @Column({
+    nullable: true,
+    type: 'int',
+    name: 'creature_id',
+  })
+  creatureId?: number;
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
     name: 'created_at',

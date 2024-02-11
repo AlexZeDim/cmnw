@@ -34,6 +34,7 @@ export interface ISelfRealm {
 export interface IGuildRoster {
   readonly members: IGuildMember[];
   updatedAt?: Date;
+  statusCode?: number;
 }
 
 export interface IGuildMember {

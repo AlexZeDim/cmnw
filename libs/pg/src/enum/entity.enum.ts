@@ -7,12 +7,12 @@ export enum CMNW_ENTITY_ENUM {
   CHARACTERS_PROFESSIONS = 'characters_professions',
   PROFESSIONS = 'professions',
   CHARACTERS_GUILDS_MEMBERS = 'characters_guild_members',
+  CHARACTERS_PROFILE = 'characters_profile',
   GUILDS = 'guilds',
   KEYS = 'keys',
   REALMS = 'realms',
   LOGS = 'logs',
   ITEMS = 'items',
   MARKET = 'market',
-  PROFILE = 'profile',
   CONTRACTS = 'contracts',
 }

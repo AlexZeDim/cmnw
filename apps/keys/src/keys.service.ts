@@ -4,12 +4,20 @@ import { join } from 'path';
 import { readFileSync } from 'fs';
 import { IKey } from '@app/configuration/interfaces/key.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { GLOBAL_BLIZZARD_KEY, GLOBAL_WCL_KEY, IWarcraftLogsToken } from '@app/core';
+import { DateTime } from 'luxon';
 import { HttpService } from '@nestjs/axios';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
 import { ArrayContains, Repository } from 'typeorm';
+import {
+  BlizzardApiKeys,
+  GLOBAL_BLIZZARD_KEY,
+  GLOBAL_WCL_KEY,
+  IWarcraftLogsToken,
+  KEY_LOCK_ERRORS_NUM,
+  KEY_STATUS,
+} from '@app/core';
 
 @Injectable()
 export class KeysService implements OnApplicationBootstrap {
@@ -51,12 +59,33 @@ export class KeysService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async indexBlizzardKeys(): Promise<void> {
     try {
-      const keyEntities = await this.keysRepository.findBy({
+      const now = DateTime.now();
+      const keysEntity = await this.keysRepository.findBy({
         tags: ArrayContains([GLOBAL_BLIZZARD_KEY]),
       });
 
-      for (const keyEntity of keyEntities) {
-        const { data } = await this.httpService.axiosRef.request<any>({
+      for (const keyEntity of keysEntity) {
+        const isResetErrorsCount =
+          keyEntity.status != KEY_STATUS.FREE &&
+          keyEntity.resetAt &&
+          DateTime.fromJSDate(keyEntity.resetAt) < now;
+
+        if (isResetErrorsCount) {
+          keyEntity.resetAt = now.toJSDate();
+          keyEntity.errorCounts = 0;
+          keyEntity.status = KEY_STATUS.FREE;
+        }
+
+        const isTooManyErrors =
+          keyEntity.errorCounts > KEY_LOCK_ERRORS_NUM &&
+          Boolean(keyEntity.status != KEY_STATUS.TOO_MANY_REQUESTS);
+
+        if (isTooManyErrors) {
+          keyEntity.status = KEY_STATUS.TOO_MANY_REQUESTS;
+          keyEntity.resetAt = now.plus({ hour: 2 }).toJSDate();
+        }
+
+        const { data } = await this.httpService.axiosRef.request<BlizzardApiKeys>({
           url: 'https://eu.battle.net/oauth/token',
           method: 'post',
           headers: {

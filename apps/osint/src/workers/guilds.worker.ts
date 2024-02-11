@@ -1,24 +1,17 @@
-import {
-  BadRequestException,
-  GatewayTimeoutException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-
+import { Logger, NotFoundException } from '@nestjs/common';
+import { BlizzAPI } from 'blizzapi';
+import { Job, Queue } from 'bullmq';
+import { from, lastValueFrom } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { difference, get, intersection } from 'lodash';
+import { snakeCase } from 'snake-case';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import {
   BullQueueInject,
   BullWorker,
   BullWorkerProcess,
 } from '@anchan828/nest-bullmq';
-
-import { BlizzAPI } from 'blizzapi';
-import { Job, Queue } from 'bullmq';
-import { from, lastValueFrom } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
-import { difference, intersection } from 'lodash';
-import { snakeCase } from 'snake-case';
-import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
 
 import {
   ACTION_LOG,
@@ -35,6 +28,7 @@ import {
   ICharacterGuildMember,
   IGuildRoster,
   IGuildSummary,
+  incErrorCount,
   IRGuildRoster,
   isGuildRoster,
   OSINT_SOURCE,
@@ -146,9 +140,9 @@ export class GuildsWorker {
 
       await job.updateProgress(100);
       return guildEntity.statusCode;
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${GuildsWorker.name}, ${errorException}`);
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(`${errorOrException}`);
       return 500;
     }
   }
@@ -254,7 +248,7 @@ export class GuildsWorker {
                     ),
                   ]);
                 }
-              } catch (errorException) {
+              } catch (errorOrException) {
                 this.logger.error(
                   `logs: error with ${guildEntity.guid} on intersection`,
                 );
@@ -325,7 +319,7 @@ export class GuildsWorker {
                     },
                   ),
                 ]);
-              } catch (errorException) {
+              } catch (errorOrException) {
                 this.logger.error(
                   `logs: error with ${guildEntity.guid} on intersection`,
                 );
@@ -385,7 +379,7 @@ export class GuildsWorker {
                     },
                   ),
                 ]);
-              } catch (errorException) {
+              } catch (errorOrException) {
                 this.logger.error(
                   `logs: error with ${guildEntity.guid} on intersection`,
                 );
@@ -394,8 +388,8 @@ export class GuildsWorker {
           ),
         );
       }
-    } catch (errorException) {
-      this.logger.error(`updateRoster: ${guildEntity.guid}:${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`updateRoster: ${guildEntity.guid}:${errorOrException}`);
     }
   }
 
@@ -445,9 +439,17 @@ export class GuildsWorker {
 
       summary.statusCode = 200;
       return summary;
-    } catch (errorException) {
+    } catch (errorOrException) {
+      summary.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = summary.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+
       this.logger.error(
-        `getSummary: ${guildNameSlug}@${realmSlug}:${errorException}`,
+        `getSummary: ${guildNameSlug}@${realmSlug}:${summary.statusCode}`,
       );
       return summary;
     }
@@ -547,9 +549,9 @@ export class GuildsWorker {
                 rank: member.rank,
                 level,
               });
-            } catch (errorException) {
+            } catch (errorOrException) {
               this.logger.error(
-                `member: ${member.character.id} from ${guildEntity.guid}:${errorException}`,
+                `member: ${member.character.id} from ${guildEntity.guid}:${errorOrException}`,
               );
             }
           }, 20),
@@ -557,8 +559,17 @@ export class GuildsWorker {
       );
 
       return roster;
-    } catch (errorException) {
-      this.logger.error(`roster: ${guildEntity.guid}:${errorException}`);
+    } catch (errorOrException) {
+      roster.statusCode = get(errorOrException, 'response.status', 418);
+      roster.statusCode = get(errorOrException, 'response.status', 418);
+      const isTooManyRequests = roster.statusCode === 429;
+      if (isTooManyRequests)
+        await incErrorCount(
+          this.keysRepository,
+          BNet.accessTokenObject.access_token,
+        );
+
+      this.logger.error(`roster: ${guildEntity.guid}:${roster.statusCode}`);
       return roster;
     }
   }
@@ -572,6 +583,9 @@ export class GuildsWorker {
         guildGuid: guildEntity.guid,
         rank: 0,
       });
+
+    if (!guildMasterOriginal) return;
+
     const guildMasterUpdated = updatedRoster.members.find(
       (guildMember) => guildMember.rank === 0,
     );
@@ -739,17 +753,16 @@ export class GuildsWorker {
      * and createOnlyUnique initiated
      */
     if (guild.createOnlyUnique) {
-      throw new BadRequestException(
-        `createOnlyUnique: ${guild.createOnlyUnique} | ${guild.guid}`,
-      );
+      throw new Error(`createOnlyUnique: ${guild.createOnlyUnique} | ${guild.guid}`);
     }
     /**
      * ...or guild was updated recently
      */
-    if (timestampNow - forceUpdate < guildEntity.updatedAt.getTime()) {
-      throw new GatewayTimeoutException(
-        `forceUpdate: ${forceUpdate} | ${guild.guid}`,
-      );
+    const updateSafe = timestampNow - forceUpdate;
+    const updatedAt = guildEntity.updatedAt.getTime();
+    const isUpdateSafe = updateSafe < updatedAt;
+    if (isUpdateSafe) {
+      throw new Error(`forceUpdate: ${forceUpdate} | ${guild.guid}`);
     }
 
     guildEntity.statusCode = 100;

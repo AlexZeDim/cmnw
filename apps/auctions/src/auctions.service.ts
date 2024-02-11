@@ -31,9 +31,11 @@ export class AuctionsService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    await this.indexAuctions(GLOBAL_DMA_KEY);
     await this.indexCommodity(GLOBAL_DMA_KEY);
   }
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);
@@ -44,7 +46,7 @@ export class AuctionsService implements OnApplicationBootstrap {
 
       const realmsEntity = await this.realmsRepository
         .createQueryBuilder('realms')
-        .where({ id: LessThan(offsetTime) })
+        .where({ auctionsTimestamp: LessThan(offsetTime) })
         .distinctOn(['realms.connectedRealmId'])
         .getMany();
 
@@ -60,11 +62,17 @@ export class AuctionsService implements OnApplicationBootstrap {
               accessToken: keyEntity.token,
               isAssetClassIndex: true,
             });
+
+            this.logger.debug(
+              `realm: ${realmEntity.connectedRealmId} | ts: ${
+                realmEntity.auctionsTimestamp
+              }, ${typeof realmEntity.auctionsTimestamp}`,
+            );
           }),
         ),
       );
-    } catch (errorException) {
-      this.logger.error(`indexAuctions: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexAuctions ${errorOrException}`);
     }
   }
 
@@ -82,11 +90,16 @@ export class AuctionsService implements OnApplicationBootstrap {
         clientId: keyEntity.client,
         clientSecret: keyEntity.secret,
         accessToken: keyEntity.token,
+        connectedRealmId: realmEntity.connectedRealmId,
         commoditiesTimestamp: realmEntity.commoditiesTimestamp,
         isAssetClassIndex: true,
       });
-    } catch (errorException) {
-      this.logger.error(`indexCommodity: ${errorException}`);
+
+      this.logger.debug(
+        `realm: ${realmEntity.connectedRealmId} | ts: ${realmEntity.commoditiesTimestamp}`,
+      );
+    } catch (errorOrException) {
+      this.logger.error(`indexCommodity ${errorOrException}`);
     }
   }
 }

@@ -30,6 +30,7 @@ import cheerio from 'cheerio';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
+import { commonwealthConfig } from '@app/configuration';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
@@ -46,7 +47,7 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.getRaiderIoProfile();
+    await this.getToken();
   }
 
   async getUniqueRealms() {
@@ -59,6 +60,25 @@ export class TestsBench implements OnApplicationBootstrap {
       .getMany();
 
     console.log(realmsEntity, realmsEntity.length);
+  }
+
+  async getToken() {
+    const { data } = await this.httpService.axiosRef.request<any>({
+      url: 'https://eu.battle.net/oauth/token',
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      params: {
+        grant_type: 'client_credentials',
+      },
+      auth: {
+        username: commonwealthConfig.clientId,
+        password: commonwealthConfig.clientSecret,
+      },
+    });
+
+    console.log(data);
   }
 
   async getGold() {

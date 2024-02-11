@@ -7,10 +7,11 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
-import { ArrayContains, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { lastValueFrom, mergeMap, range } from 'rxjs';
 import {
   findRealm,
+  getKeys,
   GLOBAL_KEY,
   REALM_ENTITY_ANY,
   RealmJobQueue,
@@ -48,13 +49,7 @@ export class RealmsService implements OnModuleInit {
   @Cron(CronExpression.EVERY_WEEK)
   async indexRealms(clearance: string = GLOBAL_KEY): Promise<void> {
     try {
-      const keyEntity = await this.keysRepository.findOneBy({
-        tags: ArrayContains([clearance]),
-      });
-      if (!keyEntity || !keyEntity.token) {
-        this.logger.error(`indexRealms: clearance: ${clearance} key not found`);
-        return;
-      }
+      const [keyEntity] = await getKeys(this.keysRepository, clearance);
 
       await this.queue.drain(true);
 
@@ -92,8 +87,8 @@ export class RealmsService implements OnModuleInit {
           },
         );
       }
-    } catch (errorException) {
-      this.logger.error(`indexRealms: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexRealms: ${errorOrException}`);
     }
   }
 

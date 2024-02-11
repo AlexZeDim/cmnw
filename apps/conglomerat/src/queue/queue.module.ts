@@ -38,7 +38,6 @@ import {
   providers: [],
 })
 export class QueueModule {
-
   private router: Express;
 
   constructor(
@@ -56,7 +55,6 @@ export class QueueModule {
     private readonly pricing: Queue,
     @BullQueueInject(valuationsQueue.name)
     private readonly valuations: Queue,
-
   ) {
     const { router } = createBullBoard([
       new BullMQAdapter(this.auctions, { readOnlyMode: false }),
@@ -71,8 +69,6 @@ export class QueueModule {
   }
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(this.router)
-      .forRoutes('/queues');
+    consumer.apply(this.router).forRoutes('/queues');
   }
 }

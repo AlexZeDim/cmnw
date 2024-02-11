@@ -1,4 +1,8 @@
-FROM arm64v8/node:lts
+FROM arm64v8/node:lts AS node_arm
+
+FROM arm64v8/ubuntu:20.04
+
+COPY --from=node_arm / /
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
@@ -28,7 +32,14 @@ RUN yarn install --network-timeout 1000000
 
 COPY . .
 
+RUN apt update
+RUN apt install -y chromium-browser
+
 RUN npm install -g @nestjs/cli
+
+# Installing playwright #
+RUN npx playwright install-deps --dry-run
+RUN npx playwright install
 
 RUN nest build characters \
   && nest build guilds \

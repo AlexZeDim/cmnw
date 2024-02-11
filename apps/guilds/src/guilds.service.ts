@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Guild } from '@app/mongo';
 import { Model } from 'mongoose';
@@ -9,11 +9,19 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
 import { Repository } from 'typeorm';
-import { getKeys, GLOBAL_OSINT_KEY, GuildJobQueue, OSINT_SOURCE } from '@app/core';
 import ms from 'ms';
+import {
+  getKeys,
+  GLOBAL_OSINT_KEY,
+  GuildJobQueue,
+  OSINT_GUILD_LIMIT,
+  OSINT_SOURCE,
+} from '@app/core';
 
 @Injectable()
 export class GuildsService {
+  private offset = 0;
+  private keyEntities: KeysEntity[];
   private readonly logger = new Logger(GuildsService.name, { timestamp: true });
 
   constructor(
@@ -30,18 +38,23 @@ export class GuildsService {
     try {
       const jobs: number = await this.queue.count();
       if (jobs > 1000) {
-        throw new NotFoundException(`indexGuildsFromMongo: ${jobs} jobs found`);
+        throw new Error(`${jobs} jobs found`);
       }
 
-      const keyEntities = await getKeys(this.keysRepository, clearance);
+      let guildIteration = 0;
+      this.keyEntities = await getKeys(this.keysRepository, clearance);
 
-      let i = 0;
-      let iteration = 0;
+      let length = this.keyEntities.length;
 
       await this.GuildModel.find<Guild>()
         .sort({ updatedAt: 1 })
-        .cursor()
+        .skip(this.offset)
+        .limit(OSINT_GUILD_LIMIT)
+        .cursor({ batchSize: 5000 })
         .eachAsync(async (guild) => {
+          const { client, secret, token } =
+            this.keyEntities[guildIteration % length];
+
           await this.queue.add(
             guild._id,
             {
@@ -55,22 +68,26 @@ export class GuildsService {
               requestGuildRank: false,
               createOnlyUnique: false,
               forceUpdate: ms('4h'),
-              clientId: keyEntities[i].client,
-              clientSecret: keyEntities[i].secret,
-              accessToken: keyEntities[i].token,
-              iteration: iteration,
+              clientId: client,
+              clientSecret: secret,
+              accessToken: token,
+              iteration: guildIteration,
             },
             {
               jobId: guild._id,
               priority: 5,
             },
           );
-          i++;
-          iteration++;
-          if (i >= keyEntities.length) i = 0;
+
+          guildIteration = guildIteration + 1;
+          const isKeyRequest = guildIteration % 1000 == 0;
+          if (isKeyRequest) {
+            this.keyEntities = await getKeys(this.keysRepository, clearance);
+            length = this.keyEntities.length;
+          }
         });
-    } catch (errorException) {
-      this.logger.error(`indexGuildsFromMongo: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`indexGuildsFromMongo ${errorOrException}`);
     }
   }
 }

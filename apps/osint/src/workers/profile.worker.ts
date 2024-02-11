@@ -27,6 +27,7 @@ import {
   CHARACTER_PROFILE_RIO_MAPPING,
   RaiderIoCharacterMappingKey,
   findRealm,
+  capitalize,
 } from '@app/core';
 
 @BullWorker({
@@ -110,7 +111,7 @@ export class ProfileWorker {
       await this.charactersProfileRepository.save(profileEntity);
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(`${ProfileWorker.name}: ${errorOrException}`);
+      this.logger.error(errorOrException);
       return 500;
     }
   }
@@ -148,9 +149,10 @@ export class ProfileWorker {
         warcraftLogsProfile[difficulty.fieldName] = parseFloat(value);
       }
 
+      warcraftLogsProfile.updatedByWarcraftLogs = new Date();
       return warcraftLogsProfile;
     } catch (errorOrException) {
-      this.logger.error(`getWarcraftLogs: ${name}@${realmSlug}:${errorOrException}`);
+      this.logger.error(`getWarcraftLogs ${name}@${realmSlug}:${errorOrException}`);
       return warcraftLogsProfile;
     }
   }
@@ -183,9 +185,13 @@ export class ProfileWorker {
           if (fieldValueName === 'readyToTransfer')
             wowProgressProfile.readyToTransfer = value.includes('ready to transfer');
 
-          if (fieldValueName === 'raidDays') {
-            const [daysFrom, daysTo] = value.split(' - ');
-            wowProgressProfile.raidDays = [parseInt(daysFrom), parseInt(daysTo)];
+          if (fieldValueName === 'raidDays' && value) {
+            const [from, to] = value.split(' - ');
+            const daysFrom = parseInt(from);
+            const daysTo = parseInt(to);
+            const isNumber =
+              typeof daysFrom === 'number' && typeof daysTo === 'number';
+            if (isNumber) wowProgressProfile.raidDays = [daysFrom, daysTo];
           }
 
           if (fieldValueName === 'languages') {
@@ -200,10 +206,11 @@ export class ProfileWorker {
         }),
       );
 
+      wowProgressProfile.updatedByWowProgress = new Date();
       return wowProgressProfile;
     } catch (errorOrException) {
       this.logger.error(
-        `getWowProgressProfile: ${name}@${realmSlug}:${errorOrException}`,
+        `getWowProgressProfile ${name}@${realmSlug}:${errorOrException}`,
       );
       return wowProgressProfile;
     }
@@ -237,7 +244,8 @@ export class ProfileWorker {
         const fieldProfile = CHARACTER_PROFILE_RIO_MAPPING.get(
           <RaiderIoCharacterMappingKey>key,
         );
-        rioProfileCharacter[fieldProfile] = value;
+        rioProfileCharacter[fieldProfile] =
+          fieldProfile === 'gender' ? capitalize(value) : value;
       });
 
       const realmEntity = await findRealm(
@@ -251,10 +259,11 @@ export class ProfileWorker {
       const [season] = raiderIoProfile.mythic_plus_scores_by_season;
 
       rioProfileCharacter.raiderIoScore = season.scores.all;
+      rioProfileCharacter.updatedByRaiderIo = new Date();
 
       return rioProfileCharacter;
     } catch (errorOrException) {
-      this.logger.error(`getRaiderIO: ${name}@${realmSlug}:${errorOrException}`);
+      this.logger.error(`getRaiderIO ${name}@${realmSlug}:${errorOrException}`);
       return rioProfileCharacter;
     }
   }

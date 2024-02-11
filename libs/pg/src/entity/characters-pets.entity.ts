@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 @Index('ix__characters_pets__pet_id', ['petId'], {})
+@Index('ix__characters_pets__character_pet_id', ['characterPetId'], {})
 @Index('ix__characters_pets__character_guid', ['characterGuid'], {})
 @Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_PETS })
 export class CharactersPetsEntity {
@@ -16,11 +17,18 @@ export class CharactersPetsEntity {
   readonly uuid: string;
 
   @Column({
-    nullable: false,
+    nullable: true,
     type: 'int',
     name: 'pet_id',
   })
   petId: number;
+
+  @Column({
+    nullable: false,
+    type: 'int',
+    name: 'character_pet_id',
+  })
+  characterPetId: number;
 
   @Column({
     nullable: true,

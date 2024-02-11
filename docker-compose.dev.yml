@@ -30,7 +30,7 @@ services:
 
   keys:
     build: ./
-    image: cmnw
+    image: osint
     container_name: keys
     restart: always
     links:

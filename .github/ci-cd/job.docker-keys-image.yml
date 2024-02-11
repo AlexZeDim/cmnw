@@ -2,7 +2,7 @@ name: Create Keys Release Image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ development ]
     paths:
       - 'apps/keys/**'
 

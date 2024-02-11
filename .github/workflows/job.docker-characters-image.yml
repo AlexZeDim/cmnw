@@ -1,10 +1,10 @@
-name: Create Gold Release Image
+name: Create Characters Release Image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ development ]
     paths:
-      - 'apps/gold/**'
+      - 'apps/characters/**'
 
 jobs:
   publish:
@@ -16,9 +16,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
       - name: Tag new release
         uses: butlerlogic/action-autotag@stable
         env:
@@ -29,16 +26,14 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/alexzedim/gold
+            ghcr.io/alexzedim/characters
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
-            org.opencontainers.image.title = "Gold"
-            org.opencontainers.image.vendor = "AlexZeDim"
-            org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
-            org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
-            org.opencontainers.image.licenses = "MPL 2.0"
-            org.opencontainers.image.description = "CMNW"
+            org.opencontainers.image.title=Characters
+            org.opencontainers.image.vendor=AlexZeDim
+            org.opencontainers.image.url=https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png
+            org.opencontainers.image.source=https://github.com/AlexZeDim/cmnw
 
       - name: Login to Github Packages
         uses: docker/login-action@v2.1.0
@@ -50,10 +45,10 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/gold/arm64.Dockerfile
+          file: ./apps/characters/arm64.Dockerfile
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/alexzedim/gold:latest
+          tags: ghcr.io/alexzedim/characters:latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}

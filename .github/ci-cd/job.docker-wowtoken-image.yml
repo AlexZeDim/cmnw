@@ -1,10 +1,10 @@
-name: Create OSINT Release Image
+name: Create WowToken Release Image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ development ]
     paths:
-      - 'apps/osint/**'
+      - 'apps/wowtoken/**'
 
 jobs:
   publish:
@@ -29,14 +29,16 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/alexzedim/osint
+            ghcr.io/alexzedim/wowtoken
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
-            org.opencontainers.image.title=OSINT
-            org.opencontainers.image.vendor=AlexZeDim
-            org.opencontainers.image.url=https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png
-            org.opencontainers.image.source=https://github.com/AlexZeDim/cmnw
+            org.opencontainers.image.title = "WowToken"
+            org.opencontainers.image.vendor = "AlexZeDim"
+            org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
+            org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
+            org.opencontainers.image.licenses = "MPL 2.0"
+            org.opencontainers.image.description = "CMNW"
 
       - name: Login to Github Packages
         uses: docker/login-action@v2.1.0
@@ -48,10 +50,10 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/osint/arm64.Dockerfile
+          file: ./apps/wowtoken/arm64.Dockerfile
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/alexzedim/osint:latest
+          tags: ghcr.io/alexzedim/wowtoken:latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}

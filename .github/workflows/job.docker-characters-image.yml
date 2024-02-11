@@ -1,10 +1,11 @@
-name: Create Characters Release Image
+name: Create Characters Development Image
 
 on:
   push:
-    branches: [ development ]
+    branches: [ develop ]
     paths:
       - 'apps/characters/**'
+      - 'libs/**'
 
 jobs:
   publish:
@@ -45,8 +46,7 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/characters/arm64.Dockerfile
-          platforms: linux/arm64
+          file: ./apps/characters/Dockerfile
           push: true
           tags: ghcr.io/alexzedim/characters:latest
           labels: ${{ steps.meta.outputs.labels }}

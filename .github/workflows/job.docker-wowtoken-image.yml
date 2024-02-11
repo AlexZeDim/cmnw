@@ -1,10 +1,11 @@
-name: Create WowToken Release Image
+name: Create WowToken Development Image
 
 on:
   push:
-    branches: [ development ]
+    branches: [ develop ]
     paths:
       - 'apps/wowtoken/**'
+      - 'libs/**'
 
 jobs:
   publish:
@@ -15,9 +16,6 @@ jobs:
         uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       - name: Tag new release
         uses: butlerlogic/action-autotag@stable
@@ -50,8 +48,7 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/wowtoken/arm64.Dockerfile
-          platforms: linux/arm64
+          file: ./apps/wowtoken/Dockerfile
           push: true
           tags: ghcr.io/alexzedim/wowtoken:latest
           labels: ${{ steps.meta.outputs.labels }}

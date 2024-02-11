@@ -1,10 +1,11 @@
-name: Create Gold Release Image
+name: Create Gold Development Image
 
 on:
   push:
-    branches: [ development ]
+    branches: [ develop ]
     paths:
       - 'apps/gold/**'
+      - 'libs/**'
 
 jobs:
   publish:
@@ -15,9 +16,6 @@ jobs:
         uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       - name: Tag new release
         uses: butlerlogic/action-autotag@stable
@@ -50,8 +48,7 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/gold/arm64.Dockerfile
-          platforms: linux/arm64
+          file: ./apps/gold/Dockerfile
           push: true
           tags: ghcr.io/alexzedim/gold:latest
           labels: ${{ steps.meta.outputs.labels }}

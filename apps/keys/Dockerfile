@@ -1,4 +1,4 @@
-FROM arm64v8/node:lts
+FROM node:lts
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT

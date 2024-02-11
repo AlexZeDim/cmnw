@@ -38,8 +38,6 @@
   },
   "dependencies": {
     "@anchan828/nest-bullmq": "3.1.30",
-    "@discordjs/builders": "^1.6.3",
-    "@discordjs/voice": "0.16.0",
     "@nestjs-modules/ioredis": "1.0.1",
     "@nestjs/axios": "3.0.0",
     "@nestjs/common": "10.0.2",
@@ -63,8 +61,6 @@
     "class-validator": "0.14.0",
     "config": "3.3.4",
     "crypto-js": "4.1.1",
-    "discord-api-types": "0.37.46",
-    "discord.js": "14.11.0",
     "farmhash": "3.3.0",
     "fs-extra": "11.1.1",
     "ioredis": "5.3.2",
@@ -85,7 +81,6 @@
     "typeorm-naming-strategies": "4.1.0"
   },
   "devDependencies": {
-    "@discordjs/rest": "1.7.1",
     "@nestjs/cli": "10.0.3",
     "@nestjs/schematics": "10.0.1",
     "@nestjs/testing": "10.0.2",

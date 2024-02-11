@@ -1,9 +1,16 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { WarcraftlogsService } from './warcraftlogs.service';
+import { WarcraftLogsService } from './warcraft-logs.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Key, KeysSchema, Realm, RealmsSchema, WarcraftLogs, WarcraftLogsSchema } from '@app/mongo';
+import {
+  Key,
+  KeysSchema,
+  Realm,
+  RealmsSchema,
+  WarcraftLogs,
+  WarcraftLogsSchema,
+} from '@app/mongo';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -27,9 +34,12 @@ import { ScheduleModule } from '@nestjs/schedule';
         },
       },
     }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      queueName: charactersQueue.name,
+      options: charactersQueue.options,
+    }),
   ],
   controllers: [],
-  providers: [WarcraftlogsService],
+  providers: [WarcraftLogsService],
 })
 export class WarcraftlogsModule {}

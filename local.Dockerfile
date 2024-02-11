@@ -31,6 +31,6 @@ RUN nest build conglomerat \
   && nest build valuations \
   && nest build characters \
   && nest build wowprogress \
-  && nest build warcraftlogs
+  && nest build warcraft-logs
 
 CMD wait && ["node"]

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { WarcraftlogsModule } from './warcraftlogs.module';
+import { WarcraftlogsModule } from './warcraft-logs.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(WarcraftlogsModule);

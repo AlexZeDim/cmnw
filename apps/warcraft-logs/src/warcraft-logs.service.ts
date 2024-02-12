@@ -4,9 +4,7 @@ import {
   NotFoundException,
   OnApplicationBootstrap,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Key, Realm, WarcraftLogs } from '@app/mongo';
-import { Model } from 'mongoose';
+
 import {
   GLOBAL_WCL_KEY,
   charactersQueue,
@@ -16,15 +14,20 @@ import {
   GLOBAL_OSINT_KEY,
   IWarcraftLogsActors,
   randomInt,
-} from '@app/core';
+  getKey, getKeys
+} from "@app/core";
+
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core';
 import { warcraftLogsConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
-import cheerio from 'cheerio';
 import { lastValueFrom } from 'rxjs';
+import { RealmsEntity, CharactersRaidLogsEntity, KeysEntity } from '@app/pg';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
+import cheerio from 'cheerio';
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {
@@ -34,12 +37,12 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
 
   constructor(
     private httpService: HttpService,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(WarcraftLogs.name)
-    private readonly WarcraftLogsModel: Model<WarcraftLogs>,
-    @InjectModel(Key.name)
-    private readonly KeyModel: Model<Key>,
+    @InjectRepository(CharactersRaidLogsEntity)
+    private readonly charactersRaidLogsRepository: Repository<CharactersRaidLogsEntity>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
     @BullQueueInject(charactersQueue.name)
     private readonly queue: Queue,
   ) {}
@@ -51,84 +54,118 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async indexWarcraftLogs(): Promise<void> {
     try {
-      await this.RealmModel.find({ wcl_id: { $ne: null } })
-        .cursor({ batchSize: 1 })
-        .eachAsync(async (realm: Realm) => {
-          await this.indexPage(warcraftLogsConfig, realm);
-        });
+      const realmsEntities = await this.realmsRepository.findBy({
+        warcraftLogsId: Not(IsNull()),
+      });
+
+      for (const realmEntity of realmsEntities) {
+        await this.indexCharacterRaidLogs(warcraftLogsConfig, realmEntity);
+      }
     } catch (errorOrException) {
       this.logger.error(`${WarcraftLogsService.name},${errorOrException}`);
     }
   }
 
-  async indexPage(config: IWarcraftLogsConfig, realm: Realm): Promise<void> {
+  async getLogsFromPage(
+    config: IWarcraftLogsConfig,
+    realmId = 1,
+    page = 1,
+  ): Promise<Array<string>> {
     try {
-      let logExists = 0;
-      for (let page = config.from; page < config.to; page++) {
+      const warcraftLogsURI = 'https://www.warcraftlogs.com/zone/reports';
+
+      const response = await this.httpService.axiosRef.get(
+        `${warcraftLogsURI}?zone=${config.raidTier}&server=${realmId}&page=${page}`,
+      );
+
+      const wclHTML = cheerio.load(response.data);
+      const wclLogsUnique = new Set<string>();
+      const wclTable = wclHTML.html('td.description-cell > a');
+
+      wclHTML(wclTable).each((_x, node) => {
+        const hrefString = wclHTML(node).attr('href');
+        const isReports = hrefString.includes('reports');
+        if (isReports) {
+          const [link]: string[] = hrefString.match(/(.{16})\s*$/g);
+          wclLogsUnique.add(link);
+        }
+      });
+
+      return Array.from(wclLogsUnique);
+    } catch (errorOrException) {
+      this.logger.error(`getLogsFromPage: ${errorOrException}`);
+    }
+  }
+
+  async indexCharacterRaidLogs(
+    wclConfig: IWarcraftLogsConfig,
+    realmEntity: RealmsEntity,
+  ): Promise<void> {
+    try {
+      let logsAlreadyExists = 0;
+
+      for (let page = wclConfig.from; page < wclConfig.to; page++) {
         const random = randomInt(1, 5);
         await delay(random);
 
-        const response = this.httpService.axiosRef.get(
-          `https://www.warcraftlogs.com/zone/reports?zone=${config.raidTier}&server=${realm.wcl_id}&page=${page}`,
+        const wclLogsFromPage = await this.getLogsFromPage(
+          wclConfig,
+          realmEntity.warcraftLogsId,
+          page,
         );
-
-        const wclHTML = cheerio.load(response.data);
-        const wclLogsSet = new Set<string>();
-        const wclTable = wclHTML.html('td.description-cell > a');
-
-        wclHTML(wclTable).each((_x, node) => {
-          const hrefString = wclHTML(node).attr('href');
-          if (hrefString.includes('reports')) {
-            const [link]: string[] = hrefString.match(/(.{16})\s*$/g);
-            wclLogsSet.add(link);
-          }
-        });
-
         /**
          * If indexing logs on page have ended
-         * and page fault tolerance is more then
+         * and page fault tolerance is more than
          * config, then break for loop
          */
-        if (page > config.page) {
+        const [isPageEmpty, isPageMoreThen, isLogsMoreThen] = [
+          !wclLogsFromPage.length,
+          page > wclConfig.page,
+          logsAlreadyExists > wclConfig.logs,
+        ];
+
+        if (isPageMoreThen) {
           this.logger.log(
-            `BREAK, ${realm.name}, Page: ${page}, Page FT: ${page} > ${config.page}`,
+            `BREAK | ${realmEntity.name} | Page: ${page} > ${wclConfig.page}`,
+          );
+          break;
+        }
+
+        if (isLogsMoreThen) {
+          this.logger.log(
+            `BREAK | ${realmEntity.name} | Logs: ${logsAlreadyExists} > ${wclConfig.logs}`,
           );
           break;
         }
 
         /** If parsed page have no results */
-        if (!!wclTable || !wclLogsSet.size) {
-          this.logger.log(`ERROR, ${realm.name}, Page: ${page}, Logs not found`);
+        if (isPageEmpty) {
+          this.logger.log(
+            `ERROR | ${realmEntity.name} | Page: ${page} | Logs not found`,
+          );
           continue;
         }
 
-        for (const logId of wclLogsSet.values()) {
-          if (logExists > config.logs) {
+        for (const logId of wclLogsFromPage) {
+          const characterRaidLog = await this.charactersRaidLogsRepository.exist({
+            where: { logId },
+          });
+
+          if (!characterRaidLog) {
+            await this.charactersRaidLogsRepository.save({
+              logId,
+            });
             this.logger.log(
-              `BREAK, ${realm.name}, Log FT: ${logExists} > ${config.logs}`,
+              `CREATED | Log: ${logId} | Log EX: ${logsAlreadyExists}`,
             );
-            break;
-          }
 
-          const log: WarcraftLogs = await this.WarcraftLogsModel.findById(logId);
-          if (log) {
-            /** If exists counter +1*/
-            logExists += 1;
-            wclLogsSet.delete(logId);
-            this.logger.warn(`E, Log: ${log._id}, Log EX: ${logExists}`);
-          } else {
-            /** Else, counter -1 and create in DB */
-            if (logExists > 1) logExists -= 1;
-            this.logger.log(`C, Log: ${logId}, Log EX: ${logExists}`);
-            await this.WarcraftLogsModel.create({ _id: logId });
+            if (logsAlreadyExists > 1) logsAlreadyExists -= 1;
           }
-        }
-
-        if (logExists > config.logs) {
-          this.logger.log(
-            `BREAK, ${realm.name}, Log FT: ${logExists} > ${config.logs}`,
-          );
-          break;
+          /** If exists counter +1*/
+          if (characterRaidLog) {
+            logsAlreadyExists += 1;
+            // this.logger.warn(`E, Log: ${logId}, Log EX: ${logsAlreadyExists}`);
+          }
         }
       }
     } catch (errorOrException) {
@@ -140,23 +177,24 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   async indexLogs(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       await delay(30);
-      const keysWCL = await this.KeyModel.find({
-        tags: { $in: [GLOBAL_WCL_KEY, 'v2'] },
+      const key = await getKey(this.keysRepository, 'v2');
+      if (key) {
+        throw new NotFoundException(
+          `Clearance ${GLOBAL_WCL_KEY} keys have been found`,
+        );
+      }
+
+      const keys = await getKeys(this.keysRepository, clearance, true);
+      if (!keys.length) {
+        throw new NotFoundException(`Clearance ${clearance} have been found`);
+      }
+
+      let itx = 0;
+
+      const characterRaidLog = await this.charactersRaidLogsRepository.findBy({
+        status: false,
+        // TODO page and offset
       });
-      if (!keysWCL.length) {
-        throw new NotFoundException(
-          `clearance ${GLOBAL_WCL_KEY} ${keysWCL.length} keys have been found`,
-        );
-      }
-
-      const keysBnet = await this.KeyModel.find({ tags: clearance });
-      if (!keysBnet.length) {
-        throw new NotFoundException(
-          `clearance ${clearance} ${keysBnet.length} have been found`,
-        );
-      }
-
-      let i = 0;
 
       await this.WarcraftLogsModel.find({ status: false })
         .cursor({ batchSize: 1 })
@@ -166,12 +204,12 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
               this.httpService.request({
                 method: 'post',
                 url: 'https://www.warcraftlogs.com/api/v2/client',
-                headers: { Authorization: `Bearer ${keysWCL[i].token}` },
+                headers: { Authorization: `Bearer ${keysWCL[itx].token}` },
                 data: {
                   query: `
                     query {
                       reportData {
-                        report (code: "QJxpjgL7ZnvVkFzT") {
+                        report (code: ${}) {
                           rankedCharacters {
                             id
                             name
@@ -197,8 +235,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
               }),
             );
 
-            i++;
-            if (i >= keysWCL.length) i = 0;
+            itx++;
+            if (itx >= keysWCL.length) itx = 0;
 
             if (!!response?.data?.data?.reportData?.report) {
               const warcraftLog = response?.data?.data?.reportData?.report;
@@ -207,7 +245,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
                 const actors: IWarcraftLogsActors[] = warcraftLog.masterData?.actors;
                 const players = actors.filter((actor) => actor.type === 'Player');
                 if (players.length) {
-                  const result = await this.charactersToQueue(players, keysBnet);
+                  const result = await this.charactersToQueue(players, keys);
                   if (result) {
                     log.status = true;
                     await log.save();

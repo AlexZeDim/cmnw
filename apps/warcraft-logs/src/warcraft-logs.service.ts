@@ -10,12 +10,14 @@ import {
   charactersQueue,
   IWarcraftLogsConfig,
   OSINT_SOURCE,
-  toSlug,
   GLOBAL_OSINT_KEY,
-  IWarcraftLogsActors,
   randomInt,
-  getKey, getKeys
-} from "@app/core";
+  getKey,
+  getKeys,
+  isCharacterRaidLogResponse,
+  RaidCharacter,
+  toGuid,
+} from '@app/core';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -23,11 +25,13 @@ import { Queue } from 'bullmq';
 import { delay } from '@app/core';
 import { warcraftLogsConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
-import { lastValueFrom } from 'rxjs';
+import { from, lastValueFrom } from 'rxjs';
 import { RealmsEntity, CharactersRaidLogsEntity, KeysEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import cheerio from 'cheerio';
+import { get } from 'lodash';
+import { mergeMap } from 'rxjs/operators';
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {
@@ -48,7 +52,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexLogs(GLOBAL_OSINT_KEY);
+    await this.indexLogs();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
@@ -174,7 +178,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)
-  async indexLogs(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
+  async indexLogs(): Promise<void> {
     try {
       await delay(30);
       const key = await getKey(this.keysRepository, 'v2');
@@ -184,126 +188,153 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         );
       }
 
-      const keys = await getKeys(this.keysRepository, clearance, true);
-      if (!keys.length) {
-        throw new NotFoundException(`Clearance ${clearance} have been found`);
-      }
-
-      let itx = 0;
-
       const characterRaidLog = await this.charactersRaidLogsRepository.findBy({
-        status: false,
-        // TODO page and offset
+        isIndexed: false,
+        // TODO page and offset remember cursor
       });
 
-      await this.WarcraftLogsModel.find({ status: false })
-        .cursor({ batchSize: 1 })
-        .eachAsync(async (log) => {
-          try {
-            const response = await lastValueFrom(
-              this.httpService.request({
-                method: 'post',
-                url: 'https://www.warcraftlogs.com/api/v2/client',
-                headers: { Authorization: `Bearer ${keysWCL[itx].token}` },
-                data: {
-                  query: `
-                    query {
-                      reportData {
-                        report (code: ${}) {
-                          rankedCharacters {
-                            id
-                            name
-                            guildRank
-                            server {
-                              id
-                              name
-                              normalizedName
-                              slug
-                            }
-                          }
-                          masterData {
-                            actors {
-                              type
-                              name
-                              server
-                            }
-                          }
-                        }
-                      }
-                    }`,
-                },
-              }),
+      await lastValueFrom(
+        from(characterRaidLog).pipe(
+          mergeMap(async (characterRaidLogEntity) => {
+            const raidCharacters = await this.getCharactersFromLogs(
+              key.token,
+              characterRaidLogEntity.logId,
             );
 
-            itx++;
-            if (itx >= keysWCL.length) itx = 0;
+            await this.charactersRaidLogsRepository.update(
+              { logId: characterRaidLogEntity.logId },
+              { isIndexed: true },
+            );
 
-            if (!!response?.data?.data?.reportData?.report) {
-              const warcraftLog = response?.data?.data?.reportData?.report;
+            this.logger.log(`Log: ${characterRaidLogEntity.logId}`);
 
-              if (warcraftLog.masterData?.actors) {
-                const actors: IWarcraftLogsActors[] = warcraftLog.masterData?.actors;
-                const players = actors.filter((actor) => actor.type === 'Player');
-                if (players.length) {
-                  const result = await this.charactersToQueue(players, keys);
-                  if (result) {
-                    log.status = true;
-                    await log.save();
-                  }
-                }
-              }
-            }
-
-            this.logger.log(`Log: ${log._id}, status: ${log.status}`);
-          } catch (errorOrException) {
-            this.logger.error(`Log: ${log._id}, ${errorOrException}`);
-          }
-        });
+            await this.charactersToQueue(raidCharacters);
+          }, 5),
+        ),
+      );
     } catch (errorOrException) {
       this.logger.error(`indexLogs: ${errorOrException}`);
     }
   }
 
-  async charactersToQueue(
-    exportedCharacters: IWarcraftLogsActors[],
-    keys: Key[],
-  ): Promise<boolean> {
+  async getCharactersFromLogs(token: string, logId: string) {
+    const response = await this.httpService.axiosRef.request({
+      method: 'post',
+      url: 'https://www.warcraftlogs.com/api/v2/client',
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        query: `
+          query {
+            reportData {
+              report (code: "${logId}") {
+                startTime
+                rankedCharacters {
+                  id
+                  name
+                  guildRank
+                  server {
+                    id
+                    name
+                    normalizedName
+                    slug
+                  }
+                }
+                masterData {
+                  actors {
+                    type
+                    name
+                    server
+                  }
+                }
+              }
+            }
+          }`,
+      },
+    });
+    const isGuard = isCharacterRaidLogResponse(response);
+    if (!isGuard) return [];
+    /**
+     * @description Take both characters ranked & playable
+     */
+    const timestamp = get(response, 'data.data.reportData.report.startTime', 1);
+    const rankedCharacters: Array<RaidCharacter> = get(
+      response,
+      'data.data.reportData.report.rankedCharacters',
+      [],
+    ).map((character) => ({
+      guid: toGuid(character.name, character.server.slug),
+      id: character.id,
+      name: character.name,
+      realmName: character.server.name,
+      realm: character.server.slug,
+      guildRank: character.guildRank,
+      timestamp: timestamp,
+    }));
+
+    const playableCharacters: Array<RaidCharacter> = get(
+      response,
+      'data.data.reportData.report.masterData.actors',
+      [],
+    )
+      .filter((character) => character.type === 'Player')
+      .map((character) => ({
+        guid: toGuid(character.name, character.server),
+        name: character.name,
+        realmName: character.server,
+        timestamp: timestamp,
+      }));
+
+    const raidCharacters = [...rankedCharacters, ...playableCharacters];
+    const characters = new Map<string, RaidCharacter>();
+
+    for (const character of raidCharacters) {
+      const isIn = characters.has(character.guid);
+      if (isIn) continue;
+      characters.set(character.guid, character);
+    }
+
+    return Array.from(characters.values());
+  }
+
+  async charactersToQueue(raidCharacters: Array<RaidCharacter>): Promise<boolean> {
     try {
-      let iteration = 0;
+      let itx = 0;
+      const keys = await getKeys(this.keysRepository, GLOBAL_OSINT_KEY, true);
+      if (!keys.length) {
+        throw new NotFoundException(`Clearance ${GLOBAL_OSINT_KEY} have been found`);
+      }
 
-      const charactersToJobs = exportedCharacters.map((character) => {
-        const _id = toSlug(`${character.name}@${character.server}`);
-
-        iteration++;
-        if (iteration >= keys.length) iteration = 0;
+      const charactersToJobs = raidCharacters.map((raidCharacter) => {
+        itx++;
+        if (itx >= keys.length) itx = 0;
 
         return {
-          name: _id,
+          name: raidCharacter.guid,
           data: {
-            _id: _id,
-            name: character.name,
-            realm: character.server,
-            updatedAt: new Date(),
-            created_by: OSINT_SOURCE.WARCRAFT_LOGS,
-            updated_by: OSINT_SOURCE.WARCRAFT_LOGS,
+            guid: raidCharacter.guid,
+            name: raidCharacter.name,
+            realm: raidCharacter.realm,
+            updatedAt: raidCharacter.timestamp,
+            createdBy: OSINT_SOURCE.WARCRAFT_LOGS,
+            updatedBy: OSINT_SOURCE.WARCRAFT_LOGS,
             region: 'eu',
-            clientId: keys[iteration]._id,
-            clientSecret: keys[iteration].secret,
-            accessToken: keys[iteration].token,
+            clientId: keys[itx].client,
+            clientSecret: keys[itx].secret,
+            accessToken: keys[itx].token,
             guildRank: false,
             createOnlyUnique: true,
             forceUpdate: 0,
           },
           opts: {
-            jobId: _id,
-            priority: 4,
+            jobId: raidCharacter.guid,
+            priority: 2,
           },
         };
       });
 
       await this.queue.addBulk(charactersToJobs);
       this.logger.log(
-        `addCharacterToQueue, add ${charactersToJobs.length} characters to characterQueue`,
+        `addCharacterToQueue | ${charactersToJobs.length} characters to characterQueue`,
       );
       return true;
     } catch (errorOrException) {

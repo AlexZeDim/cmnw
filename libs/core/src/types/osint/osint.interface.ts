@@ -1,11 +1,5 @@
 import { CharactersProfileEntity } from '@app/pg';
 
-export interface IWarcraftLogsActors {
-  type: 'NPC' | 'Player' | 'Pet';
-  name: string;
-  server: string | null;
-}
-
 export interface IWarcraftLogsToken {
   token_type: string;
   expires_in: number;

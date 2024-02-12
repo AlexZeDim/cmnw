@@ -24,7 +24,7 @@ export class CharactersRaidLogsEntity {
     default: false,
     type: 'boolean',
   })
-  status: boolean;
+  isIndexed: boolean;
 
   @CreateDateColumn({
     type: 'timestamp with time zone',

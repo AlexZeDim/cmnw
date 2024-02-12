@@ -1,4 +1,4 @@
-FROM node:lts
+FROM node:lts-alpine
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
@@ -10,10 +10,9 @@ LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
 LABEL org.opencontainers.image.licenses = "MPL-2.0"
 LABEL org.opencontainers.image.description = "CMNW"
 
-RUN apt-get update && apt-get install -y git
-
 WORKDIR /usr/src/app
 
+RUN apk add --no-cache git
 RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
 RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 RUN mv cmnw-secrets/* .

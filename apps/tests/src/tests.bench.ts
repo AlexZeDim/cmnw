@@ -102,6 +102,7 @@ export class TestsBench implements OnApplicationBootstrap {
       const quantity = exchangeListingPage(element).find('.tc-amount').text();
       const owner = exchangeListingPage(element).find('.media-user-name').text();
       const price = exchangeListingPage(element).find('.tc-price div').text();
+
       goldOrders.push({ orderId, realm, faction, status, quantity, owner, price });
     });
 
@@ -123,6 +124,7 @@ export class TestsBench implements OnApplicationBootstrap {
             const isValid = Boolean(
               connectedRealmId && order.price && order.quantity,
             );
+
             if (!isValid) {
               this.logger.log(order.realm);
               return;

@@ -68,10 +68,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         const random = randomInt(1, 5);
         await delay(random);
 
-        const response = await lastValueFrom(
-          this.httpService.get(
-            `https://www.warcraftlogs.com/zone/reports?zone=${config.raidTier}&server=${realm.wcl_id}&page=${page}`,
-          ),
+        const response = this.httpService.axiosRef.get(
+          `https://www.warcraftlogs.com/zone/reports?zone=${config.raidTier}&server=${realm.wcl_id}&page=${page}`,
         );
 
         const wclHTML = cheerio.load(response.data);

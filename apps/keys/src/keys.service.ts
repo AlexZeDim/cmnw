@@ -103,7 +103,7 @@ export class KeysService implements OnApplicationBootstrap {
 
         keyEntity.token = data.access_token;
         keyEntity.expiredIn = data.expires_in;
-        this.logger.log(`Updated: key(${keyEntity.client})`);
+        this.logger.log(`Updated: key ${keyEntity.client}`);
 
         await this.keysRepository.save(keyEntity);
       }
@@ -138,7 +138,7 @@ export class KeysService implements OnApplicationBootstrap {
         keyEntity.expiredIn = data.expires_in;
 
         await this.keysRepository.save(keyEntity);
-        this.logger.log(`Updated: key(${keyEntity.client})`);
+        this.logger.log(`Updated: key ${keyEntity.client}`);
       }
     } catch (errorOrException) {
       this.logger.error(`indexWarcraftLogsKeys: ${errorOrException}`);

@@ -1,5 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { from, lastValueFrom } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { HttpService } from '@nestjs/axios';
+import { MarketEntity, RealmsEntity } from '@app/pg';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DateTime } from 'luxon';
+import cheerio from 'cheerio';
 import {
   DMA_SOURCE_GOLD,
   FACTION,
@@ -9,14 +17,6 @@ import {
   MARKET_TYPE,
   round,
 } from '@app/core';
-import { from, lastValueFrom } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
-import { HttpService } from '@nestjs/axios';
-import { MarketEntity, RealmsEntity } from '@app/pg';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { DateTime } from 'luxon';
-import cheerio from 'cheerio';
 
 @Injectable()
 export class GoldService {

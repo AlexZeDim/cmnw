@@ -3,6 +3,10 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
+import { InjectRepository } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
+import { LessThan, Repository } from 'typeorm';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
 import {
   AuctionJobQueue,
   auctionsQueue,
@@ -10,10 +14,6 @@ import {
   getKeys,
   GLOBAL_DMA_KEY,
 } from '@app/core';
-import { InjectRepository } from '@nestjs/typeorm';
-import { KeysEntity, RealmsEntity } from '@app/pg';
-import { LessThan, Repository } from 'typeorm';
-import { from, lastValueFrom, mergeMap } from 'rxjs';
 
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {

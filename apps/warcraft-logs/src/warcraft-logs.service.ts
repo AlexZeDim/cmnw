@@ -8,7 +8,6 @@ import {
 import {
   GLOBAL_WCL_KEY,
   charactersQueue,
-  IWarcraftLogsConfig,
   OSINT_SOURCE,
   GLOBAL_OSINT_KEY,
   randomInt,
@@ -29,12 +28,13 @@ import { from, lastValueFrom } from 'rxjs';
 import { RealmsEntity, CharactersRaidLogsEntity, KeysEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import cheerio from 'cheerio';
 import { get } from 'lodash';
 import { mergeMap } from 'rxjs/operators';
+import cheerio from 'cheerio';
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {
+  private config = warcraftLogsConfig;
   private readonly logger = new Logger(WarcraftLogsService.name, {
     timestamp: true,
   });
@@ -63,23 +63,19 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       });
 
       for (const realmEntity of realmsEntities) {
-        await this.indexCharacterRaidLogs(warcraftLogsConfig, realmEntity);
+        await this.indexCharacterRaidLogs(realmEntity);
       }
     } catch (errorOrException) {
       this.logger.error(`${WarcraftLogsService.name},${errorOrException}`);
     }
   }
 
-  async getLogsFromPage(
-    config: IWarcraftLogsConfig,
-    realmId = 1,
-    page = 1,
-  ): Promise<Array<string>> {
+  async getLogsFromPage(realmId = 1, page = 1): Promise<Array<string>> {
     try {
       const warcraftLogsURI = 'https://www.warcraftlogs.com/zone/reports';
 
       const response = await this.httpService.axiosRef.get(
-        `${warcraftLogsURI}?zone=${config.raidTier}&server=${realmId}&page=${page}`,
+        `${warcraftLogsURI}?zone=${this.config.raidTier}&server=${realmId}&page=${page}`,
       );
 
       const wclHTML = cheerio.load(response.data);
@@ -101,19 +97,15 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     }
   }
 
-  async indexCharacterRaidLogs(
-    wclConfig: IWarcraftLogsConfig,
-    realmEntity: RealmsEntity,
-  ): Promise<void> {
+  async indexCharacterRaidLogs(realmEntity: RealmsEntity): Promise<void> {
     try {
       let logsAlreadyExists = 0;
 
-      for (let page = wclConfig.from; page < wclConfig.to; page++) {
+      for (let page = this.config.fromPage; page < this.config.toPage; page++) {
         const random = randomInt(1, 5);
         await delay(random);
 
         const wclLogsFromPage = await this.getLogsFromPage(
-          wclConfig,
           realmEntity.warcraftLogsId,
           page,
         );
@@ -124,20 +116,20 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
          */
         const [isPageEmpty, isPageMoreThen, isLogsMoreThen] = [
           !wclLogsFromPage.length,
-          page > wclConfig.page,
-          logsAlreadyExists > wclConfig.logs,
+          page > this.config.page,
+          logsAlreadyExists > this.config.logs,
         ];
 
         if (isPageMoreThen) {
           this.logger.log(
-            `BREAK | ${realmEntity.name} | Page: ${page} > ${wclConfig.page}`,
+            `BREAK | ${realmEntity.name} | Page: ${page} > ${this.config.page}`,
           );
           break;
         }
 
         if (isLogsMoreThen) {
           this.logger.log(
-            `BREAK | ${realmEntity.name} | Logs: ${logsAlreadyExists} > ${wclConfig.logs}`,
+            `BREAK | ${realmEntity.name} | Logs: ${logsAlreadyExists} > ${this.config.logs}`,
           );
           break;
         }
@@ -180,17 +172,20 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_6_HOURS)
   async indexLogs(): Promise<void> {
     try {
-      await delay(30);
+      await delay(10);
       const key = await getKey(this.keysRepository, 'v2');
       if (key) {
         throw new NotFoundException(
           `Clearance ${GLOBAL_WCL_KEY} keys have been found`,
         );
       }
-
-      const characterRaidLog = await this.charactersRaidLogsRepository.findBy({
-        isIndexed: false,
-        // TODO page and offset remember cursor
+      /**
+       * @description A bit sceptical about take interval
+       * @description required semaphore.
+       */
+      const characterRaidLog = await this.charactersRaidLogsRepository.find({
+        where: { isIndexed: false },
+        take: 500,
       });
 
       await lastValueFrom(
@@ -218,7 +213,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   }
 
   async getCharactersFromLogs(token: string, logId: string) {
-    const response = await this.httpService.axiosRef.request({
+    const response = await this.httpService.axiosRef.request<unknown, unknown>({
       method: 'post',
       url: 'https://www.warcraftlogs.com/api/v2/client',
       headers: { Authorization: `Bearer ${token}` },

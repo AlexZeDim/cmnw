@@ -1,0 +1,54 @@
+name: Create Auctions Development Image
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - 'apps/auctions/**'
+      - 'libs/**'
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest #  buildjet-8vcpu-ubuntu-2204-arm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.0.2
+        with:
+          fetch-depth: 2
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/alexzedim/auctions
+          tags: |
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
+          labels: |
+            org.opencontainers.image.title = "Auctions"
+            org.opencontainers.image.vendor = "AlexZeDim"
+            org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
+            org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
+            org.opencontainers.image.licenses = "MPL 2.0"
+            org.opencontainers.image.description = "CMNW"
+
+      - name: Login to Github Packages
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build & Push (GHCR)
+        uses: docker/build-push-action@v4.1.1
+        with:
+          file: ./apps/auctions/Dockerfile
+          push: true
+          tags: ghcr.io/alexzedim/auctions:latest
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            CR_PAT=${{ secrets.CR_PAT }}
+
+      - name: Image digest
+        run: echo ${{ steps.build-push-action.outputs.digest }}

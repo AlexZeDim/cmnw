@@ -14,7 +14,7 @@ import { mergeMap } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
 import { MarketEntity, RealmsEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import cheerio from 'cheerio';
 

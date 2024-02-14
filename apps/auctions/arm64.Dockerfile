@@ -30,7 +30,7 @@ RUN yarn install --network-timeout 1000000
 COPY . .
 
 RUN npm install -g @nestjs/cli
-RUN nest build warcraft-logs
+RUN nest build auctions
 
 CMD ["node", "dist/apps/auctions/main.js"]
 

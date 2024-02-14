@@ -29,7 +29,7 @@ RUN yarn install
 COPY . .
 
 RUN npm install -g @nestjs/cli
-RUN nest build warcraft-logs
+RUN nest build auctions
 
 CMD wait && ["node", "dist/apps/auctions/main.js"]
 

@@ -1,30 +1,19 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { WarcraftLogsService } from './warcraft-logs.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import {
-  Key,
-  KeysSchema,
-  Realm,
-  RealmsSchema,
-  WarcraftLogs,
-  WarcraftLogsSchema,
-} from '@app/mongo';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CharactersRaidLogsEntity, KeysEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: WarcraftLogs.name, schema: WarcraftLogsSchema },
-    ]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity, CharactersRaidLogsEntity]),
     BullModule.forRoot({
       options: {
         connection: {
@@ -42,4 +31,4 @@ import { ScheduleModule } from '@nestjs/schedule';
   controllers: [],
   providers: [WarcraftLogsService],
 })
-export class WarcraftlogsModule {}
+export class WarcraftLogsModule {}

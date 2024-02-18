@@ -30,6 +30,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { get } from 'lodash';
 import { mergeMap } from 'rxjs/operators';
+import { DateTime } from 'luxon';
 import cheerio from 'cheerio';
 
 @Injectable()
@@ -52,6 +53,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    await this.indexWarcraftLogs();
     await this.indexLogs();
   }
 
@@ -70,28 +72,42 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     }
   }
 
-  async getLogsFromPage(realmId = 1, page = 1): Promise<Array<string>> {
+  async getLogsFromPage(realmId = 1, page = 1) {
     try {
       const warcraftLogsURI = 'https://www.warcraftlogs.com/zone/reports';
+      // TODO zone=${this.config.raidTier}&
+      const params = `server=${realmId}&`;
 
       const response = await this.httpService.axiosRef.get(
-        `${warcraftLogsURI}?zone=${this.config.raidTier}&server=${realmId}&page=${page}`,
+        `${warcraftLogsURI}?${params}page=${page}`,
       );
 
       const wclHTML = cheerio.load(response.data);
-      const wclLogsUnique = new Set<string>();
-      const wclTable = wclHTML.html('td.description-cell > a');
+      const warcraftLogsMap = new Map<
+        string,
+        Pick<CharactersRaidLogsEntity, 'logId' | 'createdAt'>
+      >();
+      const wclTable = wclHTML.html('tbody > tr');
 
-      wclHTML(wclTable).each((_x, node) => {
-        const hrefString = wclHTML(node).attr('href');
+      wclHTML(wclTable).each((itx, element) => {
+        const momentFormat = wclHTML(element)
+          .children()
+          .find('td > span.moment-format')
+          .attr('data-timestamp');
+        const hrefString = wclHTML(element)
+          .children()
+          .find('td.description-cell > a')
+          .attr('href');
+
         const isReports = hrefString.includes('reports');
-        if (isReports) {
-          const [link]: string[] = hrefString.match(/(.{16})\s*$/g);
-          wclLogsUnique.add(link);
+        if (isReports && momentFormat) {
+          const [logId] = hrefString.match(/(.{16})\s*$/g);
+          const createdAt = DateTime.fromSeconds(Number(momentFormat)).toJSDate();
+          warcraftLogsMap.set(logId, { logId, createdAt });
         }
       });
 
-      return Array.from(wclLogsUnique);
+      return Array.from(warcraftLogsMap.values());
     } catch (errorOrException) {
       this.logger.error(`getLogsFromPage: ${errorOrException}`);
     }
@@ -114,18 +130,10 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
          * and page fault tolerance is more than
          * config, then break for loop
          */
-        const [isPageEmpty, isPageMoreThen, isLogsMoreThen] = [
+        const [isPageEmpty, isLogsMoreThen] = [
           !wclLogsFromPage.length,
-          page > this.config.page,
           logsAlreadyExists > this.config.logs,
         ];
-
-        if (isPageMoreThen) {
-          this.logger.log(
-            `BREAK | ${realmEntity.name} | Page: ${page} > ${this.config.page}`,
-          );
-          break;
-        }
 
         if (isLogsMoreThen) {
           this.logger.log(
@@ -139,28 +147,33 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           this.logger.log(
             `ERROR | ${realmEntity.name} | Page: ${page} | Logs not found`,
           );
-          continue;
+          break;
         }
 
-        for (const logId of wclLogsFromPage) {
+        for (const { logId, createdAt } of wclLogsFromPage) {
           const characterRaidLog = await this.charactersRaidLogsRepository.exist({
             where: { logId },
           });
+          /** If exists counter +1*/
+          if (characterRaidLog) {
+            logsAlreadyExists += 1;
+            this.logger.log(
+              `EXISTS | ID: ${logId} | R: ${realmEntity.name} | Log EX: ${logsAlreadyExists}`,
+            );
+            continue;
+          }
 
           if (!characterRaidLog) {
             await this.charactersRaidLogsRepository.save({
               logId,
+              isIndexed: false,
+              createdAt,
             });
             this.logger.log(
-              `CREATED | Log: ${logId} | Log EX: ${logsAlreadyExists}`,
+              `CREATED | ID: ${logId} | R: ${realmEntity.name} | Log EX: ${logsAlreadyExists}`,
             );
 
             if (logsAlreadyExists > 1) logsAlreadyExists -= 1;
-          }
-          /** If exists counter +1*/
-          if (characterRaidLog) {
-            logsAlreadyExists += 1;
-            // this.logger.warn(`E, Log: ${logId}, Log EX: ${logsAlreadyExists}`);
           }
         }
       }

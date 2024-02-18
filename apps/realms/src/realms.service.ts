@@ -10,9 +10,12 @@ import { KeysEntity, RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import { lastValueFrom, mergeMap, range } from 'rxjs';
 import {
+  API_HEADERS_ENUM,
+  apiConstParams,
   findRealm,
   getKeys,
   GLOBAL_KEY,
+  OSINT_TIMEOUT_TOLERANCE,
   REALM_ENTITY_ANY,
   RealmJobQueue,
   realmsQueue,
@@ -62,11 +65,7 @@ export class RealmsService implements OnModuleInit {
 
       const { realms: realmList }: Record<string, any> = await this.BNet.query(
         '/data/wow/realm/index',
-        {
-          timeout: 10000,
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-        },
+        apiConstParams(API_HEADERS_ENUM.DYNAMIC, OSINT_TIMEOUT_TOLERANCE),
       );
 
       for (const { id, name, slug } of realmList) {

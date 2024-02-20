@@ -31,5 +31,5 @@ export class RealmDto {
 
   @IsNumber()
   @ApiProperty(SWAGGER_REALM_CONNECTED_REALM_ID)
-  readonly connected_realm_id: number;
+  readonly connectedRealmId: number;
 }

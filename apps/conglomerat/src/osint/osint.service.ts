@@ -6,12 +6,15 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   CharactersEntity,
+  CharactersGuildsMembersEntity,
   CharactersProfileEntity,
+  GuildsEntity,
   KeysEntity,
   LogsEntity,
   RealmsEntity,
@@ -24,21 +27,20 @@ import {
   CharacterHashDto,
   CharacterHashFieldType,
   CharacterIdDto,
+  CharacterJobQueue,
   CharactersLfgDto,
   charactersQueue,
-  DiscordSubscriptionDto,
-  DiscordUidSubscriptionDto,
   EVENT_LOG,
   findRealm,
   getKeys,
   GLOBAL_OSINT_KEY,
   GuildIdDto,
+  GuildJobQueue,
   guildsQueue,
   LFG_STATUS,
-  NOTIFICATIONS,
   OSINT_SOURCE,
   RealmDto,
-  toSlug,
+  toGuid,
 } from '@app/core';
 
 @Injectable()
@@ -48,8 +50,12 @@ export class OsintService {
   constructor(
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(GuildsEntity)
+    private readonly guildsRepository: Repository<GuildsEntity>,
     @InjectRepository(CharactersEntity)
     private readonly charactersRepository: Repository<CharactersEntity>,
+    @InjectRepository(CharactersGuildsMembersEntity)
+    private readonly charactersGuildMembersRepository: Repository<CharactersGuildsMembersEntity>,
     @InjectRepository(CharactersProfileEntity)
     private readonly charactersProfileRepository: Repository<CharactersProfileEntity>,
     @InjectRepository(RealmsEntity)
@@ -57,10 +63,52 @@ export class OsintService {
     @InjectRepository(LogsEntity)
     private readonly logsRepository: Repository<LogsEntity>,
     @BullQueueInject(charactersQueue.name)
-    private readonly queueCharacter: Queue,
+    private readonly queueCharacter: Queue<CharacterJobQueue, number>,
     @BullQueueInject(guildsQueue.name)
-    private readonly queueGuild: Queue,
+    private readonly queueGuild: Queue<GuildJobQueue, number>,
   ) {}
+
+  async getGuild(input: GuildIdDto) {
+    const [nameSlug, realmSlug] = input.guid.split('@');
+
+    const realmEntity = await findRealm(this.realmsRepository, realmSlug);
+
+    if (!realmEntity) {
+      throw new BadRequestException(
+        `Realm: ${realmSlug} for character ${input.guid} not found!`,
+      );
+    }
+
+    const guid = toGuid(nameSlug, realmEntity.slug);
+
+    const [guild, guildMembers] = await Promise.all([
+      this.guildsRepository.findOneBy({ guid }),
+      this.charactersGuildMembersRepository.find({
+        where: { guildGuid: guid },
+        take: 250,
+      }),
+    ]);
+
+    await this.queueGuild.add(guid, {
+      createOnlyUnique: false,
+      forceUpdate: 60 * 60 * 24,
+      region: 'eu',
+      requestGuildRank: true,
+      guid: guid,
+      name: nameSlug,
+      realm: realmEntity.slug,
+      createdBy: OSINT_SOURCE.GUILD_REQUEST,
+      updatedBy: OSINT_SOURCE.GUILD_REQUEST,
+    });
+
+    if (!guild) {
+      throw new NotFoundException(
+        `Guild: ${guid} not found, but will be added to OSINT-DB on existence shortly`,
+      );
+    }
+    // TODO to export DTO
+    return { ...guild, ...guildMembers };
+  }
 
   async getCharacter(input: CharacterIdDto) {
     const [nameSlug, realmSlug] = input.guid.split('@');
@@ -69,61 +117,62 @@ export class OsintService {
 
     if (!realmEntity) {
       throw new BadRequestException(
-        `Realm: ${realmSlug} for selected character: ${input.guid} not found!`,
+        `Realm: ${realmSlug} for character ${input.guid} not found!`,
       );
     }
 
-    const characterGuid = `${nameSlug}@${realmEntity.slug}`;
+    const guid = toGuid(nameSlug, realmEntity.slug);
+    // TODO join models
     const character = await this.charactersRepository.findOneBy({
-      guid: characterGuid,
+      guid,
     });
-    // TODO update
-    const [keyEntity] = await getKeys(this.keysRepository, this.clearance);
+
+    const [keyEntity] = await getKeys(this.keysRepository, this.clearance, true);
 
     await this.queueCharacter.add(
-      characterGuid,
+      guid,
       {
-        _id: characterGuid,
+        guid: guid,
         name: nameSlug,
         realm: realmEntity.slug,
         region: 'eu',
         clientId: keyEntity.client,
         clientSecret: keyEntity.secret,
         accessToken: keyEntity.token,
-        created_by: OSINT_SOURCE.CHARACTER_REQUEST,
-        updated_by: OSINT_SOURCE.CHARACTER_REQUEST,
-        guildRank: false,
+        createdBy: OSINT_SOURCE.CHARACTER_REQUEST,
+        updatedBy: OSINT_SOURCE.CHARACTER_REQUEST,
+        requestGuildRank: false,
         createOnlyUnique: false,
         forceUpdate: 1000 * 60 * 60,
       },
       {
-        jobId: characterGuid,
+        jobId: guid,
         priority: 1,
       },
     );
+
     if (!character) {
       throw new NotFoundException(
-        `Character: ${characterGuid} not found, but will be added to OSINT-DB on existence shortly`,
+        `Character: ${guid} not found, but will be added to OSINT-DB on existence shortly`,
       );
     }
+
     return character;
   }
 
   async getCharactersByHash(input: CharacterHashDto) {
     try {
       const [type, hash] = input.hash.split('@');
-      const isHashFieldExists = CHARACTER_HASH_FIELDS.has(
-        <CharacterHashFieldType>type,
-      );
-      if (!isHashFieldExists) {
+      const isHashField = CHARACTER_HASH_FIELDS.has(<CharacterHashFieldType>type);
+      if (!isHashField) {
         throw new ServiceUnavailableException(`Query: hash ${type} not exists`);
       }
 
-      const hashField = CHARACTER_HASH_FIELDS.get(<CharacterHashFieldType>type);
+      const hashType = CHARACTER_HASH_FIELDS.get(<CharacterHashFieldType>type);
       const whereQuery: FindOptionsWhere<CharactersEntity> = {
-        [hashField]: hash,
+        [hashType]: hash,
       };
-
+      // TODO join?
       return await this.charactersRepository.find({
         where: whereQuery,
         take: 100,
@@ -148,7 +197,8 @@ export class OsintService {
       if (input.realmsId) {
         where.realmId = In(input.realmsId);
       }
-      return await this.charactersRepository.findBy(where);
+
+      return await this.charactersProfileRepository.findBy(where);
     } catch (errorOrException) {
       throw new HttpException(
         'Internal Server Error',
@@ -176,7 +226,7 @@ export class OsintService {
       take: 250,
     });
   }
-
+  // TODO logic for realm population
   async getRealmPopulation(_id: string): Promise<string[]> {
     return [_id, _id];
   }

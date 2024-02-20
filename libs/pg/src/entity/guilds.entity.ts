@@ -16,7 +16,6 @@ export class GuildsEntity {
   readonly uuid: string;
 
   @Column({
-    // TODO function,
     nullable: false,
     type: 'varchar',
   })

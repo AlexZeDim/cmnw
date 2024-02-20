@@ -9,9 +9,9 @@ import {
 
 export const MAX_LEVEL = 70;
 
-export const OSINT_CHARACTER_LIMIT = 10000;
+export const OSINT_CHARACTER_LIMIT = 1000;
 
-export const OSINT_GUILD_LIMIT = 10000;
+export const OSINT_GUILD_LIMIT = 1000;
 
 export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
@@ -29,18 +29,11 @@ export const OSINT_LFG_WOW_PROGRESS = [
   'https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts',
 ];
 
-export const REALM_LOCALES: string[] = [
-  'ru_ru',
-  'en_gb',
-  'de_de',
-  'fr_fr',
-  'it_it',
-  'es_es',
-];
+export const REALM_LOCALES = ['ru_ru', 'en_gb', 'de_de', 'fr_fr', 'it_it', 'es_es'];
 
-export const BRACKETS: string[] = ['2v2', '3v3', 'rbg'];
+export const BRACKETS = ['2v2', '3v3', 'rbg'];
 
-export const RAIDS: string[] = [
+export const RAIDS = [
   'uldir',
   'battle-of-dazaralor',
   'crucible-of-storms',
@@ -48,6 +41,9 @@ export const RAIDS: string[] = [
   'nyalotha-the-waking-city',
   'castle-nathria',
   'sanctum-of-domination',
+  'vault-of-the-incarnates',
+  'aberrus-the-shadowed-crucible',
+  'amirdrassil-the-dreams-hope',
 ];
 
 export const RAID_FACTIONS = ['alliance', 'horde'];

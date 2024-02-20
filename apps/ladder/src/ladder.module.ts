@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { LadderService } from './ladder.service';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
-
+console.log(postgresConfig);
 @Module({
   imports: [
     HttpModule,

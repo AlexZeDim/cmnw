@@ -51,7 +51,7 @@ export class LadderService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     // await this.indexHallOfFame(GLOBAL_OSINT_KEY, false);
     // await this.indexMythicPlusLadder(GLOBAL_OSINT_KEY, false);
-    await this.indexPvPLadder(GLOBAL_OSINT_KEY, false);
+    // await this.indexPvPLadder(GLOBAL_OSINT_KEY, false);
   }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)

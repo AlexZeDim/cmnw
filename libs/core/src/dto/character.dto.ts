@@ -1,5 +1,3 @@
-import { Character } from '@app/mongo';
-
 export class CharacterDto {
   readonly _id: string;
 
@@ -51,8 +49,6 @@ export class CharacterDto {
 
   readonly inset: string;
 
-  readonly languages: Character['languages'];
-
   readonly last_modified: Date;
 
   readonly mounts_score: number;
@@ -65,19 +61,11 @@ export class CharacterDto {
 
   readonly main: string;
 
-  readonly mounts: Character['mounts'];
-
   readonly name: string;
 
   readonly personality: string;
 
-  readonly pets: Character['pets'];
-
-  readonly professions: Character['professions'];
-
   readonly race: string;
-
-  readonly raid_progress: Character['raid_progress'];
 
   readonly realm: string;
 

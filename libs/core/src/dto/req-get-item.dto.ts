@@ -5,8 +5,8 @@ import { Transform } from 'class-transformer';
 
 export class ReqGetItemDto {
   @ApiProperty(SWAGGER_ITEM_ID)
-  @IsNotEmpty({ message: '_id is required' })
+  @IsNotEmpty({ message: 'ID is required' })
   @IsString()
-  @Transform(({ value: _id }) => _id.toLowerCase())
-  readonly _id: string;
+  @Transform(({ value: id }) => id.toLowerCase())
+  readonly id: string;
 }

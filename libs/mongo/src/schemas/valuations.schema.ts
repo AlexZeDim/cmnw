@@ -2,7 +2,6 @@ import { Document, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
 import { Item } from '@app/mongo/schemas/items.schema';
-import { Realm } from '@app/mongo/schemas/realms.schema';
 
 @Schema()
 class ItemNames {
@@ -193,7 +192,7 @@ export class Valuations extends Document {
   item_id: number | Item;
 
   @Prop({ required: true, type: Number, ref: 'Realm' })
-  connected_realm_id: number | Realm;
+  connected_realm_id: number;
 
   @Prop({ type: Number, required: true })
   last_modified: number;

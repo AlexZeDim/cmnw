@@ -22,7 +22,7 @@ export const SWAGGER_ITEM_QUOTES: ApiPropertyOptions = {
 
 export const SWAGGER_ITEM_FEED: ApiPropertyOptions = {
   name: 'feed',
-  type: () => Auction,
+  type: () => Market,
   description: 'Feed represents an unedited auction house order data feed',
   example: {
     id: 123432432,
@@ -120,18 +120,8 @@ export const SWAGGER_ITEM_CHART_DATASET: ApiPropertyOptions = {
   },
 };
 
-export const SWAGGER_ITEM_CROSS_REALM: ApiPropertyOptions = {
-  name: '_id',
-  description:
-    'Request item by query (ID, ticker, name) and connected_realm (id, slug, name)',
-  type: String,
-  required: true,
-  nullable: false,
-  example: '171276@gordunni',
-};
-
 export const SWAGGER_ITEM_ID: ApiPropertyOptions = {
-  name: '_id',
+  name: 'id',
   description: 'Item ID, name or asset class of item group ',
   required: true,
   type: String,

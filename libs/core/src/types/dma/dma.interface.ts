@@ -277,7 +277,7 @@ export interface IVARealm {
 
 export interface IVAAuctions {
   readonly _id: number;
-  readonly data: Auction;
+  readonly data: Market;
 }
 
 export interface IGold {
@@ -388,7 +388,7 @@ export interface IBuildYAxis {
 }
 
 export interface IGetCommdtyOrders {
-  readonly model: Model<Gold | Auction>;
+  readonly model: Model<Market>;
   readonly itemId?: number;
   readonly connectedRealmId?: number;
   readonly timestamp?: number;

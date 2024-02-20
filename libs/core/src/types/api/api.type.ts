@@ -8,6 +8,7 @@ import {
   IWowToken,
   IItem,
   IItemMedia,
+  IHallOfFame,
 } from '@app/core/types';
 
 export type BlizzardApiStringNumber = string | number;
@@ -36,6 +37,8 @@ export type BlizzardApiCharacterMedia = Readonly<ICharacterMedia>;
 export type BlizzardApiWowToken = Readonly<IWowToken>;
 
 export type BlizzardApiAuctions = Readonly<IAuctions>;
+
+export type BlizzardApiHallOfFame = Readonly<IHallOfFame>;
 
 export type GoldApiListing = Readonly<IGold>;
 

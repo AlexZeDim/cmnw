@@ -38,6 +38,35 @@ export interface IGuildMember {
   level?: number;
 }
 
+export interface IHallOfFameGuild {
+  name: string;
+  id: number;
+  realm: {
+    name: string;
+    id: number;
+    slug: string;
+  };
+}
+
+export interface IHallOfFameEntry {
+  guild: IHallOfFameGuild;
+  faction: INameWithType;
+  timestamp: number;
+  region: string;
+  rank: number;
+}
+
+export interface IHallOfFame {
+  _links: {
+    self: ISelfKeyHref;
+  };
+
+  slug: string;
+  criteria_type: string;
+  entries: Array<IHallOfFameEntry>;
+  lastModified: string;
+}
+
 export interface IRGuildRoster {
   _links: {
     self: ISelfKeyHref;

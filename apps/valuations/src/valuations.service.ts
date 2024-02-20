@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Item, Key, Pricing, Realm } from '@app/mongo';
+import { Market, Item, Key, Pricing, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import {
   ASSET_EVALUATION_PRIORITY, IVAAuctions,
@@ -29,8 +29,8 @@ export class ValuationsService implements OnApplicationBootstrap {
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Pricing.name)
     private readonly PricingModel: Model<Pricing>,
-    @InjectModel(Auction.name)
-    private readonly AuctionsModel: Model<Auction>,
+    @InjectModel(Market.name)
+    private readonly AuctionsModel: Model<Market>,
     @BullQueueInject(valuationsQueue.name)
     private readonly queue: Queue<IQItemValuation, number>,
   ) { }

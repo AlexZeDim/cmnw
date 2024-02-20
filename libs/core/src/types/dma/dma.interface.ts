@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Auction, Gold } from '@app/mongo';
+import { Market } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { ItemsEntity } from '@app/pg';
 import {

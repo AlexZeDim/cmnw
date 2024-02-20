@@ -1,29 +1,18 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { DmaController } from './dma.controller';
 import { DmaService } from './dma.service';
 import { valuationsQueue } from '@app/core';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import {
-  Auction,
-  AuctionsSchema,
-  Gold,
-  GoldsSchema,
-  Item,
-  ItemsSchema,
-  Realm,
-  RealmsSchema,
-  Token,
-  TokenSchema,
-  Valuations,
-  ValuationsSchema,
-} from '@app/mongo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarketEntity } from '@app/pg';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connectionString),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([MarketEntity]),
+    /*
     MongooseModule.forFeature([
       { name: Token.name, schema: TokenSchema },
       { name: Realm.name, schema: RealmsSchema },
@@ -31,7 +20,7 @@ import {
       { name: Gold.name, schema: GoldsSchema },
       { name: Auction.name, schema: AuctionsSchema },
       { name: Valuations.name, schema: ValuationsSchema },
-    ]),
+    ]),*/
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,
@@ -48,7 +37,10 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: valuationsQueue.name, options: valuationsQueue.options }),
+    BullModule.registerQueue({
+      queueName: valuationsQueue.name,
+      options: valuationsQueue.options,
+    }),
   ],
   controllers: [DmaController],
   providers: [DmaService],

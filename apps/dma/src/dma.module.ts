@@ -13,18 +13,12 @@ import {
 } from '@app/configuration';
 
 import {
-  Auction,
+  Market,
   AuctionsSchema,
-  Gold,
-  GoldsSchema,
   Item,
   ItemsSchema,
-  Key,
-  KeysSchema,
   Pricing,
   PricingSchema,
-  Realm,
-  RealmsSchema,
   SkillLine,
   SkillLineSchema,
   SpellEffect,
@@ -43,11 +37,9 @@ import {
     TypeOrmModule.forFeature([KeysEntity, RealmsEntity, ItemsEntity, MarketEntity]),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
       { name: Item.name, schema: ItemsSchema },
-      { name: Realm.name, schema: RealmsSchema },
       { name: Pricing.name, schema: PricingSchema },
-      { name: Auction.name, schema: AuctionsSchema },
+      { name: Market.name, schema: AuctionsSchema },
       { name: SkillLine.name, schema: SkillLineSchema },
       { name: SpellEffect.name, schema: SpellEffectSchema },
       { name: SpellReagents.name, schema: SpellReagentsSchema },

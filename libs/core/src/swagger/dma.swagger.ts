@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptions, getSchemaPath } from '@nestjs/swagger';
-import { Auction, Valuations } from '@app/mongo';
+import { Market, Valuations } from '@app/mongo';
 import { IOrderQuotes } from 'libs/core/src/types';
 
 class OrderQuotes implements IOrderQuotes {

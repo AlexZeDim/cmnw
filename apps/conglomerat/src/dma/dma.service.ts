@@ -1,64 +1,55 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  IARealm,
+  IBuildYAxis,
+  IChartOrder,
+  IGetCommdtyOrders,
+  IOrderQuotes,
+  IOrderXrs,
+  IQItemValuation,
   ItemChartDto,
   ItemCrossRealmDto,
   ItemFeedDto,
   ItemQuotesDto,
-  WowtokenDto,
   ItemValuationsDto,
   ReqGetItemDto,
-  IBuildYAxis,
-  IGetCommdtyOrders,
+  VALUATION_TYPE,
+  valuationsQueue,
+  WowtokenDto,
 } from '@app/core';
-import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
-import { Aggregate, FilterQuery, Model } from 'mongoose';
+import { Market, Gold, Item, Token, Valuations } from '@app/mongo';
+import { Aggregate, FilterQuery } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
-import {
-  IChartOrder,
-  IQItemValuation,
-  IOrderQuotes,
-  IOrderXrs,
-  IARealm,
-  VALUATION_TYPE,
-  valuationsQueue,
-} from '@app/core';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ItemsEntity, KeysEntity, MarketEntity } from '@app/pg';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DmaService {
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
-    @InjectModel(Token.name)
-    private readonly TokenModel: Model<Token>,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Item.name)
-    private readonly ItemModel: Model<Item>,
-    @InjectModel(Gold.name)
-    private readonly GoldModel: Model<Gold>,
-    @InjectModel(Auction.name)
-    private readonly AuctionModel: Model<Auction>,
-    @InjectModel(Valuations.name)
-    private readonly ValuationsModel: Model<Valuations>,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(ItemsEntity)
+    private readonly itemsRepository: Repository<ItemsEntity>,
+    @InjectRepository(MarketEntity)
+    private readonly marketRepository: Repository<MarketEntity>,
     @BullQueueInject(valuationsQueue.name)
     private readonly queueValuations: Queue<IQItemValuation, number>,
   ) {}
 
-  async getItem(input: ReqGetItemDto): Promise<LeanDocument<Item>> {
-    if (isNaN(Number(input._id))) {
-      return this.ItemModel.findOne(
-        { $text: { $search: input._id } },
-        { score: { $meta: 'textScore' } },
-      )
-        .sort({ score: { $meta: 'textScore' } })
-        .lean();
-    } else {
-      return this.ItemModel.findById(parseInt(input._id)).lean();
+  async getItem(input: ReqGetItemDto): Promise<ItemsEntity> {
+    const isNotNumber = isNaN(Number(input.id));
+    if (isNotNumber) {
+      throw new BadRequestException('Please provide correct item ID in your query');
     }
+
+    const id = parseInt(input.id);
+    return await this.itemsRepository.findOneBy({ id });
   }
 
   async getItemValuations(input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
@@ -413,7 +404,7 @@ export class DmaService {
     }
 
     if (!isGold && !isCommdty) {
-      const searchByAuctions: FilterQuery<Auction> = { 'item.id': itemId };
+      const searchByAuctions: FilterQuery<Market> = { 'item.id': itemId };
 
       if (connectedRealmsIds) {
         Object.assign(searchByAuctions, {
@@ -881,7 +872,7 @@ export class DmaService {
       item.asset_class.includes(VALUATION_TYPE.COMMDTY) ||
       (item.stackable && item.stackable > 1);
 
-    const feed: LeanDocument<Auction>[] = [];
+    const feed: LeanDocument<Market>[] = [];
 
     if (!isCommdty) {
       await lastValueFrom(

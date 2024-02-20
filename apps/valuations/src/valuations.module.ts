@@ -3,7 +3,7 @@ import { ValuationsService } from './valuations.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import {
-  Auction,
+  Market,
   AuctionsSchema,
   Item,
   ItemsSchema,
@@ -27,7 +27,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       { name: Item.name, schema: ItemsSchema },
       { name: Realm.name, schema: RealmsSchema },
       { name: Pricing.name, schema: PricingSchema },
-      { name: Auction.name, schema: AuctionsSchema },
+      { name: Market.name, schema: AuctionsSchema },
     ]),
     BullModule.forRoot({
       options: {

@@ -44,13 +44,13 @@ export class CharactersService implements OnApplicationBootstrap {
     clearance: string = GLOBAL_OSINT_KEY,
   ): Promise<void> {
     try {
-      const jobs: number = await this.queue.count();
+      const jobs = await this.queue.count();
       if (jobs > 10000) {
         throw new Error(`${jobs} jobs found`);
       }
 
       let characterIteration = 0;
-      this.keyEntities = await getKeys(this.keysRepository, clearance);
+      this.keyEntities = await getKeys(this.keysRepository, clearance, false, true);
 
       let length = this.keyEntities.length;
 
@@ -59,6 +59,8 @@ export class CharactersService implements OnApplicationBootstrap {
         take: OSINT_CHARACTER_LIMIT,
         skip: this.offset,
       });
+
+      this.offset = this.offset + OSINT_CHARACTER_LIMIT;
 
       await lastValueFrom(
         from(characters).pipe(
@@ -91,7 +93,7 @@ export class CharactersService implements OnApplicationBootstrap {
               this.keyEntities = await getKeys(this.keysRepository, clearance);
               length = this.keyEntities.length;
             }
-          }),
+          }, 10),
         ),
       );
     } catch (errorOrException) {

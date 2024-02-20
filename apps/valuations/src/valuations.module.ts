@@ -2,30 +2,24 @@ import { Module } from '@nestjs/common';
 import { ValuationsService } from './valuations.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@anchan828/nest-bullmq';
+import { valuationsQueue } from '@app/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   Market,
   AuctionsSchema,
   Item,
   ItemsSchema,
-  Key,
-  KeysSchema,
   Pricing,
   PricingSchema,
-  Realm,
-  RealmsSchema,
 } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
-import { valuationsQueue } from '@app/core';
-import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
       { name: Item.name, schema: ItemsSchema },
-      { name: Realm.name, schema: RealmsSchema },
       { name: Pricing.name, schema: PricingSchema },
       { name: Market.name, schema: AuctionsSchema },
     ]),

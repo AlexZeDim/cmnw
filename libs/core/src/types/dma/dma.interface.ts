@@ -381,9 +381,7 @@ export interface ICsvReagents {
 
 export interface IBuildYAxis {
   readonly itemId: number;
-  readonly connectedRealmsIds?: number[];
-  readonly isCommdty: boolean;
-  readonly isXrs: boolean;
+  readonly isCOMMDTY: boolean;
   readonly isGold: boolean;
 }
 

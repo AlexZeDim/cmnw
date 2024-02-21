@@ -23,8 +23,6 @@ import {
   CharacterJobQueue,
   MYTHIC_PLUS_SEASONS,
   OSINT_SOURCE,
-  RAID_FACTIONS,
-  RAIDS,
   getKeys,
   apiConstParams,
   API_HEADERS_ENUM,
@@ -241,67 +239,6 @@ export class LadderService implements OnApplicationBootstrap {
       await this.redisService.set(`week:${w}`, w);
     } catch (errorOrException) {
       this.logger.error(`indexMythicPlusLadder: ${errorOrException}`);
-    }
-  }
-
-  @Cron(CronExpression.EVERY_WEEK)
-  async indexHallOfFame(
-    clearance: string = GLOBAL_OSINT_KEY,
-    onlyLast = true,
-  ): Promise<void> {
-    try {
-      const keys = await getKeys(this.keysRepository, clearance, true);
-      const [key] = keys;
-
-      const i = 0;
-
-      this.BNet = new BlizzAPI({
-        region: 'eu',
-        clientId: key.client,
-        clientSecret: key.secret,
-        accessToken: key.token,
-      });
-
-      for (const raid of RAIDS) {
-        if (onlyLast && raid !== RAIDS[RAIDS.length - 1]) continue;
-        await delay(2);
-
-        for (const raidFaction of RAID_FACTIONS) {
-          const { entries } = await this.BNet.query<any>(
-            `/data/wow/leaderboard/hall-of-fame/${raid}/${raidFaction}`,
-            apiConstParams(API_HEADERS_ENUM.DYNAMIC),
-          );
-
-          const guildJobs = entries.map((guildEntry) => ({
-            name: toGuid(guildEntry.profile.name, guildEntry.profile.realm.slug),
-            data: {
-              guid: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
-              name: guildEntry.guild.name,
-              realm: guildEntry.guild.realm.slug,
-              realmId: guildEntry.guild.realm.id,
-              realmName: guildEntry.guild.realm.name,
-              faction: raidFaction === 'HORDE' ? FACTION.H : FACTION.A,
-              createdBy: OSINT_SOURCE.TOP100,
-              updatedBy: OSINT_SOURCE.TOP100,
-              region: 'eu',
-              forceUpdate: ms('1h'),
-              iteration: guildEntry.rank,
-              requestGuildRank: true,
-              createOnlyUnique: false,
-            },
-            opts: {
-              jobId: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
-              priority: 2,
-            },
-          }));
-
-          await this.queueCharacters.addBulk(guildJobs);
-
-          this.logger.log(`indexHallOfFame: Raid ${raid} | Faction ${raidFaction}`);
-        }
-      }
-    } catch (errorOrException) {
-      this.logger.error(`indexHallOfFame: ${errorOrException}`);
     }
   }
 }

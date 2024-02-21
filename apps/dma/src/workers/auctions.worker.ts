@@ -157,6 +157,7 @@ export class AuctionsWorker {
         orderId: `${order.id}`,
         itemId: order.item.id,
         connectedRealmId: connectedRealmId,
+        timeLeft: order.time_left,
         timestamp: timestamp,
       });
 

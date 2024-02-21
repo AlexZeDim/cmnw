@@ -8,6 +8,7 @@ import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import {
   API_HEADERS_ENUM,
   apiConstParams,
@@ -34,6 +35,8 @@ export class AuctionsWorker {
   private BNet: BlizzAPI;
 
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(ItemsEntity)
@@ -117,6 +120,11 @@ export class AuctionsWorker {
         ),
       );
 
+      if (isCommdty) {
+        await this.redisService.set(`COMMDTY:TS:${timestamp}`, timestamp);
+        await job.updateProgress(80);
+      }
+
       const updateQuery: Partial<RealmsEntity> = isCommdty
         ? { commoditiesTimestamp: timestamp }
         : { auctionsTimestamp: timestamp };
@@ -146,6 +154,7 @@ export class AuctionsWorker {
     return orders.map((order) => {
       if (!order.item.id) return;
       const marketEntity = this.marketRepository.create({
+        orderId: `${order.id}`,
         itemId: order.item.id,
         connectedRealmId: connectedRealmId,
         timestamp: timestamp,
@@ -191,6 +200,9 @@ export class AuctionsWorker {
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;
+
+      const isValue = Boolean(price) && Boolean(quantity);
+      if (isValue) marketEntity.value = price * quantity;
 
       return marketEntity;
     });

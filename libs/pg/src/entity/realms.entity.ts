@@ -117,7 +117,7 @@ export class RealmsEntity {
   warcraftLogsId: number;
 
   @Column({
-    default: null,
+    default: 0,
     nullable: true,
     type: 'bigint',
     name: 'auctions_timestamp',
@@ -129,7 +129,7 @@ export class RealmsEntity {
   auctionsTimestamp: number;
 
   @Column({
-    default: null,
+    default: 0,
     nullable: true,
     type: 'bigint',
     name: 'commodities_timestamp',
@@ -141,7 +141,7 @@ export class RealmsEntity {
   commoditiesTimestamp: number;
 
   @Column({
-    default: null,
+    default: 0,
     nullable: true,
     type: 'bigint',
     name: 'valuations_timestamp',
@@ -153,7 +153,7 @@ export class RealmsEntity {
   valuationsTimestamp: number;
 
   @Column({
-    default: null,
+    default: 0,
     nullable: true,
     type: 'bigint',
     name: 'gold_timestamp',

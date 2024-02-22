@@ -441,23 +441,6 @@ services:
     networks:
       - cmnw-network
 
-  wowtoken:
-    build: ./
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    container_name: wowtoken
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/wowtoken/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - cmnw-network
-
 # Docker Networks
 networks:
   # All container connect in a network

@@ -13,7 +13,7 @@ Started in 2017 as a monolith, CMNW is a set of separate microservices, build wi
 
 ## Tests
 
-Written with [Jest.js[(https://jestjs.io) library, and may be found in `test` [folder](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests) of current repository.
+Written with [Jest.js][(https://jestjs.io) library, and may be found in `test` [folder](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests) of current repository.
  - [test suite](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/test/tests.osint.spec.ts) and [osint.mocks](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/mocks/osint.mock.ts) for OSINT area
  - [test suite](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/test/tests.dma.spec.ts) and [dma.mocks](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/mocks/dma.mock.ts) for DMA area
 

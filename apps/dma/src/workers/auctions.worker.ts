@@ -12,7 +12,6 @@ import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import {
   API_HEADERS_ENUM,
   apiConstParams,
-  AuctionItemExtra,
   AuctionJobQueue,
   auctionsQueue,
   BlizzardApiAuctions,
@@ -21,7 +20,9 @@ import {
   ICommodityOrder,
   IPetList,
   isAuctions,
+  ITEM_KEY_GUARD,
   MARKET_TYPE,
+  PETS_KEY_GUARD,
   toGold,
   transformPrice,
 } from '@app/core';
@@ -169,27 +170,14 @@ export class AuctionsWorker {
       if (!price) return;
 
       if (!isCommdty) {
-        const itemKeyGuard = new Map<string, keyof AuctionItemExtra>([
-          ['bonus_lists', 'bonusList'],
-          ['context', 'context'],
-          ['modifiers', 'modifiers'],
-        ]);
-
-        for (const [path, key] of itemKeyGuard.entries()) {
+        for (const [path, key] of ITEM_KEY_GUARD.entries()) {
           if (path in order.item) marketEntity[key] = order.item[path];
         }
 
         if (isPetOrder) {
           // TODO pet fix for pet cage item
-          const petsKeyGuard = new Map<string, keyof IPetList>([
-            ['pet_breed_id', 'petBreedId'],
-            ['pet_level', 'petLevel'],
-            ['pet_quality_id', 'petQualityId'],
-            ['pet_species_id', 'petSpeciesId'],
-          ]);
-
           const petList: Partial<IPetList> = {};
-          for (const [path, key] of petsKeyGuard.entries()) {
+          for (const [path, key] of PETS_KEY_GUARD.entries()) {
             if (path in order.item) petList[key] = order.item[path];
           }
         }

@@ -1,5 +1,5 @@
 import { mquery } from 'mongoose';
-import { IItem, IItemFieldMap } from '@app/core/types';
+import { AuctionItemExtra, IItem, IItemFieldMap, IPetList } from '@app/core/types';
 
 export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
@@ -149,6 +149,19 @@ export const ITEM_FIELD_MAPPING = new Map<keyof Partial<IItem>, IItemFieldMap>([
   ['inventory_type', { key: 'inventoryType', path: 'inventory_type.name' }],
   ['required_level', { key: 'level', path: 'required_level' }],
   ['preview_item', { key: 'lootType', path: 'preview_item.binding.type' }],
+]);
+
+export const ITEM_KEY_GUARD = new Map<string, keyof AuctionItemExtra>([
+  ['bonus_lists', 'bonusList'],
+  ['context', 'context'],
+  ['modifiers', 'modifiers'],
+]);
+
+export const PETS_KEY_GUARD = new Map<string, keyof IPetList>([
+  ['pet_breed_id', 'petBreedId'],
+  ['pet_level', 'petLevel'],
+  ['pet_quality_id', 'petQualityId'],
+  ['pet_species_id', 'petSpeciesId'],
 ]);
 
 export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([

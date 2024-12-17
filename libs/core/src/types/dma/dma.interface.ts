@@ -227,10 +227,12 @@ export interface IPricingMethods {
 }
 
 export interface IChartOrder {
+  lt: number;
   x: number;
   y: number;
   orders: number;
   value: number;
+  price: number;
   oi: number;
 }
 
@@ -381,7 +383,6 @@ export interface ICsvReagents {
 
 export interface IBuildYAxis {
   readonly itemId: number;
-  readonly isCOMMDTY: boolean;
   readonly isGold: boolean;
 }
 

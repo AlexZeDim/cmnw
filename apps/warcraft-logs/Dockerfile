@@ -1,10 +1,9 @@
-FROM arm64v8/node:lts
+FROM node:lts-alpine
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
-# Set image labels #
-LABEL org.opencontainers.image.title = "WowToken"
+LABEL org.opencontainers.image.title = "WarcraftLogs"
 LABEL org.opencontainers.image.vendor = "AlexZeDim"
 LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
@@ -13,7 +12,7 @@ LABEL org.opencontainers.image.description = "CMNW"
 
 WORKDIR /usr/src/app
 
-# Clone config from private github repo #
+RUN apk add --no-cache git
 RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
 RUN git clone https://github.com/AlexZeDim/cmnw-secrets.git
 RUN mv cmnw-secrets/* .
@@ -25,14 +24,14 @@ COPY package.json ./
 RUN echo //npm.pkg.github.com/:_authToken=${CR_PAT} >> ~/.npmrc
 RUN echo @alexzedim:registry=https://npm.pkg.github.com/ >> ~/.npmrc
 
-RUN yarn install --network-timeout 1000000
+RUN yarn install
 
 COPY . .
 
 RUN npm install -g @nestjs/cli
-RUN nest build wowtoken
+RUN nest build warcraft-logs
 
-CMD ["node", "dist/apps/wowtoken/main.js"]
+CMD wait && ["node", "dist/apps/warcraft-logs/main.js"]
 
 
 

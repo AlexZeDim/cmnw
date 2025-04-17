@@ -20,31 +20,31 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema()
 export class SkillLine extends Document {
   @Prop({ type: Number, required: true })
-    _id: number;
+  _id: number;
 
   @Prop({ required: true })
-    skill_line: number;
+  skill_line: number;
 
   @Prop({ required: true, index: true })
-    spell_id: number;
+  spell_id: number;
 
   @Prop({ required: true })
-    supersedes_spell: number;
+  supersedes_spell: number;
 
   @Prop({ required: true })
-    min_skill_rank: number;
+  min_skill_rank: number;
 
   @Prop({ required: true })
-    num_skill_ups: number;
+  num_skill_ups: number;
 
   @Prop({ required: true })
-    green_craft: number;
+  green_craft: number;
 
   @Prop({ required: true })
-    yellow_craft: number;
+  yellow_craft: number;
 
   @Prop({ required: true })
-    skill_up_skill_line_id: number;
+  skill_up_skill_line_id: number;
 }
 
 export const SkillLineSchema = SchemaFactory.createForClass(SkillLine);

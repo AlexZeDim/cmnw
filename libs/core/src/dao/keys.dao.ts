@@ -7,11 +7,18 @@ import { KEY_LOCK_ERRORS_NUM } from '@app/core/constants';
 export const getKey = async (
   repository: Repository<KeysEntity>,
   clearance: string,
+  isSafe = true,
 ) => {
-  const keyEntity = await repository.findOneBy({
-    tags: ArrayContains([clearance]),
-    errorCounts: LessThan(KEY_LOCK_ERRORS_NUM),
-  });
+  const findBy = isSafe
+    ? {
+        tags: ArrayContains([clearance]),
+        errorCounts: LessThan(KEY_LOCK_ERRORS_NUM),
+      }
+    : {
+        tags: ArrayContains([clearance]),
+      };
+
+  const keyEntity = await repository.findOneBy(findBy);
   if (!keyEntity) {
     throw new NotFoundException(`${clearance} keys found`);
   }
@@ -22,11 +29,18 @@ export const getKeys = async (
   repository: Repository<KeysEntity>,
   clearance: string,
   isRandom = false,
+  isSafe = true,
 ) => {
-  const keyEntities = await repository.findBy({
-    tags: ArrayContains([clearance]),
-    errorCounts: LessThan(KEY_LOCK_ERRORS_NUM),
-  });
+  const findBy = isSafe
+    ? {
+        tags: ArrayContains([clearance]),
+        errorCounts: LessThan(KEY_LOCK_ERRORS_NUM),
+      }
+    : {
+        tags: ArrayContains([clearance]),
+      };
+
+  const keyEntities = await repository.findBy(findBy);
   if (!keyEntities.length) {
     throw new NotFoundException(`${keyEntities.length} keys found`);
   }

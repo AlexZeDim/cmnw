@@ -3,29 +3,44 @@ import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
-import {
-  AuctionJobQueue,
-  auctionsQueue,
-  delay,
-  getKeys,
-  GLOBAL_DMA_KEY,
-} from '@app/core';
 import { InjectRepository } from '@nestjs/typeorm';
-import { KeysEntity, RealmsEntity } from '@app/pg';
+import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import { LessThan, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { BlizzAPI } from 'blizzapi';
+import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  AuctionJobQueue,
+  auctionsQueue,
+  BlizzardApiWowToken,
+  delay,
+  getKey,
+  getKeys,
+  GLOBAL_DMA_KEY,
+  isWowToken,
+  MARKET_TYPE,
+  toGold,
+  TOLERANCE_ENUM,
+} from '@app/core';
 
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {
+  private BNet: BlizzAPI;
   private readonly logger = new Logger(AuctionsService.name, {
     timestamp: true,
   });
 
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(MarketEntity)
+    private readonly marketRepository: Repository<MarketEntity>,
     @BullQueueInject(auctionsQueue.name)
     private readonly queue: Queue<AuctionJobQueue, number>,
   ) {}
@@ -100,6 +115,75 @@ export class AuctionsService implements OnApplicationBootstrap {
       );
     } catch (errorOrException) {
       this.logger.error(`indexCommodity ${errorOrException}`);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async indexTokens(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
+    try {
+      const key = await getKey(this.keysRepository, clearance);
+      const redisKey = `WOWTOKEN:TS`;
+
+      this.BNet = new BlizzAPI({
+        region: 'eu',
+        clientId: key.client,
+        clientSecret: key.secret,
+        accessToken: key.token,
+      });
+
+      const lts = await this.redisService.get(redisKey);
+      const ifModifiedSince = lts
+        ? DateTime.fromMillis(Number(lts)).toHTTP()
+        : undefined;
+
+      const response = await this.BNet.query<BlizzardApiWowToken>(
+        '/data/wow/token/index',
+        apiConstParams(
+          API_HEADERS_ENUM.DYNAMIC,
+          TOLERANCE_ENUM.DMA,
+          false,
+          ifModifiedSince,
+        ),
+      );
+
+      const isWowTokenValid = isWowToken(response);
+      if (!isWowTokenValid) {
+        this.logger.error(`Token response not valid`);
+        return;
+      }
+
+      const { price, lastModified, last_updated_timestamp: timestamp } = response;
+
+      const isWowTokenExists = await this.marketRepository.exist({
+        where: {
+          timestamp: timestamp,
+          itemId: 1,
+          connectedRealmId: 1,
+          type: MARKET_TYPE.T,
+        },
+      });
+
+      if (isWowTokenExists) {
+        this.logger.debug(
+          `Token exists on timestamp ${timestamp} | ${lastModified}`,
+        );
+        return;
+      }
+
+      const wowTokenEntity = this.marketRepository.create({
+        orderId: `${timestamp}`,
+        price: toGold(price),
+        itemId: 122284,
+        quantity: 1,
+        connectedRealmId: 1,
+        type: MARKET_TYPE.T,
+        timestamp,
+      });
+
+      await this.redisService.set(redisKey, timestamp);
+      await this.marketRepository.save(wowTokenEntity);
+    } catch (errorOrException) {
+      this.logger.error(errorOrException);
     }
   }
 }

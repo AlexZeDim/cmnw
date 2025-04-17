@@ -1,11 +1,5 @@
 import { CharactersProfileEntity } from '@app/pg';
 
-export interface IWarcraftLogsActors {
-  type: 'NPC' | 'Player' | 'Pet';
-  name: string;
-  server: string | null;
-}
-
 export interface IWarcraftLogsToken {
   token_type: string;
   expires_in: number;
@@ -42,6 +36,35 @@ export interface IGuildMember {
   id: number;
   rank: number;
   level?: number;
+}
+
+export interface IHallOfFameGuild {
+  name: string;
+  id: number;
+  realm: {
+    name: string;
+    id: number;
+    slug: string;
+  };
+}
+
+export interface IHallOfFameEntry {
+  guild: IHallOfFameGuild;
+  faction: INameWithType;
+  timestamp: number;
+  region: string;
+  rank: number;
+}
+
+export interface IHallOfFame {
+  _links: {
+    self: ISelfKeyHref;
+  };
+
+  slug: string;
+  criteria_type: string;
+  entries: Array<IHallOfFameEntry>;
+  lastModified: string;
 }
 
 export interface IRGuildRoster {

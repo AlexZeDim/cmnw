@@ -28,24 +28,28 @@ import {
   ItemCrossRealmDto,
   ItemFeedDto,
   ItemQuotesDto,
-  ItemValuationsDto, ReqGetItemDto,
+  ItemValuationsDto,
+  ReqGetItemDto,
   WowtokenDto,
 } from '@app/core';
 
 @ApiTags('dma')
 @Controller('dma')
 export class DmaController {
-
-  constructor(
-    private readonly dmaService: DmaService,
-  ) {}
+  constructor(private readonly dmaService: DmaService) {}
 
   @ApiOperation({ description: 'Returns requested item' })
   @ApiOkResponse({ description: 'Request item with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
@@ -54,13 +58,18 @@ export class DmaController {
     return this.dmaService.getItem(input);
   }
 
-
   @ApiOperation({ description: 'Returns requested WoWToken' })
   @ApiOkResponse({ description: 'Request item with selected timestamp' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
@@ -71,10 +80,16 @@ export class DmaController {
 
   @ApiOperation({ description: 'Returns requested item valuations' })
   @ApiOkResponse({ description: 'Request item valuations  with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
@@ -85,24 +100,36 @@ export class DmaController {
 
   @ApiOperation({ description: 'Returns requested commdty item chart' })
   @ApiOkResponse({ description: 'Request commdty chart with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   @Get('/commdty/chart')
   async getCommdtyChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
-    return this.dmaService.getCommdtyChart(input);
+    return this.dmaService.getChart(input);
   }
 
   @ApiOperation({ description: 'Returns requested gold chart' })
   @ApiOkResponse({ description: 'Request gold chart with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
@@ -113,10 +140,16 @@ export class DmaController {
 
   @ApiOperation({ description: 'Returns requested item quotes' })
   @ApiOkResponse({ description: 'Request item quotes with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
@@ -127,10 +160,16 @@ export class DmaController {
 
   @ApiOperation({ description: 'Returns requested item feed' })
   @ApiOkResponse({ description: 'Request item feed with selected _id' })
-  @ApiUnauthorizedResponse({ description: 'You need authenticate yourself before request' })
+  @ApiUnauthorizedResponse({
+    description: 'You need authenticate yourself before request',
+  })
   @ApiForbiddenResponse({ description: 'You don`t have clearance for that' })
-  @ApiBadRequestResponse({ description: 'The server could not understand the request due to invalid syntax' })
-  @ApiServiceUnavailableResponse({ description: 'Server is under maintenance or overloaded' })
+  @ApiBadRequestResponse({
+    description: 'The server could not understand the request due to invalid syntax',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Server is under maintenance or overloaded',
+  })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)

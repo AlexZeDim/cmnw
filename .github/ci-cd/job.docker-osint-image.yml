@@ -1,15 +1,15 @@
-name: Create Characters Release Image
+name: Create OSINT Release Image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ development ]
     paths:
-      - 'apps/characters/**'
+      - 'apps/osint/**'
 
 jobs:
   publish:
     name: publish
-    runs-on: buildjet-8vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-latest #  buildjet-8vcpu-ubuntu-2204-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2
@@ -29,11 +29,11 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/alexzedim/characters
+            ghcr.io/alexzedim/osint
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
-            org.opencontainers.image.title=Characters
+            org.opencontainers.image.title=OSINT
             org.opencontainers.image.vendor=AlexZeDim
             org.opencontainers.image.url=https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png
             org.opencontainers.image.source=https://github.com/AlexZeDim/cmnw
@@ -48,10 +48,10 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./apps/characters/arm64.Dockerfile
+          file: ./apps/osint/arm64.Dockerfile
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/alexzedim/characters:latest
+          tags: ghcr.io/alexzedim/osint:latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}

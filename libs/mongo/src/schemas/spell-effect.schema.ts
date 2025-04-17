@@ -13,19 +13,19 @@ import { Item } from '@app/mongo/schemas/items.schema';
 @Schema()
 export class SpellEffect extends Document {
   @Prop({ required: true })
-    _id: number;
+  _id: number;
 
   @Prop({ required: true })
-    effect: number;
+  effect: number;
 
   @Prop({ required: true, index: true, type: Number, ref: 'Item' })
-    item_id: number | Item;
+  item_id: number | Item;
 
   @Prop({ required: true })
-    item_quantity: number;
+  item_quantity: number;
 
   @Prop({ required: true, index: true })
-    spell_id: number;
+  spell_id: number;
 }
 
 export const SpellEffectSchema = SchemaFactory.createForClass(SpellEffect);

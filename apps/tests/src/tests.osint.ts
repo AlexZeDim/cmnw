@@ -77,6 +77,7 @@ export class TestsOsint implements OnApplicationBootstrap {
       apiConstParams(API_HEADERS_ENUM.PROFILE),
     );
   }
+
   async guildRoster(nameSlug: string, realmSlug: string): Promise<any> {
     return this.BNet.query(
       `/data/wow/guild/${realmSlug}/${nameSlug}/roster`,

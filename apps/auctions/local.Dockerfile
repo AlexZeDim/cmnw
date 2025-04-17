@@ -27,7 +27,7 @@ COPY . .
 
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD ["node", "dist/apps/wowtoken/main.js"]
+CMD ["node", "dist/apps/auctions/main.js"]
 
 
 

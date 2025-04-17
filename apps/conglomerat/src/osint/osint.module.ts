@@ -1,38 +1,43 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
 import { charactersQueue, guildsQueue } from '@app/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Item,
-  ItemsSchema,
-  Key,
-  KeysSchema,
-  Log,
-  LogsSchema,
-  Realm,
-  RealmsSchema,
-  Subscription,
-  SubscriptionsSchema,
-} from '@app/mongo';
+  CharactersEntity,
+  CharactersGuildsMembersEntity,
+  CharactersMountsEntity,
+  CharactersPetsEntity,
+  CharactersProfessionsEntity,
+  CharactersProfileEntity,
+  GuildsEntity,
+  KeysEntity,
+  LogsEntity,
+  MountsEntity,
+  PetsEntity,
+  ProfessionsEntity,
+  RealmsEntity,
+} from '@app/pg';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connectionString),
-    MongooseModule.forFeature([
-      { name: Log.name, schema: LogsSchema },
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema },
-      { name: Guild.name, schema: GuildsSchema },
-      { name: Subscription.name, schema: SubscriptionsSchema },
-      { name: Item.name, schema: ItemsSchema },
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([
+      CharactersEntity,
+      CharactersGuildsMembersEntity,
+      CharactersMountsEntity,
+      CharactersPetsEntity,
+      CharactersProfessionsEntity,
+      CharactersProfileEntity,
+      GuildsEntity,
+      KeysEntity,
+      MountsEntity,
+      PetsEntity,
+      ProfessionsEntity,
+      RealmsEntity,
+      LogsEntity,
     ]),
     BullModule.forRoot({
       options: {

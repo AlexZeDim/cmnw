@@ -12,10 +12,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 @Schema()
 class ItemReagent {
   @Prop({ type: Number, required: true })
-    _id: number;
+  _id: number;
 
   @Prop({ required: true })
-    quantity: number;
+  quantity: number;
 }
 
 const ItemSchema = SchemaFactory.createForClass(ItemReagent);
@@ -23,13 +23,13 @@ const ItemSchema = SchemaFactory.createForClass(ItemReagent);
 @Schema()
 export class SpellReagents extends Document {
   @Prop({ type: Number, required: true })
-    _id: number;
+  _id: number;
 
   @Prop({ required: true, index: true })
-    spell_id: number;
+  spell_id: number;
 
   @Prop({ default: [], type: [ItemSchema], ref: 'Item' })
-    reagents: Types.Array<ItemReagent>;
+  reagents: Types.Array<ItemReagent>;
 }
 
 export const SpellReagentsSchema = SchemaFactory.createForClass(SpellReagents);

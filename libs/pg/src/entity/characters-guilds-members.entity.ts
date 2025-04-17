@@ -22,14 +22,14 @@ export class CharactersGuildsMembersEntity {
     type: 'varchar',
     name: 'guild_guid',
   })
-  guildGuid!: string;
+  guildGuid: string;
 
   @Column({
     nullable: false,
     type: 'int',
     name: 'guild_id',
   })
-  guildId!: number;
+  guildId: number;
 
   @Column({
     nullable: false,
@@ -50,20 +50,20 @@ export class CharactersGuildsMembersEntity {
     type: 'int',
     name: 'realm_id',
   })
-  realmId!: number;
+  realmId: number;
 
   @Column({
     nullable: false,
     type: 'varchar',
     name: 'realm_name',
   })
-  realmName!: string;
+  realmName: string;
 
   @Column({
     nullable: false,
     type: 'varchar',
   })
-  realm!: string;
+  realm: string;
 
   @Column({
     nullable: false,

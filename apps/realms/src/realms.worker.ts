@@ -12,6 +12,7 @@ import {
   BlizzardApiResponse,
   IConnectedRealm,
   isFieldNamed,
+  OSINT_TIMEOUT_TOLERANCE,
   REALM_TICKER,
   RealmJobQueue,
   realmsQueue,
@@ -60,11 +61,7 @@ export class RealmsWorker {
 
       const response: Record<string, any> = await this.BNet.query(
         `/data/wow/realm/${args.slug}`,
-        {
-          timeout: 10000,
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'dynamic-eu' },
-        },
+        apiConstParams(API_HEADERS_ENUM.DYNAMIC, OSINT_TIMEOUT_TOLERANCE),
       );
 
       await job.updateProgress(20);
@@ -93,7 +90,7 @@ export class RealmsWorker {
       if (realmEntity.locale != 'enGB') {
         const realmLocale = await this.BNet.query<BlizzardApiResponse>(
           `/data/wow/realm/${args.slug}`,
-          apiConstParams(API_HEADERS_ENUM.DYNAMIC),
+          apiConstParams(API_HEADERS_ENUM.DYNAMIC, OSINT_TIMEOUT_TOLERANCE, true),
         );
 
         await job.updateProgress(40);

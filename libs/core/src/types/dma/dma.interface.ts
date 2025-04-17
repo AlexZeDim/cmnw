@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Auction, Gold } from '@app/mongo';
+import { Market } from '@app/mongo';
 import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { ItemsEntity } from '@app/pg';
 import {
@@ -227,10 +227,12 @@ export interface IPricingMethods {
 }
 
 export interface IChartOrder {
+  lt: number;
   x: number;
   y: number;
   orders: number;
   value: number;
+  price: number;
   oi: number;
 }
 
@@ -277,7 +279,7 @@ export interface IVARealm {
 
 export interface IVAAuctions {
   readonly _id: number;
-  readonly data: Auction;
+  readonly data: Market;
 }
 
 export interface IGold {
@@ -381,14 +383,11 @@ export interface ICsvReagents {
 
 export interface IBuildYAxis {
   readonly itemId: number;
-  readonly connectedRealmsIds?: number[];
-  readonly isCommdty: boolean;
-  readonly isXrs: boolean;
   readonly isGold: boolean;
 }
 
 export interface IGetCommdtyOrders {
-  readonly model: Model<Gold | Auction>;
+  readonly model: Model<Market>;
   readonly itemId?: number;
   readonly connectedRealmId?: number;
   readonly timestamp?: number;

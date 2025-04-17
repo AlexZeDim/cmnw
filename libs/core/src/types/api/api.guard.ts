@@ -10,6 +10,7 @@ import {
   BlizzardApiWowToken,
   GoldApiListing,
   ICharacterRaiderIo,
+  IHallOfFame,
   IRGuildRoster,
 } from '@app/core/types';
 
@@ -110,3 +111,8 @@ export const isRaiderIoProfile = (
   'mythic_plus_scores_by_season' in response &&
   'raid_progression' in response &&
   Array.isArray(response.mythic_plus_scores_by_season);
+
+export const isHallOfFame = (response: unknown): response is IHallOfFame =>
+  typeof response === 'object' &&
+  'entries' in response &&
+  Array.isArray(response.entries);

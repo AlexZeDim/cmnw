@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AuctionsService } from './auctions.service';
 import { postgresConfig, redisConfig } from '@app/configuration';
+import { AuctionsService } from './auctions.service';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { auctionsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';

@@ -31,6 +31,7 @@ export class KeysService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     await this.initKeys();
+    await this.indexWarcraftLogsKeys();
     await this.indexBlizzardKeys();
   }
 
@@ -102,7 +103,7 @@ export class KeysService implements OnApplicationBootstrap {
 
         keyEntity.token = data.access_token;
         keyEntity.expiredIn = data.expires_in;
-        this.logger.log(`Updated: key(${keyEntity.client})`);
+        this.logger.log(`Updated: key ${keyEntity.client}`);
 
         await this.keysRepository.save(keyEntity);
       }
@@ -115,7 +116,7 @@ export class KeysService implements OnApplicationBootstrap {
   private async indexWarcraftLogsKeys(): Promise<void> {
     try {
       const keyEntities = await this.keysRepository.findBy({
-        tags: ArrayContains([GLOBAL_WCL_KEY, 'gql']),
+        tags: ArrayContains([GLOBAL_WCL_KEY, 'v2']),
       });
 
       for (const keyEntity of keyEntities) {
@@ -135,9 +136,9 @@ export class KeysService implements OnApplicationBootstrap {
 
         keyEntity.token = data.access_token;
         keyEntity.expiredIn = data.expires_in;
-        this.logger.log(`Updated: key(${keyEntity.client})`);
 
         await this.keysRepository.save(keyEntity);
+        this.logger.log(`Updated: key ${keyEntity.client}`);
       }
     } catch (errorOrException) {
       this.logger.error(`indexWarcraftLogsKeys: ${errorOrException}`);

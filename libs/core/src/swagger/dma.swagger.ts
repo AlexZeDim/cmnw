@@ -1,42 +1,29 @@
 import { ApiProperty, ApiPropertyOptions, getSchemaPath } from '@nestjs/swagger';
-import { Auction, Valuations } from '@app/mongo';
-import { IOrderQuotes } from 'libs/core/src/types';
-
-class OrderQuotes implements IOrderQuotes {
-  readonly id: number;
-
-  readonly price: number;
-
-  readonly quantity: number;
-
-  readonly open_interest: number;
-
-  readonly size: number;
-}
+import { Valuations } from '@app/mongo';
+import { MarketEntity } from '@app/pg';
+import { MARKET_TYPE } from '@app/core/constants';
 
 export const SWAGGER_ITEM_QUOTES: ApiPropertyOptions = {
   name: 'quotes',
-  type: () => OrderQuotes,
   description: 'Quotes are aggregated Level 2 data of requested COMMDTY item',
 };
 
 export const SWAGGER_ITEM_FEED: ApiPropertyOptions = {
   name: 'feed',
-  type: () => Auction,
-  description: 'Feed represents an unedited auction house order data feed',
+  type: () => MarketEntity,
+  description: 'Feed represents direct market data',
   example: {
-    id: 123432432,
-    item_id: 171982,
-    item: {
-      id: 171982,
-    },
-    connected_realm_id: 1602,
-    last_modified: Date.now(),
+    orderId: '123432432',
+    itemId: 171982,
+    type: MARKET_TYPE.C,
+    connectedRealmId: 1602,
+    timestamp: Date.now(),
     quantity: 100,
     bid: 9,
     buyout: 10,
     price: 0.1,
-    time_left: 'LONG',
+    value: 100,
+    timeLeft: 'LONG',
   },
 };
 
@@ -116,22 +103,13 @@ export const SWAGGER_ITEM_CHART_DATASET: ApiPropertyOptions = {
     y: 0,
     orders: 20,
     value: 123,
+    price: 10,
     oi: 550,
   },
 };
 
-export const SWAGGER_ITEM_CROSS_REALM: ApiPropertyOptions = {
-  name: '_id',
-  description:
-    'Request item by query (ID, ticker, name) and connected_realm (id, slug, name)',
-  type: String,
-  required: true,
-  nullable: false,
-  example: '171276@gordunni',
-};
-
 export const SWAGGER_ITEM_ID: ApiPropertyOptions = {
-  name: '_id',
+  name: 'id',
   description: 'Item ID, name or asset class of item group ',
   required: true,
   type: String,

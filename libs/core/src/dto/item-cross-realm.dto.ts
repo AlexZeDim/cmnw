@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Validate } from 'class-validator';
-import { AtSignExists, SWAGGER_ITEM_CROSS_REALM } from '@app/core';
+import { AtSignExists } from '@app/core';
 import { Transform } from 'class-transformer';
 
 export class ItemCrossRealmDto {
-  @ApiProperty(SWAGGER_ITEM_CROSS_REALM)
+  @ApiProperty()
   @IsNotEmpty({ message: '_id is required' })
   @IsString()
   @Validate(AtSignExists)

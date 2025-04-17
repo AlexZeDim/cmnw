@@ -33,11 +33,3 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV}
       - KEY=${KEY}
-
-  wowtoken:
-    image: ghcr.io/alexzedim/dma:latest
-    restart: always
-    command: [ 'node', 'dist/apps/wowtoken/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}

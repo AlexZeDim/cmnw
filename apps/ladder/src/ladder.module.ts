@@ -1,27 +1,20 @@
 import { Module } from '@nestjs/common';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { LadderService } from './ladder.service';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@anchan828/nest-bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
-import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Key,
-  KeysSchema,
-  Realm,
-  RealmsSchema,
-} from '@app/mongo';
-
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
+console.log(postgresConfig);
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,
@@ -29,13 +22,6 @@ import {
         password: redisConfig.password,
       },
     }),
-    MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema },
-      { name: Guild.name, schema: GuildsSchema },
-    ]),
     BullModule.forRoot({
       options: {
         connection: {
@@ -45,8 +31,14 @@ import {
         },
       },
     }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      queueName: guildsQueue.name,
+      options: guildsQueue.options,
+    }),
+    BullModule.registerQueue({
+      queueName: charactersQueue.name,
+      options: charactersQueue.options,
+    }),
   ],
   controllers: [],
   providers: [LadderService],

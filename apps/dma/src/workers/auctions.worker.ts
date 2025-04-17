@@ -8,10 +8,10 @@ import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
+import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
 import {
   API_HEADERS_ENUM,
   apiConstParams,
-  AuctionItemExtra,
   AuctionJobQueue,
   auctionsQueue,
   BlizzardApiAuctions,
@@ -20,7 +20,9 @@ import {
   ICommodityOrder,
   IPetList,
   isAuctions,
+  ITEM_KEY_GUARD,
   MARKET_TYPE,
+  PETS_KEY_GUARD,
   toGold,
   transformPrice,
 } from '@app/core';
@@ -34,6 +36,8 @@ export class AuctionsWorker {
   private BNet: BlizzAPI;
 
   constructor(
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(ItemsEntity)
@@ -117,6 +121,11 @@ export class AuctionsWorker {
         ),
       );
 
+      if (isCommdty) {
+        await this.redisService.set(`COMMDTY:TS:${timestamp}`, timestamp);
+        await job.updateProgress(80);
+      }
+
       const updateQuery: Partial<RealmsEntity> = isCommdty
         ? { commoditiesTimestamp: timestamp }
         : { auctionsTimestamp: timestamp };
@@ -146,8 +155,10 @@ export class AuctionsWorker {
     return orders.map((order) => {
       if (!order.item.id) return;
       const marketEntity = this.marketRepository.create({
+        orderId: `${order.id}`,
         itemId: order.item.id,
         connectedRealmId: connectedRealmId,
+        timeLeft: order.time_left,
         timestamp: timestamp,
       });
 
@@ -159,27 +170,14 @@ export class AuctionsWorker {
       if (!price) return;
 
       if (!isCommdty) {
-        const itemKeyGuard = new Map<string, keyof AuctionItemExtra>([
-          ['bonus_lists', 'bonusList'],
-          ['context', 'context'],
-          ['modifiers', 'modifiers'],
-        ]);
-
-        for (const [path, key] of itemKeyGuard.entries()) {
+        for (const [path, key] of ITEM_KEY_GUARD.entries()) {
           if (path in order.item) marketEntity[key] = order.item[path];
         }
 
         if (isPetOrder) {
           // TODO pet fix for pet cage item
-          const petsKeyGuard = new Map<string, keyof IPetList>([
-            ['pet_breed_id', 'petBreedId'],
-            ['pet_level', 'petLevel'],
-            ['pet_quality_id', 'petQualityId'],
-            ['pet_species_id', 'petSpeciesId'],
-          ]);
-
           const petList: Partial<IPetList> = {};
-          for (const [path, key] of petsKeyGuard.entries()) {
+          for (const [path, key] of PETS_KEY_GUARD.entries()) {
             if (path in order.item) petList[key] = order.item[path];
           }
         }
@@ -191,6 +189,9 @@ export class AuctionsWorker {
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;
+
+      const isValue = Boolean(price) && Boolean(quantity);
+      if (isValue) marketEntity.value = price * quantity;
 
       return marketEntity;
     });

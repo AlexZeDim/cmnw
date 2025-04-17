@@ -8,6 +8,7 @@ export enum CMNW_ENTITY_ENUM {
   PROFESSIONS = 'professions',
   CHARACTERS_GUILDS_MEMBERS = 'characters_guild_members',
   CHARACTERS_PROFILE = 'characters_profile',
+  CHARACTERS_RAID_LOGS = 'characters_raid_logs',
   GUILDS = 'guilds',
   KEYS = 'keys',
   REALMS = 'realms',

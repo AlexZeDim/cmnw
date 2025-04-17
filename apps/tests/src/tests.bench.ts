@@ -17,6 +17,7 @@ import {
   FACTION,
   findRealm,
   ICharacterRaiderIo,
+  IChartOrder,
   IGold,
   isRaiderIoProfile,
   MARKET_TYPE,
@@ -47,7 +48,84 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.getToken();
+    const t = await this.priceRangeY(204460, 20);
+    console.log(t);
+    const d = await this.test(t, [1708474228000], 204460);
+    console.log(d);
+  }
+
+  private async priceRangeY(itemId: number, blocks: number) {
+    const marketQuotes = await this.marketRepository
+      .createQueryBuilder('markets')
+      .where({ itemId: itemId }) // TODO itemId if GOLD add realmId
+      .distinctOn(['markets.price'])
+      .getMany();
+
+    const quotes = marketQuotes.map((q) => q.price);
+
+    if (!quotes.length) return [];
+    const length = quotes.length > 3 ? quotes.length - 3 : quotes.length;
+    const start = length === 1 ? 0 : 1;
+
+    const cap = Math.round(quotes[Math.floor(length * 0.9)]);
+    const floor = Math.round(quotes[start]);
+    const priceRange = cap - floor;
+    /** Step represent 5% for each cluster */
+    const tick = priceRange / blocks;
+    return Array(Math.ceil((cap + tick - floor) / tick))
+      .fill(floor)
+      .map((x, y) => parseFloat((x + y * tick).toFixed(4)));
+  }
+
+  async test(yAxis: number[], xAxis: number[], itemId: number) {
+    const dataset: IChartOrder[] = [];
+    if (!yAxis.length) return { dataset };
+    /** Find distinct timestamps for each realm */
+
+    await lastValueFrom(
+      from(xAxis).pipe(
+        mergeMap(async (timestamp, itx) => {
+          // TODO cover with index
+          const marketOrders = await this.marketRepository.find({
+            where: {
+              itemId,
+              timestamp,
+            },
+            order: { price: 'ASC' },
+          });
+
+          // TODO push to global by TS
+          const plDataset = yAxis.map((pl, ytx) => ({
+            lt: yAxis[ytx + 1] ?? pl, // TODO check
+            x: itx,
+            y: ytx, // TODO price
+            orders: 0,
+            oi: 0,
+            price: 0,
+            value: 0,
+          }));
+
+          let priceItx = 0;
+
+          for (const order of marketOrders) {
+            const isPriceItxUp =
+              order.price >= plDataset[priceItx].lt &&
+              Boolean(plDataset[priceItx + 1]);
+            // TODO on last
+            if (isPriceItxUp) priceItx = priceItx + 1;
+            plDataset[priceItx].orders = plDataset[priceItx].orders + 1;
+            plDataset[priceItx].oi = plDataset[priceItx].oi + order.value;
+            plDataset[priceItx].value = plDataset[priceItx].value + order.quantity;
+            plDataset[priceItx].price =
+              plDataset[priceItx].oi / plDataset[priceItx].value;
+          }
+
+          dataset.push(...plDataset);
+        }),
+      ),
+    );
+
+    return { dataset };
   }
 
   async getUniqueRealms() {
@@ -102,6 +180,7 @@ export class TestsBench implements OnApplicationBootstrap {
       const quantity = exchangeListingPage(element).find('.tc-amount').text();
       const owner = exchangeListingPage(element).find('.media-user-name').text();
       const price = exchangeListingPage(element).find('.tc-price div').text();
+
       goldOrders.push({ orderId, realm, faction, status, quantity, owner, price });
     });
 
@@ -123,6 +202,7 @@ export class TestsBench implements OnApplicationBootstrap {
             const isValid = Boolean(
               connectedRealmId && order.price && order.quantity,
             );
+
             if (!isValid) {
               this.logger.log(order.realm);
               return;

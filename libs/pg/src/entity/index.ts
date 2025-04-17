@@ -5,6 +5,7 @@ export * from './characters-pets.entity';
 export * from './characters-professions.entity';
 export * from './characters-guilds-members.entity';
 export * from './characters-mounts.entity';
+export * from './characters-raid-logs.entity';
 
 export * from './guilds.entity';
 

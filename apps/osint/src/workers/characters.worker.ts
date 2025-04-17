@@ -144,7 +144,7 @@ export class CharactersWorker {
             this.getSummary(nameSlug, characterEntity.realm, this.BNet),
             this.getPets(nameSlug, characterEntity.realm, this.BNet, true),
             this.getMounts(nameSlug, characterEntity.realm, this.BNet, true),
-            // this.getProfessions(nameSlug, characterEntity.realm, this.BNet),
+            // TODO this.getProfessions(nameSlug, characterEntity.realm, this.BNet),
             this.getMedia(nameSlug, characterEntity.realm, this.BNet),
           ]);
 

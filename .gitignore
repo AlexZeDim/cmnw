@@ -5,6 +5,7 @@
 # DotEnv
 !/.env
 .env
+.env.docker
 
 # Docker data
 /volumes

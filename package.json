@@ -6,17 +6,17 @@
   "private": true,
   "license": "MPL 2.0",
   "bugs": {
-    "url": "https://github.com/AlexZeDim/conglomerat/issues",
+    "url": "https://github.com/alexzedim/cmnw/issues",
     "discord": "alexzedim"
   },
   "author": {
     "name": "alexzedim",
-    "email": "alexzedim2812@ya.com",
+    "email": "alexzedim@gmail.com",
     "url": "https://cmnw.me"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AlexZeDim/conglomerat.git"
+    "url": "https://github.com/alexzedim/cmnw.git"
   },
   "languageName": "node",
   "scripts": {

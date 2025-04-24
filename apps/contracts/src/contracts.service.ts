@@ -65,7 +65,7 @@ export class ContractsService {
       ? realmEntity.goldTimestamp
       : realmEntity.auctionsTimestamp;
 
-    const timestamps = await this.marketRepository
+    const timestamps = this.marketRepository
       .createQueryBuilder('m')
       .select('DISTINCT(timestamp)')
       .where({

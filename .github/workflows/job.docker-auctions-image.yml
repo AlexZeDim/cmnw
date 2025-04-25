@@ -27,9 +27,9 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
             org.opencontainers.image.title = "Auctions"
-            org.opencontainers.image.vendor = "AlexZeDim"
-            org.opencontainers.image.url = "https://raw.githubusercontent.com/AlexZeDim/cmnw-next/master/public/static/cmnw.png"
-            org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
+            org.opencontainers.image.vendor = "cmnw"
+            org.opencontainers.image.url = "https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png"
+            org.opencontainers.image.source = "https://github.com/alexzedim/cmnw"
             org.opencontainers.image.licenses = "MPL 2.0"
             org.opencontainers.image.description = "CMNW"
 

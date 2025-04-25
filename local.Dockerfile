@@ -1,9 +1,9 @@
-FROM node:17-alpine3.12
+FROM node:22.15-alpine
 
 LABEL org.opencontainers.image.title = "CMNW"
-LABEL org.opencontainers.image.vendor = "AlexZeDim"
-LABEL org.opencontainers.image.url = "https://i.imgur.com/CY0Kqy3.png"
-LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
+LABEL org.opencontainers.image.vendor = "alexzedim"
+LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png"
+LABEL org.opencontainers.image.source = "https://github.com/alexzedim/cmnw"
 
 WORKDIR /usr/src/app
 

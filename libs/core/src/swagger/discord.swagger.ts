@@ -61,7 +61,7 @@ export const SWAGGER_DISCORD_AUTHOR_NAME: ApiPropertyOptions = {
   type: String,
   required: true,
   nullable: false,
-  example: 'AlexZeDim',
+  example: 'alexzedim',
 };
 
 export const SWAGGER_DISCORD_TIMESTAMP: ApiPropertyOptions = {

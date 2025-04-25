@@ -40,7 +40,7 @@ export class RealmsService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await this.init();
     await this.indexRealms(GLOBAL_KEY);
-    await this.getRealmsWarcraftLogsID();
+    await this.getRealmsWarcraftLogsId();
   }
 
   async init() {
@@ -97,7 +97,7 @@ export class RealmsService implements OnModuleInit {
    * @param to
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
-  private async getRealmsWarcraftLogsID(from = 246, to = 517): Promise<void> {
+  private async getRealmsWarcraftLogsId(from = 246, to = 517): Promise<void> {
     if (from < 1) from = 1;
     const count = Math.abs(from - to);
 

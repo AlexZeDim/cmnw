@@ -91,7 +91,7 @@ describe('OSINT', () => {
       expect(response).toHaveProperty('members');
       expect(Array.isArray(response.members)).toBeTruthy();
       expect(response).toMatchObject(guildRosterObj);
-      expect(['Allicane', 'Horde']).toContain(response.guild.faction.name);
+      expect(['Alliance', 'Horde']).toContain(response.guild.faction.name);
       response.members.map((member) =>
         expect(member).toMatchObject(guildMembersRosterObj),
       );

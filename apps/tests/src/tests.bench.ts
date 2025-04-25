@@ -48,13 +48,78 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    const t = await this.priceRangeY(204460, 20);
+    const itemId = 204460;
+
+    const t = await this.getPriceRangeByItem(itemId, 20);
     console.log(t);
-    const d = await this.test(t, [1708474228000], 204460);
+    const z = await this.test(t, [1745606710000], itemId);
+    console.log(z);
+    const a = await this.getSumByCategory(itemId);
+    console.log(a);
+    const b = await this.getSumByCategoryRawSql(itemId);
+    console.log(b);
+    const c = await this.getAggregatesByCategory(itemId);
+    console.log(c);
+    const d = await this.getSumByCategoryForCustomer(itemId);
     console.log(d);
   }
 
-  private async priceRangeY(itemId: number, blocks: number) {
+  /**
+   * Get sum of quantities grouped by category using QueryBuilder
+   */
+  async getSumByCategory(itemId: number): Promise<any[]> {
+    return this.marketRepository
+      .createQueryBuilder('markets')
+      .select('markets.item_id', 'item_id')
+      .addSelect('SUM(markets.quantity)', 'totalQuantity')
+      .where('markets.item_id = :itemId', { itemId })
+      .groupBy('markets.item_id')
+      .orderBy('"totalQuantity"', 'DESC')
+      .getRawMany<any>();
+  }
+
+  /**
+   * Alternative approach using the Raw SQL in QueryBuilder
+   */
+  async getSumByCategoryRawSql(itemId: number): Promise<any[]> {
+    return this.marketRepository
+      .query(`
+        SELECT item_id, SUM(quantity) as "totalQuantity"
+        FROM "market"
+        WHERE item_id = $1
+        GROUP BY item_id
+        ORDER BY "totalQuantity" DESC
+      `, [itemId]);
+  }
+
+  async getAggregatesByCategory(itemId: number): Promise<any[]> {
+    return this.marketRepository
+      .createQueryBuilder('markets')
+      .select('markets.itemId', 'itemId')
+      .addSelect('SUM(markets.quantity)', 'totalQuantity')
+      .addSelect('AVG(markets.price)', 'averagePrice')
+      .addSelect('COUNT(markets.uuid)', 'orderCount')
+      .where('markets.itemId = :itemId', { itemId })
+      .groupBy('markets.itemId')
+      .orderBy('"totalQuantity"', 'DESC')
+      .getRawMany<any>();
+  }
+
+  /**
+   * Example of grouped query with a WHERE condition
+   */
+  async getSumByCategoryForCustomer(itemId: number): Promise<any[]> {
+    return this.marketRepository
+      .createQueryBuilder('markets')
+      .select('markets.itemId', 'itemId')
+      .addSelect('SUM(markets.quantity)', 'totalQuantity')
+      .where('markets.itemId = :itemId', { itemId })
+      .groupBy('markets.itemId')
+      .orderBy('"totalQuantity"', 'DESC')
+      .getRawMany<any>();
+  }
+
+  private async getPriceRangeByItem(itemId: number, blocks: number) {
     const marketQuotes = await this.marketRepository
       .createQueryBuilder('markets')
       .where({ itemId: itemId }) // TODO itemId if GOLD add realmId
@@ -64,26 +129,27 @@ export class TestsBench implements OnApplicationBootstrap {
     const quotes = marketQuotes.map((q) => q.price);
 
     if (!quotes.length) return [];
+
     const length = quotes.length > 3 ? quotes.length - 3 : quotes.length;
     const start = length === 1 ? 0 : 1;
 
     const cap = Math.round(quotes[Math.floor(length * 0.9)]);
     const floor = Math.round(quotes[start]);
     const priceRange = cap - floor;
-    /** Step represent 5% for each cluster */
+    /** Step represents 5% for each cluster */
     const tick = priceRange / blocks;
     return Array(Math.ceil((cap + tick - floor) / tick))
       .fill(floor)
       .map((x, y) => parseFloat((x + y * tick).toFixed(4)));
   }
 
-  async test(yAxis: number[], xAxis: number[], itemId: number) {
+  async test(priceRangeArray: number[], timestampArray: number[], itemId: number) {
     const dataset: IChartOrder[] = [];
-    if (!yAxis.length) return { dataset };
+    if (!priceRangeArray.length) return { dataset };
     /** Find distinct timestamps for each realm */
 
     await lastValueFrom(
-      from(xAxis).pipe(
+      from(timestampArray).pipe(
         mergeMap(async (timestamp, itx) => {
           // TODO cover with index
           const marketOrders = await this.marketRepository.find({
@@ -95,8 +161,8 @@ export class TestsBench implements OnApplicationBootstrap {
           });
 
           // TODO push to global by TS
-          const plDataset = yAxis.map((pl, ytx) => ({
-            lt: yAxis[ytx + 1] ?? pl, // TODO check
+          const plDataset = priceRangeArray.map((pl, ytx) => ({
+            lt: priceRangeArray[ytx + 1] ?? pl, // TODO check
             x: itx,
             y: ytx, // TODO price
             orders: 0,

@@ -450,8 +450,8 @@ export interface IWarcraftLog {
 
 export interface IWarcraftLogsConfig {
   raidTier: number;
-  from: number;
-  to: number;
+  fromPage: number;
+  toPage: number;
   page: number;
   logs: number;
 }

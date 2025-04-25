@@ -3,6 +3,6 @@ import { DmaModule } from './dma.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(DmaModule);
-  await app.listen(3000);
+  await app.listen(3004);
 }
 bootstrap();

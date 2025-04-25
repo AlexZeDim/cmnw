@@ -6,13 +6,13 @@ import { auctionsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeysEntity, RealmsEntity } from '@app/pg';
+import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
-    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity, MarketEntity]),
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,

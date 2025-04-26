@@ -14,10 +14,7 @@ export class TestsOsint implements OnApplicationBootstrap {
     validateAccessTokenOnEachQuery: true,
   });
 
-  async onApplicationBootstrap() {
-    const token = await this.BNet.getAccessToken();
-    this.logger.warn(`getAccessToken: ${token}`);
-  }
+  async onApplicationBootstrap() { }
 
   async realm(realmSlug: string): Promise<BlizzardApiResponse> {
     return this.BNet.query(

@@ -22,7 +22,7 @@ import {
   isRaiderIoProfile,
   MARKET_TYPE,
   OSINT_SOURCE_RAIDER_IO,
-  OSINT_SOURCE_WOW_PROGRESS_RANKS,
+  OSINT_SOURCE_WOW_PROGRESS_RANKS, REALM_ENTITY_ANY,
   toSlug,
   VALUATION_TYPE,
 } from '@app/core';
@@ -48,20 +48,132 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    const itemId = 204460;
+    const itemId = 213197;
+    const timestamp = 1745595910000;
+
+    const p95Cont = await this.getPercentile95Cont(itemId, timestamp);
+    console.log(p95Cont);
+
+    const m = await this.getMultiplePercentiles(itemId, timestamp);
+    console.log(m);
+
+    const p = await this.getPercentile('DISC', 0.99, itemId, timestamp);
+    console.log(p)
+
+    const contractData = await this.marketRepository
+      .createQueryBuilder('m')
+      .where({
+        itemId: itemId,
+        timestamp: timestamp,
+        price: LessThan(p95Cont),
+      })
+      .select('SUM(m.value)', 'totalAmount')
+      .getRawOne<any>();
+
+    console.log(contractData);
+
+
+
+
+
+    return;
 
     const t = await this.getPriceRangeByItem(itemId, 20);
     console.log(t);
     const z = await this.test(t, [1745606710000], itemId);
     console.log(z);
-    const a = await this.getSumByCategory(itemId);
-    console.log(a);
-    const b = await this.getSumByCategoryRawSql(itemId);
-    console.log(b);
-    const c = await this.getAggregatesByCategory(itemId);
-    console.log(c);
-    const d = await this.getSumByCategoryForCustomer(itemId);
-    console.log(d);
+  }
+
+  /**
+   * Calculate the 10th percentile using PERCENTILE_CONT
+   * This returns an interpolated value
+   */
+  async getPercentile95Cont(itemId: number, timestamp: number): Promise<number> {
+    // Create query builder
+    const queryBuilder = this.marketRepository
+      .createQueryBuilder('markets')
+      .select('PERCENTILE_DISC(0.99) WITHIN GROUP (ORDER BY markets.price)', 'percentile95');
+
+    // Add optional category filter
+    queryBuilder.where('markets.item_id = :itemId', { itemId: itemId });
+    queryBuilder.andWhere('markets.timestamp = :timestamp', { timestamp: timestamp });
+
+    const result = await queryBuilder.getRawOne();
+    return result.percentile95;
+  }
+
+  /**
+   * Calculate the 10th percentile using PERCENTILE_DISC
+   * This returns an actual value from the dataset
+   */
+  async getPercentile10Disc(itemId?: number): Promise<number> {
+    // Create query builder
+    const queryBuilder = this.marketRepository
+      .createQueryBuilder('markets')
+      .select('PERCENTILE_DISC(0.05) WITHIN GROUP (ORDER BY markets.price)', 'percentile10');
+
+    // Add optional category filter
+    if (itemId) {
+      queryBuilder.where('markets.item_id = :itemId', { itemId: itemId });
+    }
+
+    const result = await queryBuilder.getRawOne();
+    return result.percentile10;
+  }
+
+  /**
+   * Alternative implementation using raw SQL
+   */
+  async getPercentile(type: 'CONT' | 'DISC', percentile: number, itemId: number, timestamp: number): Promise<number> {
+    let query = `
+        SELECT PERCENTILE_${type}(${percentile}) WITHIN GROUP (ORDER BY price) as percentile
+        FROM market
+    `;
+
+    const params = [];
+
+    query += ' WHERE item_id = $1 AND timestamp = $2';
+    params.push(itemId);
+    params.push(timestamp);
+
+    const result = await this.marketRepository.query(query, params);
+    return result[0].percentile;
+  }
+
+  /**
+   * Get multiple percentiles at once (more efficient)
+   */
+  async getMultiplePercentiles(
+    itemId: number, timestamp: number
+  ): Promise<{ p05_cont: number; p05_disc: number; p50_cont: number; p90_cont: number }> {
+    let query = `
+      SELECT 
+        PERCENTILE_CONT(0.05) WITHIN GROUP (ORDER BY price) as p5_cont,
+        PERCENTILE_DISC(0.05) WITHIN GROUP (ORDER BY price) as p5_disc,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price) as p50_cont,
+        PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY price) as p95_cont
+      FROM market
+    `;
+
+    const params = [];
+
+    query += ' WHERE item_id = $1 AND timestamp = $2';
+    params.push(itemId);
+    params.push(timestamp);
+
+    const result = await this.marketRepository.query(query, params);
+    return result[0];
+  }
+
+  async getCommodityItems() {
+    const t = await this.marketRepository
+      .createQueryBuilder('markets')
+      .where({ connectedRealmId: REALM_ENTITY_ANY.connectedRealmId })
+      .select('markets.item_id', 'itemId')
+      .distinct(true)
+      .getRawMany();
+
+    console.log(t);
   }
 
   /**

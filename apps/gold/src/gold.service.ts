@@ -11,7 +11,7 @@ import cheerio from 'cheerio';
 import {
   DMA_SOURCE_GOLD,
   FACTION,
-  findRealm,
+  findRealm, GOLD_ITEM_ENTITY,
   IGold,
   isGold,
   MARKET_TYPE,
@@ -106,10 +106,11 @@ export class GoldService {
               if (!isGoldValid) return;
               const value = round(price * (quantity / 1000), 2);
 
-              const isQuantityLimit = quantity > 15_000_000;
+              const isQuantityLimit = quantity > 100_000_000;
               if (isQuantityLimit) return;
 
               let faction = FACTION.ANY;
+
               const isOnline = order.status;
               const isHorde = [FACTION.H, 'Орда'].includes(order.faction);
               const isAlliance = [FACTION.A, 'Альянсa', 'Альянс'].includes(
@@ -121,7 +122,7 @@ export class GoldService {
 
               const marketEntity = this.marketRepository.create({
                 connectedRealmId,
-                itemId: 1,
+                itemId: GOLD_ITEM_ENTITY.id,
                 type: MARKET_TYPE.G,
                 orderId,
                 faction,

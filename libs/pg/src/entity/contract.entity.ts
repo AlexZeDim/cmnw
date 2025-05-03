@@ -59,6 +59,22 @@ export class ContractEntity {
 
   @Column({
     nullable: false,
+    default: 0,
+    type: 'real',
+    name: 'price_median',
+  })
+  priceMedian: number;
+
+  @Column({
+    nullable: false,
+    default: 0,
+    type: 'real',
+    name: 'price_top',
+  })
+  priceTop: number;
+
+  @Column({
+    nullable: false,
     type: 'int',
     name: 'quantity',
   })
@@ -73,7 +89,7 @@ export class ContractEntity {
   openInterest: number;
 
   @Column({
-    default: CONTRACT_TYPE.I,
+    default: CONTRACT_TYPE.T,
     nullable: false,
     type: 'varchar',
   })

@@ -28,7 +28,9 @@ export const getPercentileTypeByItemAndTimestamp = async (
   type: 'CONT' | 'DISC',
   percentile: number,
   itemId: number,
-  timestamp: number
+  timestamp: number,
+  isGold = false,
+  connectedRealmId?: number,
 ): Promise<number> => {
   let query = `
       SELECT PERCENTILE_${type}(${percentile}) WITHIN GROUP (ORDER BY price) as percentile
@@ -37,9 +39,18 @@ export const getPercentileTypeByItemAndTimestamp = async (
 
   const params = [];
 
-  query += ' WHERE item_id = $1 AND timestamp = $2';
+  const addWhere = isGold
+    ? ' WHERE item_id = $1 AND timestamp = $2 AND connected_realm_id = $3 AND is_online = true'
+    : ' WHERE item_id = $1 AND timestamp = $2'
+
+  query += addWhere;
+
   params.push(itemId);
   params.push(timestamp);
+
+  if (connectedRealmId) {
+    params.push(connectedRealmId);
+  }
 
   const result = await repository.query(query, params);
   return result[0].percentile;

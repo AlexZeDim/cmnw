@@ -33,6 +33,7 @@ export class MarketEntity {
   @Column({
     nullable: false,
     type: 'int',
+    name: 'connected_realm_id',
   })
   connectedRealmId?: number;
 

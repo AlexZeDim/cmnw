@@ -31,7 +31,7 @@ export enum ORDER_FLOW {
 }
 
 export enum CONTRACT_TYPE {
-  I = 'intraday',
+  T = 'timestamp',
   D = 'day',
   W = 'week',
   M = 'month',

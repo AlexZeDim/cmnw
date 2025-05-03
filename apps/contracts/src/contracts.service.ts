@@ -5,8 +5,13 @@ import { ContractEntity, ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
-import { CONTRACT_TYPE, getPercentileTypeByItemAndTimestamp, GOLD_ITEM_ENTITY, REALM_ENTITY_ANY } from '@app/core';
-import { item } from '../../tests/mocks';
+import {
+  CONTRACT_TYPE,
+  GOLD_ITEM_ENTITY,
+  REALM_ENTITY_ANY,
+  getPercentileTypeByItemAndTimestamp,
+  IItemOpenInterest, IItemPriceAndQuantity, isContractArraysEmpty,
+} from '@app/core';
 
 @Injectable()
 export class ContractsService {
@@ -26,26 +31,36 @@ export class ContractsService {
   ) {}
 
 
-  async t() {
+  async setCommodityItemsAsContracts() {
     try {
+      const commodityItems = await this.marketRepository
+        .createQueryBuilder('markets')
+        .where({ connectedRealmId: REALM_ENTITY_ANY.connectedRealmId })
+        .select('markets.item_id', 'itemId')
+        .distinct(true)
+        .getRawMany<Pick<MarketEntity, 'itemId'>>();
 
+      const commodityItemsIds = commodityItems.map((item) => item.itemId);
+
+      const result = await this.itemsRepository
+        .createQueryBuilder()
+        .update()
+        .set({ hasContracts: true })
+        .whereInIds(commodityItemsIds)
+        .execute();
+
+      return result.affected || 0;
     } catch (errorOrException) {
       this.logger.error(`buildCommodityIntradayContracts ${errorOrException}`);
     }
   }
 
   @Cron('00 10,18 * * *')
-  async buildCommodityIntradayContracts() {
+  async buildCommodityTimestampContracts() {
     try {
-      this.logger.log('buildCommodityIntradayContracts started');
-
-      const commodityRealmEntity = await this.realmsRepository.findOne({
-        where: { id: REALM_ENTITY_ANY.id },
-        select: ['commoditiesTimestamp'],
-      });
+      this.logger.log('buildCommodityTimestampContracts started');
 
       // @todo variation
-
       // const itemsEntity = await this.itemsRepository.findBy({
       //   hasContracts: true,
       // });
@@ -57,15 +72,10 @@ export class ContractsService {
         .distinct(true)
         .getRawMany<Pick<MarketEntity, 'itemId'>>();
 
-      const commodityItemsIds = commodityItems.map((item) => item.itemId);
-
-
       const today = DateTime.now();
       const ytd = today.minus({ days: 1 }).toMillis();
-      const weekAgo = today.minus({ days: 7 }).toMillis();
 
-
-      const timestamps = this.marketRepository
+      const timestamps = await this.marketRepository
         .createQueryBuilder('m')
         .where({
           connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
@@ -75,60 +85,76 @@ export class ContractsService {
         .distinct(true)
         .getRawMany<Pick<MarketEntity, 'timestamp'>>();
 
-/*      const findStage = {
-          itemId: item.id,
-          // TODO timestamp from ytd
-          timestamp: MoreThan(commodityRealmEntity.auctionsTimestamp),
-          // TODO quantity only moreThen
-        };*/
+      const commodityItemsIds = commodityItems.map((item) => item.itemId);
+      const commodityTimestamps = timestamps.map((t) => t.timestamp);
 
-      // TODO we could extract distinct timestamps for fieldAggregations
+      const isGuard = isContractArraysEmpty(commodityTimestamps, commodityItemsIds);
+      if (isGuard) {
+        this.logger.warn('buildCommodityTimestampContracts empty');
+        return;
+      }
 
+      for (const commodityItemId of commodityItemsIds) {
+        await lastValueFrom(
+          from(commodityTimestamps).pipe(
+            mergeMap((timestamp) =>
+              this.getItemContractIntradayData(commodityItemId, timestamp, today),5),
+          ),
+        );
+      }
 
-
-      await lastValueFrom(
-        from(timestamps).pipe(
-          mergeMap(async (timestamp) => {
-            // TODO test
-
-          }, 5),
-        ),
-      );
     } catch (errorOrException) {
-      this.logger.error(`buildCommodityIntradayContracts ${errorOrException}`);
+      this.logger.error(`buildCommodityTimestampContracts ${errorOrException}`);
     }
   }
 
-  async getItemContractIntradayData(itemId: number, timestamp: number, today: DateTime) {
+  @Cron('00 10,18 * * *')
+  async buildGoldIntradayContracts() {
+    try {
+      this.logger.log('buildGoldIntradayContracts started');
+
+      const today = DateTime.now();
+      const ytd = today.minus({ days: 1 }).toMillis();
+
+      const realmsEntities = await this.realmsRepository.find({});
+
+      for (const realmEntity of realmsEntities) {
+        const timestamps = await this.marketRepository
+          .createQueryBuilder('m')
+          .where({
+            itemId: GOLD_ITEM_ENTITY.id,
+            timestamp: MoreThan(ytd),
+            connectedRealmId: realmEntity.connectedRealmId,
+          })
+          .select('markets.timestamp', 'timestamp')
+          .distinct(true)
+          .getRawMany<Pick<MarketEntity, 'timestamp'>>();
+
+        const goldTimestamps = timestamps.map((t) => t.timestamp);
+
+        await lastValueFrom(
+          from(goldTimestamps).pipe(
+            mergeMap((timestamp) =>
+              this.getItemContractIntradayData(GOLD_ITEM_ENTITY.id, timestamp, today),5),
+          ),
+        );
+      }
+
+    } catch (errorOrException) {
+      this.logger.error(`buildGoldIntradayContracts ${errorOrException}`);
+    }
+  }
+
+  private async getItemContractIntradayData(
+    itemId: number,
+    timestamp: number,
+    today: DateTime,
+    connectedRealmId?: number,
+  ) {
+    const isGold = itemId === GOLD_ITEM_ENTITY.id;
     const contractId = `${itemId}-${today.day}.${today.month}@${timestamp}`;
 
     try {
-
-      const itemPriceAndQuantity = await this.marketRepository
-        .createQueryBuilder('m')
-        .where({
-          itemId: itemId,
-          timestamp: timestamp,
-        })
-        .addSelect('SUM(m.quantity)', 'q')
-        .addSelect('MIN(m.price)', 'p')
-        .getRawOne<any>();
-
-      const percentile98 = await getPercentileTypeByItemAndTimestamp(
-        this.marketRepository, 'DISC', 0.98, itemId, timestamp
-      );
-
-      const itemOpenInterest = await this.marketRepository
-        .createQueryBuilder('m')
-        .where({
-          itemId: itemId,
-          timestamp: timestamp,
-          price: LessThan(percentile98),
-        })
-        .select('SUM(m.value)', 'oi')
-        .getRawOne<any>();
-
-
       const isContractExists = await this.contractRepository.exist({
         where: {
           id: contractId,
@@ -136,6 +162,50 @@ export class ContractsService {
       });
 
       if (isContractExists) return;
+
+      const itemPriceAndQuantityWhere = isGold ? {
+        connectedRealmId: connectedRealmId,
+        itemId: itemId,
+        timestamp: timestamp,
+        isOnline: true,
+      } : {
+        itemId: itemId,
+        timestamp: timestamp,
+      }
+
+      const itemPriceAndQuantity = await this.marketRepository
+        .createQueryBuilder('m')
+        .where(itemPriceAndQuantityWhere)
+        .addSelect('SUM(m.quantity)', 'q')
+        .addSelect('MIN(m.price)', 'p')
+        .getRawOne<IItemPriceAndQuantity>();
+
+      const [percentile50, percentile98] = await Promise.all([
+        await getPercentileTypeByItemAndTimestamp(
+          this.marketRepository, 'DISC', 0.5, itemId, timestamp, isGold, connectedRealmId
+        ),
+        await getPercentileTypeByItemAndTimestamp(
+          this.marketRepository, 'DISC', 0.98, itemId, timestamp, isGold, connectedRealmId
+        )
+      ]);
+
+      const itemOpenInterestWhere =  isGold ? {
+        connectedRealmId: connectedRealmId,
+        itemId: itemId,
+        timestamp: timestamp,
+        price: LessThan(percentile98),
+        isOnline: true,
+      } : {
+        itemId: itemId,
+        timestamp: timestamp,
+        price: LessThan(percentile98),
+      }
+
+      const itemOpenInterest = await this.marketRepository
+        .createQueryBuilder('m')
+        .where(itemOpenInterestWhere)
+        .select('SUM(m.value)', 'oi')
+        .getRawOne<IItemOpenInterest>();
 
       const contractEntity = this.contractRepository.create({
         id: contractId,
@@ -147,36 +217,17 @@ export class ContractsService {
         month: today.month,
         year: today.year,
         price: itemPriceAndQuantity.p,
+        priceMedian: percentile50,
+        priceTop: percentile98,
         quantity: itemPriceAndQuantity.q,
         openInterest: itemOpenInterest.oi,
-        type: CONTRACT_TYPE.I,
+        type: CONTRACT_TYPE.T,
       });
 
       await this.contractRepository.save(contractEntity);
 
     } catch (errorOrException) {
       this.logger.error(`${contractId}::${errorOrException}`);
-    }
-  }
-
-  async buildGoldIntradayContracts() {
-    try {
-      this.logger.log('buildGoldIntradayContracts started');
-
-      const filter = {
-        itemId: item.id,
-        // TODO timestamp from ytd
-        timestamp: MoreThan(commodityRealmEntity.goldTimestamp),
-        isOnline: true,
-        // TODO quantity only moreThen
-      };
-
-      const goldItemEntity = await this.itemsRepository.findOneBy({
-        ticker: GOLD_ITEM_ENTITY.ticker,
-      });
-
-    } catch (errorOrException) {
-      this.logger.error(`buildGoldIntradayContracts ${errorOrException}`);
     }
   }
 }

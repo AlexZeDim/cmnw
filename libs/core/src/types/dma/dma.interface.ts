@@ -434,3 +434,12 @@ export interface IItemsParse {
   Stackable: number;
   ExpansionID: number;
 }
+
+export interface IItemOpenInterest {
+  oi: number;
+}
+
+export interface IItemPriceAndQuantity {
+  p: number;
+  q: number;
+}

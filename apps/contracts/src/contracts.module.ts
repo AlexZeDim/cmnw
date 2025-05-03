@@ -1,19 +1,20 @@
 import { Module } from '@nestjs/common';
+import { postgresConfig } from '@app/configuration';
 import { ContractsService } from './contracts.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { postgresConfig } from '@app/configuration';
-import { ContractEntity, ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
+import { ContractEntity, ItemsEntity, KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([
-      ItemsEntity,
+      KeysEntity,
       RealmsEntity,
       MarketEntity,
       ContractEntity,
+      ItemsEntity
     ]),
   ],
   controllers: [],

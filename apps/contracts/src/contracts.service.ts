@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ContractEntity, ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
@@ -14,7 +14,7 @@ import {
 } from '@app/core';
 
 @Injectable()
-export class ContractsService {
+export class ContractsService implements OnApplicationBootstrap {
   private readonly logger = new Logger(ContractsService.name, {
     timestamp: true,
   });
@@ -30,8 +30,13 @@ export class ContractsService {
     private readonly contractRepository: Repository<ContractEntity>,
   ) {}
 
+  async onApplicationBootstrap(): Promise<void> {
+    await this.setCommodityItemsAsContracts();
+    await this.buildCommodityTimestampContracts();
+  }
 
-  async setCommodityItemsAsContracts() {
+
+  private async setCommodityItemsAsContracts() {
     try {
       const commodityItems = await this.marketRepository
         .createQueryBuilder('markets')
@@ -49,14 +54,19 @@ export class ContractsService {
         .whereInIds(commodityItemsIds)
         .execute();
 
-      return result.affected || 0;
+      const contractItems = commodityItemsIds.length;
+      const updateResult = result.affected || 0;
+
+      this.logger.log(`setCommodityItemsAsContracts: ${contractItems} || ${updateResult}`);
+
+      return updateResult;
     } catch (errorOrException) {
-      this.logger.error(`buildCommodityIntradayContracts ${errorOrException}`);
+      this.logger.error(`setCommodityItemsAsContracts ${errorOrException}`);
     }
   }
 
   @Cron('00 10,18 * * *')
-  async buildCommodityTimestampContracts() {
+  private async buildCommodityTimestampContracts() {
     try {
       this.logger.log('buildCommodityTimestampContracts started');
 
@@ -76,7 +86,7 @@ export class ContractsService {
       const ytd = today.minus({ days: 1 }).toMillis();
 
       const timestamps = await this.marketRepository
-        .createQueryBuilder('m')
+        .createQueryBuilder('markets')
         .where({
           connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
           timestamp: MoreThan(ytd),
@@ -87,6 +97,8 @@ export class ContractsService {
 
       const commodityItemsIds = commodityItems.map((item) => item.itemId);
       const commodityTimestamps = timestamps.map((t) => t.timestamp);
+
+      this.logger.log(`buildCommodityTimestampContracts: items ${commodityItemsIds.length} || timestamps ${commodityTimestamps.length} || today ${today.toISO()} || ytd ${ytd} ||`);
 
       const isGuard = isContractArraysEmpty(commodityTimestamps, commodityItemsIds);
       if (isGuard) {
@@ -109,7 +121,7 @@ export class ContractsService {
   }
 
   @Cron('00 10,18 * * *')
-  async buildGoldIntradayContracts() {
+  private async buildGoldIntradayContracts() {
     try {
       this.logger.log('buildGoldIntradayContracts started');
 
@@ -225,6 +237,8 @@ export class ContractsService {
       });
 
       await this.contractRepository.save(contractEntity);
+
+      this.logger.log(`${contractId}`);
 
     } catch (errorOrException) {
       this.logger.error(`${contractId}::${errorOrException}`);

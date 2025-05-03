@@ -2,7 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ContractEntity, ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { LessThan, MoreThan, Not, Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import {
@@ -10,7 +10,7 @@ import {
   GOLD_ITEM_ENTITY,
   REALM_ENTITY_ANY,
   getPercentileTypeByItemAndTimestamp,
-  IItemOpenInterest, IItemPriceAndQuantity, isContractArraysEmpty,
+  IItemOpenInterest, IItemPriceAndQuantity, isContractArraysEmpty, WOW_TOKEN_ITEM_ID,
 } from '@app/core';
 
 @Injectable()
@@ -89,7 +89,8 @@ export class ContractsService implements OnApplicationBootstrap {
         .createQueryBuilder('markets')
         .where({
           connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
-          // timestamp: MoreThan(ytd),
+          itemId: Not(WOW_TOKEN_ITEM_ID),
+          timestamp: MoreThan(ytd),
         })
         .select('markets.timestamp', 'timestamp')
         .distinct(true)
@@ -98,7 +99,7 @@ export class ContractsService implements OnApplicationBootstrap {
       const commodityItemsIds = commodityItems.map((item) => item.itemId);
       const commodityTimestamps = timestamps.map((t) => t.timestamp);
 
-      this.logger.log(`buildCommodityTimestampContracts: items ${commodityItemsIds.length} || timestamps ${commodityTimestamps.length} || today ${today.toISO()} || ytd ${ytd} ||`);
+      this.logger.log(`buildCommodityTimestampContracts: items ${commodityItemsIds.length} || timestamps ${commodityTimestamps.length} || today ${today.toISO()} || ytd ${ytd}`);
 
       const isGuard = isContractArraysEmpty(commodityTimestamps, commodityItemsIds);
       if (isGuard) {
@@ -193,7 +194,15 @@ export class ContractsService implements OnApplicationBootstrap {
         .where(itemPriceAndQuantityWhere)
         .select('SUM(m.quantity)', 'q')
         .addSelect('MIN(m.price)', 'p')
+        .addSelect('COUNT(m.uuid)', 'orders')
         .getRawOne<IItemPriceAndQuantity>();
+
+      const orders = Number(itemPriceAndQuantity.orders);
+
+      if (orders === 0) {
+        // this.logger.debug(`${contractId} zero orders`);
+        return;
+      }
 
       const [percentile50, percentile98] = await Promise.all([
         await getPercentileTypeByItemAndTimestamp(
@@ -208,12 +217,14 @@ export class ContractsService implements OnApplicationBootstrap {
         connectedRealmId: connectedRealmId,
         itemId: itemId,
         timestamp: timestamp,
-        price: LessThan(percentile98),
         isOnline: true,
       } : {
         itemId: itemId,
         timestamp: timestamp,
-        price: LessThan(percentile98),
+      }
+
+      if (orders) {
+        itemOpenInterestWhere['price'] = LessThan(percentile98);
       }
 
       const itemOpenInterest = await this.marketRepository

@@ -442,4 +442,5 @@ export interface IItemOpenInterest {
 export interface IItemPriceAndQuantity {
   p: number;
   q: number;
+  orders: number;
 }

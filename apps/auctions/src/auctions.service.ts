@@ -20,9 +20,9 @@ import {
   getKeys,
   GLOBAL_DMA_KEY,
   isWowToken,
-  MARKET_TYPE,
+  MARKET_TYPE, REALM_ENTITY_ANY,
   toGold,
-  TOLERANCE_ENUM,
+  TOLERANCE_ENUM, WOW_TOKEN_ITEM_ID,
 } from '@app/core';
 
 @Injectable()
@@ -158,7 +158,7 @@ export class AuctionsService implements OnApplicationBootstrap {
         where: {
           timestamp: timestamp,
           itemId: 1,
-          connectedRealmId: 1,
+          connectedRealmId: REALM_ENTITY_ANY.id,
           type: MARKET_TYPE.T,
         },
       });
@@ -173,9 +173,9 @@ export class AuctionsService implements OnApplicationBootstrap {
       const wowTokenEntity = this.marketRepository.create({
         orderId: `${timestamp}`,
         price: toGold(price),
-        itemId: 122284,
+        itemId: WOW_TOKEN_ITEM_ID,
         quantity: 1,
-        connectedRealmId: 1,
+        connectedRealmId: REALM_ENTITY_ANY.id,
         type: MARKET_TYPE.T,
         timestamp,
       });

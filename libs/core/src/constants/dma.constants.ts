@@ -5,6 +5,8 @@ export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
 export const DMA_SOURCE_GOLD = 'https://funpay.ru/chips/2/';
 
+export const WOW_TOKEN_ITEM_ID = 122284;
+
 export enum DMA_SOURCE {
   API = 'DMA-API',
   LAB = 'DMA-LAB',

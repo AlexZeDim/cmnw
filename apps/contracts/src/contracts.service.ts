@@ -89,7 +89,7 @@ export class ContractsService implements OnApplicationBootstrap {
         .createQueryBuilder('markets')
         .where({
           connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
-          timestamp: MoreThan(ytd),
+          // timestamp: MoreThan(ytd),
         })
         .select('markets.timestamp', 'timestamp')
         .distinct(true)
@@ -132,7 +132,7 @@ export class ContractsService implements OnApplicationBootstrap {
 
       for (const realmEntity of realmsEntities) {
         const timestamps = await this.marketRepository
-          .createQueryBuilder('m')
+          .createQueryBuilder('markets')
           .where({
             itemId: GOLD_ITEM_ENTITY.id,
             timestamp: MoreThan(ytd),
@@ -173,7 +173,10 @@ export class ContractsService implements OnApplicationBootstrap {
         },
       });
 
-      if (isContractExists) return;
+      if (isContractExists) {
+        // this.logger.debug(`${contractId} exists`);
+        return;
+      }
 
       const itemPriceAndQuantityWhere = isGold ? {
         connectedRealmId: connectedRealmId,
@@ -188,7 +191,7 @@ export class ContractsService implements OnApplicationBootstrap {
       const itemPriceAndQuantity = await this.marketRepository
         .createQueryBuilder('m')
         .where(itemPriceAndQuantityWhere)
-        .addSelect('SUM(m.quantity)', 'q')
+        .select('SUM(m.quantity)', 'q')
         .addSelect('MIN(m.price)', 'p')
         .getRawOne<IItemPriceAndQuantity>();
 

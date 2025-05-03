@@ -21,7 +21,7 @@ export class ContractEntity {
 
   @Column({
     nullable: false,
-    type: 'int',
+    type: 'bigint',
   })
   timestamp: number;
 

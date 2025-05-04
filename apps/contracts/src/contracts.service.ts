@@ -10,7 +10,10 @@ import {
   GOLD_ITEM_ENTITY,
   REALM_ENTITY_ANY,
   getPercentileTypeByItemAndTimestamp,
-  IItemOpenInterest, IItemPriceAndQuantity, isContractArraysEmpty, WOW_TOKEN_ITEM_ID,
+  IItemOpenInterest,
+  IItemPriceAndQuantity,
+  isContractArraysEmpty,
+  WOW_TOKEN_ITEM_ID,
 } from '@app/core';
 
 @Injectable()
@@ -236,7 +239,7 @@ export class ContractsService implements OnApplicationBootstrap {
       const contractEntity = this.contractRepository.create({
         id: contractId,
         itemId: itemId,
-        connectedRealmId: 1,
+        connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
         timestamp: timestamp,
         day: today.day,
         week: today.weekNumber,

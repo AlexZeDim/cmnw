@@ -38,10 +38,7 @@ export class ItemsWorker {
   public async process(job: Job<ItemJobQueue, number>): Promise<number> {
     try {
       const { data: args } = job;
-      /**
-       * @description Check is exits
-       * @description If not, create
-       */
+      // --- Check exits, if not, create --- //
       let itemEntity = await this.itemsRepository.findOneBy({ id: args.itemId });
       const isNew = !itemEntity;
       if (isNew) {
@@ -59,7 +56,7 @@ export class ItemsWorker {
         accessToken: args.accessToken,
       });
 
-      /** Request item data */
+      // --- Request item data --- //
       const isMultiLocale = true;
       const [getItemSummary, getItemMedia] = await Promise.allSettled([
         this.BNet.query<BlizzardApiItem>(

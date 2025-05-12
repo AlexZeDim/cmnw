@@ -37,8 +37,8 @@ export class ItemsService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     await this.indexItems(
       GLOBAL_KEY,
-      0,
-      250000,
+      200_000,
+      250_000,
       itemsConfig.updateForce,
       itemsConfig.index,
     );
@@ -49,7 +49,7 @@ export class ItemsService implements OnApplicationBootstrap {
   async indexItems(
     clearance: string = GLOBAL_KEY,
     from = 0,
-    to = 200000,
+    to = 250_000,
     updateForce = true,
     init = true,
   ): Promise<void> {

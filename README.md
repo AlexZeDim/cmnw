@@ -9,13 +9,11 @@ Welcome to [CMNW](https://cmnw.me/)
 
 ## Technology
 
-Started in 2017 as a monolith, CMNW is a set of separate microservices, build with [NestJs](https://nestjs.com) framework. Using PostgreSQL & MongoDB as storage. And Rabbit & BullMQ for disturbed job queue.
+CMNW is a set of separate microservices, build with [NestJs](https://nestjs.com) framework. Using PostgreSQL & MongoDB as storage. And Rabbit & BullMQ for disturbed job queue.
 
-## Tests
+## Ignition
 
-Written with [Jest.js](https://jestjs.io) library, and may be found in `test` [folder](https://github.com/alexzedim/cmnw/blob/master/apps/tests) of current repository.
- - [test suite](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/test/tests.osint.spec.ts) and [osint.mocks](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/mocks/osint.mock.ts) for OSINT area
- - [test suite](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/test/tests.dma.spec.ts) and [dma.mocks](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/mocks/dma.mock.ts) for DMA area
+<img alt="ignition" src=".images/ignition.png" width="2214"/>
 
 ## Deploy
 
@@ -26,6 +24,18 @@ Deployment is available via GitHub action & control panel.
 3. Pass `.env.docker` as BUILD ARG
 4. Deploy *ENC* password
 
+
+## Valuations 
+
+Pricing engine schema, for valuation-calculations based on XVA model.
+
+![valuations_a9](.images/valuations_a9.png)
+
+## Tests
+
+Written with [Jest.js](https://jestjs.io) library, and may be found in `test` [folder](https://github.com/alexzedim/cmnw/blob/master/apps/tests) of current repository.
+- [test suite](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/test/tests.osint.spec.ts) and [osint.mocks](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/mocks/osint.mock.ts) for OSINT area
+- [test suite](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/test/tests.dma.spec.ts) and [dma.mocks](https://github.com/AlexZeDim/cmnw/blob/master/apps/tests/mocks/dma.mock.ts) for DMA area
 
 ## Contribution
 

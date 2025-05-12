@@ -7,9 +7,9 @@ import {
   ItemCrossRealmDto,
   ItemFeedDto,
   ItemQuotesDto,
-  MARKET_TYPE,
+  MARKET_TYPE, REALM_ENTITY_ANY,
   ReqGetItemDto,
-  valuationsQueue,
+  valuationsQueue, WOW_TOKEN_ITEM_ID,
   WowtokenDto,
 } from '@app/core';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
@@ -47,44 +47,47 @@ export class DmaService {
     return await this.itemsRepository.findOneBy({ id });
   }
 
-  async getItemValuations(input: ItemCrossRealmDto) {}
+  async getItemValuations(input: ItemCrossRealmDto) {
+    // @todo
+  }
 
   /**
    * @description Auctions DMA store in Redis Latest TimeStamp
-   * @description We receive available timestamps for COMMDTY items
+   * @description We receive available timestamps for COMMODITY items
    */
-  async getLatestTimestampCOMMDTY(itemId: number) {
-    const commdtyTimestampKeys = await this.redisService.keys('COMMDTY:TS:*');
-    const commdtyTimestamp = await this.redisService.mget(commdtyTimestampKeys);
+  async getLatestTimestampCommodity(itemId: number) {
+    const commodityTimestampKeys = await this.redisService.keys('COMMODITY:TS:*');
+    const commodityTimestamp = await this.redisService.mget(commodityTimestampKeys);
 
     // TODO in case of Redis not found!
 
-    const timestamps = commdtyTimestamp.map((t) => Number(t)).sort((a, b) => a - b);
+    const timestamps = commodityTimestamp
+      .map((t) => Number(t)).sort((a, b) => a - b);
 
-    const lts = timestamps.slice(-1);
+    const latestCommodityTimestamp = timestamps.slice(-1);
 
-    const key = `COMMDTY:CHART:${itemId}:${lts}`;
+    const key = `COMMODITY:CHART:${itemId}:${latestCommodityTimestamp}`;
 
-    return { lts, timestamps, key };
+    return { latestCommodityTimestamp, timestamps, key };
   }
 
   async getChart(input: ReqGetItemDto): Promise<ItemChartDto> {
-    const item = await this.queryDmaItem(input.id);
-    // TODO check is gold
+    const item = await this.queryItem(input.id);
 
-    const { timestamps, key } = await this.getLatestTimestampCOMMDTY(item.id);
+    const { timestamps, key } = await this.getLatestTimestampCommodity(item.id);
 
+    // --- return cached chart from redis on exist -- //
     const getCacheItemChart = await this.redisService.get(key);
     if (getCacheItemChart) {
       return JSON.parse(getCacheItemChart) as ItemChartDto;
     }
 
-    const yPriceAxis = await this.priceAxisCOMMDTY({
+    const yPriceAxis = await this.priceAxisCommodity({
       itemId: item.id,
       isGold: false,
     });
 
-    const { dataset } = await this.buildDataSet(yPriceAxis, timestamps, item.id);
+    const { dataset } = await this.buildChartDataset(yPriceAxis, timestamps, item.id);
 
     await this.redisService.set(
       key,
@@ -112,30 +115,28 @@ export class DmaService {
     const cap = Math.round(quotes[Math.floor(length * 0.9)]);
     const floor = Math.round(quotes[start]);
     const priceRange = cap - floor;
-    /** Step represent 5% for each cluster */
+    // --- Step represents 5% for each cluster --- //
     const tick = priceRange / blocks;
     return Array(Math.ceil((cap + tick - floor) / tick))
       .fill(floor)
       .map((x, y) => parseFloat((x + y * tick).toFixed(4)));
   }
 
-  async priceAxisCOMMDTY(args: IBuildYAxis): Promise<number[]> {
+  async priceAxisCommodity(args: IBuildYAxis): Promise<number[]> {
     const { itemId, isGold } = args;
 
     const blocks = 20;
 
-    return this.yPriceRange(itemId, 20);
-
-    return [];
+    return this.yPriceRange(itemId, blocks);
   }
 
-  async buildDataSet(yAxis: number[], xAxis: number[], itemId: number) {
+  async buildChartDataset(yPriceAxis: number[], xTimestampAxis: number[], itemId: number) {
     const dataset: IChartOrder[] = [];
-    if (!yAxis.length) return { dataset };
-    /** Find distinct timestamps for each realm */
+    if (!yPriceAxis.length) return { dataset };
 
+    // --- Find distinct timestamps for each realm --- //
     await lastValueFrom(
-      from(xAxis).pipe(
+      from(xTimestampAxis).pipe(
         mergeMap(async (timestamp, itx) => {
           // TODO cover with index
           const marketOrders = await this.marketRepository.find({
@@ -147,8 +148,8 @@ export class DmaService {
           });
 
           // TODO push to global by TS
-          const plDataset = yAxis.map((pl, ytx) => ({
-            lt: yAxis[ytx + 1] ?? pl, // TODO check
+          const priceLevelDataset = yPriceAxis.map((priceLevel, ytx) => ({
+            lt: yPriceAxis[ytx + 1] ?? priceLevel, // TODO check
             x: itx,
             y: ytx, // TODO price
             orders: 0,
@@ -161,18 +162,18 @@ export class DmaService {
 
           for (const order of marketOrders) {
             const isPriceItxUp =
-              order.price >= plDataset[priceItx].lt &&
-              Boolean(plDataset[priceItx + 1]);
+              order.price >= priceLevelDataset[priceItx].lt &&
+              Boolean(priceLevelDataset[priceItx + 1]);
 
             if (isPriceItxUp) priceItx = priceItx + 1;
-            plDataset[priceItx].orders = plDataset[priceItx].orders + 1;
-            plDataset[priceItx].oi = plDataset[priceItx].oi + order.value;
-            plDataset[priceItx].value = plDataset[priceItx].value + order.quantity;
-            plDataset[priceItx].price =
-              plDataset[priceItx].oi / plDataset[priceItx].value;
+            priceLevelDataset[priceItx].orders = priceLevelDataset[priceItx].orders + 1;
+            priceLevelDataset[priceItx].oi = priceLevelDataset[priceItx].oi + order.value;
+            priceLevelDataset[priceItx].value = priceLevelDataset[priceItx].value + order.quantity;
+            priceLevelDataset[priceItx].price =
+              priceLevelDataset[priceItx].oi / priceLevelDataset[priceItx].value;
           }
 
-          dataset.push(...plDataset);
+          dataset.push(...priceLevelDataset);
         }),
       ),
     );
@@ -180,12 +181,14 @@ export class DmaService {
     return { dataset };
   }
 
-  async getItemFeed(input: ItemCrossRealmDto): Promise<ItemFeedDto> {
-    const { item, realm } = await this.queryDmaItem(input._id);
-    /**
-     * Item should be not commodity
-     */
+  async a() {
 
+  }
+
+  async getItemFeed(input: ItemCrossRealmDto): Promise<ItemFeedDto> {
+    const { item, realm } = await this.queryItem(input._id);
+
+    // --- Item should be not commodity --- //
     const feed = await this.marketRepository.findBy({
       itemId: item.id,
       connectedRealmId: realm.connectedRealmId,
@@ -195,12 +198,13 @@ export class DmaService {
     return { feed };
   }
 
-  async queryDmaItem(input: string) {
+  async queryItem(input: string) {
     // TODO is @ exists
 
-    const isID = isNaN(Number(input));
-    if (isID) {
-      // TODO text search
+    const isId = isNaN(Number(input));
+    if (isId) {
+      // TODO text search on postres
+      throw new BadRequestException('Please provide correct item ID in your query');
     }
 
     const id = parseInt(input);
@@ -215,13 +219,12 @@ export class DmaService {
   }
 
   async getWowToken(input: WowtokenDto) {
-    // TODO WowToken criteria latest
     return this.marketRepository.find({
       where: {
-        itemId: 1,
-        connectedRealmId: 1,
+        itemId: WOW_TOKEN_ITEM_ID,
+        connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
         type: MARKET_TYPE.T,
-      }, // TODO item ID for wowtoken
+      },
       order: { createdAt: -1 },
       take: input.limit ? input.limit : 1,
     });

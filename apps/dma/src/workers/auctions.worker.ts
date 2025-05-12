@@ -59,17 +59,17 @@ export class AuctionsWorker {
         accessToken: args.accessToken,
       });
       /**
-       * @description If no connected realm passed, then deal with it, as COMMDTY
+       * @description If no connected realm passed, then deal with it, as COMMODITY
        * @description Else, it's an auctions request
        */
-      const isCommdty = job.name === 'COMMDTY' && args.connectedRealmId === 1;
+      const isCommodity = job.name === 'COMMODITY' && args.connectedRealmId === 1;
 
-      const previousTimestamp = isCommdty
+      const previousTimestamp = isCommodity
         ? args.commoditiesTimestamp
         : args.auctionsTimestamp;
 
       const ifModifiedSince = DateTime.fromMillis(previousTimestamp).toHTTP();
-      const getMarketApiEndpoint = isCommdty
+      const getMarketApiEndpoint = isCommodity
         ? '/data/wow/auctions/commodities'
         : `/data/wow/connected-realm/${args.connectedRealmId}/auctions`;
 
@@ -90,7 +90,7 @@ export class AuctionsWorker {
 
       await job.updateProgress(15);
 
-      const connectedRealmId = isCommdty ? 1 : args.connectedRealmId;
+      const connectedRealmId = isCommodity ? 1 : args.connectedRealmId;
       const timestamp = DateTime.fromRFC2822(
         auctionsResponse.lastModified,
       ).toMillis();
@@ -108,7 +108,7 @@ export class AuctionsWorker {
                 ordersBatch,
                 timestamp,
                 connectedRealmId,
-                isCommdty,
+                isCommodity,
               );
 
               await this.marketRepository.save(ordersBulkAuctions);
@@ -121,12 +121,12 @@ export class AuctionsWorker {
         ),
       );
 
-      if (isCommdty) {
-        await this.redisService.set(`COMMDTY:TS:${timestamp}`, timestamp);
+      if (isCommodity) {
+        await this.redisService.set(`COMMODITY:TS:${timestamp}`, timestamp);
         await job.updateProgress(80);
       }
 
-      const updateQuery: Partial<RealmsEntity> = isCommdty
+      const updateQuery: Partial<RealmsEntity> = isCommodity
         ? { commoditiesTimestamp: timestamp }
         : { auctionsTimestamp: timestamp };
 

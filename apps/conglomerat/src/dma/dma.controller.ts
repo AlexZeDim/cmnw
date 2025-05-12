@@ -20,8 +20,6 @@ import {
 } from '@nestjs/swagger';
 
 import { DmaService } from './dma.service';
-import { LeanDocument } from 'mongoose';
-import { Item, Token } from '@app/mongo';
 
 import {
   ItemChartDto,
@@ -98,8 +96,8 @@ export class DmaController {
     return this.dmaService.getItemValuations(input);
   }
 
-  @ApiOperation({ description: 'Returns requested commdty item chart' })
-  @ApiOkResponse({ description: 'Request commdty chart with selected _id' })
+  @ApiOperation({ description: 'Returns requested commodity item chart' })
+  @ApiOkResponse({ description: 'Request commodity chart with selected _id' })
   @ApiUnauthorizedResponse({
     description: 'You need authenticate yourself before request',
   })
@@ -113,8 +111,8 @@ export class DmaController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
-  @Get('/commdty/chart')
-  async getCommdtyChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
+  @Get('/commodity/chart')
+  async getCommodityChart(@Query() input: ReqGetItemDto): Promise<ItemChartDto> {
     return this.dmaService.getChart(input);
   }
 

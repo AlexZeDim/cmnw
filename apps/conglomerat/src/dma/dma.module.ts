@@ -12,15 +12,6 @@ import { MarketEntity } from '@app/pg';
   imports: [
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([MarketEntity]),
-    /*
-    MongooseModule.forFeature([
-      { name: Token.name, schema: TokenSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Item.name, schema: ItemsSchema },
-      { name: Gold.name, schema: GoldsSchema },
-      { name: Auction.name, schema: AuctionsSchema },
-      { name: Valuations.name, schema: ValuationsSchema },
-    ]),*/
     RedisModule.forRoot({
       config: {
         host: redisConfig.host,

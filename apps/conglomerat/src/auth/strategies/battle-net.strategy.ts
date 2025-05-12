@@ -17,7 +17,7 @@ export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
     super({
       authorizationURL: `https://eu.battle.net/oauth/authorize?${stringify({
         client_id: commonwealthConfig.clientId,
-        redirect_uri: commonwealthConfig.redirect,
+        redirect_uri: commonwealthConfig.redirectUri,
         response_type: 'code',
         scope: 'wow.profile',
       })}`,
@@ -28,7 +28,7 @@ export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
       clientSecret: commonwealthConfig.clientSecret,
       grant_type: 'client_credentials',
       scope: 'wow.profile',
-      redirect_uri: commonwealthConfig.redirect,
+      redirect_uri: commonwealthConfig.redirectUri,
       region: 'eu',
     });
   }

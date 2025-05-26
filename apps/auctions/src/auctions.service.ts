@@ -97,10 +97,18 @@ export class AuctionsService implements OnApplicationBootstrap {
       const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
 
       const realmEntity = await this.realmsRepository.findOneBy({
-        connectedRealmId: 1,
+        connectedRealmId: REALM_ENTITY_ANY.id,
       });
 
-      await this.queue.add('COMMDTY', {
+      const commodityJob = await this.queue.getJob('COMMODITY');
+      const isCommodityJobActive = await commodityJob.isActive();
+
+      if (isCommodityJobActive) {
+        this.logger.debug(`realm: ${realmEntity.connectedRealmId} | active`);
+        return;
+      }
+
+      await this.queue.add('COMMODITY', {
         region: 'eu',
         clientId: keyEntity.client,
         clientSecret: keyEntity.secret,

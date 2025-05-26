@@ -60,7 +60,7 @@ export class AuctionsWorker {
       });
       /**
        * @description If no connected realm passed, then deal with it, as COMMODITY
-       * @description Else, it's an auctions request
+       * @description Else, it's an auctions' request
        */
       const isCommodity = job.name === 'COMMODITY' && args.connectedRealmId === 1;
 
@@ -75,7 +75,7 @@ export class AuctionsWorker {
 
       await job.updateProgress(10);
 
-      const auctionsResponse = await this.BNet.query<BlizzardApiAuctions>(
+      const marketResponse = await this.BNet.query<BlizzardApiAuctions>(
         getMarketApiEndpoint,
         apiConstParams(
           API_HEADERS_ENUM.DYNAMIC,
@@ -85,17 +85,17 @@ export class AuctionsWorker {
         ),
       );
 
-      const isAuctionsValid = isAuctions(auctionsResponse);
+      const isAuctionsValid = isAuctions(marketResponse);
       if (!isAuctionsValid) return 504;
 
       await job.updateProgress(15);
 
       const connectedRealmId = isCommodity ? 1 : args.connectedRealmId;
       const timestamp = DateTime.fromRFC2822(
-        auctionsResponse.lastModified,
+        marketResponse.lastModified,
       ).toMillis();
 
-      const { auctions } = auctionsResponse;
+      const { auctions } = marketResponse;
 
       let iterator = 0;
 

@@ -45,7 +45,7 @@ export class CharactersService implements OnApplicationBootstrap {
   ): Promise<void> {
     try {
       const jobs = await this.queue.count();
-      if (jobs > 10000) {
+      if (jobs > 10_000) {
         throw new Error(`${jobs} jobs found`);
       }
 

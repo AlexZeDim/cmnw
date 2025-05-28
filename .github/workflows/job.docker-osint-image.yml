@@ -17,7 +17,7 @@ on:
 jobs:
   publish:
     name: publish
-    runs-on: ubuntu-latest #  buildjet-8vcpu-ubuntu-2204-arm
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2

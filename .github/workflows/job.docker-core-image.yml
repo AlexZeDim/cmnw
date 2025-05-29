@@ -68,12 +68,13 @@ jobs:
         with:
           file: ./docker/x64.core.Dockerfile
           push: true
-          tags: ghcr.io/alexzedim/core:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}
 
       - name: Image digest
         run: |
+          echo ${{ steps.meta.outputs.tags }}
           echo ${{ steps.build-push-action.outputs.digest }}
           echo "Got tag name ${{ steps.package-version.outputs.current-version}}"

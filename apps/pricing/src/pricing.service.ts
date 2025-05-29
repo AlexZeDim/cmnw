@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Key, Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
+import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import {
@@ -32,8 +32,6 @@ export class PricingService implements OnApplicationBootstrap {
   private BNet: BlizzAPI;
 
   constructor(
-    @InjectModel(Key.name)
-    private readonly KeyModel: Model<Key>,
     @InjectModel(SkillLine.name)
     private readonly SkillLineModel: Model<SkillLine>,
     @InjectModel(SpellEffect.name)

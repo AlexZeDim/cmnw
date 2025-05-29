@@ -3,8 +3,6 @@ import { PricingService } from './pricing.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import {
-  Key,
-  KeysSchema,
   Pricing,
   PricingSchema,
   SkillLine,
@@ -23,7 +21,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
       { name: SkillLine.name, schema: SkillLineSchema },
       { name: SpellEffect.name, schema: SpellEffectSchema },
       { name: SpellReagents.name, schema: SpellReagentsSchema },

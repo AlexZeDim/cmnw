@@ -5,10 +5,11 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { LessThan, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { BlizzAPI } from 'blizzapi';
+import Redis from 'ioredis';
 import {
   API_HEADERS_ENUM,
   apiConstParams,

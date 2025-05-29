@@ -2,11 +2,12 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { BlizzAPI } from 'blizzapi';
 import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import ms from 'ms';
+import Redis from 'ioredis';
 import {
   BadGatewayException,
   Injectable,

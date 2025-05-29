@@ -1,3 +1,4 @@
+import Redis from 'ioredis';
 import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
 import { Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
@@ -8,7 +9,7 @@ import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import {
   API_HEADERS_ENUM,
   apiConstParams,

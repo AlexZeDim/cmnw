@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   realms:
+    container_name: realms
     image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/realms/main.js' ]
@@ -9,6 +10,7 @@ services:
       - KEY=${KEY}
 
   keys:
+    container_name: keys
     image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]

@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { guildsQueue } from '@app/core/queues/guilds.queue';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -38,7 +38,7 @@ export class GuildsService implements OnApplicationBootstrap {
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(GuildsEntity)
     private readonly guildsRepository: Repository<GuildsEntity>,
-    @BullQueueInject(guildsQueue.name)
+    @InjectQueue(guildsQueue.name)
     private readonly queueGuilds: Queue<GuildJobQueue, number>,
   ) {}
 

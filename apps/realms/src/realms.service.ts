@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import * as cheerio from 'cheerio';
 import { BlizzAPI } from 'blizzapi';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { HttpService } from '@nestjs/axios';
@@ -33,7 +33,7 @@ export class RealmsService implements OnModuleInit {
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
-    @BullQueueInject(realmsQueue.name)
+    @InjectQueue(realmsQueue.name)
     private readonly queue: Queue<RealmJobQueue, number>,
   ) {}
 

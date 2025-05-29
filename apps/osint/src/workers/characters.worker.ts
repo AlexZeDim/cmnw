@@ -1,12 +1,12 @@
 import { BlizzAPI } from 'blizzapi';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { difference, get } from 'lodash';
-import { Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import {
   ACTION_LOG,
@@ -55,11 +55,9 @@ import {
   RealmsEntity,
 } from '@app/pg';
 
-@BullWorker({
-  queueName: charactersQueue.name,
-  options: charactersQueue.workerOptions,
-})
-export class CharactersWorker {
+@Processor(charactersQueue.name, charactersQueue.workerOptions)
+@Injectable()
+export class CharactersWorker extends WorkerHost {
   private readonly logger = new Logger(CharactersWorker.name, {
     timestamp: true,
   });
@@ -89,9 +87,10 @@ export class CharactersWorker {
     private readonly charactersMountsRepository: Repository<CharactersMountsEntity>,
     @InjectRepository(LogsEntity)
     private readonly logsRepository: Repository<LogsEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
-  @BullWorkerProcess(charactersQueue.workerOptions)
   public async process(job: Job<CharacterJobQueue, number>): Promise<number> {
     try {
       const { data: args } = job;

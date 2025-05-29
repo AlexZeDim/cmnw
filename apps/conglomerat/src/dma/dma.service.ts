@@ -7,18 +7,21 @@ import {
   ItemCrossRealmDto,
   ItemFeedDto,
   ItemQuotesDto,
-  MARKET_TYPE, REALM_ENTITY_ANY,
+  MARKET_TYPE,
+  REALM_ENTITY_ANY,
   ReqGetItemDto,
-  valuationsQueue, WOW_TOKEN_ITEM_ID,
+  valuationsQueue,
+  WOW_TOKEN_ITEM_ID,
   WowtokenDto,
 } from '@app/core';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity, KeysEntity, MarketEntity } from '@app/pg';
 import { Repository } from 'typeorm';
+import Redis from 'ioredis';
 
 @Injectable()
 export class DmaService {
@@ -31,7 +34,7 @@ export class DmaService {
     private readonly itemsRepository: Repository<ItemsEntity>,
     @InjectRepository(MarketEntity)
     private readonly marketRepository: Repository<MarketEntity>,
-    @BullQueueInject(valuationsQueue.name)
+    @InjectQueue(valuationsQueue.name)
     private readonly queueValuations: Queue<IQItemValuation, number>,
   ) {}
 

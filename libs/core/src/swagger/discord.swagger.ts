@@ -76,8 +76,7 @@ export const SWAGGER_DISCORD_TIMESTAMP: ApiPropertyOptions = {
 export const SWAGGER_DISCORD_TYPE: ApiPropertyOptions = {
   name: 'type',
   description: 'Notifications type: recruiting, market or orders',
-  type: NOTIFICATIONS,
-  enum: NOTIFICATIONS,
+  type: String,
   required: false,
   example: NOTIFICATIONS.CANDIDATES,
 };

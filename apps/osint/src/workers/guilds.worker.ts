@@ -1,17 +1,13 @@
-import { Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { Job, Queue } from 'bullmq';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { difference, get, intersection } from 'lodash';
-import { snakeCase } from 'snake-case';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import {
-  BullQueueInject,
-  BullWorker,
-  BullWorkerProcess,
-} from '@anchan828/nest-bullmq';
+import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import * as changeCase from 'change-case';
 
 import {
   ACTION_LOG,
@@ -52,14 +48,15 @@ import {
   RealmsEntity,
 } from '@app/pg';
 
-@BullWorker({ queueName: guildsQueue.name })
-export class GuildsWorker {
+@Processor(guildsQueue.name, guildsQueue.workerOptions)
+@Injectable()
+export class GuildsWorker extends WorkerHost {
   private readonly logger = new Logger(GuildsWorker.name, { timestamp: true });
 
   private BNet: BlizzAPI;
 
   constructor(
-    @BullQueueInject(charactersQueue.name)
+    @InjectQueue(charactersQueue.name)
     private readonly queue: Queue<CharacterJobQueue, number>,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
@@ -83,9 +80,10 @@ export class GuildsWorker {
     private readonly charactersMountsRepository: Repository<CharactersMountsEntity>,
     @InjectRepository(LogsEntity)
     private readonly logsRepository: Repository<LogsEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
-  @BullWorkerProcess(guildsQueue.workerOptions)
   public async process(job: Job<GuildJobQueue, number>): Promise<number> {
     try {
       const { data: args } = job;
@@ -414,7 +412,7 @@ export class GuildsWorker {
       const keys = ['id', 'name', 'achievement_points', 'created_timestamp'];
 
       Object.entries(response).map(([key, value]) => {
-        if (keys.includes(key) && value !== null) summary[snakeCase(key)] = value;
+        if (keys.includes(key) && value !== null) summary[changeCase.snakeCase(key)] = value;
         if (key === 'faction' && typeof value === 'object' && value !== null) {
           if (value.type && value.name === null) {
             if (value.type.toString().startsWith('A')) summary.faction = FACTION.A;

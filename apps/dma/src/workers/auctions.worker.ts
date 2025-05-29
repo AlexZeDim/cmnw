@@ -1,6 +1,5 @@
 import Redis from 'ioredis';
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { Job } from 'bullmq';
 import { bufferCount, concatMap } from 'rxjs/operators';
@@ -27,9 +26,11 @@ import {
   toGold,
   transformPrice,
 } from '@app/core';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 
-@BullWorker({ queueName: auctionsQueue.name })
-export class AuctionsWorker {
+@Processor(auctionsQueue.name, auctionsQueue.workerOptions)
+@Injectable()
+export class AuctionsWorker extends WorkerHost {
   private readonly logger = new Logger(AuctionsWorker.name, {
     timestamp: true,
   });
@@ -45,9 +46,10 @@ export class AuctionsWorker {
     private readonly itemsRepository: Repository<ItemsEntity>,
     @InjectRepository(MarketEntity)
     private readonly marketRepository: Repository<MarketEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
-  @BullWorkerProcess(auctionsQueue.workerOptions)
   public async process(job: Job<AuctionJobQueue, number>): Promise<number> {
     try {
       const { data: args } = job;

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { OsintModule } from './osint/osint.module';
 import { DmaModule } from './dma/dma.module';
 import { QueueModule } from './queue/queue.module';
@@ -14,19 +14,18 @@ import { RedisModule } from '@nestjs-modules/ioredis';
     HttpModule,
     MongooseModule.forRoot(mongoConfig.connectionString, mongoOptionsConfig),
     RedisModule.forRoot({
-      config: {
+      type: 'single',
+      options: {
         host: redisConfig.host,
         port: redisConfig.port,
         password: redisConfig.password,
-      },
+      }
     }),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     OsintModule,

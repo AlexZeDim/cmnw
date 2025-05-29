@@ -1,10 +1,10 @@
-import { BullQueueInject } from '@anchan828/nest-bullmq';
 import { Queue } from 'bullmq';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
 import ms from 'ms';
 import cheerio from 'cheerio';
+import { InjectQueue } from '@nestjs/bullmq';
 import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { wowProgressConfig } from '@app/configuration';
@@ -58,11 +58,11 @@ export class WowprogressService implements OnApplicationBootstrap {
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(CharactersProfileEntity)
     private readonly charactersProfileRepository: Repository<CharactersProfileEntity>,
-    @BullQueueInject(guildsQueue.name)
+    @InjectQueue(guildsQueue.name)
     private readonly queueGuilds: Queue<GuildJobQueue, number>,
-    @BullQueueInject(profileQueue.name)
+    @InjectQueue(profileQueue.name)
     private readonly queueProfile: Queue<ProfileJobQueue, number>,
-    @BullQueueInject(charactersQueue.name)
+    @InjectQueue(charactersQueue.name)
     private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) {}
 

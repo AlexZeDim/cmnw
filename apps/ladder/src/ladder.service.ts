@@ -1,6 +1,6 @@
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BlizzAPI } from 'blizzapi';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -43,7 +43,7 @@ export class LadderService implements OnApplicationBootstrap {
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
-    @BullQueueInject(charactersQueue.name)
+    @InjectQueue(charactersQueue.name)
     private readonly queueCharacters: Queue<CharacterJobQueue, number>,
   ) {}
 

@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
@@ -42,7 +42,7 @@ export class AuctionsService implements OnApplicationBootstrap {
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(MarketEntity)
     private readonly marketRepository: Repository<MarketEntity>,
-    @BullQueueInject(auctionsQueue.name)
+    @InjectQueue(auctionsQueue.name)
     private readonly queue: Queue<AuctionJobQueue, number>,
   ) {}
 

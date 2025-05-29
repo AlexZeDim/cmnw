@@ -1,7 +1,7 @@
 import { JobsOptions } from 'bullmq';
 import { IQueue } from '@app/core';
 
-const queueOptions: JobsOptions = {
+const options: JobsOptions = {
   removeOnComplete: 10,
   removeOnFail: 10,
 };
@@ -15,7 +15,5 @@ export const guildsQueue: IQueue = {
       duration: 1000,
     },
   },
-  options: {
-    defaultJobOptions: queueOptions,
-  },
+  defaultJobOptions: options,
 };

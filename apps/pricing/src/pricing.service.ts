@@ -2,7 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pricing, SkillLine, SpellEffect, SpellReagents } from '@app/mongo';
 import { Model } from 'mongoose';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import {
   ICsvReagents,
   DMA_SOURCE,
@@ -40,7 +40,7 @@ export class PricingService implements OnApplicationBootstrap {
     private readonly SpellReagentsModel: Model<SpellReagents>,
     @InjectModel(Pricing.name)
     private readonly PricingModel: Model<Pricing>,
-    @BullQueueInject(pricingQueue.name)
+    @InjectQueue(pricingQueue.name)
     private readonly queue: Queue<IQPricing, number>,
   ) { }
 

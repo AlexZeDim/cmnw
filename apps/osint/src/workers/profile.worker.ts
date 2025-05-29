@@ -1,16 +1,12 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Browser, BrowserContext, chromium, devices } from 'playwright';
 import { Job, Queue } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CharactersProfileEntity, RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
+import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import cheerio from 'cheerio';
-import {
-  BullQueueInject,
-  BullWorker,
-  BullWorkerProcess,
-} from '@anchan828/nest-bullmq';
 
 import {
   CHARACTER_RAID_DIFFICULTY,
@@ -30,11 +26,9 @@ import {
   capitalize,
 } from '@app/core';
 
-@BullWorker({
-  queueName: profileQueue.name,
-  options: profileQueue.workerOptions,
-})
-export class ProfileWorker {
+@Processor(profileQueue.name, profileQueue.workerOptions)
+@Injectable()
+export class ProfileWorker extends WorkerHost {
   private readonly logger = new Logger(ProfileWorker.name, {
     timestamp: true,
   });
@@ -44,13 +38,15 @@ export class ProfileWorker {
 
   constructor(
     private httpService: HttpService,
-    @BullQueueInject(profileQueue.name)
+    @InjectQueue(profileQueue.name)
     private readonly queue: Queue<ProfileJobQueue, number>,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(CharactersProfileEntity)
     private readonly charactersProfileRepository: Repository<CharactersProfileEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
   private async browserControl() {
     const isBrowserSession = Boolean(this.browser && this.browserContext);
@@ -63,7 +59,6 @@ export class ProfileWorker {
     }
   }
 
-  @BullWorkerProcess(profileQueue.workerOptions)
   public async process(job: Job<ProfileJobQueue, number>) {
     try {
       const { data: args } = job;

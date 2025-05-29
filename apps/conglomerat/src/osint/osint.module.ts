@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { postgresConfig, redisConfig } from '@app/configuration';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
 import { charactersQueue, guildsQueue } from '@app/core';
@@ -40,21 +40,19 @@ import {
       LogsEntity,
     ]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     BullModule.registerQueue({
-      queueName: charactersQueue.name,
-      options: charactersQueue.options,
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
     }),
     BullModule.registerQueue({
-      queueName: guildsQueue.name,
-      options: guildsQueue.options,
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
     }),
   ],
   controllers: [OsintController],

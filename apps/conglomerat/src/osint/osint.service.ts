@@ -7,7 +7,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -62,9 +62,9 @@ export class OsintService {
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(LogsEntity)
     private readonly logsRepository: Repository<LogsEntity>,
-    @BullQueueInject(charactersQueue.name)
+    @InjectQueue(charactersQueue.name)
     private readonly queueCharacter: Queue<CharacterJobQueue, number>,
-    @BullQueueInject(guildsQueue.name)
+    @InjectQueue(guildsQueue.name)
     private readonly queueGuild: Queue<GuildJobQueue, number>,
   ) {}
 

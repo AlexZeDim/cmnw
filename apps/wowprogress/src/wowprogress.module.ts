@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { WowprogressService } from './wowprogress.service';
 import { postgresConfig, redisConfig } from '@app/configuration';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
@@ -15,25 +15,23 @@ import { CharactersProfileEntity, KeysEntity, RealmsEntity } from '@app/pg';
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([KeysEntity, RealmsEntity, CharactersProfileEntity]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     BullModule.registerQueue({
-      queueName: guildsQueue.name,
-      options: guildsQueue.options,
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
     }),
     BullModule.registerQueue({
-      queueName: charactersQueue.name,
-      options: charactersQueue.options,
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
     }),
     BullModule.registerQueue({
-      queueName: profileQueue.name,
-      options: profileQueue.options,
+      name: profileQueue.name,
+      defaultJobOptions: profileQueue.defaultJobOptions,
     }),
   ],
   controllers: [],

@@ -1,9 +1,8 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { redisConfig } from '@app/configuration';
-import { BullModule, BullQueueInject } from '@anchan828/nest-bullmq';
-import { createBullBoard } from 'bull-board';
-import { BullMQAdapter } from 'bull-board/bullMQAdapter';
-import { Queue } from 'bullmq';
+import { BullModule } from '@nestjs/bullmq';
+import { ExpressAdapter } from '@bull-board/express';
+import { BullBoardModule } from 'nestjs-bull-board';
 import { Express } from 'express';
 import {
   auctionsQueue,
@@ -18,21 +17,35 @@ import {
 @Module({
   imports: [
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue(auctionsQueue.name),
-    BullModule.registerQueue(charactersQueue.name),
-    BullModule.registerQueue(guildsQueue.name),
-    BullModule.registerQueue(realmsQueue.name),
-    BullModule.registerQueue(itemsQueue.name),
-    BullModule.registerQueue(pricingQueue.name),
-    BullModule.registerQueue(valuationsQueue.name),
+    BullModule.registerQueue({
+      name: auctionsQueue.name
+    }),
+    BullModule.registerQueue({
+      name: charactersQueue.name,
+    }),
+    BullModule.registerQueue({
+      name: guildsQueue.name,
+    }),
+    BullModule.registerQueue({
+      name: realmsQueue.name,
+    }),
+    BullModule.registerQueue({
+      name: itemsQueue.name,
+    }),
+    BullModule.registerQueue({
+      name: pricingQueue.name,
+    }),
+    BullModule.registerQueue({
+      name: valuationsQueue.name,
+    }),
+    BullBoardModule.forRoot({ route: '/queues', adapter: ExpressAdapter }),
+    BullBoardModule.forFeature(...QueueListBoard),
   ],
   controllers: [],
   providers: [],
@@ -41,30 +54,8 @@ export class QueueModule {
   private router: Express;
 
   constructor(
-    @BullQueueInject(auctionsQueue.name)
-    private readonly auctions: Queue,
-    @BullQueueInject(charactersQueue.name)
-    private readonly characters: Queue,
-    @BullQueueInject(guildsQueue.name)
-    private readonly guilds: Queue,
-    @BullQueueInject(realmsQueue.name)
-    private readonly realms: Queue,
-    @BullQueueInject(itemsQueue.name)
-    private readonly items: Queue,
-    @BullQueueInject(pricingQueue.name)
-    private readonly pricing: Queue,
-    @BullQueueInject(valuationsQueue.name)
-    private readonly valuations: Queue,
+
   ) {
-    const { router } = createBullBoard([
-      new BullMQAdapter(this.auctions, { readOnlyMode: false }),
-      new BullMQAdapter(this.characters, { readOnlyMode: false }),
-      new BullMQAdapter(this.guilds, { readOnlyMode: false }),
-      new BullMQAdapter(this.realms, { readOnlyMode: false }),
-      new BullMQAdapter(this.items, { readOnlyMode: false }),
-      new BullMQAdapter(this.pricing, { readOnlyMode: false }),
-      new BullMQAdapter(this.valuations, { readOnlyMode: false }),
-    ]);
     this.router = router;
   }
 

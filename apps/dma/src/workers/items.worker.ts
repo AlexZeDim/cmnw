@@ -1,10 +1,10 @@
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { Job } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { get } from 'lodash';
 import {
   API_HEADERS_ENUM,
@@ -17,14 +17,16 @@ import {
   isNamedField,
   ITEM_FIELD_MAPPING,
   ItemJobQueue,
-  itemsQueue,
+  itemsQueue, realmsQueue,
   toGold,
   TOLERANCE_ENUM,
   VALUATION_TYPE,
 } from '@app/core';
 
-@BullWorker({ queueName: itemsQueue.name })
-export class ItemsWorker {
+
+@Processor(itemsQueue.name, itemsQueue.workerOptions)
+@Injectable()
+export class ItemsWorker extends WorkerHost {
   private readonly logger = new Logger(ItemsWorker.name, { timestamp: true });
 
   private BNet: BlizzAPI;
@@ -32,9 +34,10 @@ export class ItemsWorker {
   constructor(
     @InjectRepository(ItemsEntity)
     private readonly itemsRepository: Repository<ItemsEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
-  @BullWorkerProcess(itemsQueue.workerOptions)
   public async process(job: Job<ItemJobQueue, number>): Promise<number> {
     try {
       const { data: args } = job;

@@ -8,7 +8,7 @@ import {
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { valuationsConfig } from '@app/configuration';
 // import { Cron, CronExpression } from '@nestjs/schedule';
@@ -31,7 +31,7 @@ export class ValuationsService implements OnApplicationBootstrap {
     private readonly PricingModel: Model<Pricing>,
     @InjectModel(Market.name)
     private readonly AuctionsModel: Model<Market>,
-    @BullQueueInject(valuationsQueue.name)
+    @InjectQueue(valuationsQueue.name)
     private readonly queue: Queue<IQItemValuation, number>,
   ) { }
 

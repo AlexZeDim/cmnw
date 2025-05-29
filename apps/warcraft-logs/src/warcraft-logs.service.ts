@@ -19,7 +19,7 @@ import {
 } from '@app/core';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/core';
 import { warcraftLogsConfig } from '@app/configuration';
@@ -48,7 +48,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     private readonly realmsRepository: Repository<RealmsEntity>,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
-    @BullQueueInject(charactersQueue.name)
+    @InjectQueue(charactersQueue.name)
     private readonly queue: Queue,
   ) {}
 

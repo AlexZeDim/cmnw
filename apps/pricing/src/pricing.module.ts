@@ -12,7 +12,7 @@ import {
   SpellReagents,
   SpellReagentsSchema,
 } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { pricingQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -27,15 +27,16 @@ import { ScheduleModule } from '@nestjs/schedule';
       { name: Pricing.name, schema: PricingSchema },
     ]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: pricingQueue.name, options: pricingQueue.options }),
+    BullModule.registerQueue({
+      name: pricingQueue.name,
+      defaultJobOptions: pricingQueue.defaultJobOptions
+    }),
   ],
   controllers: [],
   providers: [PricingService],

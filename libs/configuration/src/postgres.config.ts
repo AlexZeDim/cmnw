@@ -54,7 +54,6 @@ export const postgresConfig: TypeOrmModuleOptions = {
     ContractEntity,
   ],
   synchronize: true,
-  keepConnectionAlive: true,
   namingStrategy: new SnakeNamingStrategy(),
   ssl: !!POSTGRES_DB_CONFIG.ssl
     ? {

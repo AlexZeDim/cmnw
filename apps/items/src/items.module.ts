@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ItemsService } from './items.service';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { itemsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,17 +13,15 @@ import { postgresConfig, redisConfig } from '@app/configuration';
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([KeysEntity, ItemsEntity]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
     BullModule.registerQueue({
-      queueName: itemsQueue.name,
-      options: itemsQueue.options,
+      name: itemsQueue.name,
+      defaultJobOptions: itemsQueue.defaultJobOptions,
     }),
   ],
   controllers: [],

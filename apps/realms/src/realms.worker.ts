@@ -1,7 +1,7 @@
 import { Job } from 'bullmq';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
@@ -22,8 +22,9 @@ import {
   transformNamedField,
 } from '@app/core';
 
-@BullWorker({ queueName: realmsQueue.name })
-export class RealmsWorker {
+@Processor(realmsQueue.name, realmsQueue.workerOptions)
+@Injectable()
+export class RealmsWorker extends WorkerHost {
   private readonly logger = new Logger(RealmsWorker.name, { timestamp: true });
 
   private BNet: BlizzAPI;
@@ -31,9 +32,10 @@ export class RealmsWorker {
   constructor(
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
-  ) {}
+  ) {
+    super();
+  }
 
-  @BullWorkerProcess(realmsQueue.workerOptions)
   public async process(job: Job<RealmJobQueue, number>): Promise<void> {
     try {
       const args: RealmJobQueue = { ...job.data };

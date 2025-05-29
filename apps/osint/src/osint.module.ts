@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
 import { HttpModule } from '@nestjs/axios';
@@ -42,32 +42,31 @@ import {
       LogsEntity,
     ]),
     RedisModule.forRoot({
-      config: {
+      type: 'single',
+      options: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      }
+    }),
+    BullModule.forRoot({
+      connection: {
         host: redisConfig.host,
         port: redisConfig.port,
         password: redisConfig.password,
       },
     }),
-    BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
-      },
+    BullModule.registerQueue({
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
     }),
     BullModule.registerQueue({
-      queueName: guildsQueue.name,
-      options: guildsQueue.options,
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
     }),
     BullModule.registerQueue({
-      queueName: charactersQueue.name,
-      options: charactersQueue.options,
-    }),
-    BullModule.registerQueue({
-      queueName: profileQueue.name,
-      options: profileQueue.options,
+      name: profileQueue.name,
+      defaultJobOptions: profileQueue.defaultJobOptions,
     }),
   ],
   controllers: [],

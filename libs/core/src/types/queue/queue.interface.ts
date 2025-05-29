@@ -1,10 +1,10 @@
-import { QueueOptions, WorkerOptions } from 'bullmq';
+import { DefaultJobOptions, WorkerOptions } from 'bullmq';
 import { LFG_STATUS, OSINT_SOURCE } from '@app/core/constants';
 
 export interface IQueue {
   readonly name: string;
-  readonly workerOptions: WorkerOptions;
-  readonly options: QueueOptions;
+  readonly workerOptions: Pick<WorkerOptions, 'concurrency' | 'lockDuration' | 'limiter'>;
+  readonly defaultJobOptions: Pick<DefaultJobOptions, 'removeOnComplete' | 'removeOnFail'>;
 }
 
 export interface IQGuildOptions {

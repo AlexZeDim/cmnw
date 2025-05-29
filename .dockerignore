@@ -14,5 +14,4 @@ config/test.yml
 
 docker-compose*
 
-
 .env.docker

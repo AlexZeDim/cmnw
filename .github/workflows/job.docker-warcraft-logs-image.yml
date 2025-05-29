@@ -40,7 +40,7 @@ jobs:
           images: |
             ghcr.io/alexzedim/auctions
           tags: |
-            type=semver,pattern={{version}},value=${{ steps.release.outputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.package-version.outputs.current-version}}
           labels: |
             maintainer = "alexzedim"
             org.opencontainers.image.title = "WarcraftLogs"
@@ -70,5 +70,4 @@ jobs:
       - name: Image digest
         run: |
           echo ${{ steps.build-push-action.outputs.digest }}
-          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
-          echo "Got release version ${{ steps.release.outputs.version }}"
+          echo "Got tag name ${{ steps.package-version.outputs.current-version}}"

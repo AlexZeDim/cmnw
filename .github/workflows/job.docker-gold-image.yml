@@ -18,6 +18,13 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Generate tags
+        id: release
+        uses: rymndhng/release-on-push-action@master
+        with:
+          bump_version_scheme: minor
+          tag_prefix: v
+
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:

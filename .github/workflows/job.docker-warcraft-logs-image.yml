@@ -27,7 +27,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
             org.opencontainers.image.title = "WarcraftLogs"
-            org.opencontainers.image.vendor = "cmnw"
+            org.opencontainers.image.vendor = "alexzedim"
             org.opencontainers.image.url = "https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png"
             org.opencontainers.image.source = "https://github.com/alexzedim/cmnw"
             org.opencontainers.image.licenses = "MPL 2.0"

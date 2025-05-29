@@ -20,11 +20,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Tag new release
-        uses: butlerlogic/action-autotag@stable
-        env:
-          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4

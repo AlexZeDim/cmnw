@@ -1,9 +1,12 @@
-FROM arm64v8/node:lts
+FROM node:lts AS node
+FROM ubuntu:20.04
+
+COPY --from=node / /
 
 ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
-LABEL org.opencontainers.image.title = "DMA"
+LABEL org.opencontainers.image.title = "OSINT"
 LABEL org.opencontainers.image.licenses = "MPL-2.0"
 LABEL org.opencontainers.image.vendor = "alexzedim"
 LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png"
@@ -18,7 +21,7 @@ RUN git clone https://github.com/alexzedim/cmnw-secrets.git
 RUN mv cmnw-secrets/* .
 RUN rm -rf cmnw-secrets
 
-COPY package.json ./
+COPY ../package.json ./
 
 # Installing private github packages #
 RUN echo //npm.pkg.github.com/:_authToken=${CR_PAT} >> ~/.npmrc
@@ -26,16 +29,21 @@ RUN echo @alexzedim:registry=https://npm.pkg.github.com/ >> ~/.npmrc
 
 RUN yarn install --network-timeout 1000000
 
-COPY . .
+COPY .. .
+
+RUN apt update
+RUN apt install -y chromium-browser
 
 RUN npm install -g @nestjs/cli
 
-RUN nest build auctions \
-  && nest build items \
-  && nest build dma \
-  && nest build gold \
-  && nest build keys \
-  && nest build realms
+# Installing playwright #
+RUN npx playwright install-deps --dry-run
+RUN npx playwright install
+
+RUN nest build characters \
+  && nest build guilds \
+  && nest build osint \
+  && nest build wowprogress
 
 CMD ["node"]
 

@@ -1,16 +1,14 @@
-name: Build OSINT Image
+name: Build CORE Image
 
 on:
   push:
     branches: [ master ]
     paths:
-      - 'apps/characters/**'
-      - 'apps/guilds/**'
-      - 'apps/osint/**'
-      - 'apps/wowprogress/**'
+      - 'apps/keys/**'
+      - 'apps/realms/**'
       - 'libs/**'
-      - 'docker/arm64.osint.Dockerfile'
-      - 'docker/x64.osint.Dockerfile'
+      - 'docker/arm64.core.Dockerfile'
+      - 'docker/x64.core.Dockerfile'
 
 jobs:
   publish:
@@ -53,7 +51,7 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./docker/x64.osint.Dockerfile
+          file: ./docker/x64.core.Dockerfile
           push: true
           tags: ghcr.io/alexzedim/osint:latest
           labels: ${{ steps.meta.outputs.labels }}

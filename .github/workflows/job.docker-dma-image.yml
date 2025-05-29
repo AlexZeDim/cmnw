@@ -8,12 +8,10 @@ on:
       - 'apps/items/**'
       - 'apps/gold/**'
       - 'apps/wowtoken/**'
-      - 'apps/keys/**'
-      - 'apps/realms/**'
       - 'apps/dma/**'
       - 'libs/**'
-      - 'arm64.dma.Dockerfile'
-      - 'x64.osint.Dockerfile'
+      - 'docker/arm64.dma.Dockerfile'
+      - 'docker/x64.dma.Dockerfile'
 
 jobs:
   publish:
@@ -56,7 +54,7 @@ jobs:
       - name: Build & Push (GHCR)
         uses: docker/build-push-action@v4.1.1
         with:
-          file: ./x64.dma.Dockerfile
+          file: ./docker/x64.dma.Dockerfile
           push: true
           tags: ghcr.io/alexzedim/dma:latest
           labels: ${{ steps.meta.outputs.labels }}

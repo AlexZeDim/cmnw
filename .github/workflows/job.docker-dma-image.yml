@@ -27,7 +27,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.15'
-          cache: 'yarn' # Optional: to cache npm dependencies
+
+      - name: Setup yarn
+        run: npm install -g yarn
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile

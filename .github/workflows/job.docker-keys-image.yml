@@ -58,6 +58,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Build & Push (GHCR)
+        id: build-push-action
         uses: docker/build-push-action@v4.1.1
         with:
           file: ./apps/keys/Dockerfile

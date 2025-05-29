@@ -18,9 +18,9 @@ export const decrypt = (sensitiveEnc: string) => {
   if (s !== 'enc') return sensitiveEnc;
   const buff = Buffer.from(encryptedData, 'base64');
   const decipher = createDecipheriv(CIPHER_ALGO_AES, key, null);
-  return (
-    decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8')
-  );
+  const secret = decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8');
+  console.log(encryptedData, secret);
+  return secret;
 };
 
 /**

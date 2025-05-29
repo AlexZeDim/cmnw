@@ -7,7 +7,7 @@ const options: JobsOptions = {
 };
 
 export const pricingQueue: IQueue = {
-  name: 'DMA:Pricing',
+  name: 'DMA_Pricing',
   workerOptions: { concurrency: 3 },
   defaultJobOptions: options,
 };

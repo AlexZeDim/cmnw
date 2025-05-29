@@ -7,7 +7,7 @@ const options: JobsOptions = {
 };
 
 export const profileQueue: IQueue = {
-  name: 'OSINT:Profiles',
+  name: 'OSINT_Profiles',
   workerOptions: {
     concurrency: 3,
     lockDuration: 1000 * 60 * 60 * 6,

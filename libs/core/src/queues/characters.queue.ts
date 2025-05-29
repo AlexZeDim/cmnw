@@ -7,7 +7,7 @@ const options: JobsOptions = {
 };
 
 export const charactersQueue: IQueue = {
-  name: 'OSINT:Characters',
+  name: 'OSINT_Characters',
   workerOptions: {
     concurrency: 1,
     lockDuration: 1000 * 60 * 60 * 6,

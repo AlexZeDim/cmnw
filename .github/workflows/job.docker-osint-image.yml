@@ -18,9 +18,18 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.15'
+          cache: 'yarn' # Optional: to cache npm dependencies
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Docker meta
         id: meta

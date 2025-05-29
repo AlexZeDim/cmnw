@@ -12,6 +12,7 @@ on:
       - 'libs/**'
       - 'docker/arm64.dma.Dockerfile'
       - 'docker/x64.dma.Dockerfile'
+      - 'package.json'
 
 jobs:
   publish:

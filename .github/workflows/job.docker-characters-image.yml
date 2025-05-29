@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/characters/**'
       - 'libs/**'
+      - 'package.json'
 
 jobs:
   publish:

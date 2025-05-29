@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/realms/**'
       - 'libs/**'
+      - 'package.json'
 
 jobs:
   publish:

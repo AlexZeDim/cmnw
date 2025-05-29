@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/gold/**'
       - 'libs/**'
+      - 'package.json'
 
 jobs:
   publish:

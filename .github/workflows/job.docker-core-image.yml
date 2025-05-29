@@ -9,6 +9,7 @@ on:
       - 'libs/**'
       - 'docker/arm64.core.Dockerfile'
       - 'docker/x64.core.Dockerfile'
+      - 'package.json'
 
 jobs:
   publish:

@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/auctions/**'
       - 'libs/**'
+      - 'package.json'
 
 jobs:
   publish:

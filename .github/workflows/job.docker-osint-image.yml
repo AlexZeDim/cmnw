@@ -11,6 +11,7 @@ on:
       - 'libs/**'
       - 'docker/arm64.osint.Dockerfile'
       - 'docker/x64.osint.Dockerfile'
+      - 'package.json'
 
 jobs:
   publish:

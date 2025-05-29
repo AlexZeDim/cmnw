@@ -15,11 +15,20 @@ jobs:
   publish:
     name: publish
     runs-on: self-hosted
+    env:
+      GITHUB_TOKEN: ${{ secrets.CR_PAT }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
+
+      - name: Generate tags
+        id: release
+        uses: rymndhng/release-on-push-action@master
+        with:
+          bump_version_scheme: minor
+          tag_prefix: v
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
@@ -34,16 +43,17 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5.7.0
         with:
           images: |
-            ghcr.io/alexzedim/osint
+            ghcr.io/alexzedim/core
           tags: |
-            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.release.outputs.version }}
           labels: |
-            org.opencontainers.image.title=OSINT
+            maintainer=alexzedim
+            org.opencontainers.image.title=CORE
             org.opencontainers.image.licenses=MPL-2.0
-            org.opencontainers.image.vendor=alexzedim
+            org.opencontainers.image.vendor=cmnw
             org.opencontainers.image.url=https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png
             org.opencontainers.image.source=https://github.com/alexzedim/cmnw
             org.opencontainers.image.description=Intelligence-always-wins
@@ -60,10 +70,14 @@ jobs:
         with:
           file: ./docker/x64.core.Dockerfile
           push: true
-          tags: ghcr.io/alexzedim/osint:latest
+          tags: ghcr.io/alexzedim/core:latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}
 
       - name: Image digest
-        run: echo ${{ steps.build-push-action.outputs.digest }}
+        run: |
+          echo ${{ steps.build-push-action.outputs.digest }}
+          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
+          echo "Got release version ${{ steps.release.outputs.version }}"
+          echo "Upload release artifacts to ${{ steps.release.outputs.upload_url }}"  

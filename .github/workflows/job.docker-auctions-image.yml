@@ -31,15 +31,16 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5.7.0
         with:
           images: |
             ghcr.io/alexzedim/auctions
           tags: |
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
           labels: |
+            maintainer = "alexzedim"
             org.opencontainers.image.title = "Auctions"
-            org.opencontainers.image.vendor = "alexzedim"
+            org.opencontainers.image.vendor = "cmnw"
             org.opencontainers.image.url = "https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png"
             org.opencontainers.image.source = "https://github.com/alexzedim/cmnw"
             org.opencontainers.image.licenses = "MPL 2.0"

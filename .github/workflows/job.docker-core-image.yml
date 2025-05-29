@@ -23,12 +23,9 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Generate tags
-        id: release
-        uses: rymndhng/release-on-push-action@master
-        with:
-          bump_version_scheme: norelease
-          tag_prefix: v
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
@@ -80,4 +77,3 @@ jobs:
           echo ${{ steps.build-push-action.outputs.digest }}
           echo "Got tag name ${{ steps.release.outputs.tag_name }}"
           echo "Got release version ${{ steps.release.outputs.version }}"
-          echo "Upload release artifacts to ${{ steps.release.outputs.upload_url }}"  

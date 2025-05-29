@@ -23,12 +23,9 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Generate tags
-        id: release
-        uses: rymndhng/release-on-push-action@master
-        with:
-          bump_version_scheme: norelease
-          tag_prefix: v
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
@@ -48,7 +45,7 @@ jobs:
           images: |
             ghcr.io/alexzedim/osint
           tags: |
-            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.release.outputs.version }}
           labels: |
             maintainer=alexzedim
             org.opencontainers.image.title=OSINT
@@ -76,4 +73,7 @@ jobs:
             CR_PAT=${{ secrets.CR_PAT }}
 
       - name: Image digest
-        run: echo ${{ steps.build-push-action.outputs.digest }}
+        run: |
+          echo ${{ steps.build-push-action.outputs.digest }}
+          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
+          echo "Got release version ${{ steps.release.outputs.version }}"

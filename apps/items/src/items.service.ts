@@ -37,7 +37,7 @@ export class ItemsService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     await this.indexItems(
       GLOBAL_KEY,
-      200_000,
+      1,
       250_000,
       itemsConfig.updateForce,
       itemsConfig.index,

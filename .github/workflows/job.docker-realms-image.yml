@@ -64,7 +64,7 @@ jobs:
           context: .
           file: ./apps/realms/Dockerfile
           push: true
-          tags: ghcr.io/alexzedim/realms:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CR_PAT=${{ secrets.CR_PAT }}

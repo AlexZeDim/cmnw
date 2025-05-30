@@ -192,7 +192,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       await this.redisService.set(redisKey, timestamp);
       await this.marketRepository.save(wowTokenEntity);
     } catch (errorOrException) {
-      this.logger.error(errorOrException);
+      this.logger.warn(`indexTokens: 304`);
     }
   }
 }

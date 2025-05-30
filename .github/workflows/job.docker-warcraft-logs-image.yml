@@ -61,6 +61,7 @@ jobs:
         id: build-push-action
         uses: docker/build-push-action@v4.1.1
         with:
+          context: .
           file: ./apps/warcraft-logs/Dockerfile
           push: true
           tags: ghcr.io/alexzedim/warcraft-logs:latest
@@ -70,4 +71,4 @@ jobs:
 
       - name: Image digest
         run: |
-          echo "Got tag name ${{ steps.package-version.outputs.current-version}}"
+          echo "Tag name ${{ steps.package-version.outputs.current-version}}"

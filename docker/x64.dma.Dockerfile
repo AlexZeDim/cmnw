@@ -14,7 +14,7 @@ WORKDIR /usr/src/app
 
 # Clone config from private github repo #
 RUN git config --global url."https://alexzedim:${CR_PAT}@github.com/".insteadOf "https://github.com/"
-RUN git clone https://github.com/alexzedim/cmnw-secrets.git
+RUN git clone -b master https://github.com/alexzedim/cmnw-secrets.git
 RUN mv cmnw-secrets/* .
 RUN rm -rf cmnw-secrets
 

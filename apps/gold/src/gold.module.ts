@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { GoldService } from './gold.service';
 import { ScheduleModule } from '@nestjs/schedule';
-import { postgresConfig } from '@app/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { postgresConfig } from '@app/configuration';
 import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 
 @Module({

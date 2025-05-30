@@ -27,7 +27,7 @@ import {
   VALUATION_TYPE,
 } from '@app/core';
 import { mergeMap } from 'rxjs/operators';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
@@ -48,6 +48,10 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
+    await this.getGold()
+  }
+
+  async sample() {
     const itemId = 213197;
     const timestamp = 1745595910000;
 
@@ -429,7 +433,8 @@ export class TestsBench implements OnApplicationBootstrap {
       ),
     );
 
-    await this.marketRepository.save(marketOrders);
+    console.log(marketOrders)
+    // await this.marketRepository.save(marketOrders);
   }
 
   async getWowProgress() {

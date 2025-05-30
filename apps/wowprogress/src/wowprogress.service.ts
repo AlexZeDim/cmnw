@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
 import ms from 'ms';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import { InjectQueue } from '@nestjs/bullmq';
 import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -30,7 +30,6 @@ import {
   delay,
   findRealm,
   getKeys,
-  GLOBAL_KEY,
   GuildJobQueue,
   guildsQueue,
   ICharacterQueueWP,

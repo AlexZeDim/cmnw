@@ -31,7 +31,7 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { get } from 'lodash';
 import { mergeMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {

@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { InjectRedis } from '@nestjs-modules/ioredis';
-import { LessThan, Repository } from 'typeorm';
+import { LessThan, Not, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { BlizzAPI } from 'blizzapi';
 import Redis from 'ioredis';
@@ -63,13 +63,14 @@ export class AuctionsService implements OnApplicationBootstrap {
       const realmsEntity = await this.realmsRepository
         .createQueryBuilder('realms')
         .where({ auctionsTimestamp: LessThan(offsetTime) })
+        .andWhere({ connectedRealmId: Not(REALM_ENTITY_ANY.connectedRealmId) })
         .distinctOn(['realms.connectedRealmId'])
         .getMany();
 
       await lastValueFrom(
         from(realmsEntity).pipe(
           mergeMap(async (realmEntity) => {
-            await this.queue.add(`${realmEntity.name}`, {
+            await this.queue.add(`${realmEntity.connectedRealmId}`, {
               connectedRealmId: realmEntity.connectedRealmId,
               auctionsTimestamp: realmEntity.auctionsTimestamp,
               region: 'eu',

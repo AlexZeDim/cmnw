@@ -131,7 +131,6 @@ export class AuctionsService implements OnApplicationBootstrap {
   async indexTokens(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       const key = await getKey(this.keysRepository, clearance);
-      const redisKey = `WOWTOKEN:TS`;
 
       this.BNet = new BlizzAPI({
         region: 'eu',
@@ -140,18 +139,12 @@ export class AuctionsService implements OnApplicationBootstrap {
         accessToken: key.token,
       });
 
-      const lts = await this.redisService.get(redisKey);
-      const ifModifiedSince = lts
-        ? DateTime.fromMillis(Number(lts)).toHTTP()
-        : undefined;
-
       const response = await this.BNet.query<BlizzardApiWowToken>(
         '/data/wow/token/index',
         apiConstParams(
           API_HEADERS_ENUM.DYNAMIC,
           TOLERANCE_ENUM.DMA,
-          false,
-          ifModifiedSince,
+          false
         ),
       );
 
@@ -166,7 +159,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       const isWowTokenExists = await this.marketRepository.exist({
         where: {
           timestamp: timestamp,
-          itemId: 1,
+          itemId: WOW_TOKEN_ITEM_ID,
           connectedRealmId: REALM_ENTITY_ANY.id,
           type: MARKET_TYPE.T,
         },
@@ -189,10 +182,9 @@ export class AuctionsService implements OnApplicationBootstrap {
         timestamp,
       });
 
-      await this.redisService.set(redisKey, timestamp);
       await this.marketRepository.save(wowTokenEntity);
     } catch (errorOrException) {
-      this.logger.warn(`indexTokens: 304`);
+      this.logger.warn(`indexTokens ${errorOrException}`);
     }
   }
 }

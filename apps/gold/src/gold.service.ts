@@ -7,7 +7,7 @@ import { MarketEntity, RealmsEntity } from '@app/pg';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import {
   DMA_SOURCE_GOLD,
   FACTION,

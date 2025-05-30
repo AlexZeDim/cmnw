@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import { get } from 'lodash';
+import * as changeCase from 'change-case';
 import {
   API_HEADERS_ENUM,
   apiConstParams,
@@ -99,10 +100,10 @@ export class RealmsWorker extends WorkerHost {
         const locale = toLocale(realmEntity.locale);
 
         const localeName = get(realmLocale, `name.${locale}`, null);
-        if (localeName) realmEntity.localeName = localeName;
-
-        const localeSlug = get(realmLocale, toSlug(`name.${locale}`), null);
-        if (localeSlug) realmEntity.localeSlug = localeSlug;
+        if (localeName) {
+          realmEntity.localeName = localeName;
+          realmEntity.localeSlug = changeCase.kebabCase(localeName);
+        }
       } else {
         const localeNameSlug = get(response, 'name', null);
         if (localeNameSlug) {

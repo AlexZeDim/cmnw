@@ -23,6 +23,7 @@ import {
   ITEM_KEY_GUARD,
   MARKET_TYPE,
   PETS_KEY_GUARD,
+  REALM_ENTITY_ANY,
   toGold,
   transformPrice,
 } from '@app/core';
@@ -65,7 +66,7 @@ export class AuctionsWorker extends WorkerHost {
        * @description If no connected realm passed, then deal with it, as COMMODITY
        * @description Else, it's an auctions' request
        */
-      const isCommodity = job.name === 'COMMODITY' && args.connectedRealmId === 1;
+      const isCommodity = job.name === 'COMMODITY' && args.connectedRealmId === REALM_ENTITY_ANY.id;
 
       const previousTimestamp = isCommodity
         ? args.commoditiesTimestamp
@@ -153,7 +154,7 @@ export class AuctionsWorker extends WorkerHost {
     orders: Array<IAuctionsOrder | ICommodityOrder>,
     timestamp: number,
     connectedRealmId: number,
-    isCommdty: boolean,
+    isCommodity: boolean,
   ) {
     return orders.map((order) => {
       if (!order.item.id) return;
@@ -172,7 +173,7 @@ export class AuctionsWorker extends WorkerHost {
       const price = transformPrice(order);
       if (!price) return;
 
-      if (!isCommdty) {
+      if (!isCommodity) {
         for (const [path, key] of ITEM_KEY_GUARD.entries()) {
           if (path in order.item) marketEntity[key] = order.item[path];
         }
@@ -188,7 +189,7 @@ export class AuctionsWorker extends WorkerHost {
 
       const quantity = 'quantity' in order ? (order as ICommodityOrder).quantity : 1;
 
-      marketEntity.type = isCommdty ? MARKET_TYPE.C : MARKET_TYPE.A;
+      marketEntity.type = isCommodity ? MARKET_TYPE.C : MARKET_TYPE.A;
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;

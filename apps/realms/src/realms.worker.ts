@@ -107,7 +107,7 @@ export class RealmsWorker extends WorkerHost {
         const localeNameSlug = get(response, 'name', null);
         if (localeNameSlug) {
           realmEntity.localeName = localeNameSlug;
-          realmEntity.localeSlug = localeNameSlug;
+          realmEntity.localeSlug = changeCase.kebabCase(localeNameSlug);
         }
         await job.updateProgress(45);
       }

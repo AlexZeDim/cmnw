@@ -5,7 +5,8 @@ services:
     restart: always
     command: [ 'node', '--max-old-space-size=4096', 'dist/apps/dma/main.js' ]
     deploy:
-      replicas: 3
+      mode: replicated
+      replicas: 2
     environment:
       - NODE_ENV=${NODE_ENV}
       - KEY=${KEY}

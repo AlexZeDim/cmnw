@@ -49,22 +49,41 @@ export class ContractsService implements OnApplicationBootstrap {
         .getRawMany<Pick<MarketEntity, 'itemId'>>();
 
       const commodityItemsIds = commodityItems.map((item) => item.itemId);
-
-      const result = await this.itemsRepository
-        .createQueryBuilder()
-        .update()
-        .set({ hasContracts: true })
-        .whereInIds(commodityItemsIds)
-        .execute();
-
       const contractItems = commodityItemsIds.length;
-      const updateResult = result.affected || 0;
+
+      let updateResult: number = 0;
+
+      const isItemsEmpty = await this.itemsRepository.count({
+        where: {
+          id: Not(GOLD_ITEM_ENTITY.id),
+        },
+      });
+
+      if (isItemsEmpty === 0) {
+        const items = commodityItemsIds.map((itemId) => this.itemsRepository.create({
+          id: itemId,
+          hasContracts: true,
+        }))
+
+        const itemsWithContracts = await this.itemsRepository.save(items);
+
+        updateResult = itemsWithContracts.length;
+      } else {
+        const result = await this.itemsRepository
+          .createQueryBuilder()
+          .update()
+          .set({ hasContracts: true })
+          .whereInIds(commodityItemsIds)
+          .execute();
+
+        updateResult = result.affected || 0;
+      }
 
       this.logger.log(`setCommodityItemsAsContracts: ${contractItems} || ${updateResult}`);
 
       return updateResult;
     } catch (errorOrException) {
-      this.logger.error(`setCommodityItemsAsContracts ${errorOrException}`);
+      this.logger.error(`setCommodityItemsAsContracts: ${errorOrException}`);
     }
   }
 
@@ -73,40 +92,35 @@ export class ContractsService implements OnApplicationBootstrap {
     try {
       this.logger.log('buildCommodityTimestampContracts started');
 
-      // @todo variation
-      // const itemsEntity = await this.itemsRepository.findBy({
-      //   hasContracts: true,
-      // });
-
-      const commodityItems = await this.marketRepository
-        .createQueryBuilder('markets')
-        .where({ connectedRealmId: REALM_ENTITY_ANY.connectedRealmId })
-        .select('markets.item_id', 'itemId')
-        .distinct(true)
-        .getRawMany<Pick<MarketEntity, 'itemId'>>();
+      const commodityItems = await this.itemsRepository
+        .createQueryBuilder('items')
+        .where('items.hasContracts = :hasContracts', { hasContracts: true })
+        .andWhere('items.id NOT IN (:...itemIds)', { itemIds: [GOLD_ITEM_ENTITY.id, WOW_TOKEN_ITEM_ID] })
+        .select('items.id')
+        .getMany();
 
       const today = DateTime.now();
       const ytd = today.minus({ days: 1 }).toMillis();
 
       const timestamps = await this.marketRepository
         .createQueryBuilder('markets')
-        .where({
+        .where('markets.item_id NOT IN (:...itemIds)', { itemIds: [GOLD_ITEM_ENTITY.id, WOW_TOKEN_ITEM_ID] })
+        .andWhere({
           connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
-          itemId: Not(WOW_TOKEN_ITEM_ID),
           timestamp: MoreThan(ytd),
         })
-        .select('markets.timestamp', 'timestamp')
+        .select('timestamp')
         .distinct(true)
         .getRawMany<Pick<MarketEntity, 'timestamp'>>();
 
-      const commodityItemsIds = commodityItems.map((item) => item.itemId);
+      const commodityItemsIds = commodityItems.map((item) => item.id);
       const commodityTimestamps = timestamps.map((t) => t.timestamp);
 
       this.logger.log(`buildCommodityTimestampContracts: items ${commodityItemsIds.length} || timestamps ${commodityTimestamps.length} || today ${today.toISO()} || ytd ${ytd}`);
 
       const isGuard = isContractArraysEmpty(commodityTimestamps, commodityItemsIds);
       if (isGuard) {
-        this.logger.warn('buildCommodityTimestampContracts empty');
+        this.logger.warn('No items or timestamps provided empty');
         return;
       }
 
@@ -178,7 +192,7 @@ export class ContractsService implements OnApplicationBootstrap {
       });
 
       if (isContractExists) {
-        // this.logger.debug(`${contractId} exists`);
+        this.logger.debug(`${contractId} exists`);
         return;
       }
 
@@ -201,9 +215,10 @@ export class ContractsService implements OnApplicationBootstrap {
         .getRawOne<IItemPriceAndQuantity>();
 
       const orders = Number(itemPriceAndQuantity.orders);
+      const ordersNotEnough = orders < 10
 
-      if (orders === 0) {
-        // this.logger.debug(`${contractId} zero orders`);
+      if (ordersNotEnough) {
+        this.logger.debug(`${contractId} not enough orders for contract representation`);
         return;
       }
 
@@ -226,9 +241,7 @@ export class ContractsService implements OnApplicationBootstrap {
         timestamp: timestamp,
       }
 
-      if (orders) {
-        itemOpenInterestWhere['price'] = LessThan(percentile98);
-      }
+      itemOpenInterestWhere['price'] = LessThan(percentile98);
 
       const itemOpenInterest = await this.marketRepository
         .createQueryBuilder('m')

@@ -67,7 +67,7 @@ export class ItemsService implements OnApplicationBootstrap {
         range(from, count).pipe(
           mergeMap(async (itemId) => {
             if (!updateForce) {
-              const isItemExists = await this.itemsRepository.exist({
+              const isItemExists = await this.itemsRepository.exists({
                 where: { id: itemId },
               });
 

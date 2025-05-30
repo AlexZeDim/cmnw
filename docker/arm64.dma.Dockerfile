@@ -34,8 +34,7 @@ RUN nest build auctions \
   && nest build items \
   && nest build dma \
   && nest build gold \
-  && nest build keys \
-  && nest build realms
+  && nest build contracts
 
 CMD ["node"]
 

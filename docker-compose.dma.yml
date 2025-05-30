@@ -27,6 +27,14 @@ services:
       - NODE_ENV=${NODE_ENV}
       - KEY=${KEY}
 
+  contracts:
+    image: ghcr.io/alexzedim/dma:latest
+    restart: always
+    command: [ 'node', 'dist/apps/contracts/main.js' ]
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - KEY=${KEY}
+
   items:
     image: ghcr.io/alexzedim/dma:latest
     restart: always

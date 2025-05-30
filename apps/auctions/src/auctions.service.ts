@@ -102,11 +102,13 @@ export class AuctionsService implements OnApplicationBootstrap {
       });
 
       const commodityJob = await this.queue.getJob('COMMODITY');
-      const isCommodityJobActive = await commodityJob.isActive();
 
-      if (isCommodityJobActive) {
-        this.logger.debug(`realm: ${realmEntity.connectedRealmId} | active`);
-        return;
+      if (commodityJob) {
+        const isCommodityJobActive = await commodityJob.isActive();
+        if (isCommodityJobActive) {
+          this.logger.debug(`realm: ${realmEntity.connectedRealmId} | active`);
+          return;
+        }
       }
 
       await this.queue.add('COMMODITY', {

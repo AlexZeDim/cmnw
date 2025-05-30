@@ -2,7 +2,7 @@ version: '3.8'
 services:
   realms:
     container_name: realms
-    image: ghcr.io/alexzedim/core:latest
+    image: ghcr.io/alexzedim/core:6.1.1
     restart: always
     command: [ 'node', 'dist/apps/realms/main.js' ]
     environment:
@@ -11,7 +11,7 @@ services:
 
   keys:
     container_name: keys
-    image: ghcr.io/alexzedim/core:latest
+    image: ghcr.io/alexzedim/core:6.1.1
     restart: always
     command: [ 'node', 'dist/apps/keys/main.js' ]
     environment:

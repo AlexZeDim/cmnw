@@ -14,6 +14,8 @@ services:
       - '5432:5432'
     volumes:
       - postgres:/var/lib/postgresql/data
+      - /initdb:/docker-entrypoint-initdb.d
+    command: postgres -c 'shared_preload_libraries=pg_cron'
 
   redis:
     image: redis:7.4.3-alpine

@@ -33,8 +33,7 @@ RUN npm install -g @nestjs/cli
 RUN nest build auctions \
   && nest build items \
   && nest build dma \
-  && nest build gold \
-  && nest build wowtoken
+  && nest build gold
 
 CMD ["node"]
 

@@ -18,7 +18,6 @@ import {
   RealmJobQueue,
   realmsQueue,
   toLocale,
-  toSlug,
   transformConnectedRealmId,
   transformNamedField,
 } from '@app/core';

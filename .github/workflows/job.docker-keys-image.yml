@@ -70,6 +70,4 @@ jobs:
 
       - name: Image digest
         run: |
-          echo ${{ steps.meta.outputs.tags }}
-          echo ${{ steps.build-push-action.outputs.digest }}
           echo "Got tag name ${{ steps.package-version.outputs.current-version}}"

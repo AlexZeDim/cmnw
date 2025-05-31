@@ -190,4 +190,40 @@ export class AuctionsService implements OnApplicationBootstrap {
       this.logger.warn(`indexTokens ${errorOrException}`);
     }
   }
+
+  // --- TTL Logic --- //
+  @Cron(CronExpression.EVERY_12_HOURS)
+  async deleteExpiredMarketData(): Promise<void> {
+    this.logger.log('Starting deletion of expired market data...');
+
+    try {
+      // Calculate the cutoff timestamp (24 hours ago from now)
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+      // Perform the deletion
+      const deleteResult = await this.marketRepository
+        .createQueryBuilder()
+        .delete()
+        .from(MarketEntity)
+        .where('timestamp < :cutoff', { cutoff: twentyFourHoursAgo })
+        .execute();
+
+      this.logger.log(
+        `Deleted ${deleteResult.affected} rows from 'market' table.`,
+      );
+
+      // --- Important: PostgreSQL VACUUM for reclaiming space --- //
+      // VACUUM operations can be resource-intensive
+      // VACUUM ANALYZE is generally good after deletions.
+      // For very large tables, consider auto-vacuum settings or pg_repack.
+      await this.marketRepository.query('VACUUM (ANALYZE, VERBOSE) market;');
+      this.logger.log('VACUUM ANALYZE completed for "market" table.');
+    } catch (error) {
+      this.logger.error(
+        `Error deleting expired market data: ${error.message}`,
+        error.stack,
+      );
+    }
+  }
 }

@@ -1,12 +1,12 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { CMNW_ENTITY_ENUM } from '@app/pg';
 import { DMA_SOURCE, ItemNames, ItemPricing } from '@app/core';
 
 // @todo index
 @Entity({ name: CMNW_ENTITY_ENUM.PRICING })
 export class PricingEntity {
-  @PrimaryColumn('int')
-  readonly id: number;
+  @PrimaryGeneratedColumn('uuid')
+  readonly uuid: string;
 
   @Column({
     default: null,

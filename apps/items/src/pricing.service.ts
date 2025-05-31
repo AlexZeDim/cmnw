@@ -84,7 +84,7 @@ export class PricingService implements OnApplicationBootstrap {
         type: PRICING_TYPE.REVERSE,
         createdBy: DMA_SOURCE.LAB,
         updatedBy: DMA_SOURCE.LAB,
-      })
+      });
 
       if (isProspect) {
         reversePricingMethod.ticker = PROSPECT.name;
@@ -94,7 +94,6 @@ export class PricingService implements OnApplicationBootstrap {
         await lastValueFrom(
           from(PROSPECT.methods).pipe(
             mergeMap(async (method) => {
-
               reversePricingMethod.reagents = method.reagents;
               reversePricingMethod.derivatives = method.derivatives;
               reversePricingMethod.recipeId = parseInt(`${reversePricingMethod.spellId}${method.reagents[0].id}`);
@@ -205,7 +204,7 @@ export class PricingService implements OnApplicationBootstrap {
                   clientId: key.client,
                   clientSecret: key.secret,
                   accessToken: key.token,
-                }, { jobId: `${recipe.id}` },
+                }, { jobId: `R${recipe.id}` },
               );
             }
           }

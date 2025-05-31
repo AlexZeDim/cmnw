@@ -7,38 +7,33 @@ services:
     deploy:
       mode: replicated
       replicas: 2
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
   auctions:
     image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/auctions/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
   gold:
     image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/gold/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
   contracts:
     image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/contracts/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
   items:
     image: ghcr.io/alexzedim/dma:latest
     restart: always
     command: [ 'node', 'dist/apps/items/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env

@@ -1,6 +1,5 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Item } from '@app/mongo/schemas/items.schema';
 import { PRICING_TYPE } from '@app/core';
 
 @Schema()

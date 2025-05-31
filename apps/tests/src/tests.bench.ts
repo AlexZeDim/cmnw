@@ -31,7 +31,7 @@ import * as cheerio from 'cheerio';
 import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
-import { commonwealthConfig } from '@app/configuration';
+import { cmnwConfig } from '@app/configuration';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
@@ -333,8 +333,8 @@ export class TestsBench implements OnApplicationBootstrap {
         grant_type: 'client_credentials',
       },
       auth: {
-        username: commonwealthConfig.clientId,
-        password: commonwealthConfig.clientSecret,
+        username: cmnwConfig.clientId,
+        password: cmnwConfig.clientSecret,
       },
     });
 

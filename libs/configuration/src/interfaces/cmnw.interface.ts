@@ -1,4 +1,4 @@
-export interface ICommonwealth {
+export interface ICmnw {
   readonly clientId: string;
   readonly clientSecret: string;
   readonly redirectUri: string;

@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { commonwealthConfig } from '@app/configuration';
+import { cmnwConfig } from '@app/configuration';
 import { useContainer } from 'class-validator';
 
 async function bootstrap() {
@@ -24,6 +24,6 @@ async function bootstrap() {
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
-  await app.listen(commonwealthConfig.port);
+  await app.listen(cmnwConfig.port);
 }
 bootstrap();

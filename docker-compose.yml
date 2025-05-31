@@ -424,23 +424,6 @@ services:
     networks:
       - cmnw-network
 
-  pricing:
-    build: ./
-    image: ghcr.io/alexzedim/cmnw:latest
-    restart: always
-    container_name: pricing
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/pricing/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - cmnw-network
-
 # Docker Networks
 networks:
   # All container connect in a network

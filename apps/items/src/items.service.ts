@@ -39,9 +39,10 @@ export class ItemsService implements OnApplicationBootstrap {
       GLOBAL_KEY,
       1,
       250_000,
-      itemsConfig.updateForce,
+      itemsConfig.forceUpdate,
       itemsConfig.index,
     );
+
     await this.buildItems(itemsConfig.build);
   }
 
@@ -50,11 +51,11 @@ export class ItemsService implements OnApplicationBootstrap {
     clearance: string = GLOBAL_KEY,
     from = 0,
     to = 250_000,
-    updateForce = true,
+    forceUpdate = true,
     init = true,
   ): Promise<void> {
     try {
-      this.logger.log(`indexItems: init: ${init}, updateForce: ${updateForce}`);
+      this.logger.log(`indexItems: init: ${init}, updateForce: ${forceUpdate}`);
       if (!init) return;
 
       const count = Math.abs(from - to);
@@ -66,7 +67,7 @@ export class ItemsService implements OnApplicationBootstrap {
       await lastValueFrom(
         range(from, count).pipe(
           mergeMap(async (itemId) => {
-            if (!updateForce) {
+            if (!forceUpdate) {
               const isItemExists = await this.itemsRepository.exists({
                 where: { id: itemId },
               });
@@ -111,13 +112,14 @@ export class ItemsService implements OnApplicationBootstrap {
       const isItemsParseExists = files.includes('itemsparse.csv');
 
       if (isItemsParseExists)
-        await this.extendItemsParse(filesPath, `itemsparse.csv`);
+        await this.extendItemsWithExpansionTicker(filesPath, `itemsparse.csv`);
+
     } catch (errorOrException) {
       this.logger.error(`buildItems ${errorOrException}`);
     }
   }
 
-  async extendItemsParse(filesPath: string, file: string) {
+  async extendItemsWithExpansionTicker(filesPath: string, file: string) {
     const filePath = path.join(filesPath, file);
     const csvString = await fs.readFile(filePath, 'utf-8');
 

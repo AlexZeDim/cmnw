@@ -126,15 +126,6 @@
         "tsConfigPath": "apps/wowprogress/tsconfig.app.json"
       }
     },
-    "pricing": {
-      "type": "application",
-      "root": "apps/pricing",
-      "entryFile": "main",
-      "sourceRoot": "apps/pricing/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/pricing/tsconfig.app.json"
-      }
-    },
     "valuations": {
       "type": "application",
       "root": "apps/valuations",
@@ -178,15 +169,6 @@
       "sourceRoot": "apps/contracts/src",
       "compilerOptions": {
         "tsConfigPath": "apps/contracts/tsconfig.app.json"
-      }
-    },
-    "bench": {
-      "type": "application",
-      "root": "apps/bench",
-      "entryFile": "main",
-      "sourceRoot": "apps/bench/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/bench/tsconfig.app.json"
       }
     },
     "ladder": {

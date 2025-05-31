@@ -588,7 +588,7 @@ export class CharactersWorker extends WorkerHost {
       if ('primaries' in response) {
         const { primaries } = response;
         if (Array.isArray(primaries) && primaries.length) {
-          primaries.map((primary) => {
+          primaries.forEach((primary) => {
             if (
               primary.profession &&
               primary.profession.name &&
@@ -613,7 +613,7 @@ export class CharactersWorker extends WorkerHost {
               Array.isArray(primary.tiers) &&
               primary.tiers.length
             ) {
-              primary.tiers.map(
+              primary.tiers.forEach(
                 async (tier: {
                   tier: { id: number; name: string };
                   skill_points: number;
@@ -638,7 +638,7 @@ export class CharactersWorker extends WorkerHost {
       if ('secondaries' in response) {
         const { secondaries } = response;
         if (Array.isArray(secondaries) && secondaries.length) {
-          secondaries.map((secondary) => {
+          secondaries.forEach((secondary) => {
             if (
               secondary.profession &&
               secondary.profession.name &&
@@ -655,7 +655,7 @@ export class CharactersWorker extends WorkerHost {
               Array.isArray(secondary.tiers) &&
               secondary.tiers.length
             ) {
-              secondary.tiers.map(
+              secondary.tiers.forEach(
                 (tier: {
                   tier: { id: number; name: string };
                   skill_points: number;

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
-import { commonwealthConfig } from '@app/configuration';
+import { cmnwConfig } from '@app/configuration';
 import { API_HEADERS_ENUM, apiConstParams, TOLERANCE_ENUM } from '@app/core';
 
 @Injectable()
@@ -9,8 +9,8 @@ export class TestsDma {
 
   private BNet: BlizzAPI = new BlizzAPI({
     region: 'eu',
-    clientId: commonwealthConfig.clientId,
-    clientSecret: commonwealthConfig.clientSecret,
+    clientId: cmnwConfig.clientId,
+    clientSecret: cmnwConfig.clientSecret,
   });
 
   async commodity(): Promise<any> {

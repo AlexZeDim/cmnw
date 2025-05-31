@@ -20,8 +20,12 @@ import {
   MarketEntity,
   MountsEntity,
   PetsEntity,
+  PricingEntity,
   ProfessionsEntity,
   RealmsEntity,
+  SkillLineEntity,
+  SpellEffectEntity,
+  SpellReagentsEntity,
 } from '@app/pg';
 
 const POSTGRES_DB_CONFIG = config.get<IPostgresConfig>('postgres');
@@ -52,6 +56,10 @@ export const postgresConfig: TypeOrmModuleOptions = {
     MarketEntity,
     ItemsEntity,
     ContractEntity,
+    PricingEntity,
+    SkillLineEntity,
+    SpellEffectEntity,
+    SpellReagentsEntity
   ],
   synchronize: true,
   namingStrategy: new SnakeNamingStrategy(),

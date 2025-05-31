@@ -37,7 +37,6 @@ RUN nest build conglomerat \
   && nest build ladder \
   && nest build guilds \
   && nest build realms \
-  && nest build pricing \
   && nest build auctions \
   && nest build contracts \
   && nest build valuations \

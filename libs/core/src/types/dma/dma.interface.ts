@@ -1,6 +1,5 @@
 import { Model } from 'mongoose';
 import { Market } from '@app/mongo';
-import { ItemPricing } from '@app/mongo/schemas/pricing.schema';
 import { ItemsEntity } from '@app/pg';
 import {
   INameWithType,
@@ -98,7 +97,7 @@ export class IAAuctionOrders {
 }
 
 export class IQPricing {
-  readonly recipe_id: number;
+  readonly recipeId: number;
   readonly profession: string | number;
   readonly expansion: string;
   readonly region: string;
@@ -326,7 +325,7 @@ export interface ContractAggregation {
  * Reagent Item Interface
  * extends Item & Pricing(Q) & implement value: number(0)
  */
-export class IReagentItem implements ItemPricing {
+export class IReagentItem {
   readonly _id: number;
 
   readonly contracts: boolean;
@@ -376,11 +375,6 @@ export class IReagentItem implements ItemPricing {
   value: number;
 }
 
-export interface ICsvReagents {
-  readonly _id: number;
-  readonly quantity: number;
-}
-
 export interface IBuildYAxis {
   readonly itemId: number;
   readonly isGold: boolean;
@@ -408,11 +402,11 @@ export class MethodEvaluation {
 
   derivative_quantity_sum: number;
 
-  premium_items: IReagentItem[];
+  premium_items: unknown;
 
-  reagent_items: IReagentItem[];
+  reagent_items: unknown;
 
-  unsorted_items: IReagentItem[];
+  unsorted_items: unknown;
 
   single_derivative: boolean;
 
@@ -443,4 +437,9 @@ export interface IItemPriceAndQuantity {
   p: number;
   q: number;
   orders: number;
+}
+
+export interface ItemPricing {
+  id: number;
+  quantity: number;
 }

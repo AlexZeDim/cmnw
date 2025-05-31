@@ -1,5 +1,7 @@
 import { mquery } from 'mongoose';
 import { AuctionItemExtra, IItem, IItemFieldMap, IPetList } from '@app/core/types';
+import { SkillLineEntity, SpellEffectEntity } from '@app/pg';
+import { SpellEffect } from '@app/mongo';
 
 export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
@@ -164,6 +166,25 @@ export const PETS_KEY_GUARD = new Map<string, keyof IPetList>([
   ['pet_level', 'petLevel'],
   ['pet_quality_id', 'petQualityId'],
   ['pet_species_id', 'petSpeciesId'],
+]);
+
+export const SKILL_LINE_KEY_MAPPING = new Map<keyof SkillLineEntity, string>([
+  ['skillLine', 'SkillLine'],
+  ['spellId', 'Spell'],
+  ['supersedesSpell', 'SupercedesSpell'],
+  ['skillUpSkillLineId', 'SkillupSkillLineID'],// Note: This will overwrite if both 'SupersedesSpell' and 'SkillUpSkillLineID' map to 'skillUpSkillLineId'
+  ['minSkillRank', 'MinSkillLineRank'],
+  ['numSkillUps', 'NumSkillUps'],
+  ['yellowCraft', 'TrivialSkillLineRankHigh'],
+  ['greenCraft', 'TrivialSkillLineRankLow'],
+
+]);
+
+export const SPELL_EFFECT_KEY_MAPPING = new Map<keyof SpellEffectEntity, string>([
+  ['spellId', 'SpellID'],
+  ['effect', 'Effect'],
+  ['itemId', 'EffectItemType'],
+  ['itemQuantity', 'EffectBasePointsF'],
 ]);
 
 export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([

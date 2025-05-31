@@ -3,7 +3,7 @@ import { Strategy } from 'passport-oauth2';
 import { AuthService } from '../auth.service';
 import { Injectable } from '@nestjs/common';
 import { stringify } from 'querystring';
-import { commonwealthConfig } from '@app/configuration';
+import { cmnwConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 
@@ -16,19 +16,19 @@ export class BattleNetStrategy extends PassportStrategy(Strategy, 'battlenet') {
   constructor(private authService: AuthService, private httpService: HttpService) {
     super({
       authorizationURL: `https://eu.battle.net/oauth/authorize?${stringify({
-        client_id: commonwealthConfig.clientId,
-        redirect_uri: commonwealthConfig.redirectUri,
+        client_id: cmnwConfig.clientId,
+        redirect_uri: cmnwConfig.redirectUri,
         response_type: 'code',
         scope: 'wow.profile',
       })}`,
       // TODO probably function here, not sure
       // Authorization: 'Basic Base64',
-      tokenURL: `https://${commonwealthConfig.clientId}:${commonwealthConfig.clientSecret}@eu.battle.net/oauth/token`,
-      clientID: commonwealthConfig.clientId,
-      clientSecret: commonwealthConfig.clientSecret,
+      tokenURL: `https://${cmnwConfig.clientId}:${cmnwConfig.clientSecret}@eu.battle.net/oauth/token`,
+      clientID: cmnwConfig.clientId,
+      clientSecret: cmnwConfig.clientSecret,
       grant_type: 'client_credentials',
       scope: 'wow.profile',
-      redirect_uri: commonwealthConfig.redirectUri,
+      redirect_uri: cmnwConfig.redirectUri,
       region: 'eu',
     });
   }

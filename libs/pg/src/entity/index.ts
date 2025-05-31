@@ -20,3 +20,9 @@ export * from './realms.entity';
 export * from './market.entity';
 export * from './items.entity';
 export * from './contract.entity';
+
+export * from './pricing.entity';
+
+export * from './skill-line.entity';
+export * from './spell-effect.entity';
+export * from './spell-reagents.entity';

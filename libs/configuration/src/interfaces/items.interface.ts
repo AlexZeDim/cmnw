@@ -1,5 +1,5 @@
 export interface IItems {
   readonly index: boolean;
-  readonly updateForce: boolean;
+  readonly forceUpdate: boolean;
   readonly build: boolean;
 }

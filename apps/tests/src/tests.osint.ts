@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { BlizzAPI } from 'blizzapi';
 import { API_HEADERS_ENUM, apiConstParams, BlizzardApiResponse } from '@app/core';
-import { commonwealthConfig } from '@app/configuration';
+import { cmnwConfig } from '@app/configuration';
 
 @Injectable()
 export class TestsOsint implements OnApplicationBootstrap {
@@ -9,8 +9,8 @@ export class TestsOsint implements OnApplicationBootstrap {
 
   private BNet: BlizzAPI = new BlizzAPI({
     region: 'eu',
-    clientId: commonwealthConfig.clientId,
-    clientSecret: commonwealthConfig.clientSecret,
+    clientId: cmnwConfig.clientId,
+    clientSecret: cmnwConfig.clientSecret,
     validateAccessTokenOnEachQuery: true,
   });
 

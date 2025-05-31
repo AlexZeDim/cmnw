@@ -17,7 +17,7 @@ import {
   isNamedField,
   ITEM_FIELD_MAPPING,
   ItemJobQueue,
-  itemsQueue, realmsQueue,
+  itemsQueue,
   toGold,
   TOLERANCE_ENUM,
   VALUATION_TYPE,

@@ -52,12 +52,12 @@ export class PricingService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    // await this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.init);
+    await this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.init);
 
-    // await this.libPricing(pricingConfig.libPricing, true, true, true);
+    await this.libPricing(pricingConfig.libPricing, true, true, true);
 
-    //await this.buildSkillLine(pricingConfig.build);
-    //await this.buildSpellEffect(pricingConfig.build);
+    await this.buildSkillLine(pricingConfig.build);
+    await this.buildSpellEffect(pricingConfig.build);
     await this.buildSpellReagents(pricingConfig.build);
   }
 

@@ -52,3 +52,11 @@ export type BlizzardApiKeys = {
   expires_in: number;
   sub: string;
 };
+
+export type BlizzardApiErrorResponse = {
+  status: number;
+  response: {
+    status: number;
+    statusText: string;
+  }
+};

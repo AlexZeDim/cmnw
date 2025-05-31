@@ -1,7 +1,9 @@
+import { get } from 'lodash';
 import {
   BlizzardApiAuctions,
   BlizzardApiCharacterMedia,
   BlizzardApiCharacterSummary,
+  BlizzardApiErrorResponse,
   BlizzardApiItem,
   BlizzardApiItemMedia,
   BlizzardApiMountsCollection,
@@ -116,3 +118,11 @@ export const isHallOfFame = (response: unknown): response is IHallOfFame =>
   typeof response === 'object' &&
   'entries' in response &&
   Array.isArray(response.entries);
+
+
+export const isResponseError = (
+  error: unknown,
+): error is BlizzardApiErrorResponse =>
+  typeof error === 'object' &&
+  get(error, 'response.status') &&
+  get(error, 'response.statusText')

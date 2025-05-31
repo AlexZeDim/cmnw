@@ -19,7 +19,7 @@ import {
   IAuctionsOrder,
   ICommodityOrder,
   IPetList,
-  isAuctions,
+  isAuctions, isResponseError,
   ITEM_KEY_GUARD,
   MARKET_TYPE,
   PETS_KEY_GUARD,
@@ -144,8 +144,17 @@ export class AuctionsWorker extends WorkerHost {
 
       return 200;
     } catch (errorOrException) {
-      await job.log(errorOrException);
-      this.logger.error(errorOrException);
+      const responseError = isResponseError(errorOrException);
+
+      if (responseError) {
+        const statusCode = errorOrException.response.status;
+        this.logger.warn(`No new data available - ${errorOrException.response.statusText}`);
+        return Promise.resolve(statusCode);
+      } else {
+        await job.log(errorOrException);
+        this.logger.error(errorOrException);
+      }
+
       return 500;
     }
   }

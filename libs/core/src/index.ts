@@ -1,6 +1,7 @@
 export * from './dto';
 export * from './dao';
 export * from './types';
+export * from './guard';
 export * from './constants';
 export * from './clearance';
 export * from './queues';

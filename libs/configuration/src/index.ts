@@ -6,7 +6,6 @@ export { cmnwConfig } from './cmnw.config';
 export { wowProgressConfig } from './wowprogress.config';
 export { warcraftLogsConfig } from './warcraft-logs.config';
 export { valuationsConfig } from './valuations.config';
-export { pricingConfig } from './pricing.config';
 export { itemsConfig } from './items.config';
 export { postgresConfig } from './postgres.config';
 export * from './interfaces';

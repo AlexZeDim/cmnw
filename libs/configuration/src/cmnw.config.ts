@@ -1,13 +1,9 @@
-import config from 'config';
-import { decrypt } from '@app/core';
 import { ICmnw } from '@app/configuration/interfaces';
 
-const CMNW_CONFIG = config.get<ICmnw>('cmnw');
-
 export const cmnwConfig: ICmnw = {
-  clientId: decrypt(CMNW_CONFIG.clientId),
-  clientSecret: decrypt(CMNW_CONFIG.clientSecret),
-  redirectUri: decrypt(CMNW_CONFIG.redirectUri),
-  port: CMNW_CONFIG.port,
-  origin: CMNW_CONFIG.origin,
+  clientId: process.env.CMNW_CLIENT_ID,
+  clientSecret: process.env.CMNW_CLIENT_SECRET,
+  redirectUri: process.env.CMNW_REDIRECT_URL,
+  port: Number(process.env.CMNW_PORT),
+  origin: [process.env.CMNW_ORIGIN],
 };

@@ -39,11 +39,11 @@ export class ItemsService implements OnApplicationBootstrap {
       GLOBAL_KEY,
       1,
       250_000,
-      itemsConfig.forceUpdate,
-      itemsConfig.index,
+      itemsConfig.itemsForceUpdate,
+      itemsConfig.itemsIndex,
     );
 
-    await this.buildItems(itemsConfig.build);
+    await this.buildItems(itemsConfig.itemsBuild);
   }
 
   @Cron(CronExpression.EVERY_WEEK)

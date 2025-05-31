@@ -44,6 +44,6 @@ import {
     }),
   ],
   controllers: [],
-  providers: [PricingService],
+  providers: [ItemsService, PricingService],
 })
 export class ItemsModule {}

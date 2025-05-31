@@ -6,7 +6,6 @@ import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { pricingConfig } from '@app/configuration';
 import { get } from 'lodash';
 import { DISENCHANT, MILLING, PROSPECT } from './lib';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
@@ -26,6 +25,7 @@ import {
   SKILL_LINE_KEY_MAPPING,
   SPELL_EFFECT_KEY_MAPPING,
 } from '@app/core';
+import { itemsConfig } from '@app/configuration';
 
 @Injectable()
 export class PricingService implements OnApplicationBootstrap {
@@ -52,13 +52,13 @@ export class PricingService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexPricing(GLOBAL_DMA_KEY, pricingConfig.init);
+    await this.indexPricing(GLOBAL_DMA_KEY, itemsConfig.itemsPricingInit);
 
-    await this.libPricing(pricingConfig.libPricing, true, true, true);
+    await this.libPricing(itemsConfig.itemsPricingLab, true, true, true);
 
-    await this.buildSkillLine(pricingConfig.build);
-    await this.buildSpellEffect(pricingConfig.build);
-    await this.buildSpellReagents(pricingConfig.build);
+    await this.buildSkillLine(itemsConfig.itemsPricingBuild);
+    await this.buildSpellEffect(itemsConfig.itemsPricingBuild);
+    await this.buildSpellReagents(itemsConfig.itemsPricingBuild);
   }
 
   async libPricing(

@@ -4,7 +4,6 @@ export { ICmnw } from './cmnw.interface';
 export { IKey } from './key.interface';
 export { IKeys } from './keys.interface';
 export { IItems } from './items.interface';
-export { IPrice } from './pricing.interface';
 export { IValuations } from './valuations.interface';
 export { IWowProgress } from './wowprogress.interface';
 export { IWarcraftLogs } from './warcraft-logs.interface';

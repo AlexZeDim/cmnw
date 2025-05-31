@@ -69,7 +69,7 @@ export class PricingEntity {
 
   @Column({
     nullable: false,
-    type: 'int',
+    type: 'real',
     name: 'recipe_id'
   })
   recipeId: number;

@@ -217,8 +217,9 @@ export class PricingService implements OnApplicationBootstrap {
   }
 
   async buildSkillLine(init: boolean = true): Promise<void> {
+    const tag = this.buildSkillLine.name;
     if (!init) {
-      this.logger.log(`buildSkillLine: init: ${init}`);
+      this.logger.log(`${tag}:: init: ${init}`);
       return;
     }
 
@@ -274,19 +275,20 @@ export class PricingService implements OnApplicationBootstrap {
 
       const skillLineMethodsCount = skillLineEntities.length;
 
-      this.logger.log(`buildSkillLine: ${skillLineMethodsCount} created`);
+      this.logger.log(`${tag}:: ${skillLineMethodsCount} created`);
 
       await this.skillLineRepository.save(skillLineEntities, { chunk: 500 });
 
-      this.logger.log(`buildSkillLine: ${skillLineMethodsCount} saved`);
+      this.logger.log(`${tag}:: ${skillLineMethodsCount} saved`);
     } catch (errorOrException) {
-      this.logger.error(`buildSkillLine: ${errorOrException}`);
+      this.logger.error(`${tag}:: ${errorOrException}`);
     }
   }
 
   async buildSpellEffect(init: boolean = true): Promise<void> {
+    const tag = this.buildSpellEffect.name;
     if (!init) {
-      this.logger.log(`buildSpellEffect: init: ${init}`);
+      this.logger.log(`${tag}:: init: ${init}`);
       return;
     }
 
@@ -337,17 +339,18 @@ export class PricingService implements OnApplicationBootstrap {
         spellEffectCount = spellEffectCount + 1;
       }
 
-      this.logger.log(`buildSpellEffect: ${spellEffectCount} created`);
+      this.logger.log(`${tag}:: ${spellEffectCount} created`);
 
-      this.logger.log(`buildSpellEffect: ${spellEffectCount} saved`);
+      this.logger.log(`${tag}:: ${spellEffectCount} saved`);
     } catch (errorOrException) {
-      this.logger.error(`buildSpellEffect: ${errorOrException}`);
+      this.logger.error(`${tag}:: ${errorOrException}`);
     }
   }
 
   async buildSpellReagents(init: boolean = true): Promise<void> {
+    const tag = this.buildSpellReagents.name;
     if (!init) {
-      this.logger.log(`buildSpellReagents: init: ${init}`);
+      this.logger.log(`${tag}:: init: ${init}`);
       return;
     }
 
@@ -404,13 +407,13 @@ export class PricingService implements OnApplicationBootstrap {
 
       const spellReagentsCount = spellReagentsEntities.length;
 
-      this.logger.log(`buildSpellReagents: ${spellReagentsCount} created`);
+      this.logger.log(`${tag}:: ${spellReagentsCount} created`);
 
-      await this.spellEffectRepository.save(spellReagentsEntities, { chunk: 500 });
+      await this.spellReagentsRepository.save(spellReagentsEntities, { chunk: 500 });
 
-      this.logger.log(`buildSpellReagents: ${spellReagentsCount} saved`);
+      this.logger.log(`${tag}:: ${spellReagentsCount} saved`);
     } catch (errorOrException) {
-      this.logger.error(`buildSpellReagents: ${errorOrException}`);
+      this.logger.error(`${tag}:: ${errorOrException}`);
     }
   }
 }

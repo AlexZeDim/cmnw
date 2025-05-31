@@ -8,7 +8,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
-console.log(postgresConfig);
+
 @Module({
   imports: [
     HttpModule,

@@ -29,7 +29,7 @@ export class SpellEffectEntity {
 
   @Column({
     nullable: true,
-    type: 'int',
+    type: 'real',
     name: 'item_quantity'
   })
   itemQuantity: number;

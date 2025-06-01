@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import * as cheerio from 'cheerio';
-import { BlizzAPI } from 'blizzapi';
 import { InjectQueue } from '@nestjs/bullmq';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { HttpService } from '@nestjs/axios';

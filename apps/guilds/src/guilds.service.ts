@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GuildsEntity, KeysEntity } from '@app/pg';
 import { Repository } from 'typeorm';
-import { BlizzAPI, RegionIdOrName } from 'blizzapi';
+import { BlizzAPI, RegionIdOrName } from '@alexzedim/blizzapi';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import ms from 'ms';
 import {

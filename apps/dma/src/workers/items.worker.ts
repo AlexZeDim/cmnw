@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BlizzAPI } from 'blizzapi';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Job } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItemsEntity } from '@app/pg';

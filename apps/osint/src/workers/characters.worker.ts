@@ -1,4 +1,4 @@
-import { BlizzAPI } from 'blizzapi';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Job } from 'bullmq';
 import { hash64 } from 'farmhash';
 import { Processor, WorkerHost } from '@nestjs/bullmq';

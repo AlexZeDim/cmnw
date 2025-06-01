@@ -1,4 +1,4 @@
-import { BattleNetOptions } from 'blizzapi';
+import type { BattleNetOptions } from '@alexzedim/blizzapi';
 import { CharactersEntity, GuildsEntity } from '@app/pg';
 import {
   IQAuction,

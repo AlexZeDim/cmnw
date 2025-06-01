@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { BlizzAPI } from 'blizzapi';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Job, Queue } from 'bullmq';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';

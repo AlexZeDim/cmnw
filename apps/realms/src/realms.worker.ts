@@ -1,7 +1,7 @@
 import { Job } from 'bullmq';
 import { Injectable, Logger } from '@nestjs/common';
-import { BlizzAPI } from 'blizzapi';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';

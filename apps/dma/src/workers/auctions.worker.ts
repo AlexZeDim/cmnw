@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import { Injectable, Logger } from '@nestjs/common';
-import { BlizzAPI } from 'blizzapi';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Job } from 'bullmq';
 import { bufferCount, concatMap } from 'rxjs/operators';
 import { from, lastValueFrom } from 'rxjs';

@@ -1,6 +1,6 @@
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { BlizzAPI } from 'blizzapi';
 import { InjectQueue } from '@nestjs/bullmq';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Queue } from 'bullmq';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { InjectRepository } from '@nestjs/typeorm';

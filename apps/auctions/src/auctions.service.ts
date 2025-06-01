@@ -8,7 +8,7 @@ import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { LessThan, Not, Repository } from 'typeorm';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
-import { BlizzAPI } from 'blizzapi';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import Redis from 'ioredis';
 import {
   API_HEADERS_ENUM,

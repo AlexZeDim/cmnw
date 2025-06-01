@@ -1,6 +1,6 @@
 {
   "name": "cmnw",
-  "version": "6.1.5",
+  "version": "6.1.6",
   "homepage": "https://cmnw.me",
   "description": "Intelligence always wins",
   "private": true,
@@ -37,6 +37,7 @@
     "version": "echo %npm_package_version%"
   },
   "dependencies": {
+    "@alexzedim/blizzapi": "2.6.7",
     "@bull-board/express": "6.9.6",
     "@nestjs-modules/ioredis": "2.0.2",
     "@nestjs/axios": "4.0.0",

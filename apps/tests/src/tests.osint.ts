@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { BlizzAPI } from 'blizzapi';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { API_HEADERS_ENUM, apiConstParams, BlizzardApiResponse } from '@app/core';
 import { cmnwConfig } from '@app/configuration';
 

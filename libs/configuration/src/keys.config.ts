@@ -1,8 +1,5 @@
-import { get } from 'config';
-import { KeysInterface } from '@app/configuration/interfaces';
+import { IKeys } from '@app/configuration/interfaces';
 
-const Keys_Config = get<KeysInterface>('keys');
-
-export const keysConfig: KeysInterface = {
-  path: Keys_Config.path,
+export const keysConfig: IKeys = {
+  path: process.env.KEYS_PATH,
 };

@@ -1,779 +1,235 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ItemGetDto, ItemChartDto, ItemCrossRealmDto, ItemFeedDto, ItemQuotesDto, WowtokenDto, ItemValuationsDto } from '@app/core';
-import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Gold, Item, Realm, Token, Valuations } from '@app/mongo';
-import { LeanDocument, Model } from 'mongoose';
 import {
+  IBuildYAxis,
   IChartOrder,
   IQItemValuation,
-  IOrderQuotes,
-  IOrderXrs,
-  IARealm,
-  VALUATION_TYPE,
+  ItemChartDto,
+  ItemCrossRealmDto,
+  ItemFeedDto,
+  ItemQuotesDto,
+  MARKET_TYPE,
+  REALM_ENTITY_ANY,
+  ReqGetItemDto,
   valuationsQueue,
+  WOW_TOKEN_ITEM_ID,
+  WowtokenDto,
 } from '@app/core';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { InjectRedis, Redis } from '@nestjs-modules/ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ItemsEntity, KeysEntity, MarketEntity } from '@app/pg';
+import { Repository } from 'typeorm';
+import Redis from 'ioredis';
 
 @Injectable()
 export class DmaService {
-
   constructor(
     @InjectRedis()
     private readonly redisService: Redis,
-    @InjectModel(Token.name)
-    private readonly TokenModel: Model<Token>,
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Item.name)
-    private readonly ItemModel: Model<Item>,
-    @InjectModel(Gold.name)
-    private readonly GoldModel: Model<Gold>,
-    @InjectModel(Auction.name)
-    private readonly AuctionModel: Model<Auction>,
-    @InjectModel(Valuations.name)
-    private readonly ValuationsModel: Model<Valuations>,
-    @BullQueueInject(valuationsQueue.name)
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(ItemsEntity)
+    private readonly itemsRepository: Repository<ItemsEntity>,
+    @InjectRepository(MarketEntity)
+    private readonly marketRepository: Repository<MarketEntity>,
+    @InjectQueue(valuationsQueue.name)
     private readonly queueValuations: Queue<IQItemValuation, number>,
-  ) { }
+  ) {}
 
-  async getItem(input: ItemCrossRealmDto): Promise<ItemGetDto> {
-    const { item, realm } = await this.validateTransformDmaQuery(input._id);
-    if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
+  // TODO validation on DTO level
+  async getItem(input: ReqGetItemDto): Promise<ItemsEntity> {
+    const isNotNumber = isNaN(Number(input.id));
+    if (isNotNumber) {
+      throw new BadRequestException('Please provide correct item ID in your query');
     }
-    return { item, realm };
+
+    const id = parseInt(input.id);
+    // TODO return DTO?
+    return await this.itemsRepository.findOneBy({ id });
   }
 
-  async getItemValuations(input: ItemCrossRealmDto): Promise<ItemValuationsDto> {
-    const { item , realm } = await this.validateTransformDmaQuery(input._id);
-    if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
-    }
-
-    let isGold = false;
-
-    if (item._id === 1 || item.asset_class.includes(VALUATION_TYPE.WOWTOKEN)) isGold = true;
-
-    let isEvaluating: number = 0;
-
-    if (item.asset_class.length === 0) {
-      throw new BadRequestException('Required item cannot be evaluated');
-    }
-
-    const valuations: LeanDocument<Valuations>[] = [];
-
-    await lastValueFrom(
-      from(realm).pipe(
-        mergeMap(async (connectedRealm: IARealm) => {
-          const timestamp = isGold ? connectedRealm.golds : connectedRealm.auctions;
-
-          const itemValuations = await this.ValuationsModel
-            .find({
-              item_id: item.asset_class.includes(VALUATION_TYPE.WOWTOKEN) ? { $in: [122284, 122270] } : item._id,
-              last_modified: timestamp,
-              connected_realm_id: connectedRealm._id
-            })
-            .lean();
-
-          if (itemValuations.length > 0) {
-            valuations.push(...itemValuations);
-          } else {
-            const jobId = `${item._id}@${connectedRealm._id}:${timestamp}`;
-            await this.queueValuations.add(
-              jobId,{
-                _id: item._id,
-                last_modified: timestamp,
-                connected_realm_id: connectedRealm._id,
-                iteration: 0
-              }, {
-                jobId,
-                priority: 1,
-              }
-            );
-            isEvaluating = isEvaluating + 1;
-          }
-        })
-      )
-    )
-
-    return { valuations, is_evaluating: isEvaluating };
+  async getItemValuations(input: ItemCrossRealmDto) {
+    // @todo
   }
 
-  async getItemChart(input: ItemCrossRealmDto): Promise<ItemChartDto> {
-    const { item, realm } = await this.validateTransformDmaQuery(input._id);
-    if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query');
-    }
+  /**
+   * @description Auctions DMA store in Redis Latest TimeStamp
+   * @description We receive available timestamps for COMMODITY items
+   */
+  async getLatestTimestampCommodity(itemId: number) {
+    const commodityTimestampKeys = await this.redisService.keys('COMMODITY:TS:*');
+    const commodityTimestamp = await this.redisService.mget(commodityTimestampKeys);
 
-    const isCommdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
-    const isGold = item._id === 1;
-    const isXrs = realm.length > 1;
+    // TODO in case of Redis not found!
 
-    /**
-     * Return from cache
-     * only nonXRS chart
-     */
-    let redisItemKey: string | undefined = undefined;
-    if (!isXrs) {
-      const realmCompoundKey = realm
-        .sort((a, b) => b._id - a._id)
-        .map(connectedRealm => isGold ? `${connectedRealm._id}:${connectedRealm.golds}` : `${connectedRealm._id}:${connectedRealm.auctions}`)
-        .join(':');
+    const timestamps = commodityTimestamp
+      .map((t) => Number(t)).sort((a, b) => a - b);
 
-      redisItemKey = `${item._id}:${realmCompoundKey}`;
+    const latestCommodityTimestamp = timestamps.slice(-1);
 
-      const itemChartDto = await this.redisService.get(redisItemKey);
-      if (itemChartDto) {
-        return JSON.parse(itemChartDto) as ItemChartDto;
-      }
-    }
+    const key = `COMMODITY:CHART:${itemId}:${latestCommodityTimestamp}`;
 
-
-    const connectedRealmsIDs = realm.map(connectedRealm => connectedRealm._id);
-    const yAxis = await this.buildYAxis(item._id, connectedRealmsIDs, isCommdty, isXrs, isGold);
-    const xAxis: (string | number | Date)[] = [];
-    const dataset: IChartOrder[] = [];
-
-    await lastValueFrom(
-      from(realm).pipe(
-        mergeMap(async (connectedRealm, i) => {
-          if (isCommdty) {
-            if (isXrs) {
-              /** Build X axis */
-              xAxis[i] = connectedRealm.realms.join(', ');
-              /** Build Cluster from Orders */
-              if (isGold) {
-                const orderDataset = await this.goldXRS(yAxis, connectedRealm.connected_realm_id, connectedRealm.golds, i);
-                if (orderDataset && orderDataset.length) {
-                  dataset.push(...orderDataset);
-                }
-              }
-
-              if (!isGold) {
-                const orderDataset = await this.commdtyXRS(yAxis, item._id, connectedRealm.connected_realm_id, connectedRealm.auctions, i);
-                if (orderDataset && orderDataset.length) {
-                  dataset.push(...orderDataset);
-                }
-              }
-            }
-
-            if (!isXrs) {
-              /** Build Cluster by Timestamp */
-              if (isGold) {
-                const { chart, timestamps } = await this.goldIntraDay(yAxis, connectedRealm.connected_realm_id);
-                if (chart && timestamps) {
-                  dataset.push(...chart);
-                  xAxis.push(...timestamps);
-                }
-              }
-
-              if (!isGold) {
-                const { chart, timestamps } = await this.commdtyIntraDay(yAxis, item._id, connectedRealm.connected_realm_id);
-                if (chart && timestamps) {
-                  dataset.push(...chart);
-                  xAxis.push(...timestamps);
-                }
-              }
-            }
-          }
-        })
-      )
-    )
-
-    /**
-     * Cache result in Redis
-     */
-    if (!isXrs && redisItemKey) {
-      await this.redisService.set(redisItemKey, JSON.stringify({ yAxis, xAxis, dataset }), 'EX', 3600);
-    }
-
-    return { yAxis, xAxis, dataset };
+    return { latestCommodityTimestamp, timestamps, key };
   }
 
-  private priceRange(
-    quotes: number[],
-    blocks: number,
-  ): number[] {
+  async getChart(input: ReqGetItemDto): Promise<ItemChartDto> {
+    const item = await this.queryItem(input.id);
+
+    const { timestamps, key } = await this.getLatestTimestampCommodity(item.id);
+
+    // --- return cached chart from redis on exist -- //
+    const getCacheItemChart = await this.redisService.get(key);
+    if (getCacheItemChart) {
+      return JSON.parse(getCacheItemChart) as ItemChartDto;
+    }
+
+    const yPriceAxis = await this.priceAxisCommodity({
+      itemId: item.id,
+      isGold: false,
+    });
+
+    const { dataset } = await this.buildChartDataset(yPriceAxis, timestamps, item.id);
+
+    await this.redisService.set(
+      key,
+      JSON.stringify({ yAxis: yPriceAxis, xAxis: timestamps, dataset }),
+      'EX',
+      3600,
+    );
+
+    return { yAxis: yPriceAxis, xAxis: timestamps, dataset };
+  }
+
+  private async yPriceRange(itemId: number, blocks: number) {
+    const marketQuotes = await this.marketRepository
+      .createQueryBuilder('markets')
+      .where({ itemId }) // TODO itemId if GOLD add realmId
+      .distinctOn(['markets.price'])
+      .getMany();
+
+    const quotes = marketQuotes.map((q) => q.price);
+
     if (!quotes.length) return [];
     const length = quotes.length > 3 ? quotes.length - 3 : quotes.length;
     const start = length === 1 ? 0 : 1;
 
     const cap = Math.round(quotes[Math.floor(length * 0.9)]);
     const floor = Math.round(quotes[start]);
-    const price_range = cap - floor;
-    /** Step represent 2.5% for each cluster */
-    const tick = price_range / blocks;
+    const priceRange = cap - floor;
+    // --- Step represents 5% for each cluster --- //
+    const tick = priceRange / blocks;
     return Array(Math.ceil((cap + tick - floor) / tick))
       .fill(floor)
       .map((x, y) => parseFloat((x + y * tick).toFixed(4)));
   }
 
-  async buildYAxis(
-    itemId: number,
-    connectedRealmIDs: number[],
-    isCommdty: boolean = false,
-    isXrs: boolean = false,
-    isGold: boolean = false
-  ): Promise<number[]> {
-    /**
-     * Control price level
-     * if XRS => 40
-     * else => 20
-     */
-    const blocks: number = isXrs ? 40 : 20;
+  async priceAxisCommodity(args: IBuildYAxis): Promise<number[]> {
+    const { itemId, isGold } = args;
 
-    /** Request oldest from latest timestamp */
-    if (isGold && isXrs) {
-      const { golds } = await this.RealmModel.findOne({ connected_realm_id: { $in: connectedRealmIDs } }).lean().select('golds').sort({ 'golds': 1 });
-      const quotes: number[] = await this.GoldModel.find({ last_modified: { $gte: golds }, connected_realm_id: { $in: connectedRealmIDs } }, 'price').distinct('price');
-      return this.priceRange(quotes, blocks);
-    }
+    const blocks = 20;
 
-    if (isGold && !isXrs) {
-      const quotes: number[] = await this.GoldModel.find({ connected_realm_id: { $in: connectedRealmIDs } }, 'price').distinct('price');
-      return this.priceRange(quotes, blocks);
-    }
-
-    if (!isGold && isXrs) {
-      const { auctions } = await this.RealmModel.findOne({ connected_realm_id: { $in: connectedRealmIDs } }).lean().select('auctions').sort({ 'auctions': 1 });
-      /** Find distinct prices for each realm */
-      const quotes: number[] = await this.AuctionModel
-        .find({ connected_realm_id: { $in: connectedRealmIDs }, 'item.id': itemId, last_modified: { $gte: auctions }, }, 'price')
-        .hint({ 'connected_realm_id': -1, 'last_modified': -1, 'item_id': -1 })
-        .distinct('price');
-
-      return this.priceRange(quotes, blocks);
-    }
-
-    if (!isGold && !isXrs) {
-      /** Find distinct prices for one */
-      const quotes = await this.AuctionModel
-        .find({ connected_realm_id: { $in: connectedRealmIDs }, 'item.id': itemId }, 'price')
-        .hint({ 'connected_realm_id': -1, 'item_id': -1, 'last_modified': -1, })
-        .distinct('price');
-
-      return this.priceRange(quotes, blocks);
-    }
-
-    return [];
+    return this.yPriceRange(itemId, blocks);
   }
 
-  async goldXRS(
-    yAxis: number[],
-    connectedRealmIDs: number,
-    golds: number,
-    xIndex: number
-  ): Promise<IChartOrder[]> {
-    if (!yAxis.length) return [];
+  async buildChartDataset(yPriceAxis: number[], xTimestampAxis: number[], itemId: number) {
+    const dataset: IChartOrder[] = [];
+    if (!yPriceAxis.length) return { dataset };
 
-    const orders = await this.GoldModel
-      .aggregate<IOrderXrs>([
-        {
-          $match: {
-            status: 'Online',
-            connected_realm_id: connectedRealmIDs,
-            last_modified: { $eq: golds },
-          },
-        },
-        {
-          $bucket: {
-            groupBy: '$price',
-            boundaries: yAxis,
-            default: 'Other',
-            output: {
-              orders: { $sum: 1 },
-              value: { $sum: '$quantity' },
-              price: { $first: '$price' },
-              oi: {
-                $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] }] },
-              }
-            }
-          }
-        },
-      ])
-      .allowDiskUse(true);
-
-    return this.buildDataset(yAxis, orders, xIndex);
-  }
-
-  async commdtyXRS(
-    yAxis: number[],
-    itemId: number,
-    connectedRealmIDs: number,
-    auctions: number,
-    xIndex: number
-  ): Promise<IChartOrder[]> {
-    if (!yAxis.length) return [];
-
-    const orders = await this.AuctionModel
-      .aggregate<IOrderXrs>([
-        {
-          $match: {
-            connected_realm_id: connectedRealmIDs,
-            'item.id': itemId,
-            last_modified: { $eq: auctions },
-          },
-        },
-        {
-          $bucket: {
-            groupBy: "$price",
-            boundaries: yAxis,
-            default: "Other",
-            output: {
-              orders: { $sum: 1 },
-              value: { $sum: "$quantity" },
-              price: { $first: '$price' },
-              oi: {
-                $sum: { $multiply: ['$price', '$quantity'] },
-              }
-            }
-          }
-        },
-      ])
-      .allowDiskUse(true);
-
-    return this.buildDataset(yAxis, orders, xIndex);
-  }
-
-  async goldIntraDay(yAxis: number[], connectedRealmId: number) {
-    const chart: IChartOrder[] = [];
-    if (!yAxis.length) return { chart };
-    if (!connectedRealmId) return { chart };
-    /** Find distinct timestamps for each realm */
-    const timestamps: number[] = await this.GoldModel
-      .find({ connected_realm_id: connectedRealmId }, 'last_modified')
-      .distinct('last_modified');
-
-    timestamps.sort((a, b) => a - b);
-
+    // --- Find distinct timestamps for each realm --- //
     await lastValueFrom(
-      from(timestamps).pipe(
-        mergeMap(async (timestamp, i) => {
-          await this.GoldModel
-            .aggregate([
-              {
-                $match: {
-                  status: 'Online',
-                  connected_realm_id: connectedRealmId,
-                  last_modified: timestamp
-                }
-              },
-              {
-                $bucket: {
-                  groupBy: '$price',
-                  boundaries: yAxis,
-                  default: 'Other',
-                  output: {
-                    orders: { $sum: 1 },
-                    value: { $sum: '$quantity' },
-                    price: { $first: '$price' },
-                    oi: {
-                      $sum: { $multiply: ['$price', { $divide: [ '$quantity', 1000 ] } ] },
-                    }
-                  }
-                }
-              },
-              {
-                $addFields: { xIndex: i }
-              }
-            ])
-            .allowDiskUse(true)
-            .cursor()
-            .eachAsync((order: IOrderXrs) => {
-              const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
-              if (yIndex !== -1) {
-                chart.push({
-                  x:  order.xIndex,
-                  y: yIndex,
-                  orders: order.orders,
-                  value: order.value,
-                  oi: parseInt(order.oi.toFixed(0), 10)
-                });
-              } else if (order._id === 'Other') {
-                if (order.price > yAxis[yAxis.length-1]) {
-                  chart.push({
-                    x: order.xIndex,
-                    y: yAxis.length-1,
-                    orders: order.orders,
-                    value: order.value,
-                    oi: parseInt(order.oi.toFixed(0), 10)
-                  });
-                } else {
-                  chart.push({
-                    x: order.xIndex,
-                    y: 0,
-                    orders: order.orders,
-                    value: order.value,
-                    oi: parseInt(order.oi.toFixed(0), 10)
-                  });
-                }
-              }
-            }, { parallel: 20 });
-        })
-      )
-    )
+      from(xTimestampAxis).pipe(
+        mergeMap(async (timestamp, itx) => {
+          // TODO cover with index
+          const marketOrders = await this.marketRepository.find({
+            where: {
+              itemId,
+              timestamp,
+            },
+            order: { price: 'ASC' },
+          });
 
-    return { chart, timestamps };
-  }
+          // TODO push to global by TS
+          const priceLevelDataset = yPriceAxis.map((priceLevel, ytx) => ({
+            lt: yPriceAxis[ytx + 1] ?? priceLevel, // TODO check
+            x: itx,
+            y: ytx, // TODO price
+            orders: 0,
+            oi: 0,
+            price: 0,
+            value: 0,
+          }));
 
-  async commdtyIntraDay(yAxis: number[], itemId: number, connectedRealmID: number) {
-    const chart: IChartOrder[] = [];
-    if (!yAxis.length) return { chart };
-    if (!connectedRealmID) return { chart };
-    /** Find distinct timestamps for each realm */
-    const timestamps: number[] = await this.AuctionModel
-      .find({ connected_realm_id: connectedRealmID, 'item.id': itemId }, 'last_modified')
-      .distinct('last_modified');
+          let priceItx = 0;
 
-    timestamps.sort((a, b) => a - b);
+          for (const order of marketOrders) {
+            const isPriceItxUp =
+              order.price >= priceLevelDataset[priceItx].lt &&
+              Boolean(priceLevelDataset[priceItx + 1]);
 
-    await lastValueFrom(
-      from(timestamps).pipe(
-        mergeMap(async (timestamp, i) => {
-          await this.AuctionModel
-            .aggregate([
-              {
-                $match: {
-                  connected_realm_id: connectedRealmID,
-                  'item.id': itemId,
-                  last_modified: timestamp,
-                }
-              },
-              {
-                $bucket: {
-                  groupBy: '$price',
-                  boundaries: yAxis,
-                  default: 'Other',
-                  output: {
-                    orders: { $sum: 1 },
-                    value: { $sum: '$quantity' },
-                    price: { $first: '$price' },
-                    oi: { $sum: { $multiply: ['$price', '$quantity'] } }
-                  }
-                }
-              },
-              {
-                $addFields: {
-                  xIndex: i,
-                  oi: { $trunc: ['$oi', 2] }
-                }
-              }
-            ])
-            .allowDiskUse(true)
-            .cursor()
-            .eachAsync((order: IOrderXrs) => {
-              const yIndex = yAxis.findIndex((pQ) => pQ === order._id)
-              if (yIndex !== -1) {
-                chart.push({
-                  x: order.xIndex,
-                  y: yIndex,
-                  orders: order.orders,
-                  value: order.value,
-                  oi: order.oi
-                })
-              } else if (order._id === 'Other') {
-                if (order.price > yAxis[yAxis.length-1]) {
-                  chart.push({
-                    x: order.xIndex,
-                    y: yAxis.length-1,
-                    orders: order.orders,
-                    value: order.value,
-                    oi: order.oi
-                  });
-                } else {
-                  chart.push({
-                    x: order.xIndex,
-                    y: 0,
-                    orders: order.orders,
-                    value: order.value,
-                    oi: order.oi
-                  });
-                }
-              }
-            }, { parallel: 20 });
-        })
-      )
-    )
-
-    return { chart, timestamps };
-  }
-
-  private buildDataset(yAxis: number[], orders: IOrderXrs[], xIndex: number): IChartOrder[] {
-    return orders.map(order => {
-      const yIndex = yAxis.findIndex((pQ) => pQ === order._id);
-      if (yIndex !== -1) {
-        return {
-          x: xIndex,
-          y: yIndex,
-          orders: order.orders,
-          value: order.value,
-          oi: parseInt(order.oi.toFixed(0), 10)
-        };
-      } else if (order._id === 'Other') {
-        if (order.price > yAxis[yAxis.length-1]) {
-          return {
-            x: xIndex,
-            y: yAxis.length-1,
-            orders: order.orders,
-            value: order.value,
-            oi: parseInt(order.oi.toFixed(0), 10)
-          };
-        } else {
-          return {
-            x: xIndex,
-            y: 0,
-            orders: order.orders,
-            value: order.value,
-            oi: parseInt(order.oi.toFixed(0), 10)
-          };
-        }
-      }
-    })
-  }
-
-
-  async getItemQuotes(input: ItemCrossRealmDto): Promise<ItemQuotesDto> {
-    const { item , realm } = await this.validateTransformDmaQuery(input._id);
-    if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
-    }
-
-    const is_xrs = realm.length > 1;
-    const is_gold = item._id === 1;
-
-    const quotes: IOrderQuotes[] = [];
-
-    await lastValueFrom(
-      from(realm).pipe(
-        mergeMap(async (connected_realm) => {
-          if (!is_xrs) {
-            /** NOT XRS && NOT GOLD */
-            if (!is_gold) {
-              const orderQuotes: IOrderQuotes[] = await this.AuctionModel.aggregate([
-                {
-                  $match: {
-                    connected_realm_id: connected_realm._id,
-                    'item.id': item._id,
-                    last_modified: connected_realm.auctions,
-                  },
-                },
-                {
-                  $project: {
-                    id: '$id',
-                    quantity: '$quantity',
-                    price: {
-                      $ifNull: ['$buyout', { $ifNull: ['$bid', '$price'] }],
-                    },
-                  },
-                },
-                {
-                  $group: {
-                    _id: '$price',
-                    quantity: { $sum: '$quantity' },
-                    open_interest: { $sum: { $multiply: ['$price', '$quantity'] } },
-                    orders: { $addToSet: '$id' },
-                  },
-                },
-                {
-                  $sort: { _id: 1 },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    price: '$_id',
-                    quantity: '$quantity',
-                    open_interest: { $trunc: ['$open_interest', 2] },
-                    size: {
-                      $cond: {
-                        if: { $isArray: '$orders' },
-                        then: { $size: '$orders' },
-                        else: 0,
-                      },
-                    },
-                  },
-                },
-              ]);
-              // TODO possible eachAsync cursor
-              quotes.push(...orderQuotes);
-            }
-            /** NOT XRS but GOLD */
-            if (is_gold) {
-              const orderQuotes: IOrderQuotes[] = await this.GoldModel.aggregate([
-                {
-                  $match: {
-                    status: 'Online',
-                    connected_realm_id: connected_realm._id,
-                    last_modified: connected_realm.golds,
-                  },
-                },
-                {
-                  $project: {
-                    id: '$id',
-                    quantity: '$quantity',
-                    price: '$price',
-                    owner: '$owner',
-                  },
-                },
-                {
-                  $group: {
-                    _id: '$price',
-                    quantity: { $sum: '$quantity' },
-                    open_interest: {
-                      $sum: {
-                        $multiply: ['$price', { $divide: ['$quantity', 1000] }],
-                      },
-                    },
-                    sellers: { $addToSet: '$owner' },
-                  },
-                },
-                {
-                  $sort: { _id: 1 },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    price: '$_id',
-                    quantity: '$quantity',
-                    open_interest: { $trunc: ['$open_interest', 2] },
-                    size: {
-                      $cond: {
-                        if: { $isArray: '$sellers' },
-                        then: { $size: '$sellers' },
-                        else: 0,
-                      },
-                    },
-                  },
-                },
-              ]);
-              // TODO possible eachAsync cursor
-              quotes.push(...orderQuotes);
-            }
+            if (isPriceItxUp) priceItx = priceItx + 1;
+            priceLevelDataset[priceItx].orders = priceLevelDataset[priceItx].orders + 1;
+            priceLevelDataset[priceItx].oi = priceLevelDataset[priceItx].oi + order.value;
+            priceLevelDataset[priceItx].value = priceLevelDataset[priceItx].value + order.quantity;
+            priceLevelDataset[priceItx].price =
+              priceLevelDataset[priceItx].oi / priceLevelDataset[priceItx].value;
           }
-        })
-      )
-    )
 
-    return { quotes };
+          dataset.push(...priceLevelDataset);
+        }),
+      ),
+    );
+
+    return { dataset };
+  }
+
+  async a() {
+
   }
 
   async getItemFeed(input: ItemCrossRealmDto): Promise<ItemFeedDto> {
-    const { item , realm } = await this.validateTransformDmaQuery(input._id);
-    if (!item || !realm || !realm.length) {
-      throw new BadRequestException('Please provide correct item@realm;realm;realm in your query')
-    }
-    /**
-     * Item should be not commodity
-     */
-    const is_commdty = item.asset_class.includes(VALUATION_TYPE.COMMDTY) || (item.stackable && item.stackable > 1);
+    const { item, realm } = await this.queryItem(input._id);
 
-    const feed: LeanDocument<Auction>[] = [];
-
-    if (!is_commdty) {
-
-      await lastValueFrom(
-        from(realm).pipe(
-          mergeMap(async (connected_realm) => {
-            const orderFeed = await this.AuctionModel.find({
-              connected_realm_id: connected_realm._id,
-              'item.id': item._id,
-              last_modified: connected_realm.auctions,
-            }).lean();
-            // TODO possible eachAsync cursor;
-            feed.push(...orderFeed);
-          })
-        )
-      )
-    }
+    // --- Item should be not commodity --- //
+    const feed = await this.marketRepository.findBy({
+      itemId: item.id,
+      connectedRealmId: realm.connectedRealmId,
+      timestamp: realm.auctionsTimestamp,
+    });
 
     return { feed };
   }
 
-  async validateTransformDmaQuery(input: string) {
-    let
-      item: LeanDocument<Item>,
-      realm: IARealm[];
+  async queryItem(input: string) {
+    // TODO is @ exists
 
-    const [queryItem, queryRealm] = input.split('@');
-    const realmArrayString = queryRealm
-      .split(';')
-      .filter(Boolean);
-
-    if (queryItem) {
-      if (isNaN(Number(queryItem))) {
-        item = await this.ItemModel
-          .findOne(
-            { $text: { $search: queryItem } },
-            { score: { $meta: 'textScore' } },
-          )
-          .sort({ score: { $meta: 'textScore' } })
-          .lean();
-      } else {
-        item = await this.ItemModel
-          .findById(parseInt(queryItem))
-          .lean();
-      }
+    const isId = isNaN(Number(input));
+    if (isId) {
+      // TODO text search on postres
+      throw new BadRequestException('Please provide correct item ID in your query');
     }
 
-    const projectStage = { $addFields: { score: { $meta: "textScore" } } };
-    const sortStage = { $sort: { score: { $meta: "textScore" } } };
-    const groupStage = {
-      $group: {
-        _id: '$connected_realm_id',
-        realms: { $addToSet: '$name_locale' },
-        connected_realm_id: { $first: '$connected_realm_id' },
-        slug: { $first: '$slug' },
-        auctions: { $first: '$auctions' },
-        golds: { $first: '$golds' },
-        valuations: { $first: '$valuations' }
-      }
-    };
-    const limitStage = { $limit: 1 };
+    const id = parseInt(input);
+    const item = await this.itemsRepository.findOneBy({ id });
 
-    if (realmArrayString.length === 1) {
-      if (isNaN(Number(queryRealm))) {
-        /** if string */
-        realm = await this.RealmModel
-          .aggregate<IARealm>([
-            { $match: { $text: { $search: queryRealm } } },
-            projectStage,
-            sortStage,
-            groupStage,
-            limitStage
-          ]);
-      } else {
-        /** if number */
-        realm = await this.RealmModel
-          .aggregate<IARealm>([
-            { $match: { connected_realm_id: parseInt(queryRealm) } },
-            projectStage,
-            sortStage,
-            groupStage,
-            limitStage
-          ]);
-      }
-    } else {
-      const queryRealms = realmArrayString.toString().replace(';', ' ');
-      realm = await this.RealmModel
-        .aggregate<IARealm>([
-          { $match: { $text: { $search: queryRealms } } },
-          projectStage,
-          sortStage,
-          groupStage
-        ]);
+    // TODO if @ exists validate both
+    if (!item) {
+      throw new BadRequestException('Please provide correct item');
     }
 
-    return { item, realm };
+    return item;
   }
 
-  async getWowToken(input: WowtokenDto): Promise<LeanDocument<Token>[]> {
-    return this.TokenModel.find({
-      region: input.region || 'eu',
-    })
-      .limit(input.limit ? input.limit : 1)
-      .sort({ _id: -1 })
-      .lean();
+  async getWowToken(input: WowtokenDto) {
+    return this.marketRepository.find({
+      where: {
+        itemId: WOW_TOKEN_ITEM_ID,
+        connectedRealmId: REALM_ENTITY_ANY.connectedRealmId,
+        type: MARKET_TYPE.T,
+      },
+      order: { createdAt: -1 },
+      take: input.limit ? input.limit : 1,
+    });
   }
 }

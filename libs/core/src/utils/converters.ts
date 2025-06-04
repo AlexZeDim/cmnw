@@ -1,115 +1,77 @@
-import { ICastingContext } from '@app/core/interfaces';
+import { DateTime } from 'luxon';
 
+/**
+ * @description Returns lowercase string
+ * @param s {string}
+ * @return {string}
+ */
+export const lowercase = (s: string): string => s.toLowerCase();
+
+export const toGuid = (name: string, realm: string) => `${lowercase(name)}@${realm}`;
 /**
  * @description Returns capitalized string
  * @param s {string}
  * @return {string}
  */
-export const capitalize = (s: string): string => {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
+export const capitalize = (s: string): string =>
+  s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * @description returns Uppercased string, with replaces dash for spaces
+ * @description returns uppercase string, with replaces dash for spaces
  * @param s {string}
  * @return {string}
  */
-export const fromSlug = (s: string): string => {
-  return s.toString().charAt(0).toUpperCase() + s.slice(1).replace(/-+/g, ' ');
-}
+export const fromSlug = (s: string): string =>
+  s.toString().charAt(0).toUpperCase() + s.slice(1).replace(/-+/g, ' ');
 
 /**
  * @description return number with precision .00
- * @param n {string}
+ * @param n {number}
+ * @param digits {number}
  * @return {string}
  */
-export const round2 = (n: number): number => {
-  return parseFloat(n.toFixed(2));
-}
+export const round = (n: number, digits = 2) => parseFloat(n.toFixed(digits));
+
+export const toGold = (n: number, digits = 2) =>
+  parseFloat((n / 10000).toFixed(digits));
 
 /**
  * @description Return force lowercased slug format string
  * @param s {string}
  * @return {string}
  */
-export const toSlug = (s: string): string => {
-  return s
-    .replace(/\s+/g, '-')
-    .replace(/'+/g, '')
-    .toLowerCase();
-}
-
+export const toSlug = (s: string): string =>
+  s.replace(/\s+/g, '-').replace(/'+/g, '').toLowerCase();
 
 /**
  * @description Return force lowercase with underscore format string
  * @param s {string}
  * @return {string}
  */
-export const toKey = (s: string): string => {
-  return s
-    .replace(/\s+/g, '_')
-    .replace(/'+/g, '')
-    .toLowerCase();
-}
+export const toKey = (s: string): string =>
+  s.replace(/\s+/g, '_').replace(/'+/g, '').toLowerCase();
 
-/**
- * @description Delay for the selected amount of time in seconds
- * @param seconds {number}
- */
-export const delay = (seconds: number = 5): Promise<void> => {
-  return new Promise((resolve) => { setTimeout(resolve, seconds * 1000); });
-}
+export const toLocale = (s: string): string => s.substr(0, 2) + '_' + s.substr(2);
 
-/**
- * @description Return array of unique strings from object keys or enum.
- * @param obj
- */
-export const enumKeys = <O extends object, K extends keyof O = keyof O>(obj: O): K[] => {
-  return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
-}
+export const toDate = (lastModified: unknown): Date => {
+  if (lastModified instanceof Date) return lastModified;
 
-/**
- * @description Return random integer between minimum and maximum value.
- * @param min {number}
- * @param max {number}
- */
-export const randomInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1) + min)
-
-/**
- * Filtering function for parsing CSV EntitiesList file.
- * @param value {string | number}
- * @param context {ICastingContext}
- */
-export const parseEntityDelimiters = (value: string | number, context: ICastingContext) => {
-  if (context.lines === 1) return value;
-  if (context.column === 'languages' && typeof value === 'string') {
-    return value.split(';').filter(word => word.trim().length > 0);
-  } else if (context.column === 'tags' && typeof value === 'string') {
-    return value.split(',').filter(word => word.trim().length > 0);
+  if (
+    typeof lastModified === 'string' &&
+    DateTime.fromRFC2822(<string>lastModified).isValid
+  ) {
+    return DateTime.fromRFC2822(<string>lastModified).toJSDate();
   }
-  return value;
+
+  if (
+    typeof lastModified === 'number' &&
+    DateTime.fromMillis(lastModified).isValid
+  ) {
+    return DateTime.fromMillis(<number>lastModified).toJSDate();
+  }
+
+  return new Date('1999-09-11T20:00:30');
 };
 
-/**
- * Filtering function for parsing CSV AccountList file.
- * @param value {string | number}
- * @param context {ICastingContext}
- */
-export const parseAccountDelimiters = (value: string | number, context: ICastingContext) => {
-  if (context.lines === 1) return value;
-  if (context.column === 'tags' && typeof value === 'string') {
-    return value.split(',').filter(word => word.trim().length > 0);
-  } else if (context.column === 'clearance' && typeof value === 'string') {
-    return value.split(',').filter(word => word.trim().length > 0);
-  }
-  if (context.column === 'is_index') {
-    return value === 'TRUE';
-  }
-  return value;
-}
-
-/**
- * Format string as a Markdown Code string
- * @param text {string}
- */
-export const formatCodeMarkdown = (text: string): string => `\`\`\`md\n${text}\n\`\`\``;
+export const toStringOrNumber = (value: string | number) =>
+  Number.isNaN(Number(value)) ? value : Number(value);

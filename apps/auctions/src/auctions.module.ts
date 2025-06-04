@@ -1,30 +1,37 @@
 import { Module } from '@nestjs/common';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { AuctionsService } from './auctions.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { auctionsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from '@nestjs-modules/ioredis';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Key.name, schema: KeysSchema },
-    ]),
-    BullModule.forRoot({
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity, MarketEntity]),
+    RedisModule.forRoot({
+      type: 'single',
       options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      }
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: auctionsQueue.name, options: auctionsQueue.options }),
+    BullModule.registerQueue({
+      name: auctionsQueue.name,
+      defaultJobOptions: auctionsQueue.defaultJobOptions,
+    }),
   ],
   controllers: [],
   providers: [AuctionsService],

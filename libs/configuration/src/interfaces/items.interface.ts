@@ -1,5 +1,9 @@
-export interface ItemsInterface {
-  readonly index_init: boolean;
-  readonly index_update_force: boolean;
-  readonly build_init: boolean;
+export interface IItems {
+  readonly itemsIndex: boolean;
+  readonly itemsForceUpdate: boolean;
+  readonly itemsBuild: boolean;
+
+  readonly itemsPricingInit: boolean;
+  readonly itemsPricingBuild: boolean;
+  readonly itemsPricingLab: boolean;
 }

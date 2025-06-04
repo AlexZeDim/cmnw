@@ -7,7 +7,7 @@ export class WowtokenDto {
   @ApiProperty(SWAGGER_WOWTOKEN_REGION)
   @IsString()
   @Transform(({ value: region }) => region.toLowerCase())
-  readonly region: 'eu' | 'kr' | 'us' | 'tw'
+  readonly region: 'eu' | 'kr' | 'us' | 'tw';
 
   @ApiProperty(SWAGGER_WOWTOKEN_LIMIT)
   @IsOptional()

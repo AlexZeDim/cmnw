@@ -1,52 +1,43 @@
 import { Module } from '@nestjs/common';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { LadderService } from './ladder.service';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { MongooseModule } from '@nestjs/mongoose';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { charactersQueue, guildsQueue } from '@app/core';
-import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Key,
-  KeysSchema,
-  Realm,
-  RealmsSchema,
-} from '@app/mongo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
     RedisModule.forRoot({
-      config: {
+      type: 'single',
+      options: {
         host: redisConfig.host,
         port: redisConfig.port,
         password: redisConfig.password,
       },
     }),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema },
-      { name: Guild.name, schema: GuildsSchema },
-    ]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
+    }),
+    BullModule.registerQueue({
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
+    }),
   ],
   controllers: [],
   providers: [LadderService],

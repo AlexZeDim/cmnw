@@ -13,3 +13,4 @@ export * from './discord-subscription.dto';
 export * from './discord-uid-subscription.dto';
 export * from './realm.dto';
 export * from './character.dto';
+export * from './req-get-item.dto';

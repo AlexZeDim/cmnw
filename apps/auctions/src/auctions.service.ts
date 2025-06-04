@@ -1,79 +1,229 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Key, Realm } from '@app/mongo';
-import { Model } from 'mongoose';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
-import { delay } from '@app/core/utils/converters';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { GLOBAL_DMA_KEY, auctionsQueue, IQAuction, IAARealm } from '@app/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import moment from 'moment';
+import { DateTime } from 'luxon';
+import { InjectRepository } from '@nestjs/typeorm';
+import { KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { LessThan, Not, Repository } from 'typeorm';
+import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { BlizzAPI } from '@alexzedim/blizzapi';
+import Redis from 'ioredis';
+import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  AuctionJobQueue,
+  auctionsQueue,
+  BlizzardApiWowToken,
+  delay,
+  getKey,
+  getKeys,
+  GLOBAL_DMA_KEY,
+  isWowToken,
+  MARKET_TYPE, REALM_ENTITY_ANY,
+  toGold,
+  TOLERANCE_ENUM, WOW_TOKEN_ITEM_ID,
+} from '@app/core';
 
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {
-  private readonly logger = new Logger(
-    AuctionsService.name, { timestamp: true },
-  );
+  private BNet: BlizzAPI;
+  private readonly logger = new Logger(AuctionsService.name, {
+    timestamp: true,
+  });
 
   constructor(
-    @InjectModel(Realm.name)
-    private readonly RealmModel: Model<Realm>,
-    @InjectModel(Key.name)
-    private readonly KeyModel: Model<Key>,
-    @BullQueueInject(auctionsQueue.name)
-    private readonly queue: Queue<IQAuction, number>,
-  ) { }
+    @InjectRedis()
+    private readonly redisService: Redis,
+    @InjectRepository(KeysEntity)
+    private readonly keysRepository: Repository<KeysEntity>,
+    @InjectRepository(RealmsEntity)
+    private readonly realmsRepository: Repository<RealmsEntity>,
+    @InjectRepository(MarketEntity)
+    private readonly marketRepository: Repository<MarketEntity>,
+    @InjectQueue(auctionsQueue.name)
+    private readonly queue: Queue<AuctionJobQueue, number>,
+  ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexAuctions(GLOBAL_DMA_KEY)
+    await this.indexAuctions(GLOBAL_DMA_KEY);
+    await this.indexCommodity(GLOBAL_DMA_KEY);
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
       await delay(30);
+      await this.queue.drain(true);
 
-      const key = await this.KeyModel.findOne({ tags: clearance });
-      if (!key || !key.token) {
-        this.logger.error(`indexAuctions: clearance: ${clearance} key not found`);
-        return
+      const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
+      const offsetTime = DateTime.now().minus({ minutes: 30 }).toMillis();
+
+      const realmsEntity = await this.realmsRepository
+        .createQueryBuilder('realms')
+        .where({ auctionsTimestamp: LessThan(offsetTime) })
+        .andWhere({ connectedRealmId: Not(REALM_ENTITY_ANY.connectedRealmId) })
+        .distinctOn(['realms.connectedRealmId'])
+        .getMany();
+
+      await lastValueFrom(
+        from(realmsEntity).pipe(
+          mergeMap(async (realmEntity) => {
+            await this.queue.add(`${realmEntity.connectedRealmId}`, {
+              connectedRealmId: realmEntity.connectedRealmId,
+              auctionsTimestamp: realmEntity.auctionsTimestamp,
+              region: 'eu',
+              clientId: keyEntity.client,
+              clientSecret: keyEntity.secret,
+              accessToken: keyEntity.token,
+              isAssetClassIndex: true,
+            });
+
+            this.logger.debug(
+              `realm: ${realmEntity.connectedRealmId} | ts: ${
+                realmEntity.auctionsTimestamp
+              }, ${typeof realmEntity.auctionsTimestamp}`,
+            );
+          }),
+        ),
+      );
+    } catch (errorOrException) {
+      this.logger.error(`indexAuctions ${errorOrException}`);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  private async indexCommodity(clearance: string = GLOBAL_DMA_KEY) {
+    try {
+      const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
+
+      const realmEntity = await this.realmsRepository.findOneBy({
+        connectedRealmId: REALM_ENTITY_ANY.id,
+      });
+
+      const commodityJob = await this.queue.getJob('COMMODITY');
+
+      if (commodityJob) {
+        const isCommodityJobActive = await commodityJob.isActive();
+        if (isCommodityJobActive) {
+          this.logger.debug(`realm: ${realmEntity.connectedRealmId} | active`);
+          return;
+        }
       }
 
-      await this.queue.drain(true);
-      const offsetTime: number = parseInt(moment().subtract(30, 'minutes').format('x'));
+      await this.queue.add('COMMODITY', {
+        region: 'eu',
+        clientId: keyEntity.client,
+        clientSecret: keyEntity.secret,
+        accessToken: keyEntity.token,
+        connectedRealmId: realmEntity.connectedRealmId,
+        commoditiesTimestamp: realmEntity.commoditiesTimestamp,
+        isAssetClassIndex: true,
+      });
 
-      await this.RealmModel
-        .aggregate<IAARealm>([
-          {
-            $match: {
-              auctions: { $lt: offsetTime }
-            }
-          },
-          {
-            $group: {
-              _id: {
-                connected_realm_id: '$connected_realm_id',
-                auctions: '$auctions',
-              },
-              name: { $first: "$name" }
-            },
-          },
-        ])
-        .cursor({ batchSize: 5 })
-        .eachAsync(async (realm: IAARealm) => {
-          await this.queue.add(
-            `${realm.name}`,
-            {
-              connected_realm_id: realm._id.connected_realm_id,
-              region: 'eu',
-              clientId: key._id,
-              clientSecret: key.secret,
-              accessToken: key.token
-            }
-          )
-        });
-    } catch (errorException) {
-      this.logger.error(`indexAuctions: ${errorException}`)
+      this.logger.debug(
+        `realm: ${realmEntity.connectedRealmId} | ts: ${realmEntity.commoditiesTimestamp}`,
+      );
+    } catch (errorOrException) {
+      this.logger.error(`indexCommodity ${errorOrException}`);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async indexTokens(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
+    try {
+      const key = await getKey(this.keysRepository, clearance);
+
+      this.BNet = new BlizzAPI({
+        region: 'eu',
+        clientId: key.client,
+        clientSecret: key.secret,
+        accessToken: key.token,
+      });
+
+      const response = await this.BNet.query<BlizzardApiWowToken>(
+        '/data/wow/token/index',
+        apiConstParams(
+          API_HEADERS_ENUM.DYNAMIC,
+          TOLERANCE_ENUM.DMA,
+          false
+        ),
+      );
+
+      const isWowTokenValid = isWowToken(response);
+      if (!isWowTokenValid) {
+        this.logger.error(`Token response not valid`);
+        return;
+      }
+
+      const { price, lastModified, last_updated_timestamp: timestamp } = response;
+
+      const isWowTokenExists = await this.marketRepository.exist({
+        where: {
+          timestamp: timestamp,
+          itemId: WOW_TOKEN_ITEM_ID,
+          connectedRealmId: REALM_ENTITY_ANY.id,
+          type: MARKET_TYPE.T,
+        },
+      });
+
+      if (isWowTokenExists) {
+        this.logger.debug(
+          `Token exists on timestamp ${timestamp} | ${lastModified}`,
+        );
+        return;
+      }
+
+      const wowTokenEntity = this.marketRepository.create({
+        orderId: `${timestamp}`,
+        price: toGold(price),
+        itemId: WOW_TOKEN_ITEM_ID,
+        quantity: 1,
+        connectedRealmId: REALM_ENTITY_ANY.id,
+        type: MARKET_TYPE.T,
+        timestamp,
+      });
+
+      await this.marketRepository.save(wowTokenEntity);
+    } catch (errorOrException) {
+      this.logger.warn(`indexTokens ${errorOrException}`);
+    }
+  }
+
+  // --- TTL Logic --- //
+  @Cron(CronExpression.EVERY_12_HOURS)
+  async deleteExpiredMarketData(): Promise<void> {
+    this.logger.log('Starting deletion of expired market data...');
+
+    try {
+      // Calculate the cutoff timestamp (24 hours ago from now)
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+      // Perform the deletion
+      const deleteResult = await this.marketRepository
+        .createQueryBuilder()
+        .delete()
+        .from(MarketEntity)
+        .where('timestamp < :cutoff', { cutoff: twentyFourHoursAgo })
+        .execute();
+
+      this.logger.log(
+        `Deleted ${deleteResult.affected} rows from 'market' table.`,
+      );
+
+      // --- Important: PostgreSQL VACUUM for reclaiming space --- //
+      // VACUUM operations can be resource-intensive
+      // VACUUM ANALYZE is generally good after deletions.
+      // For very large tables, consider auto-vacuum settings or pg_repack.
+      await this.marketRepository.query('VACUUM (ANALYZE, VERBOSE) market;');
+      this.logger.log('VACUUM ANALYZE completed for "market" table.');
+    } catch (error) {
+      this.logger.error(
+        `Error deleting expired market data: ${error.message}`,
+        error.stack,
+      );
     }
   }
 }

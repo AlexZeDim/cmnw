@@ -1,10 +1,11 @@
-import { get } from 'config';
-import { ItemsInterface } from '@app/configuration/interfaces';
+import { IItems } from '@app/configuration/interfaces';
 
-const ITEMS_CONFIG = get<ItemsInterface>('valuations');
+export const itemsConfig: IItems = {
+  itemsIndex: process.env.ITEMS_INDEX === 'true',
+  itemsForceUpdate: process.env.ITEMS_FORCE_UPDATE === 'true',
+  itemsBuild: process.env.ITEMS_BUILD === 'true',
 
-export const itemsConfig: ItemsInterface = {
-  index_init: ITEMS_CONFIG.index_init,
-  index_update_force: ITEMS_CONFIG.index_update_force,
-  build_init: ITEMS_CONFIG.build_init,
-}
+  itemsPricingInit: process.env.ITEMS_PRICING_INIT === 'true',
+  itemsPricingBuild: process.env.ITEMS_PRICING_BUILD === 'true',
+  itemsPricingLab: process.env.ITEMS_PRICING_LAB === 'true',
+};

@@ -1,0 +1,8 @@
+.git*
+node_modules
+Dockerfile
+local.Dockerfile
+docker-compose.db.yaml
+docker-compose.oraculum.yaml
+docker-compose.dev.oraculum.yaml
+README.md

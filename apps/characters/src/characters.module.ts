@@ -1,40 +1,28 @@
 import { Module } from '@nestjs/common';
 import { CharactersService } from './characters.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Character, CharactersSchema, Key, KeysSchema, Log, LogsSchema, Realm, RealmsSchema } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CharactersEntity, KeysEntity } from '@app/pg';
+import { postgresConfig, redisConfig } from '@app/configuration';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    RedisModule.forRoot({
-      config: {
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, CharactersEntity]),
+    BullModule.forRoot({
+      connection: {
         host: redisConfig.host,
         port: redisConfig.port,
         password: redisConfig.password,
       },
     }),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Log.name, schema: LogsSchema },
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema }
-    ]),
-    BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
-      },
+    BullModule.registerQueue({
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
     }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
   ],
   controllers: [],
   providers: [CharactersService],

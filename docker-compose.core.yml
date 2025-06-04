@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  realms:
+    container_name: realms
+    image: ghcr.io/alexzedim/core:6.1.5
+    restart: always
+    command: [ 'node', 'dist/apps/realms/main.js' ]
+    env_file:
+      - stack.env
+
+
+  keys:
+    container_name: keys
+    image: ghcr.io/alexzedim/core:6.1.5
+    restart: always
+    command: [ 'node', 'dist/apps/keys/main.js' ]
+    env_file:
+      - stack.env

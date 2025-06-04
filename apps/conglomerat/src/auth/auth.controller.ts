@@ -13,8 +13,6 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { AccountGetDto } from '@app/core/dto/account-get.dto';
-import { LeanDocument } from 'mongoose';
-import { Account } from '@app/mongo';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -51,7 +49,7 @@ export class AuthController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @HttpCode(HttpStatus.OK)
   @Get('/account')
-  async getAccount(@Query() input: AccountGetDto): Promise<LeanDocument<Account>> {
+  async getAccount(@Query() input: AccountGetDto): Promise<any> {
     return await this.authService.getAccount(input);
   }
 

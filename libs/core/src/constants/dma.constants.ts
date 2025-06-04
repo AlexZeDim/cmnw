@@ -1,32 +1,53 @@
 import { mquery } from 'mongoose';
+import { AuctionItemExtra, IItem, IItemFieldMap, IPetList } from '@app/core/types';
+import { SkillLineEntity, SpellEffectEntity } from '@app/pg';
+import { SpellEffect } from '@app/mongo';
 
 export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
 
+export const DMA_SOURCE_GOLD = 'https://funpay.ru/chips/2/';
+
+export const WOW_TOKEN_ITEM_ID = 122284;
+
 export enum DMA_SOURCE {
   API = 'DMA-API',
-  LAB = 'DMA-LAB'
+  LAB = 'DMA-LAB',
 }
 
 export enum VALUATION_TYPE {
-  VSP = 'vsp',
-  VENDOR = 'vendor',
-  DERIVATIVE = 'derivative',
-  REAGENT = 'reagent',
-  MARKET = 'market',
-  PREMIUM = 'premium',
-  FUNPAY = 'funpay',
-  COMMDTY = 'commdty',
-  ITEM = 'item',
-  OTC = 'otc',
-  WOWTOKEN = 'wowtoken',
-  GOLD = 'gold',
+  VSP = 'VSP',
+  VENDOR = 'VENDOR',
+  DERIVATIVE = 'DERIVATIVE',
+  REAGENT = 'REAGENT',
+  MARKET = 'MARKET',
+  PREMIUM = 'PREMIUM',
+  FUNPAY = 'FUNPAY',
+  COMMDTY = 'COMMDTY',
+  ITEM = 'ITEM',
+  OTC = 'OTC',
+  WOWTOKEN = 'WOWTOKEN',
+  GOLD = 'GOLD',
 }
 
 export enum ORDER_FLOW {
   C = 'created',
-  R = 'removed'
+  R = 'removed',
 }
 
+export enum CONTRACT_TYPE {
+  T = 'timestamp',
+  D = 'day',
+  W = 'week',
+  M = 'month',
+  Y = 'year',
+}
+
+export enum MARKET_TYPE {
+  A = 'AUCTION',
+  C = 'COMMDTY',
+  G = 'GOLD',
+  T = 'TOKEN',
+}
 
 export enum FLAG_TYPE {
   B = 'BUY',
@@ -88,13 +109,92 @@ export const PROFESSION_TICKER: Map<number, string> = new Map([
   [794, 'ARCH'],
 ]);
 
+export const GOLD_ITEM_ENTITY = {
+  id: 1,
+  name: 'Gold',
+  names: {
+    en_US: 'Gold (Currency)',
+    es_MX: 'Gold (Currency)',
+    pt_BR: 'Gold (Currency)',
+    de_DE: 'Gold (Currency)',
+    en_GB: 'Gold (Currency)',
+    es_ES: 'Gold (Currency)',
+    fr_FR: 'Gold (Currency)',
+    it_IT: 'Gold (Currency)',
+    ru_RU: 'Золото (Валюта)',
+    ko_KR: 'Gold (Currency)',
+    zh_TW: 'Gold (Currency)',
+    zh_CN: 'Gold (Currency)',
+  },
+  quality: 'Currency',
+  itemClass: 'Currency',
+  itemSubClass: 'Currency',
+  inventory_type: 'Non-equippable',
+  isEquip: false,
+  isStackable: true,
+  hasContracts: true,
+  assetClass: [VALUATION_TYPE.GOLD],
+  ticker: VALUATION_TYPE.GOLD,
+  tags: ['gold', 'currency', 'funpay', 'commdty'],
+  indexBy: DMA_SOURCE.LAB,
+};
+
+export const ITEM_FIELD_MAPPING = new Map<keyof Partial<IItem>, IItemFieldMap>([
+  ['name', { key: 'name', path: 'name' }],
+  ['quality', { key: 'quality', path: 'quality.name' }],
+  ['level', { key: 'itemLevel', path: 'level' }],
+  ['item_class', { key: 'itemClass', path: 'item_class.name' }],
+  ['item_subclass', { key: 'itemSubClass', path: 'item_subclass.name' }],
+  ['purchase_price', { key: 'purchasePrice', path: 'purchase_price' }],
+  ['purchase_quantity', { key: 'purchaseQuantity', path: 'purchase_quantity' }],
+  ['sell_price', { key: 'vendorSellPrice', path: 'sell_price' }],
+  ['is_equippable', { key: 'isEquip', path: 'is_equippable' }],
+  ['is_stackable', { key: 'isStackable', path: 'is_stackable' }],
+  ['inventory_type', { key: 'inventoryType', path: 'inventory_type.name' }],
+  ['required_level', { key: 'level', path: 'required_level' }],
+  ['preview_item', { key: 'lootType', path: 'preview_item.binding.type' }],
+]);
+
+export const ITEM_KEY_GUARD = new Map<string, keyof AuctionItemExtra>([
+  ['bonus_lists', 'bonusList'],
+  ['context', 'context'],
+  ['modifiers', 'modifiers'],
+]);
+
+export const PETS_KEY_GUARD = new Map<string, keyof IPetList>([
+  ['pet_breed_id', 'petBreedId'],
+  ['pet_level', 'petLevel'],
+  ['pet_quality_id', 'petQualityId'],
+  ['pet_species_id', 'petSpeciesId'],
+]);
+
+export const SKILL_LINE_KEY_MAPPING = new Map<keyof SkillLineEntity, string>([
+  ['skillLine', 'SkillLine'],
+  ['spellId', 'Spell'],
+  ['supersedesSpell', 'SupercedesSpell'],
+  ['skillUpSkillLineId', 'SkillupSkillLineID'],// Note: This will overwrite if both 'SupersedesSpell' and 'SkillUpSkillLineID' map to 'skillUpSkillLineId'
+  ['minSkillRank', 'MinSkillLineRank'],
+  ['numSkillUps', 'NumSkillUps'],
+  ['yellowCraft', 'TrivialSkillLineRankHigh'],
+  ['greenCraft', 'TrivialSkillLineRankLow'],
+
+]);
+
+export const SPELL_EFFECT_KEY_MAPPING = new Map<keyof SpellEffectEntity, string>([
+  ['spellId', 'SpellID'],
+  ['effect', 'Effect'],
+  ['itemId', 'EffectItemType'],
+  ['itemQuantity', 'EffectBasePointsF'],
+]);
+
 export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
   // GOLD
   [1, { _id: 1 }],
   // WOWTOKEN
   [2, { asset_class: VALUATION_TYPE.WOWTOKEN }],
   // ACTUAL NON DERIVATIVE REAGENT & MARKET & COMMDTY
-  [3,
+  [
+    3,
     {
       $and: [
         { expansion: 'SHDW' },
@@ -105,14 +205,19 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
         },
         {
           asset_class: {
-            $all: [VALUATION_TYPE.REAGENT, VALUATION_TYPE.MARKET, VALUATION_TYPE.COMMDTY],
+            $all: [
+              VALUATION_TYPE.REAGENT,
+              VALUATION_TYPE.MARKET,
+              VALUATION_TYPE.COMMDTY,
+            ],
           },
         },
       ],
     },
   ],
   // ACTUAL ALL REAGENT & DERIVATIVE
-  [4,
+  [
+    4,
     {
       $and: [
         { expansion: 'SHDW' },
@@ -125,7 +230,8 @@ export const ASSET_EVALUATION_PRIORITY: Map<number, mquery> = new Map([
     },
   ],
   // PURE DERIVATIVE
-  [5,
+  [
+    5,
     {
       $and: [
         { expansion: 'SHDW' },

@@ -2,7 +2,6 @@ import { Document, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
 import { Item } from '@app/mongo/schemas/items.schema';
-import { Realm } from '@app/mongo/schemas/realms.schema';
 
 @Schema()
 class ItemNames {
@@ -86,7 +85,7 @@ export class ItemValuations extends Item {
   /** add via indexAssetClass - csv import */
 
   @Prop({ default: [], type: [String] })
-  asset_class: Types.Array<String>;
+  asset_class: Types.Array<string>;
   /** add via importTaxonomy_CSV('itemsparse') */
 
   @Prop({ type: String })
@@ -103,7 +102,7 @@ export class ItemValuations extends Item {
   ticker: string;
 
   @Prop({ default: [], type: [String] })
-  tags: Types.Array<String>;
+  tags: Types.Array<string>;
 
   @Prop({ type: Number, required: true })
   value: number;
@@ -193,13 +192,13 @@ export class Valuations extends Document {
   item_id: number | Item;
 
   @Prop({ required: true, type: Number, ref: 'Realm' })
-  connected_realm_id: number | Realm;
+  connected_realm_id: number;
 
   @Prop({ type: Number, required: true })
   last_modified: number;
 
   @Prop({ type: Types.ObjectId })
-  pricing_method: ObjectId
+  pricing_method: ObjectId;
 
   @Prop({ type: Number, required: true })
   value: number;
@@ -219,11 +218,14 @@ export class Valuations extends Document {
 
 export const ValuationsSchema = SchemaFactory.createForClass(Valuations);
 
-ValuationsSchema.index({
-  item_id: 1,
-  last_modified: 1,
-  connected_realm_id: 1,
-  type: 1.
-}, {
-  name: 'SQ'
-})
+ValuationsSchema.index(
+  {
+    item_id: 1,
+    last_modified: 1,
+    connected_realm_id: 1,
+    type: 1,
+  },
+  {
+    name: 'SQ',
+  },
+);

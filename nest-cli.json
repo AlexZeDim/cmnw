@@ -5,7 +5,8 @@
   "root": "apps/conglomerat",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+    "tsConfigPath": "apps/conglomerat/tsconfig.app.json",
+    "assets": [{"include": "../config/*.yaml", "outDir": "./dist/config"}]
   },
   "projects": {
     "conglomerat": {
@@ -98,15 +99,6 @@
         "tsConfigPath": "apps/items/tsconfig.app.json"
       }
     },
-    "wowtoken": {
-      "type": "application",
-      "root": "apps/wowtoken",
-      "entryFile": "main",
-      "sourceRoot": "apps/wowtoken/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/wowtoken/tsconfig.app.json"
-      }
-    },
     "guilds": {
       "type": "application",
       "root": "apps/guilds",
@@ -116,13 +108,13 @@
         "tsConfigPath": "apps/guilds/tsconfig.app.json"
       }
     },
-    "warcraftlogs": {
+    "warcraft-logs": {
       "type": "application",
-      "root": "apps/warcraftlogs",
+      "root": "apps/warcraft-logs",
       "entryFile": "main",
-      "sourceRoot": "apps/warcraftlogs/src",
+      "sourceRoot": "apps/warcraft-logs/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/warcraftlogs/tsconfig.app.json"
+        "tsConfigPath": "apps/warcraft-logs/tsconfig.app.json"
       }
     },
     "wowprogress": {
@@ -132,15 +124,6 @@
       "sourceRoot": "apps/wowprogress/src",
       "compilerOptions": {
         "tsConfigPath": "apps/wowprogress/tsconfig.app.json"
-      }
-    },
-    "pricing": {
-      "type": "application",
-      "root": "apps/pricing",
-      "entryFile": "main",
-      "sourceRoot": "apps/pricing/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/pricing/tsconfig.app.json"
       }
     },
     "valuations": {
@@ -179,24 +162,6 @@
         "tsConfigPath": "apps/dma/tsconfig.app.json"
       }
     },
-    "oraculum": {
-      "type": "application",
-      "root": "apps/oraculum",
-      "entryFile": "main",
-      "sourceRoot": "apps/oraculum/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/oraculum/tsconfig.app.json"
-      }
-    },
-    "oracle": {
-      "type": "application",
-      "root": "apps/oracle",
-      "entryFile": "main",
-      "sourceRoot": "apps/oracle/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/oracle/tsconfig.app.json"
-      }
-    },
     "contracts": {
       "type": "application",
       "root": "apps/contracts",
@@ -204,15 +169,6 @@
       "sourceRoot": "apps/contracts/src",
       "compilerOptions": {
         "tsConfigPath": "apps/contracts/tsconfig.app.json"
-      }
-    },
-    "bench": {
-      "type": "application",
-      "root": "apps/bench",
-      "entryFile": "main",
-      "sourceRoot": "apps/bench/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/bench/tsconfig.app.json"
       }
     },
     "ladder": {
@@ -224,13 +180,31 @@
         "tsConfigPath": "apps/ladder/tsconfig.app.json"
       }
     },
-    "elastic": {
-      "type": "library",
-      "root": "libs/elastic",
-      "entryFile": "index",
-      "sourceRoot": "libs/elastic/src",
+    "tests": {
+      "type": "application",
+      "root": "apps/tests",
+      "entryFile": "main",
+      "sourceRoot": "apps/tests/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/elastic/tsconfig.lib.json"
+        "tsConfigPath": "apps/tests/tsconfig.app.json"
+      }
+    },
+    "e2e": {
+      "type": "library",
+      "root": "libs/e2e",
+      "entryFile": "index",
+      "sourceRoot": "libs/e2e/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/e2e/tsconfig.lib.json"
+      }
+    },
+    "pg": {
+      "type": "library",
+      "root": "libs/pg",
+      "entryFile": "index",
+      "sourceRoot": "libs/pg/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/pg/tsconfig.lib.json"
       }
     }
   }

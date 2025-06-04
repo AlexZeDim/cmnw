@@ -13,7 +13,7 @@ services:
     ports:
       - '27017-27019:27017-27019'
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   redis:
     image: redis:7.0-rc-alpine
@@ -26,50 +26,17 @@ services:
     ports:
       - '6379:6379'
     networks:
-      - conglomerat-network
+      - cmnw-network
 
-  elasticsearch:
-    image: elasticsearch:7.16.3
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - ELASTIC_USERNAME=${ELK_ROOT_USER}
-      - ELASTIC_PASSWORD=${ELK_ROOT_PASSWORD}
-      - xpack.security.enabled=true
-    volumes:
-      - ./volumes/elasticsearch:/usr/share/elasticsearch/data
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    networks:
-      - conglomerat-network
-
-  kibana:
-    image: kibana:7.16.3
-    container_name: kibana
-    environment:
-      - ELASTICSEARCH_URL="http://elasticsearch:9200"
-      - ELASTICSEARCH_USERNAME=${ELK_ROOT_USER}
-      - ELASTICSEARCH_PASSWORD=${ELK_ROOT_PASSWORD}
-      - xpack.security.enabled=true
-    ports:
-      - '5601:5601'
-    links:
-      - elasticsearch
-    networks:
-      - conglomerat-network
-    depends_on:
-      - elasticsearch
-
-  commonwealth:
+  cmnw:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    container_name: commonwealth
+    image: ghcr.io/alexzedim/cmnw:latest
+    container_name: cmnw
     restart: always
     links:
       - mongo
       - redis
-    command: [ 'node','dist/apps/conglomerat/main.js' ]
+    command: [ 'node','dist/apps/cmnw/main.js' ]
     ports:
       - '5000:8000'
     environment:
@@ -78,11 +45,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   keys:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     container_name: keys
     restart: always
     links:
@@ -95,11 +62,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   ladder:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     container_name: ladder
     restart: always
     links:
@@ -112,11 +79,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   discord:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     container_name: discord
     restart: always
     links:
@@ -129,11 +96,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   oraculum:
     build: ./
-    image: commonwealth
+    image: cmnw
     restart: always
     container_name: oraculum
     links:
@@ -146,12 +113,12 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
 
   realms:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: realms
     links:
@@ -164,11 +131,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   characters:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: characters
     links:
@@ -181,13 +148,13 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
 
 
   osint-1:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: osint-1
     links:
@@ -200,11 +167,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-2:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: osint-2
     links:
@@ -217,11 +184,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-3:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: osint-3
     links:
@@ -234,11 +201,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-4:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: osint-4
     links:
@@ -251,11 +218,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   osint-5:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: osint-5
     links:
@@ -268,372 +235,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
-
-  oracle-1:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-1
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=Childe
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-2:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-2
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=EdgarHoover
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-3:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-3
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=JohnBoil
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-4:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-4
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=MareAngmar
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-5:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-5
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=YoRu
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-6:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-6
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=BrettHand
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-7:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-7
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ДжонУик
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-8:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-8
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ГрустныйМох
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-9:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-9
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ОгуречныйРассол
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-10:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-10
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=МартиМакФлай
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-11:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-11
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ЛизаМечикова
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-12:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-12
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=Индийскийчай
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-
-  oracle-13:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-13
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=TsurumaruKuninaga
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-14:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-14
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ШаловливыйПитон
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-15:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-15
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=РукастыйНуб
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-16:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-16
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ДеревоВЛесу
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-17:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-17
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=Enot
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-18:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-18
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=SashaMaze
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-19:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-19
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=ReaganRidley
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  oracle-20:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: oracle-20
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/oracle/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - ACCOUNT=JaceMcKlee
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
+      - cmnw-network
 
   dma-1:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: dma-1
     links:
@@ -646,11 +252,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   dma-2:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: dma-2
     links:
@@ -663,11 +269,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   dma-3:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: dma-3
     links:
@@ -680,11 +286,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   guilds:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: guilds
     links:
@@ -697,11 +303,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   auctions:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: auctions
     links:
@@ -714,11 +320,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   contracts:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: contracts
     links:
@@ -731,11 +337,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   valuations:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: valuations
     links:
@@ -748,11 +354,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   gold:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: golds
     links:
@@ -765,11 +371,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   wowprogress:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: wowprogress
     links:
@@ -782,28 +388,28 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   warcraftlogs:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: warcraftlogs
     links:
       - mongo
       - redis
-    command: [ 'node', 'dist/apps/warcraftlogs/main.js' ]
+    command: [ 'node', 'dist/apps/warcraft-logs/main.js' ]
     environment:
       - NODE_ENV=${NODE_ENV}
     depends_on:
       - mongo
       - redis
     networks:
-      - conglomerat-network
+      - cmnw-network
 
   items:
     build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
+    image: ghcr.io/alexzedim/cmnw:latest
     restart: always
     container_name: items
     links:
@@ -816,45 +422,11 @@ services:
       - mongo
       - redis
     networks:
-      - conglomerat-network
-
-  pricing:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: pricing
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/pricing/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
-
-  wowtoken:
-    build: ./
-    image: ghcr.io/alexzedim/commonwealth:latest
-    restart: always
-    container_name: wowtoken
-    links:
-      - mongo
-      - redis
-    command: [ 'node', 'dist/apps/wowtoken/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - conglomerat-network
+      - cmnw-network
 
 # Docker Networks
 networks:
   # All container connect in a network
-  conglomerat-network:
+  cmnw-network:
     driver: bridge
 

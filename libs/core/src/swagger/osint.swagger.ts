@@ -1,9 +1,9 @@
 import { ApiPropertyOptions } from '@nestjs/swagger';
 import { FACTION } from '@app/core/constants';
 
-export const SWAGGER_CHARACTER_ID: ApiPropertyOptions = {
-  name: '_id',
-  description: 'Character ID in name_slug@realm_slug',
+export const SWAGGER_CHARACTER_GUID: ApiPropertyOptions = {
+  name: 'guid',
+  description: 'Character GUID in name_slug@realm_slug',
   type: String,
   required: true,
   nullable: false,
@@ -16,11 +16,11 @@ export const SWAGGER_CHARACTER_FACTION: ApiPropertyOptions = {
   type: String,
   enum: FACTION,
   required: false,
-  example: FACTION.A
+  example: FACTION.A,
 };
 
-export const SWAGGER_CHARACTER_AVGILVL: ApiPropertyOptions = {
-  name: 'average_item_level',
+export const SWAGGER_CHARACTER_AVG_ILVL: ApiPropertyOptions = {
+  name: 'averageItemLevel',
   description: 'Character average item level',
   type: Number,
   required: false,
@@ -28,7 +28,7 @@ export const SWAGGER_CHARACTER_AVGILVL: ApiPropertyOptions = {
 };
 
 export const SWAGGER_CHARACTER_ILVL: ApiPropertyOptions = {
-  name: 'item_level',
+  name: 'itemLevel',
   description: 'Character item level (average)',
   type: Number,
   required: false,
@@ -36,7 +36,7 @@ export const SWAGGER_CHARACTER_ILVL: ApiPropertyOptions = {
 };
 
 export const SWAGGER_CHARACTER_RIO: ApiPropertyOptions = {
-  name: 'raider_io',
+  name: 'raiderIoScore',
   description: 'Character Raider IO score',
   type: Number,
   required: false,
@@ -44,7 +44,7 @@ export const SWAGGER_CHARACTER_RIO: ApiPropertyOptions = {
 };
 
 export const SWAGGER_CHARACTER_DAYS_FROM: ApiPropertyOptions = {
-  name: 'days_from',
+  name: 'daysFrom',
   description: 'Character looking for guild status, raid time days from available',
   type: Number,
   required: false,
@@ -54,7 +54,7 @@ export const SWAGGER_CHARACTER_DAYS_FROM: ApiPropertyOptions = {
 };
 
 export const SWAGGER_CHARACTER_DAYS_TO: ApiPropertyOptions = {
-  name: 'days_to',
+  name: 'daysTo',
   description: 'Character looking for guild status, raid time days to available',
   type: Number,
   required: false,
@@ -63,8 +63,18 @@ export const SWAGGER_CHARACTER_DAYS_TO: ApiPropertyOptions = {
   example: 4,
 };
 
-export const SWAGGER_CHARACTER_WCL: ApiPropertyOptions = {
-  name: 'wcl_percentile',
+export const SWAGGER_MYTHIC_LOGS: ApiPropertyOptions = {
+  name: 'mythicLogs',
+  description: 'Character Warcraft Logs actual mythic raid performance percentile',
+  type: Number,
+  required: false,
+  minimum: 0,
+  maximum: 100,
+  example: 75,
+};
+
+export const SWAGGER_HEROIC_LOGS: ApiPropertyOptions = {
+  name: 'heroicLogs',
   description: 'Character Warcraft Logs actual mythic raid performance percentile',
   type: Number,
   required: false,
@@ -79,7 +89,7 @@ export const SWAGGER_CHARACTER_LANGUAGES: ApiPropertyOptions = {
   type: String,
   isArray: true,
   required: false,
-  example: ['russian']
+  example: ['russian'],
 };
 
 export const SWAGGER_REALMS_LOCALE: ApiPropertyOptions = {
@@ -87,7 +97,7 @@ export const SWAGGER_REALMS_LOCALE: ApiPropertyOptions = {
   description: 'Locale realm group string',
   type: String,
   required: false,
-  example: 'en_GB'
+  example: 'en_GB',
 };
 
 export const SWAGGER_CHARACTER_REALMS: ApiPropertyOptions = {
@@ -96,7 +106,16 @@ export const SWAGGER_CHARACTER_REALMS: ApiPropertyOptions = {
   type: [String],
   isArray: true,
   required: false,
-  example: ['gordunni']
+  example: ['gordunni'],
+};
+
+export const SWAGGER_CHARACTER_REALMS_ID: ApiPropertyOptions = {
+  name: 'realmsId',
+  description: 'Realm id in array form',
+  type: [Number],
+  isArray: true,
+  required: false,
+  example: [1602, 1615],
 };
 
 export const SWAGGER_CHARACTER_HASH: ApiPropertyOptions = {
@@ -108,9 +127,9 @@ export const SWAGGER_CHARACTER_HASH: ApiPropertyOptions = {
   example: 'a@a99becec48b29ff',
 };
 
-export const SWAGGER_GUILD_ID: ApiPropertyOptions = {
-  name: '_id',
-  description: 'Guild ID in name_slug@realm_slug',
+export const SWAGGER_GUILD_GUID: ApiPropertyOptions = {
+  name: 'guid',
+  description: 'Guild GUID in nameSlug@realmSlug',
   type: String,
   required: true,
   nullable: false,
@@ -118,7 +137,7 @@ export const SWAGGER_GUILD_ID: ApiPropertyOptions = {
 };
 
 export const SWAGGER_REALM_ID: ApiPropertyOptions = {
-  name: '_id',
+  name: 'id',
   description: 'Realm ID for realm server',
   type: Number,
   required: false,
@@ -135,7 +154,8 @@ export const SWAGGER_REALM_NAME: ApiPropertyOptions = {
 
 export const SWAGGER_REALM_SLUG: ApiPropertyOptions = {
   name: 'slug',
-  description: 'Realm slug for server as required by Blizzard, lowercased, without spaces',
+  description:
+    'Realm slug for server as required by Blizzard, lowercased, without spaces',
   type: String,
   required: false,
   example: 'gordunni',
@@ -150,17 +170,17 @@ export const SWAGGER_REALM_REGION: ApiPropertyOptions = {
 };
 
 export const SWAGGER_REALM_CONNECTED_REALM_ID: ApiPropertyOptions = {
-  name: 'connected_realm_id',
+  name: 'connectedRealmId',
   description: 'ID of connected realms',
   type: Number,
   required: false,
   example: 1602,
-}
+};
 
 export const SWAGGER_CHARACTER_CLASS: ApiPropertyOptions = {
   name: 'character_class',
   description: 'Unique playable character class',
   required: false,
   type: String,
-  example: 'rogue'
-}
+  example: 'rogue',
+};

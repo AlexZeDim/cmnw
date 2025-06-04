@@ -1,21 +1,19 @@
 import { JobsOptions } from 'bullmq';
-import { QueueInterface } from '@app/core';
+import { IQueue } from '@app/core';
 
-const queueOptions: JobsOptions = {
+const options: JobsOptions = {
   removeOnComplete: 10,
   removeOnFail: 10,
 };
 
-export const guildsQueue: QueueInterface = {
-  name: 'OSINT:Guilds',
+export const guildsQueue: IQueue = {
+  name: 'OSINT_Guilds',
   workerOptions: {
-    concurrency: 5,
+    concurrency: 3,
     limiter: {
       max: 5,
       duration: 1000,
-    }
+    },
   },
-  options: {
-    defaultJobOptions: queueOptions,
-  },
+  defaultJobOptions: options,
 };

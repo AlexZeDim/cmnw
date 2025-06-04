@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Auction, Item, Key, Pricing, Realm } from '@app/mongo';
+import { Market, Item, Key, Pricing, Realm } from '@app/mongo';
 import { Model } from 'mongoose';
 import {
   ASSET_EVALUATION_PRIORITY, IVAAuctions,
@@ -8,7 +8,7 @@ import {
   VALUATION_TYPE,
   valuationsQueue,
 } from '@app/core';
-import { BullQueueInject } from '@anchan828/nest-bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { valuationsConfig } from '@app/configuration';
 // import { Cron, CronExpression } from '@nestjs/schedule';
@@ -29,15 +29,15 @@ export class ValuationsService implements OnApplicationBootstrap {
     private readonly RealmModel: Model<Realm>,
     @InjectModel(Pricing.name)
     private readonly PricingModel: Model<Pricing>,
-    @InjectModel(Auction.name)
-    private readonly AuctionsModel: Model<Auction>,
-    @BullQueueInject(valuationsQueue.name)
+    @InjectModel(Market.name)
+    private readonly AuctionsModel: Model<Market>,
+    @InjectQueue(valuationsQueue.name)
     private readonly queue: Queue<IQItemValuation, number>,
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
     await this.clearQueue();
-    await this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build_init);
+    await this.buildAssetClasses(['pricing', 'auctions', 'contracts', 'currency', 'tags'], valuationsConfig.build);
   }
 
   async clearQueue(): Promise<void> {
@@ -63,8 +63,8 @@ export class ValuationsService implements OnApplicationBootstrap {
           if (auctions <= valuations) return;
           await this.buildValuations(_id, auctions);
         });
-    } catch (errorException) {
-      this.logger.error(`initValuations: ${errorException}`);
+    } catch (errorOrException) {
+      this.logger.error(`initValuations: ${errorOrException}`);
     }
   }
 
@@ -95,8 +95,8 @@ export class ValuationsService implements OnApplicationBootstrap {
       }
       await this.RealmModel.updateMany({ connected_realm_id }, { valuations: timestamp });
       this.logger.log(`buildValuations: realm: ${connected_realm_id} updated: ${timestamp}`);
-    } catch (errorException) {
-      this.logger.error(`buildValuations: ${errorException}`)
+    } catch (errorOrException) {
+      this.logger.error(`buildValuations: ${errorOrException}`)
     }
   }
   /**
@@ -255,8 +255,8 @@ export class ValuationsService implements OnApplicationBootstrap {
           }, { parallel: 20 });
         this.logger.debug('tags stage ended');
       }
-    } catch (errorException) {
-      this.logger.error(`buildAssetIndex: ${errorException}`)
+    } catch (errorOrException) {
+      this.logger.error(`buildAssetIndex: ${errorOrException}`)
     }
   }
 }

@@ -1,50 +1,59 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { postgresConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@nestjs/bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
-import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Item,
-  ItemsSchema,
-  Key,
-  KeysSchema,
-  Log,
-  LogsSchema,
-  Realm,
-  RealmsSchema,
-  Subscription,
-  SubscriptionsSchema,
-} from '@app/mongo';
 import { charactersQueue, guildsQueue } from '@app/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import {
+  CharactersEntity,
+  CharactersGuildsMembersEntity,
+  CharactersMountsEntity,
+  CharactersPetsEntity,
+  CharactersProfessionsEntity,
+  CharactersProfileEntity,
+  GuildsEntity,
+  KeysEntity,
+  LogsEntity,
+  MountsEntity,
+  PetsEntity,
+  ProfessionsEntity,
+  RealmsEntity,
+} from '@app/pg';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([
-      { name: Log.name, schema: LogsSchema },
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema },
-      { name: Guild.name, schema: GuildsSchema },
-      { name: Subscription.name, schema: SubscriptionsSchema },
-      { name: Item.name, schema: ItemsSchema },
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([
+      CharactersEntity,
+      CharactersGuildsMembersEntity,
+      CharactersMountsEntity,
+      CharactersPetsEntity,
+      CharactersProfessionsEntity,
+      CharactersProfileEntity,
+      GuildsEntity,
+      KeysEntity,
+      MountsEntity,
+      PetsEntity,
+      ProfessionsEntity,
+      RealmsEntity,
+      LogsEntity,
     ]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
+    BullModule.registerQueue({
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
+    }),
+    BullModule.registerQueue({
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
+    }),
   ],
   controllers: [OsintController],
   providers: [OsintService],

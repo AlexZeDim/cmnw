@@ -1,47 +1,31 @@
 import { Module } from '@nestjs/common';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
+import { postgresConfig, redisConfig } from '@app/configuration';
 import { RealmsService } from './realms.service';
 import { RealmsWorker } from './realms.worker';
-import { MongooseModule } from '@nestjs/mongoose';
 import { realmsQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { HttpModule } from '@nestjs/axios';
-import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Key,
-  KeysSchema,
-  Realm,
-  RealmsSchema,
-  RealmPopulation,
-  RealmsPopulationSchema,
-} from '@app/mongo';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { KeysEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: RealmPopulation.name, schema: RealmsPopulationSchema },
-      { name: Guild.name, schema: GuildsSchema },
-      { name: Character.name, schema: CharactersSchema }
-    ]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: realmsQueue.name, options: realmsQueue.options }),
+    BullModule.registerQueue({
+      name: realmsQueue.name,
+      defaultJobOptions: realmsQueue.defaultJobOptions,
+    }),
   ],
   controllers: [],
   providers: [RealmsService, RealmsWorker],

@@ -5,6 +5,7 @@
 # DotEnv
 !/.env
 .env
+.env.docker
 
 # Docker data
 /volumes
@@ -15,6 +16,7 @@
 # Config
 /config
 /config/keys.json
+yarn.lock
 
 # Logs
 logs

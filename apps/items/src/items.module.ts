@@ -1,32 +1,49 @@
 import { Module } from '@nestjs/common';
 import { ItemsService } from './items.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { BullModule } from '@anchan828/nest-bullmq';
-import { itemsQueue } from '@app/core';
-import { Item, ItemsSchema, Key, KeysSchema } from '@app/mongo';
+import { PricingService } from './pricing.service';
+import { BullModule } from '@nestjs/bullmq';
+import { itemsQueue, pricingQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { postgresConfig, redisConfig } from '@app/configuration';
+import {
+  ItemsEntity,
+  KeysEntity,
+  PricingEntity,
+  SkillLineEntity,
+  SpellEffectEntity,
+  SpellReagentsEntity,
+} from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Item.name, schema: ItemsSchema }
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([
+      KeysEntity,
+      ItemsEntity,
+      PricingEntity,
+      SkillLineEntity,
+      SpellEffectEntity,
+      SpellReagentsEntity
     ]),
     BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: itemsQueue.name, options: itemsQueue.options }),
+    BullModule.registerQueue({
+      name: itemsQueue.name,
+      defaultJobOptions: itemsQueue.defaultJobOptions,
+    }),
+    BullModule.registerQueue({
+      name: pricingQueue.name,
+      defaultJobOptions: pricingQueue.defaultJobOptions
+    }),
   ],
   controllers: [],
-  providers: [ItemsService],
+  providers: [ItemsService, PricingService],
 })
 export class ItemsModule {}

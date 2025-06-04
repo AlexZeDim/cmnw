@@ -35,11 +35,17 @@
       "@app/mongo/*": [
         "libs/mongo/src/*"
       ],
-      "@app/elastic": [
-        "libs/elastic/src"
+      "@app/e2e": [
+        "libs/e2e/src"
       ],
-      "@app/elastic/*": [
-        "libs/elastic/src/*"
+      "@app/e2e/*": [
+        "libs/e2e/src/*"
+      ],
+      "@app/pg": [
+        "libs/pg/src"
+      ],
+      "@app/pg/*": [
+        "libs/pg/src/*"
       ]
     }
   }

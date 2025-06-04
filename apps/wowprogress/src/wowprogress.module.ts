@@ -1,42 +1,38 @@
 import { Module } from '@nestjs/common';
 import { WowprogressService } from './wowprogress.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { Character, CharactersSchema, Key, KeysSchema, Realm, RealmsSchema } from '@app/mongo';
-import { BullModule } from '@anchan828/nest-bullmq';
-import { charactersQueue, guildsQueue } from '@app/core';
+import { postgresConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@nestjs/bullmq';
+import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { RedisModule } from '@nestjs-modules/ioredis';
 import { HttpModule } from '@nestjs/axios';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CharactersProfileEntity, KeysEntity, RealmsEntity } from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Key.name, schema: KeysSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema },
-    ]),
-    RedisModule.forRoot({
-      config: {
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity, CharactersProfileEntity]),
+    BullModule.forRoot({
+      connection: {
         host: redisConfig.host,
         port: redisConfig.port,
         password: redisConfig.password,
       },
     }),
-    BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
-      },
+    BullModule.registerQueue({
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
     }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
+    }),
+    BullModule.registerQueue({
+      name: profileQueue.name,
+      defaultJobOptions: profileQueue.defaultJobOptions,
+    }),
   ],
   controllers: [],
   providers: [WowprogressService],

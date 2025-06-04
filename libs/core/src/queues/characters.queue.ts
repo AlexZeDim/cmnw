@@ -1,18 +1,16 @@
 import { JobsOptions } from 'bullmq';
-import { QueueInterface } from '@app/core/interfaces';
+import { IQueue } from 'libs/core/src/types';
 
-const queueOptions: JobsOptions = {
+const options: JobsOptions = {
   removeOnComplete: 10,
   removeOnFail: 10,
 };
 
-export const charactersQueue: QueueInterface = {
-  name: 'OSINT:Characters',
+export const charactersQueue: IQueue = {
+  name: 'OSINT_Characters',
   workerOptions: {
-    concurrency: 10,
+    concurrency: 1,
     lockDuration: 1000 * 60 * 60 * 6,
   },
-  options: {
-    defaultJobOptions: queueOptions,
-  },
+  defaultJobOptions: options,
 };

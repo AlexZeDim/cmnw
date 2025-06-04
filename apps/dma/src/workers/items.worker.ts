@@ -1,40 +1,57 @@
-import { BullWorker, BullWorkerProcess } from '@anchan828/nest-bullmq';
-import { DMA_TIMEOUT_TOLERANCE, IItem, IQItem, itemsQueue, round2, VALUATION_TYPE } from '@app/core';
-import { Logger } from '@nestjs/common';
-import { BlizzAPI, BattleNetOptions } from 'blizzapi';
+import { Injectable, Logger } from '@nestjs/common';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import { Job } from 'bullmq';
-import { InjectModel } from '@nestjs/mongoose';
-import { Item } from '@app/mongo';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ItemsEntity } from '@app/pg';
+import { Repository } from 'typeorm';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { get } from 'lodash';
+import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  BlizzardApiItem,
+  DMA_SOURCE,
+  IItem,
+  isItem,
+  isItemMedia,
+  isNamedField,
+  ITEM_FIELD_MAPPING,
+  ItemJobQueue,
+  itemsQueue,
+  toGold,
+  TOLERANCE_ENUM,
+  VALUATION_TYPE,
+} from '@app/core';
 
-@BullWorker({ queueName: itemsQueue.name })
-export class ItemsWorker {
-  private readonly logger = new Logger(
-    ItemsWorker.name, { timestamp: true },
-  );
 
-  private BNet: BlizzAPI
+@Processor(itemsQueue.name, itemsQueue.workerOptions)
+@Injectable()
+export class ItemsWorker extends WorkerHost {
+  private readonly logger = new Logger(ItemsWorker.name, { timestamp: true });
+
+  private BNet: BlizzAPI;
 
   constructor(
-    @InjectModel(Item.name)
-    private readonly ItemModel: Model<Item>,
-  ) {}
+    @InjectRepository(ItemsEntity)
+    private readonly itemsRepository: Repository<ItemsEntity>,
+  ) {
+    super();
+  }
 
-  @BullWorkerProcess(itemsQueue.workerOptions)
-  public async process(job: Job<IQItem, number>): Promise<number> {
+  public async process(job: Job<ItemJobQueue, number>): Promise<number> {
     try {
-      const args: IQItem = { ...job.data }
-
-      /** Check is exits */
-      let item = await this.ItemModel.findById(args._id);
-      /** If not, create */
-      if (!item) {
-        item = new this.ItemModel({
-          _id: args._id,
+      const { data: args } = job;
+      // --- Check exits, if not, create --- //
+      let itemEntity = await this.itemsRepository.findOneBy({ id: args.itemId });
+      const isNew = !itemEntity;
+      if (isNew) {
+        itemEntity = this.itemsRepository.create({
+          id: args.itemId,
+          indexBy: DMA_SOURCE.API,
         });
       }
 
-      // TODO add job progress
+      await job.updateProgress(5);
       this.BNet = new BlizzAPI({
         region: args.region,
         clientId: args.clientId,
@@ -42,71 +59,79 @@ export class ItemsWorker {
         accessToken: args.accessToken,
       });
 
-      /** Request item data */
+      // --- Request item data --- //
+      const isMultiLocale = true;
       const [getItemSummary, getItemMedia] = await Promise.allSettled([
-        this.BNet.query(`/data/wow/item/${args._id}`, {
-          timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
-        }),
-        this.BNet.query(`/data/wow/media/item/${args._id}`, {
-          timeout: DMA_TIMEOUT_TOLERANCE,
-          headers: { 'Battlenet-Namespace': 'static-eu' }
-        })
+        this.BNet.query<BlizzardApiItem>(
+          `/data/wow/item/${args.itemId}`,
+          apiConstParams(API_HEADERS_ENUM.STATIC, TOLERANCE_ENUM.DMA, isMultiLocale),
+        ),
+        this.BNet.query(
+          `/data/wow/media/item/${args.itemId}`,
+          apiConstParams(API_HEADERS_ENUM.STATIC, TOLERANCE_ENUM.DMA),
+        ),
       ]);
 
-      if (getItemSummary.status === 'fulfilled' && getItemSummary.value) {
-        /** Schema fields */
-        const
-          requested_item: Partial<IItem> = {},
-          fields: string[] = [
-            'quality',
-            'item_class',
-            'item_subclass',
-            'inventory_type',
-          ],
-          gold: string[] = ['purchase_price', 'sell_price'];
-
-        /** key value TODO refactor merge */
-        for (const [key] of Object.entries(getItemSummary.value)) {
-          /** Loot type */
-          if (key === 'preview_item') {
-            if ('binding' in getItemSummary.value[key]) {
-              requested_item.loot_type = getItemSummary.value[key]['binding'].type;
-            }
-          }
-
-          if (fields.some(f => f === key)) {
-            requested_item[key] = getItemSummary.value[key].name['en_GB'];
-          } else {
-            requested_item[key] = getItemSummary.value[key];
-          }
-
-          if (gold.some(f => f === key)) {
-            if (key === 'sell_price') {
-              item.asset_class.addToSet(VALUATION_TYPE.VSP);
-            }
-            requested_item[key] = round2(getItemSummary.value[key] / 10000);
-          }
-        }
-
-        Object.assign(item, requested_item)
-
-        if (
-          getItemMedia.status === 'fulfilled' &&
-          getItemMedia.value &&
-          getItemMedia.value.assets &&
-          getItemMedia.value.assets.length
-        ) {
-          item.icon = getItemMedia.value.assets[0].value;
-        }
-
-        await item.save();
-        return 200;
+      const isItemValid = isItem(getItemSummary);
+      if (!isItemValid) {
+        return 404;
       }
-      return 404
-    } catch (errorException) {
-      await job.log(errorException);
-      this.logger.error(`${ItemsWorker.name}: ${errorException}`);
+
+      const gold = new Set(['sell_price', 'purchase_price']);
+      const namedFields = new Set([
+        'name',
+        'quality',
+        'item_class',
+        'item_subclass',
+        'inventory_type',
+      ]);
+
+      Object.keys(getItemSummary.value).forEach((key: keyof IItem) => {
+        const isKeyInPath = ITEM_FIELD_MAPPING.has(key);
+        if (isKeyInPath) {
+          const property = ITEM_FIELD_MAPPING.get(key);
+          let value = get(getItemSummary.value, property.path, null);
+          const isFieldName = namedFields.has(key) ? isNamedField(value) : false;
+
+          if (isFieldName) value = get(value, `en_GB`, null);
+
+          if (gold.has(key)) {
+            value = toGold(value);
+          }
+
+          if (value && value !== itemEntity[property.key])
+            (itemEntity[property.key] as string | number) = value;
+        }
+      });
+
+      if (isMultiLocale) {
+        itemEntity.names = getItemSummary.value.name as unknown as string;
+      }
+
+      const isVSP =
+        (itemEntity.vendorSellPrice && isNew) ||
+        (itemEntity.vendorSellPrice &&
+          itemEntity.assetClass &&
+          !itemEntity.assetClass.includes(VALUATION_TYPE.VSP));
+
+      if (isVSP) {
+        const assetClass = new Set(itemEntity.assetClass).add(VALUATION_TYPE.VSP);
+        itemEntity.assetClass = Array.from(assetClass);
+      }
+
+      const isItemMediaValid = isItemMedia(getItemMedia);
+      if (isItemMediaValid) {
+        const [icon] = getItemMedia.value.assets;
+        itemEntity.icon = icon.value;
+      }
+
+      await this.itemsRepository.save(itemEntity);
+      this.logger.log(`${itemEntity.id} | ${itemEntity.name}`);
+
+      return 200;
+    } catch (errorOrException) {
+      await job.log(errorOrException);
+      this.logger.error(errorOrException);
       return 500;
     }
   }

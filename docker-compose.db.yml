@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:17.4
+    container_name: postgres
+    restart: always
+    networks:
+      - cmnw-network
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - /initdb:/docker-entrypoint-initdb.d
+    command: postgres -c 'shared_preload_libraries=pg_cron'
+
+  redis:
+    image: redis:7.4.3-alpine
+    restart: always
+    container_name: redis
+    command: redis-server --requirepass $REDIS_PASSWORD --appendonly yes
+    volumes:
+      - redis:/data:rw,z
+    ports:
+      - '6379:6379'
+    networks:
+      - cmnw-network
+
+  # Docker Networks
+networks:
+  # All container connect in a network
+  cmnw-network:
+    driver: bridge
+
+volumes:
+  postgres:
+  mongo:
+  redis:

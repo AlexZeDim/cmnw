@@ -13,7 +13,7 @@ export const SWAGGER_ACCOUNT_BATTLE_TAG: ApiPropertyOptions = {
   description: 'User battle tag from Blizzard',
   type: String,
   required: false,
-  example: 'AlexZeDim#2812',
+  example: 'alexzedim#2812',
 };
 
 export const SWAGGER_ACCOUNT_NICKNAME: ApiPropertyOptions = {
@@ -21,7 +21,7 @@ export const SWAGGER_ACCOUNT_NICKNAME: ApiPropertyOptions = {
   description: 'Short Discord or Battle tag nickname',
   type: String,
   required: false,
-  example: 'AlexZeDim',
+  example: 'alexzedim',
 };
 
 export const SWAGGER_ACCOUNT_CRYPTONYM: ApiPropertyOptions = {
@@ -29,6 +29,5 @@ export const SWAGGER_ACCOUNT_CRYPTONYM: ApiPropertyOptions = {
   description: 'Oraculum file codename',
   type: String,
   required: false,
-  example: 'AlexZeDim',
+  example: 'alexzedim',
 };
-

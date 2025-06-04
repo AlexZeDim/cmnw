@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
@@ -83,7 +83,7 @@ export class Item extends Document {
 
   /** add via indexAssetClass - csv import */
   @Prop({ default: [], type: [String] })
-  asset_class: Types.Array<String>;
+  asset_class: Types.Array<string>;
 
   /** add via importTaxonomy_CSV('itemsparse') */
   @Prop({ type: String })
@@ -100,25 +100,25 @@ export class Item extends Document {
   ticker: string;
 
   @Prop({ default: [], type: [String] })
-  tags: Types.Array<String>;
+  tags: Types.Array<string>;
 }
 
 export const ItemsSchema = SchemaFactory.createForClass(Item);
-ItemsSchema.index({ 'expansion': 1 }, { name: 'C' })
+ItemsSchema.index({ expansion: 1 }, { name: 'C' });
 ItemsSchema.index(
-    {
-    'ticker': 'text',
+  {
+    ticker: 'text',
     'name.en_GB': 'text',
     'name.ru_RU': 'text',
-    'tags': 'text'
+    tags: 'text',
   },
   {
-    weights:
-      {
-        'ticker': 2,
-        'name.en_GB': 2,
-        'name.ru_RU': 2,
-        'tags': 1
-      },
+    weights: {
+      ticker: 2,
+      'name.en_GB': 2,
+      'name.ru_RU': 2,
+      tags: 1,
+    },
     name: 'SQ',
-  })
+  },
+);

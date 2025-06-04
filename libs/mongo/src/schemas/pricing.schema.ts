@@ -1,6 +1,5 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Item } from '@app/mongo/schemas/items.schema';
 import { PRICING_TYPE } from '@app/core';
 
 @Schema()
@@ -20,7 +19,8 @@ export class ModifiedCraftingSlot {
   _id: number;
 }
 
-const ModifiedCraftingSlotSchema = SchemaFactory.createForClass(ModifiedCraftingSlot);
+const ModifiedCraftingSlotSchema =
+  SchemaFactory.createForClass(ModifiedCraftingSlot);
 
 @Schema()
 class Locales {
@@ -77,6 +77,7 @@ export class Pricing extends Document {
 
   @Prop({ type: String })
   media: string;
+
   /**
    * API or LOCAL
    *
@@ -101,7 +102,7 @@ export class Pricing extends Document {
   spell_id: number;
 
   @Prop({ default: [], type: [ModifiedCraftingSlotSchema] })
-  modified_crafting_slots:  Types.Array<ModifiedCraftingSlot>;
+  modified_crafting_slots: Types.Array<ModifiedCraftingSlot>;
 
   /** if Local then Convert from SkillLine */
   @Prop({ type: String })
@@ -128,4 +129,4 @@ export class Pricing extends Document {
 }
 
 export const PricingSchema = SchemaFactory.createForClass(Pricing);
-PricingSchema.index({ 'derivatives._id': -1, 'type': 1 }, { name: 'GET' })
+PricingSchema.index({ 'derivatives._id': -1, type: 1 }, { name: 'GET' });

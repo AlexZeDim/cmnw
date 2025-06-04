@@ -1,41 +1,133 @@
-export const MAX_LEVEL: number = 60;
+import {
+  CharacterHashFieldType,
+  CharactersHashType,
+  IWarcraftLogsMap,
+  RaiderIoCharacterMappingField,
+  RaiderIoCharacterMappingKey,
+  WowProgressProfile,
+} from '@app/core/types';
+
+export const MAX_LEVEL = 70;
+
+export const OSINT_CHARACTER_LIMIT = 1000;
+
+export const OSINT_GUILD_LIMIT = 1000;
 
 export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
 
-export const REALM_LOCALES: string[] = ['ru_ru', 'en_gb', 'de_de', 'fr_fr', 'it_it', 'es_es'];
+export const OSINT_SOURCE_WCL = 'https://www.warcraftlogs.com/character/eu';
 
-export const BRACKETS: string[] = ['2v2', '3v3', 'rbg'];
+export const OSINT_SOURCE_WOW_PROGRESS_RANKS =
+  'https://www.wowprogress.com/export/ranks/';
 
-export const RAIDS: string[] = [
+export const OSINT_SOURCE_WOW_PROGRESS = 'https://www.wowprogress.com/character/eu';
+
+export const OSINT_SOURCE_RAIDER_IO = 'https://raider.io/api/v1/characters/profile';
+
+export const OSINT_LFG_WOW_PROGRESS = [
+  'https://www.wowprogress.com/gearscore/char_rating/lfg.1/sortby.ts',
+  'https://www.wowprogress.com/gearscore/char_rating/next/0/lfg.1/sortby.ts',
+];
+
+export const REALM_LOCALES = ['ru_ru', 'en_gb', 'de_de', 'fr_fr', 'it_it', 'es_es'];
+
+export const BRACKETS = ['2v2', '3v3', 'rbg'];
+
+export const RAIDS = [
   'uldir',
   'battle-of-dazaralor',
   'crucible-of-storms',
   'the-eternal-palace',
   'nyalotha-the-waking-city',
   'castle-nathria',
-  'sanctum-of-domination'
+  'sanctum-of-domination',
+  'vault-of-the-incarnates',
+  'aberrus-the-shadowed-crucible',
+  'amirdrassil-the-dreams-hope',
 ];
 
-export const RAID_FACTIONS = ['alliance', 'horde']
+export const RAID_FACTIONS = ['alliance', 'horde'];
 
-export const REALM_TICKER: Map<string, string> = new Map([
+export const CHARACTER_SUMMARY_FIELD_MAPPING = new Map<string, string>([
+  ['id', 'id'],
+  ['name', 'name'],
+  ['gender', 'gender.name'],
+  ['faction', 'faction.name'],
+  ['race', 'race.name'],
+  ['class', 'character_class.name'],
+  ['specialization', 'active_spec.name'],
+  ['level', 'level'],
+  ['achievementPoints', 'achievement_points'],
+  ['averageItemLevel', 'average_item_level'],
+  ['equippedItemLevel', 'equipped_item_level'],
+  ['covenantId', 'covenant_progress.chosen_covenant.id'],
+  ['lastModified', 'last_login_timestamp'],
+  ['realmId', 'realm.id'],
+  ['realmName', 'realm.name'],
+  ['realm', 'realm.slug'],
+  ['guild', 'guild.name'],
+  ['guildId', 'guild.id'],
+]);
+
+export const CHARACTER_MEDIA_FIELD_MAPPING = new Map<string, string>([
+  ['avatar', 'avatarImage'],
+  ['main-raw', 'insetImage'],
+  ['inset', 'mainImage'],
+]);
+
+export const CHARACTER_RAID_DIFFICULTY = new Map<string, IWarcraftLogsMap>([
+  ['heroic', { wclId: 4, fieldName: 'heroicLogs' }],
+  ['mythic', { wclId: 5, fieldName: 'mythicLogs' }],
+]);
+
+export const CHARACTER_PROFILE_MAPPING = new Map<string, keyof WowProgressProfile>([
+  ['Battletag', 'battleTag'],
+  ['Looking for guild', 'readyToTransfer'],
+  ['Raids per week', 'raidDays'],
+  ['Specs playing', 'playRole'],
+  ['Languages', 'languages'],
+]);
+
+export const CHARACTER_PROFILE_RIO_MAPPING = new Map<
+  RaiderIoCharacterMappingKey,
+  RaiderIoCharacterMappingField
+>([
+  ['name', 'name'],
+  ['realm', 'realm'],
+  ['race', 'race'],
+  ['class', 'class'],
+  ['active_spec_name', 'activeSpec'],
+  ['active_spec_role', 'activeRole'],
+  ['gender', 'gender'],
+]);
+
+export const CHARACTER_HASH_FIELDS = new Map<
+  CharacterHashFieldType,
+  CharactersHashType
+>([
+  ['a', 'hashA'],
+  ['b', 'hashB'],
+  ['f', 'hashF'],
+]);
+
+export const REALM_TICKER = new Map<string, string>([
   ['Aerie Peak', 'ARPEAK'],
   ['Bronzebeard', 'BRNZBRD'],
-  ['Blade\'s Edge', 'BLDEDGE'],
+  ["Blade's Edge", 'BLDEDGE'],
   ['Eonar', 'EONAR'],
-  ['Vek\'nilash', 'VLNLSH'],
+  ["Vek'nilash", 'VLNLSH'],
   ['Agamaggan', 'AGMGGN'],
   ['Bloodscalp', 'BLDSCLP'],
   ['Crushridge', 'CRSHRDG'],
   ['Emeriss', 'EMERSS'],
   ['Hakkar', 'HAKKAR'],
-  ['Twilight\'s Hammer', 'TWLHMR'],
+  ["Twilight's Hammer", 'TWLHMR'],
   ['Aggra (Português)', 'AGGRAP'],
   ['Grim Batol', 'GRMBTL'],
   ['Frostmane', 'FRSTMN'],
   ['Aggramar', 'AGGRMR'],
   ['Hellscream', 'HLLSCRM'],
-  ['Ahn\'Qiraj', 'AHNQRJ'],
+  ["Ahn'Qiraj", 'AHNQRJ'],
   ['Balnazzar', 'BLNZZR'],
   ['Boulderfist', 'BOULDFST'],
   ['Chromaggus', 'CHRMGS'],
@@ -45,7 +137,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Sunstrider', 'SNSTRD'],
   ['Talnivarr', 'TLNVRR'],
   ['Trollbane', 'TRLLBN'],
-  ['Al\'Akir', 'ALAKIR'],
+  ["Al'Akir", 'ALAKIR'],
   ['Burning Legion', 'BRNLGN'],
   ['Skullcrusher', 'SKLLCRSH'],
   ['Xavius', 'XAVIUS'],
@@ -58,25 +150,25 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Alonsus', 'ALNSUS'],
   ['Anachronos', 'ANCHRS'],
   ['Kul Tiras', 'KULTRS'],
-  ['Aman\'Thul', 'AMNTHL'],
+  ["Aman'Thul", 'AMNTHL'],
   ['Nazjatar', 'HZJTAR'],
-  ['Khaz\'Goroth', 'KHZGRTH'],
+  ["Khaz'Goroth", 'KHZGRTH'],
   ['Ambossar', 'AMBSSR'],
   ['Kargath', 'KARGATH'],
   ['Thrall', 'THRALL'],
   ['Anetheron', 'ANTHRN'],
   ['Festung der Stürme', 'FGDSTRM'],
-  ['Gul\'dan', 'GULDAN'],
-  ['Kil\'jaeden', 'KILJDN'],
+  ["Gul'dan", 'GULDAN'],
+  ["Kil'jaeden", 'KILJDN'],
   ['Nathrezim', 'NTHRZM'],
   ['Rajaxx', 'RAJAXX'],
-  ['Anub\'arak', 'ANBARAK'],
+  ["Anub'arak", 'ANBARAK'],
   ['Dalvengyr', 'DLVNGYR'],
   ['Frostmourne', 'FRSTMRN'],
   ['Zuluhed', 'ZULHED'],
   ['Arak-arahm', 'ARKARHM'],
-  ['Kael\'thas', 'KLTHAS'],
-  ['Throk\'Feroth', 'TRKFRTH'],
+  ["Kael'thas", 'KLTHAS'],
+  ["Throk'Feroth", 'TRKFRTH'],
   ['Arathi', 'ARATHI'],
   ['Illidan', 'ILLIDAN'],
   ['Naxxramas', 'NXXRMS'],
@@ -89,17 +181,17 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Archimonde', 'ARCHMND'],
   ['Stonemaul', 'STNMAUL'],
   ['Area 52', 'AREA52'],
-  ['Sen\'jin', 'SENJIN'],
-  ['Un\'Goro', 'UNGORO'],
+  ["Sen'jin", 'SENJIN'],
+  ["Un'Goro", 'UNGORO'],
   ['Arthas', 'ARTHAS'],
   ['Blutkessel', 'BLTKSSL'],
   ['Durotan', 'DUROTAN'],
-  ['Kel\'Thuzad', 'KLTHZD'],
+  ["Kel'Thuzad", 'KLTHZD'],
   ['Tirion', 'TIRION'],
-  ['Vek\'lor', 'VEKLOR'],
+  ["Vek'lor", 'VEKLOR'],
   ['Wrathbringer', 'WRTHBRNG'],
   ['Arygos', 'ARYGOS'],
-  ['Khaz\'goroth', 'KHZGRTH'],
+  ["Khaz'goroth", 'KHZGRTH'],
   ['Shadowsong', 'SHDWSNG'],
   ['Auchindoun', 'ACHNDN'],
   ['Dunemaul', 'DUNMAUL'],
@@ -107,9 +199,9 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Sylvanas', 'SYLVNS'],
   ['Azjol-Nerub', 'AZJLNRB'],
   ['Molten Core', 'MLTNCRE'],
-  ['Quel\'Thalas', 'QLTHLS'],
+  ["Quel'Thalas", 'QLTHLS'],
   ['Azshara', 'AZSHRA'],
-  ['Krag\'jin', 'KRGJIN'],
+  ["Krag'jin", 'KRGJIN'],
   ['Baelgun', 'BAELGN'],
   ['Lothar', 'LOTHAR'],
   ['Azuremyst', 'AZRMST'],
@@ -127,7 +219,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Burning Steppes', 'BRNGSTPS'],
   ['Darkspear', 'DRJSPR'],
   ['Executus', 'EXECUTUS'],
-  ['Kor\'gall', 'KORGALL'],
+  ["Kor'gall", 'KORGALL'],
   ['Saurfang', 'SAURFANG'],
   ['Shattered Hand', 'SHTTRD'],
   ['Terokkar', 'TRKKAR'],
@@ -136,15 +228,15 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Bronze Dragonflight', 'BRNZDRGN'],
   ['Nordrassil', 'NRDRSL'],
   ['Burning Blade', 'BRNGBLD'],
-  ['Drak\'thul', 'DRKTHL'],
-  ['C\'Thun', 'CTHUN'],
+  ["Drak'thul", 'DRKTHL'],
+  ["C'Thun", 'CTHUN'],
   ['Dun Modr', 'DUNMODR'],
   ['Elune', 'ELUNE'],
   ['Varimathras', 'VRMTHRS'],
   ['Chants éternels', 'CHNTSET'],
-  ['Vol\'jin', 'VOLJIN'],
-  ['Cho\'gall', 'CHOGALL'],
-  ['Eldre\'Thalas', 'ELDRTHLS'],
+  ["Vol'jin", 'VOLJIN'],
+  ["Cho'gall", 'CHOGALL'],
+  ["Eldre'Thalas", 'ELDRTHLS'],
   ['Sinstralis', 'SNSTRLS'],
   ['Dalaran', 'DALARAN'],
   ['Marécage de Zangar', 'MCGZNGR'],
@@ -170,7 +262,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Dragonblight', 'DRGNBLGT'],
   ['Ghostlands', 'GHSTLNDS'],
   ['Karazhan', 'KARAZHN'],
-  ['Lightning\'s Blade', 'LGHBLD'],
+  ["Lightning's Blade", 'LGHBLD'],
   ['The Maelstrom', 'MAELSTRM'],
   ['Darkmoon Faire', 'DRKMNFR'],
   ['Defias Brotherhood', 'DFSBRTHD'],
@@ -185,9 +277,9 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Gorgonnash', 'GRGNNSH'],
   ['Mannoroth', 'MNNRTH'],
   ['Nefarian', 'NEFARIAN'],
-  ['Nera\'thor', 'NERATHOR'],
+  ["Nera'thor", 'NERATHOR'],
   ['Dethecus', 'DTHECUS'],
-  ['Mug\'thol', 'MUGTHOL'],
+  ["Mug'thol", 'MUGTHOL'],
   ['Onyxia', 'ONYXIA'],
   ['Terrordar', 'TRRRDAR'],
   ['Theradras', 'THRDRAS'],
@@ -205,14 +297,14 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Spinebreaker', 'SPNBRKR'],
   ['Stormreaver', 'STRMRVR'],
   ['Vashj', 'VASHJ'],
-  ['Drek\'Thar', 'DREKTHAR'],
+  ["Drek'Thar", 'DREKTHAR'],
   ['Uldaman', 'ULDAMAN'],
   ['Eitrigg', 'EITRIGG'],
   ['Krasus', 'KRASUS'],
   ['Dun Morogh', 'DUNMRGH'],
   ['Norgannon', 'NRGNNON'],
   ['Echsenkessel', 'ECHNKSSL'],
-  ['Mal\'Ganis', 'MALGNS'],
+  ["Mal'Ganis", 'MALGNS'],
   ['Taerar', 'TAERAR'],
   ['Blackhand', 'BLCKHND'],
   ['Emerald Dream', 'EMRLDDRM'],
@@ -220,7 +312,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Exodar', 'EXODAR'],
   ['Minahonda', 'MNHNDA'],
   ['Garona', 'GARONA'],
-  ['Ner\'zhul', 'NERZUL'],
+  ["Ner'zhul", 'NERZUL'],
   ['Sargeras', 'SRGRAS'],
   ['Garrosh', 'GARROSH'],
   ['Nozdormu', 'NZDRMU'],
@@ -239,13 +331,13 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Suramar', 'SURAMAR'],
   ['Moonglade', 'MNGLDE'],
   ['Steamwheedle Cartel', 'STMWHDL'],
-  ['The Sha\'tar', 'SHATAR'],
+  ["The Sha'tar", 'SHATAR'],
   ['Muradin', 'MURADIN'],
   ['Ravencrest', 'RVNCRST'],
   ['Sanguino', 'SNGUINO'],
-  ['Shen\'dralar', 'SHNDRLR'],
+  ["Shen'dralar", 'SHNDRLR'],
   ['Uldum', 'ULDUM'],
-  ['Zul\'jin', 'ZULJIN'],
+  ["Zul'jin", 'ZULJIN'],
   ['Stormscale', 'STRMSCL'],
   ['Winterhuf', 'WNTRHUF'],
   ['Thunderhorn', 'THNDRHRN'],
@@ -265,7 +357,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Magtheridon', 'MGTHRDN'],
   ['Nemesis', 'NEMESIS'],
   ['Outland', 'OUTLAND'],
-  ['Pozzo dell\'Eternità', 'PZZETRNT'],
+  ["Pozzo dell'Eternità", 'PZZETRNT'],
   ['Ragnaros', 'RAGNRS'],
   ['Silvermoon', 'SLVRMN'],
   ['Twisting Nether', 'TWSTNGN'],
@@ -273,6 +365,7 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Ysondre', 'YSONDRE'],
   ['Ashenvale', 'ASHNVLE'],
   ['Gordunni', 'GRDNNI'],
+  ['Eversong', 'EVERSNG'],
   ['Lich King', 'LCHKNG'],
   ['Soulflayer', 'SLFLYR'],
   ['Deathguard', 'DTHGRD'],
@@ -292,7 +385,20 @@ export const REALM_TICKER: Map<string, string> = new Map([
   ['Blackscar', 'BLKSCR'],
 ]);
 
-export const EXPANSION_LIST_ID: Map<string, string> = new Map([
+export const REALM_ENTITY_ANY = {
+  id: 1,
+  slug: 'any',
+  name: 'Any',
+  region: 'Europe',
+  localeName: 'Любой',
+  localeSlug: 'любой',
+  ticker: 'AANNYY',
+  status: 'Down',
+  timezone: 'Europe/Paris',
+  connectedRealmId: 1,
+};
+
+export const EXPANSION_LIST_ID = new Map<string, string>([
   ['Classic', 'CLSC'],
   ['Burning', 'TBC'],
   ['Lich King', 'WOTLK'],
@@ -301,10 +407,10 @@ export const EXPANSION_LIST_ID: Map<string, string> = new Map([
   ['Draenor', 'WOD'],
   ['Legion', 'LGN'],
   ['Battle for Azeroth', 'BFA'],
-  ['Shadowlands', 'SHDW']
+  ['Shadowlands', 'SHDW'],
 ]);
 
-export const PLAYABLE_CLASS: Map<number, string> = new Map([
+export const PLAYABLE_CLASS = new Map<number, string>([
   [1, 'Warrior'],
   [2, 'Paladin'],
   [3, 'Hunter'],
@@ -317,15 +423,23 @@ export const PLAYABLE_CLASS: Map<number, string> = new Map([
   [10, 'Monk'],
   [11, 'Druid'],
   [12, 'Demon Hunter'],
+  [13, 'Evoker'],
 ]);
 
 export const CHARACTER_CLASS: string[] = [
-  'Death Knight', 'Demon Hunter',
-  'Druid',        'Hunter',
-  'Mage',         'Monk',
-  'Paladin',      'Priest',
-  'Rogue',        'Shaman',
-  'Warlock',      'Warrior'
+  'Death Knight',
+  'Demon Hunter',
+  'Druid',
+  'Hunter',
+  'Mage',
+  'Monk',
+  'Paladin',
+  'Priest',
+  'Rogue',
+  'Shaman',
+  'Warlock',
+  'Warrior',
+  'Evoker',
 ];
 
 export const COVENANTS: string[] = ['Kyrian', 'Venthyr', 'Night Fae', 'Necrolord'];
@@ -338,18 +452,24 @@ export enum FACTION {
 }
 
 export enum EVENT_LOG {
-  GUILD = 'guild',
-  CHARACTER = 'character',
+  GUILD = 'GUILD',
+  CHARACTER = 'CHARACTER',
 }
 
 export enum ACTION_LOG {
-  PROMOTE = 'promote',
-  DEMOTE = 'demote',
-  JOIN = 'join',
-  LEAVE = 'leave',
-  INHERIT = 'inherit',
-  OWNERSHIP = 'ownership',
-  TITLE = 'title',
+  PROMOTE = 'PROMOTE',
+  DEMOTE = 'DEMOTE',
+  JOIN = 'JOIN',
+  LEAVE = 'LEAVE',
+  TRANSIT = 'TRANSIT',
+  INHERIT = 'INHERIT',
+  OWNERSHIP = 'OWNERSHIP',
+  TITLE = 'TITLE',
+  NAME = 'NAME',
+  TRANSFER = 'TRANSFER',
+  RACE = 'RACE',
+  GENDER = 'GENDER',
+  FACTION = 'FACTION',
 }
 
 export enum ALIAS_KEY {
@@ -363,29 +483,28 @@ export enum ALIAS_KEY {
 }
 
 export enum OSINT_SOURCE {
-  REQUESTGUILD = 'OSINT-requestGuild',
-  UNIQUEGUILDS = 'OSINT-indexGuildsUnique',
-  REQUESTCHARACTER = 'OSINT-requestCharacter',
-  TOP100 = 'OSINT-hallOfFame',
-  GETGUILD = 'OSINT-getGuild',
-  GETCHARACTER = 'OSINT-getCharacter',
-  MYTHICPLUS = 'OSINT-mythicPlus',
-  PVPLADDER = 'OSINT-pvpLadder',
-  HALLOFFAME = 'OSINT-top100',
-  COLLECTIONS = 'OSINT-collections',
-  INDEXGUILD = 'OSINT-indexGuilds',
-  ROSTERGUILD = 'OSINT-rosterGuild',
-  INDEXCHARACTER = 'OSINT-indexCharacters',
-  WOWPROGRESS = 'OSINT-wowprogress',
-  WARCRAFTLOGS = 'OSINT-warcraftlogs',
-  WOWPROGRESSLFG = 'OSINT-lfgprogress',
-  OSINT_LUA = 'OSINT-lua'
+  GUILD_REQUEST = 'OSINT-GUILD-REQUEST',
+  GUILD_UNIQUE = 'OSINT-GUILD-INDEX-UNIQUE',
+  CHARACTER_REQUEST = 'OSINT-CHARACTER-REQUEST',
+  TOP100 = 'OSINT-HALL-OF-FAME',
+  GUILD_GET = 'OSINT-GUILD-GET',
+  CHARACTER_GET = 'OSINT-CHARACTER-GET',
+  MYTHIC_PLUS = 'OSINT-MYTHIC-PLUS',
+  PVP_LADDER = 'OSINT-PVP-LADDER',
+  COLLECTIONS = 'OSINT-COLLECTIONS',
+  GUILD_INDEX = 'OSINT-GUILD-INDEX',
+  GUILD_ROSTER = 'OSINT-GUILD-ROSTER',
+  CHARACTER_INDEX = 'OSINT-CHARACTER-INDEX',
+  WOW_PROGRESS = 'OSINT-WOW-PROGRESS',
+  WARCRAFT_LOGS = 'OSINT-WARCRAFT-LOGS',
+  WOW_PROGRESS_LFG = 'OSINT-WOW-PROGRESS-LFG',
+  OSINT_LUA = 'OSINT-LUA',
 }
 
-export enum LFG {
+export enum LFG_STATUS {
   NEW = 'NEW',
   NOW = 'NOW',
-  PREV = 'PREV'
+  OLD = 'OLD',
 }
 
 export enum EXPANSIONS {
@@ -397,7 +516,7 @@ export enum EXPANSIONS {
   WarlordsOfDraenor = 'WOD',
   Legion = 'LGN',
   BattleForAzeroth = 'BFA',
-  Shadowlands = 'SHDW'
+  Shadowlands = 'SHDW',
 }
 
 export enum MYTHIC_PLUS_SEASONS {
@@ -407,5 +526,11 @@ export enum MYTHIC_PLUS_SEASONS {
   BFA_S4 = 4,
   SHDW_S1 = 5,
   SHDW_S2 = 6,
-  SHDW_S3 = 7
+  SHDW_S3 = 7,
+}
+
+export enum API_HEADERS_ENUM {
+  PROFILE = 'profile-eu',
+  DYNAMIC = 'dynamic-eu',
+  STATIC = 'static-eu',
 }

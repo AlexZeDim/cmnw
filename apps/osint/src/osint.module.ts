@@ -1,46 +1,75 @@
 import { Module } from '@nestjs/common';
-import { BullModule } from '@anchan828/nest-bullmq';
-import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
-import { charactersQueue, guildsQueue } from '@app/core';
-import { MongooseModule } from '@nestjs/mongoose';
+import { BullModule } from '@nestjs/bullmq';
+import { postgresConfig, redisConfig } from '@app/configuration';
+import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
 import { HttpModule } from '@nestjs/axios';
-import { CharactersWorker, GuildsWorker } from './workers';
-
+import { CharactersWorker, GuildsWorker, ProfileWorker } from './workers';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import {
-  Character,
-  CharactersSchema,
-  Guild,
-  GuildsSchema,
-  Log,
-  LogsSchema,
-  Realm,
-  RealmsSchema,
-} from '@app/mongo';
-
+  CharactersEntity,
+  CharactersGuildsMembersEntity,
+  CharactersMountsEntity,
+  CharactersPetsEntity,
+  CharactersProfessionsEntity,
+  CharactersProfileEntity,
+  GuildsEntity,
+  KeysEntity,
+  LogsEntity,
+  MountsEntity,
+  PetsEntity,
+  ProfessionsEntity,
+  RealmsEntity,
+} from '@app/pg';
 
 @Module({
   imports: [
     HttpModule,
-    MongooseModule.forRoot(mongoConfig.connection_string, mongoOptionsConfig),
-    MongooseModule.forFeature([
-      { name: Log.name, schema: LogsSchema },
-      { name: Guild.name, schema: GuildsSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Character.name, schema: CharactersSchema }
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([
+      CharactersEntity,
+      CharactersGuildsMembersEntity,
+      CharactersMountsEntity,
+      CharactersPetsEntity,
+      CharactersProfessionsEntity,
+      CharactersProfileEntity,
+      GuildsEntity,
+      KeysEntity,
+      MountsEntity,
+      PetsEntity,
+      ProfessionsEntity,
+      RealmsEntity,
+      LogsEntity,
     ]),
-    BullModule.forRoot({
+    RedisModule.forRoot({
+      type: 'single',
       options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      }
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
       },
     }),
-    BullModule.registerQueue({ queueName: guildsQueue.name, options: guildsQueue.options }),
-    BullModule.registerQueue({ queueName: charactersQueue.name, options: charactersQueue.options }),
+    BullModule.registerQueue({
+      name: guildsQueue.name,
+      defaultJobOptions: guildsQueue.defaultJobOptions,
+    }),
+    BullModule.registerQueue({
+      name: charactersQueue.name,
+      defaultJobOptions: charactersQueue.defaultJobOptions,
+    }),
+    BullModule.registerQueue({
+      name: profileQueue.name,
+      defaultJobOptions: profileQueue.defaultJobOptions,
+    }),
   ],
   controllers: [],
-  providers: [CharactersWorker, GuildsWorker],
+  providers: [CharactersWorker, GuildsWorker, ProfileWorker],
 })
 export class OsintModule {}

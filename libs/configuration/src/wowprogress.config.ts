@@ -1,8 +1,6 @@
-import { get } from 'config';
-import { WowprogressInterface } from '@app/configuration/interfaces';
+import { IWowProgress } from '@app/configuration/interfaces';
 
-const WOWPROGRESS_CONFIG = get<WowprogressInterface>('wowprogress');
+export const wowProgressConfig: IWowProgress = {
+  init: process.env.WOW_PROGRESS_INIT === 'true',
+};
 
-export const wowprogressConfig: WowprogressInterface = {
-  index_init: WOWPROGRESS_CONFIG.index_init
-}

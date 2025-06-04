@@ -1,3 +1,3 @@
-export interface WowprogressInterface {
-  readonly index_init: boolean
+export interface IWowProgress {
+  readonly init: boolean
 }

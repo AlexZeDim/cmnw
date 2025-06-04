@@ -1,54 +1,36 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { mongoConfig, redisConfig } from '@app/configuration';
-import { BullModule } from '@anchan828/nest-bullmq';
+import { postgresConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@nestjs/bullmq';
 import { DmaController } from './dma.controller';
 import { DmaService } from './dma.service';
-import {
-  Auction,
-  AuctionsSchema,
-  Gold,
-  GoldsSchema,
-  Item,
-  ItemsSchema,
-  Realm,
-  RealmsSchema,
-  Token,
-  TokenSchema,
-  Valuations,
-  ValuationsSchema,
-} from '@app/mongo';
 import { valuationsQueue } from '@app/core';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarketEntity } from '@app/pg';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(mongoConfig.connection_string),
-    MongooseModule.forFeature([
-      { name: Token.name, schema: TokenSchema },
-      { name: Realm.name, schema: RealmsSchema },
-      { name: Item.name, schema: ItemsSchema },
-      { name: Gold.name, schema: GoldsSchema },
-      { name: Auction.name, schema: AuctionsSchema },
-      { name: Valuations.name, schema: ValuationsSchema },
-    ]),
+    TypeOrmModule.forRoot(postgresConfig),
+    TypeOrmModule.forFeature([MarketEntity]),
     RedisModule.forRoot({
-      config: {
+      type: 'single',
+      options: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      }
+    }),
+    BullModule.forRoot({
+      connection: {
         host: redisConfig.host,
         port: redisConfig.port,
         password: redisConfig.password,
       },
     }),
-    BullModule.forRoot({
-      options: {
-        connection: {
-          host: redisConfig.host,
-          port: redisConfig.port,
-          password: redisConfig.password,
-        },
-      },
+    BullModule.registerQueue({
+      name: valuationsQueue.name,
+      defaultJobOptions: valuationsQueue.defaultJobOptions,
     }),
-    BullModule.registerQueue({ queueName: valuationsQueue.name, options: valuationsQueue.options }),
   ],
   controllers: [DmaController],
   providers: [DmaService],

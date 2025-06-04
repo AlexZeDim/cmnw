@@ -13,7 +13,11 @@ import { from, lastValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { pipeline } from 'node:stream/promises';
 import { chromium, devices } from 'playwright';
+import { BlizzAPI } from '@alexzedim/blizzapi';
 import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  BlizzardApiResponse,
   FACTION,
   findRealm,
   ICharacterRaiderIo,
@@ -22,7 +26,8 @@ import {
   isRaiderIoProfile,
   MARKET_TYPE,
   OSINT_SOURCE_RAIDER_IO,
-  OSINT_SOURCE_WOW_PROGRESS_RANKS, REALM_ENTITY_ANY,
+  OSINT_SOURCE_WOW_PROGRESS_RANKS,
+  REALM_ENTITY_ANY,
   toSlug,
   VALUATION_TYPE,
 } from '@app/core';
@@ -32,10 +37,19 @@ import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
 import { cmnwConfig } from '@app/configuration';
+import axios from 'axios';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
   private readonly logger = new Logger(TestsBench.name, { timestamp: true });
+
+  private readonly BNet: BlizzAPI = new BlizzAPI({
+    region: 'eu',
+    clientId: cmnwConfig.clientId,
+    clientSecret: cmnwConfig.clientSecret,
+    accessToken: 'EUn7XQ0fsmp19rcdPytAYruUJrzNOQ9Fpq'
+  });
 
   constructor(
     private httpService: HttpService,
@@ -48,7 +62,27 @@ export class TestsBench implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.getGold()
+    try {
+      // await this.ipv6('рак-гейминг', 'soulflayer');
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async ipv6(nameSlug: string, realmSlug: string) {
+    const guild = await this.BNet.query(
+      `/data/wow/guild/${realmSlug}/${nameSlug}`,
+      {
+        params: { locale: 'en_GB' },
+        headers: {
+          'Battlenet-Namespace': API_HEADERS_ENUM.PROFILE,
+        },
+        timeout: 100_000,
+        proxy: false,
+      },
+    );
+
+    console.log(guild);
   }
 
   async sample() {
@@ -75,12 +109,6 @@ export class TestsBench implements OnApplicationBootstrap {
       .getRawOne<any>();
 
     console.log(contractData);
-
-
-
-
-
-    return;
 
     const t = await this.getPriceRangeByItem(itemId, 20);
     console.log(t);

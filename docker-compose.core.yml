@@ -8,7 +8,6 @@ services:
     env_file:
       - stack.env
 
-
   keys:
     container_name: keys
     image: ghcr.io/alexzedim/core:6.1.5
@@ -16,3 +15,25 @@ services:
     command: [ 'node', 'dist/apps/keys/main.js' ]
     env_file:
       - stack.env
+
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+    environment:
+      # Postgres parameters:
+      DB_POSTGRES_HOST: ${POSTGRES_HOST}
+      DB_POSTGRES_PORT: ${POSTGRES_PORT}
+      DB_POSTGRES_USER: ${POSTGRES_USER}
+      DB_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_POSTGRES_NAME: 'domain'
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt

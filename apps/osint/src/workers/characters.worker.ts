@@ -24,7 +24,7 @@ import {
   CharacterStatus,
   CharacterSummary,
   EVENT_LOG,
-  findRealm,
+  findRealm, getRandomProxy,
   IMounts,
   incErrorCount,
   IPets,
@@ -119,11 +119,14 @@ export class CharactersWorker extends WorkerHost {
 
       await job.updateProgress(10);
 
+      const httpsAgent = await getRandomProxy(this.keysRepository);
+
       this.BNet = new BlizzAPI({
         region: 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
+        httpsAgent: httpsAgent,
       });
 
       const status = await this.getStatus(
@@ -697,7 +700,9 @@ export class CharactersWorker extends WorkerHost {
         apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
-      if (!isCharacterSummary(response)) return summary;
+      if (!isCharacterSummary(response)) {
+        return summary;
+      }
 
       for (const [key, path] of CHARACTER_SUMMARY_FIELD_MAPPING.entries()) {
         const value = get(response, path, null);

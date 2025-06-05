@@ -16,8 +16,6 @@ import { chromium, devices } from 'playwright';
 import { BlizzAPI } from '@alexzedim/blizzapi';
 import {
   API_HEADERS_ENUM,
-  apiConstParams,
-  BlizzardApiResponse,
   FACTION,
   findRealm,
   ICharacterRaiderIo,
@@ -37,8 +35,6 @@ import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
 import { cmnwConfig } from '@app/configuration';
-import axios from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
@@ -48,7 +44,6 @@ export class TestsBench implements OnApplicationBootstrap {
     region: 'eu',
     clientId: cmnwConfig.clientId,
     clientSecret: cmnwConfig.clientSecret,
-    accessToken: 'EUn7XQ0fsmp19rcdPytAYruUJrzNOQ9Fpq'
   });
 
   constructor(

@@ -29,7 +29,7 @@ import {
   incErrorCount,
   IRGuildRoster,
   isEuRegion,
-  isGuildRoster, OSINT_4_HOURS_MS,
+  isGuildRoster, OSINT_4_HOURS_MS, OSINT_GM_RANK,
   OSINT_SOURCE,
   PLAYABLE_CLASS,
   toGuid,
@@ -224,7 +224,7 @@ export class GuildsWorker extends WorkerHost {
                 if (!isRankChanged) return;
 
                 const isNotGuildMaster =
-                  guildMemberOriginal.rank !== 0 || guildMemberUpdated.rank !== 0;
+                  guildMemberOriginal.rank !== OSINT_GM_RANK || guildMemberUpdated.rank !== OSINT_GM_RANK;
                 const isDemote = guildMemberUpdated.rank > guildMemberOriginal.rank;
                 const isPromote = guildMemberUpdated.rank < guildMemberOriginal.rank;
 
@@ -291,7 +291,7 @@ export class GuildsWorker extends WorkerHost {
             mergeMap(async (guildMemberId) => {
               try {
                 const guildMemberUpdated = updatedRoster.get(guildMemberId);
-                const isNotGuildMaster = guildMemberUpdated.rank !== 0;
+                const isNotGuildMaster = guildMemberUpdated.rank !== OSINT_GM_RANK;
 
                 const charactersGuildsMembersEntity =
                   this.characterGuildsMembersRepository.create({
@@ -362,7 +362,7 @@ export class GuildsWorker extends WorkerHost {
             mergeMap(async (guildMemberId) => {
               try {
                 const guildMemberOriginal = originalRoster.get(guildMemberId);
-                const isNotGuildMaster = guildMemberOriginal.rank !== 0;
+                const isNotGuildMaster = guildMemberOriginal.rank !== OSINT_GM_RANK;
 
                 if (isNotGuildMaster) {
                   const logEntityGuildMemberLeave = [
@@ -501,7 +501,7 @@ export class GuildsWorker extends WorkerHost {
               const isMember = 'character' in member && 'rank' in member;
               if (!isMember) return;
 
-              const isGM = member.rank === 0;
+              const isGM = member.rank === OSINT_GM_RANK;
               const realmSlug = member.character.realm.slug ?? guildEntity.realm;
               const guid = toSlug(`${member.character.name}@${realmSlug}`);
               const level = member.character.level ? member.character.level : null;
@@ -591,6 +591,7 @@ export class GuildsWorker extends WorkerHost {
     }
   }
 
+  // @todo research tests on data sample!!
   private async updateGuildMaster(
     guildEntity: GuildsEntity,
     updatedRoster: IGuildRoster,
@@ -598,13 +599,13 @@ export class GuildsWorker extends WorkerHost {
     const guildMasterOriginal =
       await this.characterGuildsMembersRepository.findOneBy({
         guildGuid: guildEntity.guid,
-        rank: 0,
+        rank: OSINT_GM_RANK,
       });
 
     if (!guildMasterOriginal) return;
 
     const guildMasterUpdated = updatedRoster.members.find(
-      (guildMember) => guildMember.rank === 0,
+      (guildMember) => guildMember.rank === OSINT_GM_RANK,
     );
 
     const isGuildMasterCharacterChanged =

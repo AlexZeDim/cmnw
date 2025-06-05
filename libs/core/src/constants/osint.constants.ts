@@ -9,6 +9,8 @@ import {
 
 export const MAX_LEVEL = 80;
 
+export const OSINT_GM_RANK = 0;
+
 export const OSINT_CHARACTER_LIMIT = 1_000;
 
 export const OSINT_GUILD_LIMIT = 500;

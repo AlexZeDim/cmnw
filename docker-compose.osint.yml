@@ -6,31 +6,27 @@ services:
     command: [ 'node', 'dist/apps/osint/main.js' ]
     deploy:
       replicas: 3
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
   characters:
     image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/characters/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
   guilds:
     image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/guilds/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env
 
 
   wowprogress:
     image: ghcr.io/alexzedim/osint:latest
     restart: always
     command: [ 'node', 'dist/apps/wowprogress/main.js' ]
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - KEY=${KEY}
+    env_file:
+      - stack.env

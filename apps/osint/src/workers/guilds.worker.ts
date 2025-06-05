@@ -27,7 +27,7 @@ import {
   IGuildRoster,
   IGuildSummary,
   incErrorCount,
-  IRGuildRoster,
+  IRGuildRoster, isEuRegion,
   isGuildRoster,
   OSINT_SOURCE,
   OSINT_TIMEOUT_TOLERANCE,
@@ -93,6 +93,13 @@ export class GuildsWorker extends WorkerHost {
       const { guildEntity, isNew } = await this.guildExistOrCreate(args);
       const guildEntityOriginal = this.guildsRepository.create(guildEntity);
       const nameSlug = toSlug(guildEntity.name);
+
+      const isNotEuRegion = !isEuRegion(args.region);
+      if (isNotEuRegion) {
+        this.logger.log('Not EU region');
+        await job.updateProgress(100);
+        return 305;
+      }
 
       await job.updateProgress(5);
 

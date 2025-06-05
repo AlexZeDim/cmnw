@@ -16,6 +16,9 @@ import {
   IRGuildRoster,
 } from '@app/core/types';
 
+export const isEuRegion = (region: string | number | undefined): boolean => Boolean(region) && (region === 'eu' || region === 2)
+
+
 export const isBlizzardApiResponse = (
   response: unknown,
 ): response is Readonly<BlizzardApiResponse> =>

@@ -1,5 +1,5 @@
 FROM node:lts AS node
-FROM ubuntu:20.04
+FROM ubuntu:24.10
 
 COPY --from=node / /
 
@@ -37,7 +37,7 @@ RUN apt install -y chromium-browser
 RUN npm install -g @nestjs/cli
 
 # Installing playwright #
-RUN npx playwright install-deps --dry-run
+RUN npx playwright install-deps
 RUN npx playwright install
 
 RUN nest build characters \

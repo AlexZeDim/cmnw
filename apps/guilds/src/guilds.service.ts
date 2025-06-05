@@ -18,7 +18,9 @@ import {
   GLOBAL_OSINT_KEY,
   GuildJobQueue,
   IHallOfFame,
+  isEuRegion,
   isHallOfFame,
+  notNull,
   OSINT_GUILD_LIMIT,
   OSINT_SOURCE,
   RAID_FACTIONS,
@@ -142,6 +144,13 @@ export class GuildsService implements OnApplicationBootstrap {
             const { client, secret, token } =
               this.keyEntities[guildIteration % length];
 
+            const faction = raidFaction === 'HORDE' ? FACTION.H : FACTION.A;
+
+            const isNotEuRegion = !isEuRegion(guildEntry.region);
+            if (isNotEuRegion) {
+              return null;
+            }
+
             return {
               name: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
               data: {
@@ -153,10 +162,9 @@ export class GuildsService implements OnApplicationBootstrap {
                 realm: guildEntry.guild.realm.slug,
                 realmId: guildEntry.guild.realm.id,
                 realmName: guildEntry.guild.realm.name,
-                faction: raidFaction === 'HORDE' ? FACTION.H : FACTION.A,
+                faction: faction,
                 createdBy: OSINT_SOURCE.TOP100,
                 updatedBy: OSINT_SOURCE.TOP100,
-                // --- @todo not all guild HoF are EU --- //
                 region: <RegionIdOrName>guildEntry.region,
                 forceUpdate: ms('1h'),
                 iteration: guildEntry.rank,
@@ -168,7 +176,7 @@ export class GuildsService implements OnApplicationBootstrap {
                 priority: 2,
               },
             }
-          });
+          }).filter(notNull);
 
           await this.queueGuilds.addBulk(guildJobs);
 

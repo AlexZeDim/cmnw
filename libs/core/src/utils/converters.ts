@@ -75,3 +75,6 @@ export const toDate = (lastModified: unknown): Date => {
 
 export const toStringOrNumber = (value: string | number) =>
   Number.isNaN(Number(value)) ? value : Number(value);
+
+export const notNull = <T>(value: T | null | undefined): value is T =>
+  value != null;

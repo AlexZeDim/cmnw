@@ -28,7 +28,7 @@ jobs:
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: '22.15'
+          node-version: 'lts/*'
           registry-url: 'https://npm.pkg.github.com' # Specify the GitHub Packages registry URL
           scope: '@alexzedim' # Your npm scope
 

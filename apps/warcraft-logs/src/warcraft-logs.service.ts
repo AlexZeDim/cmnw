@@ -192,10 +192,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           `Clearance ${GLOBAL_WCL_KEY} keys have been found`,
         );
       }
-      /**
-       * @description A bit sceptical about take interval
-       * @description required semaphore.
-       */
+      // --- A bit skeptical about taking the interval required semaphore --- //
       const characterRaidLog = await this.charactersRaidLogsRepository.find({
         where: { isIndexed: false },
         take: 500,
@@ -261,9 +258,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     });
     const isGuard = isCharacterRaidLogResponse(response);
     if (!isGuard) return [];
-    /**
-     * @description Take both characters ranked & playable
-     */
+
+    // --- Take both characters ranked & playable --- //
     const timestamp = get(response, 'data.data.reportData.report.startTime', 1);
     const rankedCharacters: Array<RaidCharacter> = get(
       response,
@@ -307,7 +303,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   async charactersToQueue(raidCharacters: Array<RaidCharacter>): Promise<boolean> {
     try {
       let itx = 0;
-      const keys = await getKeys(this.keysRepository, GLOBAL_OSINT_KEY, true);
+      const keys = await getKeys(this.keysRepository, GLOBAL_OSINT_KEY, false);
       if (!keys.length) {
         throw new NotFoundException(`Clearance ${GLOBAL_OSINT_KEY} have been found`);
       }

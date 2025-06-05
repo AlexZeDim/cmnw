@@ -2,7 +2,9 @@ name: Build CORE Image
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - 'v*' # Trigger for tags starting with 'v' (e.g., v1.0, v2.3.1)
+      - '!v*-beta' # Exclude beta tags
     paths:
       - 'apps/keys/**'
       - 'apps/realms/**'
@@ -26,9 +28,9 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
+      - name: Get the tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
@@ -43,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
         env:
-          CR_PAT: ${{ secrets.GITHUB_TOKEN }}
+          CR_PAT: ${{ secrets.CR_PAT }}
 
       - name: Docker meta
         id: meta
@@ -52,7 +54,7 @@ jobs:
           images: |
             ghcr.io/alexzedim/core
           tags: |
-            type=semver,pattern={{version}},value=${{ steps.package-version.outputs.current-version}}
+            type=semver,pattern={{version}},value=${{ env.TAG_NAME }}
           labels: |
             maintainer=alexzedim
             org.opencontainers.image.title=CORE
@@ -71,7 +73,7 @@ jobs:
 
       - name: Build & Push (GHCR)
         id: build-push-action
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./docker/x64.core.Dockerfile

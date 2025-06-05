@@ -2,7 +2,8 @@ name: Create Realms Development Image
 
 on:
   push:
-    branches: [ develop ]
+    tags:
+      - 'v*-beta'
     paths:
       - 'apps/realms/**'
       - 'libs/**'
@@ -21,9 +22,9 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
+      - name: Get the tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
@@ -35,7 +36,7 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
         env:
-          CR_PAT: ${{ secrets.GITHUB_TOKEN }}
+          CR_PAT: ${{ secrets.CR_PAT }}
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -47,7 +48,7 @@ jobs:
           images: |
             "ghcr.io/alexzedim/realms"
           tags: |
-            type=semver,pattern={{version}},value=${{ steps.package-version.outputs.current-version}}
+            type=semver,pattern={{version}},value=${{ env.TAG_NAME }}
           labels: |
             maintainer = "alexzedim"
             org.opencontainers.image.title = "Realms"
@@ -66,7 +67,7 @@ jobs:
 
       - name: Build & Push (GHCR)
         id: build-push-action
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./apps/realms/Dockerfile

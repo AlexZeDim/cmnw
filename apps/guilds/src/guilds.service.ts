@@ -156,7 +156,8 @@ export class GuildsService implements OnApplicationBootstrap {
                 faction: raidFaction === 'HORDE' ? FACTION.H : FACTION.A,
                 createdBy: OSINT_SOURCE.TOP100,
                 updatedBy: OSINT_SOURCE.TOP100,
-                region: <RegionIdOrName>'eu',
+                // --- @todo not all guild HoF are EU --- //
+                region: <RegionIdOrName>guildEntry.region,
                 forceUpdate: ms('1s'),
                 iteration: guildEntry.rank,
                 requestGuildRank: true,

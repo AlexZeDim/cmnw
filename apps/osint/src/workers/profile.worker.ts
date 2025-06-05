@@ -121,7 +121,7 @@ export class ProfileWorker extends WorkerHost {
       const isBrowserLaunched = Boolean(this.browser);
       if (!isBrowserLaunched) {
         this.browser = await chromium.launch();
-        this.browserContext = await this.browser.newContext(devices['iPhone 11']);
+        this.browserContext = await this.browser.newContext(devices['iPhone 15 Pro Max landscape']);
       }
 
       const difficulty = CHARACTER_RAID_DIFFICULTY.has(raidDifficulty)

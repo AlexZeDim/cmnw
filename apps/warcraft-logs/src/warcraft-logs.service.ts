@@ -75,7 +75,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   async getLogsFromPage(realmId = 1, page = 1) {
     try {
       const warcraftLogsURI = 'https://www.warcraftlogs.com/zone/reports';
-      // TODO zone=${this.config.raidTier}&
+      // --- add if necessary @todo zone=${this.config.raidTier}& --- //
       const params = `server=${realmId}&`;
 
       const response = await this.httpService.axiosRef.get<string>(
@@ -83,11 +83,11 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       );
 
       const wclHTML = cheerio.load(response.data);
+      const wclTable = wclHTML.html('tbody > tr');
       const warcraftLogsMap = new Map<
         string,
         Pick<CharactersRaidLogsEntity, 'logId' | 'createdAt'>
       >();
-      const wclTable = wclHTML.html('tbody > tr');
 
       wclHTML(wclTable).each((itx, element) => {
         const momentFormat = wclHTML(element)
@@ -126,9 +126,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           page,
         );
         /**
-         * If indexing logs on page have ended
-         * and page fault tolerance is more than
-         * config, then break for loop
+         * If indexing logs on the page have ended and page fault
+         * tolerance is more than config, then break for loop
          */
         const [isPageEmpty, isLogsMoreThen] = [
           !wclLogsFromPage.length,
@@ -142,7 +141,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           break;
         }
 
-        /** If parsed page have no results */
+        // --- If parsed page have no results --- //
         if (isPageEmpty) {
           this.logger.log(
             `ERROR | ${realmEntity.name} | Page: ${page} | Logs not found`,
@@ -154,7 +153,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           const characterRaidLog = await this.charactersRaidLogsRepository.exist({
             where: { logId },
           });
-          /** If exists counter +1*/
+          // --- If exists counter --- //
           if (characterRaidLog) {
             logsAlreadyExists += 1;
             this.logger.log(

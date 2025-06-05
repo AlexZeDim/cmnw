@@ -23,7 +23,6 @@ services:
     env_file:
       - stack.env
 
-
   wowprogress:
     image: ghcr.io/alexzedim/osint:latest
     restart: always

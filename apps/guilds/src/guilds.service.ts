@@ -158,7 +158,7 @@ export class GuildsService implements OnApplicationBootstrap {
                 updatedBy: OSINT_SOURCE.TOP100,
                 // --- @todo not all guild HoF are EU --- //
                 region: <RegionIdOrName>guildEntry.region,
-                forceUpdate: ms('1s'),
+                forceUpdate: ms('1h'),
                 iteration: guildEntry.rank,
                 requestGuildRank: true,
                 createOnlyUnique: false,

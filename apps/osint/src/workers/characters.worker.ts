@@ -34,7 +34,7 @@ import {
   isCharacterSummary,
   isMountCollection,
   isPetsCollection,
-  Media,
+  Media, OSINT_1_DAY_MS,
   OSINT_SOURCE,
   toDate,
   toGuid,
@@ -95,7 +95,23 @@ export class CharactersWorker extends WorkerHost {
     try {
       const { data: args } = job;
 
-      const { characterEntity, isNew } = await this.characterExistOrCreate(args);
+      const { characterEntity, isNew, isCreateOnlyUnique, isNotReadyToUpdate } = await this.characterExistOrCreate(args);
+
+      if (isNotReadyToUpdate) {
+        await job.updateProgress(100);
+        this.logger.warn(
+          `isNotReadyToUpdate: ${characterEntity.guid} | ${characterEntity.updatedAt} | ${isNotReadyToUpdate}}`,
+        );
+        return characterEntity.statusCode;
+      }
+
+      if (isCreateOnlyUnique) {
+        await job.updateProgress(100);
+        this.logger.warn(
+          `createOnlyUnique: ${characterEntity.guid} | ${isCreateOnlyUnique}`,
+        );
+      }
+
       const characterEntityOriginal =
         this.charactersRepository.create(characterEntity);
 
@@ -197,7 +213,7 @@ export class CharactersWorker extends WorkerHost {
   private async characterExistOrCreate(
     character: CharacterJobQueue,
   ): Promise<CharacterExistsOrCreate> {
-    const forceUpdate = character.forceUpdate || 86400 * 1000;
+    const forceUpdate = character.forceUpdate || OSINT_1_DAY_MS;
     const timestampNow = new Date().getTime();
 
     const realmEntity = await findRealm(this.realmsRepository, character.realm);
@@ -212,7 +228,7 @@ export class CharactersWorker extends WorkerHost {
     if (!characterEntity) {
       const characterNew = this.charactersRepository.create({
         ...character,
-        id: character.id || 1,
+        id: character.id || null,
         guid: character.guid,
         name: capitalize(character.name),
         realm: realmEntity.slug,
@@ -224,7 +240,7 @@ export class CharactersWorker extends WorkerHost {
         characterNew.lastModified = toDate(character.lastModified);
 
       /**
-       * Assign values from queue
+       * Assign values from the queue
        * only if they were passed
        */
       characterNew.statusCode = 100;
@@ -235,12 +251,12 @@ export class CharactersWorker extends WorkerHost {
         ? character.createdBy
         : OSINT_SOURCE.CHARACTER_GET;
 
-      return { characterEntity: characterNew, isNew: true };
+      return { characterEntity: characterNew, isNew: true, isCreateOnlyUnique: false, isNotReadyToUpdate: false, };
     }
 
     /**
      * Update LFG status immediately
-     * if it was passed from queue
+     * if it was passed from the queue
      */
     /*
     if (character.lookingForGuild) {
@@ -256,25 +272,21 @@ export class CharactersWorker extends WorkerHost {
      * and createOnlyUnique initiated
      */
     if (character.createOnlyUnique) {
-      throw new Error(
-        `createOnlyUnique: ${character.createOnlyUnique} | ${character.guid}`,
-      );
+      return { characterEntity, isNew: false, isCreateOnlyUnique: character.createOnlyUnique, isNotReadyToUpdate: false };
     }
     /**
      * ...or character was updated recently
      */
     const updateSafe = timestampNow - forceUpdate;
     const updatedAt = characterEntity.updatedAt.getTime();
-    const isUpdateSafe = updateSafe < updatedAt;
-    if (isUpdateSafe) {
-      throw new Error(
-        `forceUpdate: ${character.guid} | ${updateSafe} < ${updatedAt}`,
-      );
+    const isNotReadyToUpdate = updateSafe < updatedAt;
+    if (isNotReadyToUpdate) {
+      return { characterEntity, isNew: false, isCreateOnlyUnique: character.createOnlyUnique, isNotReadyToUpdate: isNotReadyToUpdate };
     }
 
     characterEntity.statusCode = 100;
 
-    return { characterEntity, isNew: false };
+    return { characterEntity, isNew: false, isCreateOnlyUnique: false, isNotReadyToUpdate: isNotReadyToUpdate };
   }
 
   private async getStatus(
@@ -310,7 +322,7 @@ export class CharactersWorker extends WorkerHost {
         );
 
       if (status)
-        throw new NotFoundException(
+        this.logger.warn(
           `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
         );
 

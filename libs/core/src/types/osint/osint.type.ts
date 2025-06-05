@@ -11,6 +11,8 @@ export type CharacterStatus = {
 export type CharacterExistsOrCreate = {
   characterEntity: CharactersEntity;
   isNew: boolean;
+  isCreateOnlyUnique: boolean;
+  isNotReadyToUpdate: boolean;
 };
 
 export type GuildExistsOrCreate = {

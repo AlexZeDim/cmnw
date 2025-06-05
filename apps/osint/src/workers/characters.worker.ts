@@ -297,7 +297,7 @@ export class CharactersWorker extends WorkerHost {
       if (statusResponse.last_modified)
         characterStatus.lastModified = toDate(statusResponse.last_modified);
 
-      characterStatus.statusCode = 201;
+      characterStatus.statusCode = 200;
 
       return characterStatus;
     } catch (errorOrException) {
@@ -428,6 +428,7 @@ export class CharactersWorker extends WorkerHost {
       });
 
       mountsCollection.mountsNumber = mounts.length;
+      mountsCollection.statusCode = 203;
 
       return mountsCollection;
     } catch (errorOrException) {
@@ -558,6 +559,7 @@ export class CharactersWorker extends WorkerHost {
       });
 
       petsCollection.petsNumber = pets.length;
+      petsCollection.statusCode = 202;
 
       if (hashB.length)
         petsCollection.hashB = BigInt(hash64(hashB.join('.'))).toString(16);
@@ -721,7 +723,7 @@ export class CharactersWorker extends WorkerHost {
         summary.guildGuid = toGuid(summary.guild, summary.realm);
       }
 
-      summary.statusCode = 200;
+      summary.statusCode = 201;
 
       return summary;
     } catch (errorOrException) {

@@ -250,10 +250,12 @@ export interface INameWithId {
 }
 
 export interface IMounts {
+  statusCode: number;
   mountsNumber: number;
 }
 
 export interface IPets {
+  statusCode: number;
   petsNumber: number;
   hashB: string;
   hashA: string;

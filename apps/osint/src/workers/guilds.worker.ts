@@ -10,7 +10,9 @@ import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import * as changeCase from 'change-case';
 
 import {
-  ACTION_LOG, API_HEADERS_ENUM, apiConstParams,
+  ACTION_LOG,
+  API_HEADERS_ENUM,
+  apiConstParams,
   capitalize,
   characterAsGuildMember,
   CharacterJobQueue,
@@ -437,7 +439,6 @@ export class GuildsWorker extends WorkerHost {
       summary.statusCode = 200;
       return summary;
     } catch (errorOrException) {
-      console.log(errorOrException);
       summary.statusCode = get(errorOrException, 'response.status', 418);
       const isTooManyRequests = summary.statusCode === 429;
       if (isTooManyRequests)

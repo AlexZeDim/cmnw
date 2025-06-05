@@ -3,7 +3,7 @@ name: Create Auctions Development Image
 on:
   push:
     tags:
-      - 'v*-beta'
+      - 'v*-dev'
     paths:
       - 'apps/auctions/**'
       - 'libs/**'

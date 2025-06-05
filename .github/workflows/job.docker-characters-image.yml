@@ -3,7 +3,7 @@ name: Create Characters Development Image
 on:
   push:
     tags:
-      - 'v*-beta'
+      - 'v*-dev'
     paths:
       - 'apps/characters/**'
       - 'libs/**'

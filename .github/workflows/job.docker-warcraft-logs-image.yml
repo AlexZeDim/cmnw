@@ -3,7 +3,7 @@ name: Create WarcraftLogs Development Image
 on:
   push:
     tags:
-      - 'v*-beta'
+      - 'v*-dev'
     paths:
       - 'apps/warcraft-logs/**'
       - 'libs/**'

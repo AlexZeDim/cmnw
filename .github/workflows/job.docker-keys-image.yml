@@ -3,7 +3,7 @@ name: Create Keys Development Image
 on:
   push:
     tags:
-      - 'v*-beta'
+      - 'v*-dev'
     paths:
       - 'apps/keys/**'
       - 'libs/**'

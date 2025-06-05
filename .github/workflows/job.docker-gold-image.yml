@@ -3,7 +3,7 @@ name: Create Gold Development Image
 on:
   push:
     tags:
-      - 'v*-beta'
+      - 'v*-dev'
     paths:
       - 'apps/gold/**'
       - 'libs/**'

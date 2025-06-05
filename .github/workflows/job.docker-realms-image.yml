@@ -3,7 +3,7 @@ name: Create Realms Development Image
 on:
   push:
     tags:
-      - 'v*-beta'
+      - 'v*-dev'
     paths:
       - 'apps/realms/**'
       - 'libs/**'

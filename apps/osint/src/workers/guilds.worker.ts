@@ -224,8 +224,8 @@ export class GuildsWorker extends WorkerHost {
                   const logEntityGuildMemberDemote = [
                     this.logsRepository.create({
                       guid: guildMemberOriginal.characterGuid,
-                      original: `${guildEntity.guid} | ${guildMemberUpdated.rank}`,
-                      updated: `${guildEntity.guid} | ${guildMemberOriginal.rank}`,
+                      original: `${guildEntity.guid} | ${guildMemberOriginal.rank}`,
+                      updated: `${guildEntity.guid} | ${guildMemberUpdated.rank}`,
                       event: EVENT_LOG.CHARACTER,
                       action: eventAction,
                       originalAt: guildEntity.updatedAt,
@@ -233,8 +233,8 @@ export class GuildsWorker extends WorkerHost {
                     }),
                     this.logsRepository.create({
                       guid: guildEntity.guid,
-                      original: `${guildMemberOriginal.characterGuid} | ${guildMemberUpdated.rank}`,
-                      updated: `${guildMemberOriginal.characterGuid} | ${guildMemberOriginal.rank}`,
+                      original: `${guildMemberOriginal.characterGuid} | ${guildMemberOriginal.rank}`,
+                      updated: `${guildMemberOriginal.characterGuid} | ${guildMemberUpdated.rank}`,
                       event: EVENT_LOG.GUILD,
                       action: eventAction,
                       originalAt: guildEntity.updatedAt,

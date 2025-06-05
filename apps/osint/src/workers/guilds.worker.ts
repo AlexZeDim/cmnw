@@ -10,7 +10,7 @@ import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import * as changeCase from 'change-case';
 
 import {
-  ACTION_LOG,
+  ACTION_LOG, API_HEADERS_ENUM, apiConstParams,
   capitalize,
   characterAsGuildMember,
   CharacterJobQueue,
@@ -403,11 +403,7 @@ export class GuildsWorker extends WorkerHost {
     try {
       const response: Record<string, any> = await BNet.query(
         `/data/wow/guild/${realmSlug}/${guildNameSlug}`,
-        {
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!response || typeof response !== 'object') return summary;
@@ -466,11 +462,7 @@ export class GuildsWorker extends WorkerHost {
 
       const response = await BNet.query<Readonly<IRGuildRoster>>(
         `/data/wow/guild/${guildEntity.realm}/${guildNameSlug}/roster`,
-        {
-          timeout: OSINT_TIMEOUT_TOLERANCE,
-          params: { locale: 'en_GB' },
-          headers: { 'Battlenet-Namespace': 'profile-eu' },
-        },
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
 
       if (!isGuildRoster(response)) return roster;

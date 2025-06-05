@@ -161,7 +161,7 @@ export class GuildsService implements OnApplicationBootstrap {
 
           await this.queueGuilds.addBulk(guildJobs);
 
-          this.logger.log(`indexHallOfFame: Raid ${raid} | Faction ${raidFaction}`);
+          this.logger.log(`indexHallOfFame: Raid ${raid} | Faction ${raidFaction} | Guilds ${guildJobs.length}`);
         }
       }
     } catch (errorOrException) {

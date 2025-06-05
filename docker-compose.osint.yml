@@ -30,3 +30,10 @@ services:
     command: [ 'node', 'dist/apps/wowprogress/main.js' ]
     env_file:
       - stack.env
+
+  warcraft-logs:
+    image: ghcr.io/alexzedim/osint:latest
+    restart: always
+    command: [ 'node', 'dist/apps/warcraft-logs/main.js' ]
+    env_file:
+      - stack.env

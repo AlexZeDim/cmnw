@@ -78,7 +78,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       // TODO zone=${this.config.raidTier}&
       const params = `server=${realmId}&`;
 
-      const response = await this.httpService.axiosRef.get(
+      const response = await this.httpService.axiosRef.get<string>(
         `${warcraftLogsURI}?${params}page=${page}`,
       );
 

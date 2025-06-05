@@ -7,7 +7,7 @@ import {
   WowProgressProfile,
 } from '@app/core/types';
 
-export const MAX_LEVEL = 70;
+export const MAX_LEVEL = 80;
 
 export const OSINT_CHARACTER_LIMIT = 1000;
 
@@ -44,6 +44,8 @@ export const RAIDS = [
   'vault-of-the-incarnates',
   'aberrus-the-shadowed-crucible',
   'amirdrassil-the-dreams-hope',
+  'nerubar-palace',
+  'liberation-of-undermine'
 ];
 
 export const RAID_FACTIONS = ['alliance', 'horde'];

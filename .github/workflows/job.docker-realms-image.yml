@@ -12,6 +12,9 @@ jobs:
   publish:
     name: publish
     runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: read # Important: Grant read access to packages
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,6 +29,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.15'
+          registry-url: 'https://npm.pkg.github.com' # Specify the GitHub Packages registry URL
+          scope: '@alexzedim' # Your npm scope
 
       - name: Setup yarn
         run: npm install -g yarn

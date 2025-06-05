@@ -15,6 +15,9 @@ jobs:
   publish:
     name: publish
     runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: read # Important: Grant read access to packages
     env:
       GITHUB_TOKEN: ${{ secrets.CR_PAT }}
     steps:
@@ -31,6 +34,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.15'
+          registry-url: 'https://npm.pkg.github.com' # Specify the GitHub Packages registry URL
+          scope: '@alexzedim' # Your npm scope
 
       - name: Setup yarn
         run: npm install -g yarn

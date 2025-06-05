@@ -90,7 +90,19 @@ export class GuildsWorker extends WorkerHost {
     try {
       const { data: args } = job;
 
-      const { guildEntity, isNew } = await this.guildExistOrCreate(args);
+      const { guildEntity, isNew, isNotReadyToUpdate, isCreateOnlyUnique} = await this.guildExistOrCreate(args);
+
+      if (isNotReadyToUpdate) {
+        await job.updateProgress(100);
+        this.logger.warn(`isNotReadyToUpdate: ${guildEntity.guid} | ${isNotReadyToUpdate}`);
+        return guildEntity.statusCode;
+      }
+
+      if (isCreateOnlyUnique) {
+        await job.updateProgress(100);
+        this.logger.warn(`createOnlyUnique: ${guildEntity.guid} | ${isCreateOnlyUnique}`);
+        return guildEntity.statusCode;
+      }
 
       const guildEntityOriginal = this.guildsRepository.create(guildEntity);
       const nameSlug = toSlug(guildEntity.name);
@@ -750,29 +762,24 @@ export class GuildsWorker extends WorkerHost {
         updatedBy: OSINT_SOURCE.GUILD_GET,
       });
 
-      return { guildEntity: guildNew, isNew: true };
+      return { guildEntity: guildNew, isNew: true, isNotReadyToUpdate: false, isCreateOnlyUnique: false };
     }
 
-    /**
-     * If guild exists
-     * and createOnlyUnique initiated
-     */
+    // --- If guild exists and createOnlyUnique initiated --- //
     if (guild.createOnlyUnique) {
-      throw new Error(`createOnlyUnique: ${guild.createOnlyUnique} | ${guild.guid}`);
+      return { guildEntity, isNew: false, isCreateOnlyUnique: guild.createOnlyUnique, isNotReadyToUpdate: false };
     }
-    /**
-     * ...or guild was updated recently
-     */
+    // --- ...or guild was updated recently --- //
     const updateSafe = timestampNow - forceUpdate;
     const updatedAt = guildEntity.updatedAt.getTime();
-    const isUpdateSafe = updateSafe < updatedAt;
-    if (isUpdateSafe) {
-      throw new Error(`forceUpdate: ${forceUpdate} | ${guild.guid}`);
+    const isNotReadyToUpdate = updateSafe < updatedAt;
+    if (isNotReadyToUpdate) {
+      return { guildEntity, isNew: false, isNotReadyToUpdate, isCreateOnlyUnique: guild.createOnlyUnique };
     }
 
     guildEntity.statusCode = 100;
 
-    return { guildEntity, isNew: false };
+    return { guildEntity, isNew: false, isNotReadyToUpdate, isCreateOnlyUnique: guild.createOnlyUnique };
   }
 
   // @todo check diff

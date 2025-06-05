@@ -18,6 +18,8 @@ export type CharacterExistsOrCreate = {
 export type GuildExistsOrCreate = {
   guildEntity: GuildsEntity;
   isNew: boolean;
+  isCreateOnlyUnique: boolean;
+  isNotReadyToUpdate: boolean;
 };
 
 export type WowProgressProfile = Partial<

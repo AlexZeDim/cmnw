@@ -110,6 +110,7 @@ export class CharactersWorker extends WorkerHost {
         this.logger.warn(
           `createOnlyUnique: ${characterEntity.guid} | ${isCreateOnlyUnique}`,
         );
+        return characterEntity.statusCode;
       }
 
       const characterEntityOriginal =

@@ -122,7 +122,7 @@ export class CharactersWorker extends WorkerHost {
       const httpsAgent = await getRandomProxy(this.keysRepository);
 
       this.BNet = new BlizzAPI({
-        region: 'eu',
+        region: args.region || 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,

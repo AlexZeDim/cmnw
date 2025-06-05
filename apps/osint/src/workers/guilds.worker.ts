@@ -97,7 +97,7 @@ export class GuildsWorker extends WorkerHost {
       const httpsAgent = await getRandomProxy(this.keysRepository);
 
       this.BNet = new BlizzAPI({
-        region: 'eu',
+        region: args.region || 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
@@ -437,6 +437,7 @@ export class GuildsWorker extends WorkerHost {
       summary.statusCode = 200;
       return summary;
     } catch (errorOrException) {
+      console.log(errorOrException);
       summary.statusCode = get(errorOrException, 'response.status', 418);
       const isTooManyRequests = summary.statusCode === 429;
       if (isTooManyRequests)

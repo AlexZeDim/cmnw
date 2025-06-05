@@ -47,7 +47,7 @@ export class GuildsService implements OnApplicationBootstrap {
   }
 
   @Cron(CronExpression.EVERY_4_HOURS)
-  async indexGuildsFromMongo(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
+  async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs = await this.queueGuilds.count();
       if (jobs > 1000) {
@@ -112,8 +112,10 @@ export class GuildsService implements OnApplicationBootstrap {
     onlyLast = true,
   ): Promise<void> {
     try {
-      const keys = await getKeys(this.keysRepository, clearance, true);
-      const [key] = keys;
+      this.keyEntities = await getKeys(this.keysRepository, clearance, false);
+      const [key] = this.keyEntities;
+
+      const length = this.keyEntities.length;
 
       this.BNet = new BlizzAPI({
         region: 'eu',
@@ -136,28 +138,36 @@ export class GuildsService implements OnApplicationBootstrap {
           const isEntries = isHallOfFame(response);
           if (!isEntries) continue;
 
-          const guildJobs = response.entries.map((guildEntry) => ({
-            name: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
-            data: {
-              guid: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
-              name: guildEntry.guild.name,
-              realm: guildEntry.guild.realm.slug,
-              realmId: guildEntry.guild.realm.id,
-              realmName: guildEntry.guild.realm.name,
-              faction: raidFaction === 'HORDE' ? FACTION.H : FACTION.A,
-              createdBy: OSINT_SOURCE.TOP100,
-              updatedBy: OSINT_SOURCE.TOP100,
-              region: <RegionIdOrName>'eu',
-              forceUpdate: ms('1h'),
-              iteration: guildEntry.rank,
-              requestGuildRank: true,
-              createOnlyUnique: false,
-            },
-            opts: {
-              jobId: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
-              priority: 2,
-            },
-          }));
+          const guildJobs = response.entries.map((guildEntry, guildIteration ) => {
+            const { client, secret, token } =
+              this.keyEntities[guildIteration % length];
+
+            return {
+              name: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
+              data: {
+                clientId: client,
+                clientSecret: secret,
+                accessToken: token,
+                guid: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
+                name: guildEntry.guild.name,
+                realm: guildEntry.guild.realm.slug,
+                realmId: guildEntry.guild.realm.id,
+                realmName: guildEntry.guild.realm.name,
+                faction: raidFaction === 'HORDE' ? FACTION.H : FACTION.A,
+                createdBy: OSINT_SOURCE.TOP100,
+                updatedBy: OSINT_SOURCE.TOP100,
+                region: <RegionIdOrName>'eu',
+                forceUpdate: ms('1s'),
+                iteration: guildEntry.rank,
+                requestGuildRank: true,
+                createOnlyUnique: false,
+              },
+              opts: {
+                jobId: toGuid(guildEntry.guild.name, guildEntry.guild.realm.slug),
+                priority: 2,
+              },
+            }
+          });
 
           await this.queueGuilds.addBulk(guildJobs);
 

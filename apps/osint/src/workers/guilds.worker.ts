@@ -437,7 +437,7 @@ export class GuildsWorker extends WorkerHost {
       const keys = ['id', 'name', 'achievement_points', 'created_timestamp'];
 
       Object.entries(response).map(([key, value]) => {
-        if (keys.includes(key) && value !== null) summary[changeCase.snakeCase(key)] = value;
+        if (keys.includes(key) && value !== null) summary[changeCase.camelCase(key)] = value;
         if (key === 'faction' && typeof value === 'object' && value !== null) {
           if (value.type && value.name === null) {
             if (value.type.toString().startsWith('A')) summary.faction = FACTION.A;

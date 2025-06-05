@@ -9,11 +9,11 @@ import {
 
 export const MAX_LEVEL = 80;
 
-export const OSINT_CHARACTER_LIMIT = 1000;
+export const OSINT_CHARACTER_LIMIT = 1_000;
 
-export const OSINT_GUILD_LIMIT = 1000;
+export const OSINT_GUILD_LIMIT = 500;
 
-export const OSINT_TIMEOUT_TOLERANCE = 30 * 1000;
+export const OSINT_TIMEOUT_TOLERANCE = 30 * 1_000;
 
 export const OSINT_SOURCE_WCL = 'https://www.warcraftlogs.com/character/eu';
 

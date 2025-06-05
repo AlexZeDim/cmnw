@@ -52,7 +52,7 @@ export class GuildsService implements OnApplicationBootstrap {
   async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs = await this.queueGuilds.count();
-      if (jobs > 1000) {
+      if (jobs > 1_000) {
         throw new Error(`${jobs} jobs found`);
       }
 
@@ -67,7 +67,12 @@ export class GuildsService implements OnApplicationBootstrap {
         skip: this.offset,
       });
 
+      const guildsCount = await this.guildsRepository.count();
       this.offset = this.offset + OSINT_GUILD_LIMIT;
+
+      if (this.offset >= guildsCount) {
+        this.offset = 0;
+      }
 
       await lastValueFrom(
         from(guilds).pipe(

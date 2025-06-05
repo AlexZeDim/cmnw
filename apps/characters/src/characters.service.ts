@@ -60,7 +60,12 @@ export class CharactersService implements OnApplicationBootstrap {
         skip: this.offset,
       });
 
+      const charactersCount = await this.charactersRepository.count();
       this.offset = this.offset + OSINT_CHARACTER_LIMIT;
+
+      if (this.offset >= charactersCount) {
+        this.offset = 0;
+      }
 
       await lastValueFrom(
         from(characters).pipe(

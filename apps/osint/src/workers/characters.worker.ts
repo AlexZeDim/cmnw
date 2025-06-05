@@ -463,6 +463,7 @@ export class CharactersWorker extends WorkerHost {
       const hashA: Array<string | number> = [];
       const characterPetsEntities: Array<CharactersPetsEntity> = [];
       const petsEntities = new Map<number, PetsEntity>([]);
+
       const response = await BNet.query<BlizzardApiPetsCollection>(
         `/profile/wow/character/${realmSlug}/${nameSlug}/collections/pets`,
         apiConstParams(API_HEADERS_ENUM.PROFILE),

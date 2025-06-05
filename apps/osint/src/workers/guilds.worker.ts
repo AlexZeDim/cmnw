@@ -91,6 +91,7 @@ export class GuildsWorker extends WorkerHost {
       const { data: args } = job;
 
       const { guildEntity, isNew } = await this.guildExistOrCreate(args);
+
       const guildEntityOriginal = this.guildsRepository.create(guildEntity);
       const nameSlug = toSlug(guildEntity.name);
 
@@ -115,7 +116,7 @@ export class GuildsWorker extends WorkerHost {
       /**
        * Inherit safe values
        * from args in any case
-       * summary overwrite later
+       * summary overwrites later
        */
       if (args.updatedBy) guildEntity.updatedBy = args.updatedBy;
       await job.updateProgress(10);
@@ -130,7 +131,7 @@ export class GuildsWorker extends WorkerHost {
       await job.updateProgress(50);
 
       if (isNew) {
-        /** Check was guild renamed */
+        // --- Check was guild renamed --- //
         const guildEntityById = await this.guildsRepository.findOneBy({
           id: guildEntityOriginal.id,
           realm: guildEntityOriginal.realm,
@@ -774,6 +775,7 @@ export class GuildsWorker extends WorkerHost {
     return { guildEntity, isNew: false };
   }
 
+  // @todo check diff
   private async diffGuildEntity(original: GuildsEntity, updated: GuildsEntity) {
     const logEntities: LogsEntity[] = [];
     const isNameChanged = original.name !== updated.name;

@@ -43,7 +43,8 @@ RUN npx playwright install
 RUN nest build characters \
   && nest build guilds \
   && nest build osint \
-  && nest build wowprogress
+  && nest build wowprogress \
+  && nest build warcraft-logs
 
 CMD ["node"]
 

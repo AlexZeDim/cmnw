@@ -17,7 +17,7 @@ import {
   charactersQueue,
   EVENT_LOG,
   FACTION,
-  findRealm,
+  findRealm, getRandomProxy,
   GuildExistsOrCreate,
   GuildJobQueue,
   guildsQueue,
@@ -94,11 +94,14 @@ export class GuildsWorker extends WorkerHost {
 
       await job.updateProgress(5);
 
+      const httpsAgent = await getRandomProxy(this.keysRepository);
+
       this.BNet = new BlizzAPI({
         region: 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
+        httpsAgent,
       });
       /**
        * Inherit safe values

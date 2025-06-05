@@ -1,8 +1,10 @@
 import { ArrayContains, LessThan, Repository } from 'typeorm';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { KeysEntity } from '@app/pg';
 import { cryptoRandomIntBetween } from '@app/core/utils';
 import { NotFoundException } from '@nestjs/common';
 import { KEY_LOCK_ERRORS_NUM } from '@app/core/constants';
+import { GLOBAL_PROXY_V4 } from '@app/core/clearance';
 
 export const getKey = async (
   repository: Repository<KeysEntity>,
@@ -48,6 +50,12 @@ export const getKeys = async (
     ? [keyEntities[cryptoRandomIntBetween(0, keyEntities.length - 1)]]
     : keyEntities;
 };
+
+export const getRandomProxy = async (repository: Repository<KeysEntity>): Promise<HttpsProxyAgent<string>> => {
+  const [proxyEntity] = await getKeys(repository, GLOBAL_PROXY_V4, true, false);
+  const proxy = `http://${proxyEntity.client}:${proxyEntity.secret}@${proxyEntity.token}`;
+  return new HttpsProxyAgent(proxy);
+}
 
 export const incErrorCount = async (
   repository: Repository<KeysEntity>,

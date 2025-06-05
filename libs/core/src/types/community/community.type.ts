@@ -1,3 +1,5 @@
+import { API_HEADERS_ENUM, TOLERANCE_ENUM } from '@app/core/constants';
+
 export type LogCharacter = {
   guid: string;
   id: number;
@@ -43,3 +45,11 @@ export type CharacterRaidLogResponse = {
     report: RaidLogReport;
   };
 };
+
+export type ApiConstParams = {
+  header: API_HEADERS_ENUM;
+  tolerance: TOLERANCE_ENUM;
+  isProxyRandom?: boolean;
+  isMultiLocale?: boolean;
+  ifModifiedSince?: string;
+}

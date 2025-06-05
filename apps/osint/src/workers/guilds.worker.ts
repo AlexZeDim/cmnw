@@ -29,7 +29,7 @@ import {
   incErrorCount,
   IRGuildRoster,
   isEuRegion,
-  isGuildRoster,
+  isGuildRoster, OSINT_4_HOURS_MS,
   OSINT_SOURCE,
   PLAYABLE_CLASS,
   toGuid,
@@ -59,7 +59,7 @@ export class GuildsWorker extends WorkerHost {
 
   constructor(
     @InjectQueue(charactersQueue.name)
-    private readonly queue: Queue<CharacterJobQueue, number>,
+    private readonly characterQueue: Queue<CharacterJobQueue, number>,
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectRepository(ProfessionsEntity)
@@ -126,7 +126,7 @@ export class GuildsWorker extends WorkerHost {
 
       const roster = await this.getRoster(guildEntity, this.BNet);
       roster.updatedAt = guildEntity.updatedAt;
-      await this.updateRoster(guildEntityOriginal, roster);
+      await this.updateRoster(guildEntityOriginal, roster, isNew);
       await job.updateProgress(50);
 
       if (isNew) {
@@ -157,7 +157,7 @@ export class GuildsWorker extends WorkerHost {
     }
   }
 
-  private async updateRoster(guildEntity: GuildsEntity, roster: IGuildRoster) {
+  private async updateRoster(guildEntity: GuildsEntity, roster: IGuildRoster, isNew: boolean) {
     try {
       const guildsMembersEntities =
         await this.characterGuildsMembersRepository.findBy({
@@ -171,15 +171,17 @@ export class GuildsWorker extends WorkerHost {
         return;
       }
 
-      const originalRoster = new Map(
-        guildsMembersEntities.map((guildMember) => [
-          guildMember.characterId,
-          guildMember,
-        ]),
-      );
-      const updatedRoster = new Map(
-        updatedRosterMembers.map((member) => [member.id, member]),
-      );
+      const [originalRoster, updatedRoster] = [
+        new Map(
+          guildsMembersEntities.map((guildMember) => [
+            guildMember.characterId,
+            guildMember,
+          ]),
+        ),
+        new Map(
+          updatedRosterMembers.map((member) => [member.id, member]),
+        )
+      ];
 
       const originalRosterCharIds = Array.from(originalRoster.keys());
       const updatedRosterCharIds = Array.from(updatedRoster.keys());
@@ -187,13 +189,14 @@ export class GuildsWorker extends WorkerHost {
       const membersIntersectIds = intersection(
           updatedRosterCharIds,
           originalRosterCharIds,
-        ),
-        membersJoinedIds = difference(updatedRosterCharIds, originalRosterCharIds),
-        membersLeaveIds = difference(originalRosterCharIds, updatedRosterCharIds);
+        );
 
-      const interLength = membersIntersectIds.length,
-        joinsLength = membersJoinedIds.length,
-        leaveLength = membersLeaveIds.length;
+      const membersJoinedIds = difference(updatedRosterCharIds, originalRosterCharIds);
+      const membersLeaveIds = difference(originalRosterCharIds, updatedRosterCharIds);
+
+      const interLength = membersIntersectIds.length;
+      const joinsLength = membersJoinedIds.length;
+      const leaveLength = membersLeaveIds.length;
 
       if (interLength) {
         await lastValueFrom(
@@ -204,6 +207,7 @@ export class GuildsWorker extends WorkerHost {
                 const guildMemberUpdated = updatedRoster.get(guildMemberId);
                 const isRankChanged =
                   guildMemberUpdated.rank !== guildMemberOriginal.rank;
+
                 if (!isRankChanged) return;
 
                 const isNotGuildMaster =
@@ -268,7 +272,7 @@ export class GuildsWorker extends WorkerHost {
         );
       }
 
-      if (joinsLength) {
+      if (joinsLength && !isNew) {
         await lastValueFrom(
           from(membersJoinedIds).pipe(
             mergeMap(async (guildMemberId) => {
@@ -494,11 +498,8 @@ export class GuildsWorker extends WorkerHost {
                 : null;
 
               if (isGM) {
-                /**
-                 * @description Force update GM character
-                 * @description for further diff compare
-                 */
-                await this.queue.add(
+                // --- Force update GM character for further diff compare --- //
+                await this.characterQueue.add(
                   guid,
                   {
                     guid,
@@ -718,7 +719,7 @@ export class GuildsWorker extends WorkerHost {
   private async guildExistOrCreate(
     guild: GuildJobQueue,
   ): Promise<GuildExistsOrCreate> {
-    const forceUpdate = guild.forceUpdate || 1000 * 60 * 60 * 4;
+    const forceUpdate = guild.forceUpdate || OSINT_4_HOURS_MS;
     const nameSlug = toSlug(guild.name);
     const timestampNow = new Date().getTime();
     const realmEntity = await findRealm(this.realmsRepository, guild.realm);
@@ -733,19 +734,20 @@ export class GuildsWorker extends WorkerHost {
     });
 
     if (!guildEntity) {
+
+      const createdBy = guild.createdBy ? guild.createdBy : OSINT_SOURCE.GUILD_GET;
+
       const guildNew = this.guildsRepository.create({
         guid: guid,
-        id: guild.id || 100,
+        id: guild.id || null,
         name: capitalize(guild.name),
         realm: realmEntity.slug,
         realmId: realmEntity.id,
         realmName: realmEntity.name,
         statusCode: 100,
-        createdBy: OSINT_SOURCE.GUILD_GET,
+        createdBy: createdBy,
         updatedBy: OSINT_SOURCE.GUILD_GET,
       });
-
-      if (guild.createdBy) guildNew.createdBy = guild.createdBy;
 
       return { guildEntity: guildNew, isNew: true };
     }

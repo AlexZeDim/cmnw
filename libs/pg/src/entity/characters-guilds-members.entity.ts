@@ -25,7 +25,8 @@ export class CharactersGuildsMembersEntity {
   guildGuid: string;
 
   @Column({
-    nullable: false,
+    nullable: true,
+    default: null,
     type: 'int',
     name: 'guild_id',
   })

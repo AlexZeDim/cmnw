@@ -24,7 +24,7 @@ import {
   OSINT_GUILD_LIMIT,
   OSINT_SOURCE,
   RAID_FACTIONS,
-  RAIDS,
+  HALL_OF_FAME_RAIDS,
   toGuid,
 } from '@app/core';
 
@@ -126,8 +126,8 @@ export class GuildsService implements OnApplicationBootstrap {
         accessToken: key.token,
       });
 
-      for (const raid of RAIDS) {
-        const isOnlyLast = onlyLast && raid !== RAIDS[RAIDS.length - 1];
+      for (const raid of HALL_OF_FAME_RAIDS) {
+        const isOnlyLast = onlyLast && raid !== HALL_OF_FAME_RAIDS[HALL_OF_FAME_RAIDS.length - 1];
         if (isOnlyLast) continue;
         await delay(2);
 

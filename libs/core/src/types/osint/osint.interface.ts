@@ -477,7 +477,7 @@ export interface IGuildSummary {
   realmId: number;
   realm: string;
   realmName: string;
-  createdTimestamp: number;
+  createdTimestamp: Date;
   statusCode: number;
   lastModified: Date;
 }

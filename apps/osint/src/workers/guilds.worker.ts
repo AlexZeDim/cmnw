@@ -434,7 +434,7 @@ export class GuildsWorker extends WorkerHost {
 
       if (!response || typeof response !== 'object') return summary;
 
-      const keys = ['id', 'name', 'achievement_points', 'created_timestamp'];
+      const keys = ['id', 'name', 'achievement_points'];
 
       Object.entries(response).map(([key, value]) => {
         if (keys.includes(key) && value !== null) summary[changeCase.camelCase(key)] = value;
@@ -456,8 +456,9 @@ export class GuildsWorker extends WorkerHost {
         if (key === 'member_count') {
           summary.membersCount = value;
         }
-        // TODO research
+
         if (key === 'last_modified') summary.lastModified = new Date(value);
+        if (key === 'created_timestamp') summary.createdTimestamp = new Date(value);
       });
 
       summary.statusCode = 200;

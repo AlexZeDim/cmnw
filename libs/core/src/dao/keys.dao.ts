@@ -22,7 +22,7 @@ export const getKey = async (
 
   const keyEntity = await repository.findOneBy(findBy);
   if (!keyEntity) {
-    throw new NotFoundException(`${clearance} keys found`);
+    throw new NotFoundException(`No ${clearance} keys found`);
   }
   return keyEntity;
 };

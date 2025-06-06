@@ -100,7 +100,7 @@ export class GuildsService implements OnApplicationBootstrap {
             });
 
             guildIteration = guildIteration + 1;
-            const isKeyRequest = guildIteration % 1000 == 0;
+            const isKeyRequest = guildIteration % 100 == 0;
             if (isKeyRequest) {
               this.keyEntities = await getKeys(this.keysRepository, clearance);
               length = this.keyEntities.length;
@@ -108,8 +108,10 @@ export class GuildsService implements OnApplicationBootstrap {
           }),
         ),
       );
+
+      this.logger.log(`indexGuilds: offset ${this.offset} | ${guilds.length} characters`);
     } catch (errorOrException) {
-      this.logger.error(`indexGuildsFromMongo ${errorOrException}`);
+      this.logger.error(`indexGuilds ${errorOrException}`);
     }
   }
 

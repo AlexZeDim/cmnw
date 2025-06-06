@@ -198,8 +198,8 @@ export class AuctionsService implements OnApplicationBootstrap {
 
     try {
       // Calculate the cutoff timestamp (24 hours ago from now)
-      const twentyFourHoursAgo = new Date();
-      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.setHours(now.getHours() - 24)).getTime();
 
       // Perform the deletion
       const deleteResult = await this.marketRepository

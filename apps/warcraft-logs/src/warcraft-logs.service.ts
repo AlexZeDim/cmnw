@@ -188,7 +188,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       const key = await getKey(this.keysRepository, 'v2');
       if (key) {
         throw new NotFoundException(
-          `Clearance ${GLOBAL_WCL_KEY} keys have been found`,
+          `Clearance ${GLOBAL_WCL_KEY} keys have been not found`,
         );
       }
       // --- A bit skeptical about taking the interval required semaphore --- //

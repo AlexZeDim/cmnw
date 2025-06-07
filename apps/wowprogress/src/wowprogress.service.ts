@@ -75,8 +75,9 @@ export class WowprogressService implements OnApplicationBootstrap {
     init = true,
   ): Promise<void> {
     try {
+      this.logger.warn(`indexWowProgress: init ${init}`);
       if (!init) {
-        throw new BadRequestException(`init: ${init}`);
+        return;
       }
 
       const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');

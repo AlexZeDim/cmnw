@@ -54,7 +54,6 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     await this.indexWarcraftLogs();
-    await this.indexLogs();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
@@ -186,7 +185,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     try {
       await delay(10);
       const key = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
-      if (key) {
+      if (!key) {
         throw new NotFoundException(
           `Clearance ${GLOBAL_WCL_KEY_V2} keys have been not found`,
         );

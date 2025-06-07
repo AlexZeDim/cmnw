@@ -1,7 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { cmnwConfig } from '@app/configuration';
 import { BlizzAPI } from '@alexzedim/blizzapi';
-import { API_HEADERS_ENUM, apiConstParams, getKeys, getRandomProxy, GLOBAL_PROXY_V4 } from '@app/core';
+import {
+  API_HEADERS_ENUM,
+  apiConstParams,
+  getKey,
+  getKeys,
+  getRandomProxy,
+  GLOBAL_PROXY_V4, GLOBAL_WCL_KEY_V1,
+  GLOBAL_WCL_KEY_V2,
+} from '@app/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
 import { Repository } from 'typeorm';
@@ -41,11 +49,19 @@ export class TestsCore {
         `/data/wow/guild/${realmSlug}/${nameSlug}`,
         apiConstParams(API_HEADERS_ENUM.PROFILE),
       );
-      console.log(this.BNet);
     } catch (errorOrException) {
       result = errorOrException;
     }
 
     return result;
+  }
+
+  async getWclKeys() {
+    const keyV1 = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V1);
+    const keysV1 = await getKeys(this.keysRepository, GLOBAL_WCL_KEY_V1);
+    const keyV2 = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
+    const keysV2 = await getKeys(this.keysRepository, GLOBAL_WCL_KEY_V2);
+
+    return [keyV1, keysV1, keyV2, keysV2 ];
   }
 }

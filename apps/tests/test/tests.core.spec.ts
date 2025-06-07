@@ -36,4 +36,11 @@ describe('CORE', () => {
       console.log(result);
     });
   });
+
+  describe('GET WCL KEYS', () => {
+    it('get wcl keys', async () => {
+      const result = await testsService.getWclKeys();
+      console.log(result);
+    });
+  });
 });

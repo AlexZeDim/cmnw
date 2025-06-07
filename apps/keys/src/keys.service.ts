@@ -13,7 +13,7 @@ import { ArrayContains, Repository } from 'typeorm';
 import {
   BlizzardApiKeys,
   GLOBAL_BLIZZARD_KEY,
-  GLOBAL_WCL_KEY,
+  GLOBAL_WCL_KEY_V2,
   IWarcraftLogsToken,
   KEY_LOCK_ERRORS_NUM,
   KEY_STATUS,
@@ -116,7 +116,7 @@ export class KeysService implements OnApplicationBootstrap {
   private async indexWarcraftLogsKeys(): Promise<void> {
     try {
       const keyEntities = await this.keysRepository.findBy({
-        tags: ArrayContains([GLOBAL_WCL_KEY, 'v2']),
+        tags: ArrayContains([GLOBAL_WCL_KEY_V2, 'v2']),
       });
 
       for (const keyEntity of keyEntities) {

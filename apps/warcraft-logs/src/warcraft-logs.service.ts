@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import {
-  GLOBAL_WCL_KEY,
+  GLOBAL_WCL_KEY_V2,
   charactersQueue,
   OSINT_SOURCE,
   GLOBAL_OSINT_KEY,
@@ -185,10 +185,10 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   async indexLogs(): Promise<void> {
     try {
       await delay(10);
-      const key = await getKey(this.keysRepository, 'v2');
+      const key = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
       if (key) {
         throw new NotFoundException(
-          `Clearance ${GLOBAL_WCL_KEY} keys have been not found`,
+          `Clearance ${GLOBAL_WCL_KEY_V2} keys have been not found`,
         );
       }
       // --- A bit skeptical about taking the interval required semaphore --- //

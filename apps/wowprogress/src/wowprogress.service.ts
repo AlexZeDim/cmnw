@@ -16,7 +16,6 @@ import { CharactersProfileEntity, KeysEntity, RealmsEntity } from '@app/pg';
 import { In, Repository } from 'typeorm';
 import { pipeline } from 'node:stream/promises';
 import {
-  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -41,6 +40,7 @@ import {
   ProfileJobQueue,
   profileQueue,
   GLOBAL_OSINT_KEY,
+  getRandomElement,
 } from '@app/core';
 
 @Injectable()
@@ -173,7 +173,7 @@ export class WowprogressService implements OnApplicationBootstrap {
               .unzipSync(buffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH })
               .toString();
 
-            // TODO interface type
+            // @todo interface type
             const json = JSON.parse(data);
             const isJsonValid = json && Array.isArray(json) && json.length;
 
@@ -328,8 +328,6 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       if (!isLfgNewExists) return;
 
-      let index = 0;
-
       const realmsEntity = new Map<string, RealmsEntity>([]);
 
       const isLfgOldExists = Boolean(characterProfileLfgOld.length);
@@ -338,69 +336,87 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       await lastValueFrom(
         from(charactersDiffNew).pipe(
-          mergeMap(async (characterGuid, i) => {
-            const characterQueue = charactersLfg.get(characterGuid);
-            const isRealmInStore = realmsEntity.has(characterQueue.realm);
-
-            const realmEntity = isRealmInStore
-              ? realmsEntity.get(characterQueue.realm)
-              : await findRealm(this.realmsRepository, characterQueue.realm);
-
-            if (!realmEntity) {
-              throw new NotFoundException(
-                `Realm: ${characterQueue.realm} not found`,
-              );
-            }
-
-            if (!isRealmInStore) realmsEntity.set(characterQueue.realm, realmEntity);
-
-            await Promise.allSettled([
-              this.queueProfile.add(characterQueue.guid, {
-                guid: characterQueue.guid,
-                name: characterQueue.name,
-                realm: realmEntity.slug,
-                lookingForGuild,
-                updateRIO: true,
-                updateWCL: true,
-                updateWP: true,
-              }),
-              await this.queueCharacters.add(
-                characterQueue.guid,
-                {
-                  guid: characterQueue.guid,
-                  name: characterQueue.name,
-                  realm: realmEntity.slug,
-                  realmId: realmEntity.id,
-                  realmName: realmEntity.name,
-                  region: 'eu',
-                  clientId: keysEntity[index].client,
-                  clientSecret: keysEntity[index].secret,
-                  accessToken: keysEntity[index].token,
-                  createdBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
-                  updatedBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
-                  requestGuildRank: false,
-                  createOnlyUnique: false,
-                  forceUpdate: 1000 * 60 * 30,
-                  iteration: i,
-                },
-                {
-                  jobId: characterQueue.guid,
-                  priority: 2,
-                },
-              ),
-            ]);
-
-            index++;
-            this.logger.log(
-              `indexWowProgressLfg: Added to character queue: ${characterQueue.guid}`,
-            );
-            if (i >= keysEntity.length) index = 0;
-          }),
+          mergeMap(async (characterGuid, i) =>
+            this.pushCharacterAndProfileToQueue(
+              characterGuid,
+              charactersLfg,
+              realmsEntity,
+              keysEntity,
+              lookingForGuild
+            )
+          ),
         ),
       );
       this.logger.log('————————————————————————————————————');
     } catch (errorOrException) {
       this.logger.error(`indexWowProgressLfg: ${errorOrException}`);
+    }
+  }
+
+  private async pushCharacterAndProfileToQueue(
+    characterGuid: string,
+    charactersLfg: Map<string, ICharacterQueueWP>,
+    realmsEntity: Map<string, RealmsEntity>,
+    keysEntity: KeysEntity[],
+    lookingForGuild: LFG_STATUS
+  ): Promise<void> {
+    try {
+      const characterQueue = charactersLfg.get(characterGuid);
+      const isRealmInStore = realmsEntity.has(characterQueue.realm);
+
+      const realmEntity = isRealmInStore
+        ? realmsEntity.get(characterQueue.realm)
+        : await findRealm(this.realmsRepository, characterQueue.realm);
+
+      if (!realmEntity) {
+        this.logger.warn(`Realm: ${characterQueue.realm} not found`);
+        return;
+      }
+
+      if (!isRealmInStore) realmsEntity.set(characterQueue.realm, realmEntity);
+
+      const key = getRandomElement(keysEntity);
+
+      await Promise.allSettled([
+        this.queueProfile.add(characterQueue.guid, {
+          guid: characterQueue.guid,
+          name: characterQueue.name,
+          realm: realmEntity.slug,
+          lookingForGuild,
+          updateRIO: true,
+          updateWCL: true,
+          updateWP: true,
+        }),
+        await this.queueCharacters.add(
+          characterQueue.guid,
+          {
+            guid: characterQueue.guid,
+            name: characterQueue.name,
+            realm: realmEntity.slug,
+            realmId: realmEntity.id,
+            realmName: realmEntity.name,
+            region: 'eu',
+            clientId: key.client,
+            clientSecret: key.secret,
+            accessToken: key.token,
+            createdBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
+            updatedBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
+            requestGuildRank: false,
+            createOnlyUnique: false,
+            forceUpdate: 1000 * 60 * 30,
+          },
+          {
+            jobId: characterQueue.guid,
+            priority: 2,
+          },
+        ),
+      ]);
+
+      this.logger.log(
+        `pushCharacterAndProfileToQueue: Added to character queue: ${characterQueue.guid}`,
+      );
+    } catch (errorOrException) {
+      this.logger.error(`pushCharacterAndProfileToQueue: ${errorOrException}`);
     }
   }
 

@@ -21,3 +21,5 @@ export const enumKeys = <O extends object, K extends keyof O = keyof O>(
  */
 export const randomInt = (min: number, max: number): number =>
   Math.floor(Math.random() * (max - min + 1) + min);
+
+export const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random()*arr.length)]

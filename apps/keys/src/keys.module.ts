@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { postgresConfig } from '@app/configuration';
 import { KeysService } from './keys.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
+import { postgresConfig } from '@app/configuration';
 
 @Module({
   imports: [

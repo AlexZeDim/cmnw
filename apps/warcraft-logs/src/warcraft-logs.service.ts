@@ -184,11 +184,10 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   async indexLogs(): Promise<void> {
     try {
       await delay(10);
-      const key = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
-      if (!key) {
-        throw new NotFoundException(
-          `Clearance ${GLOBAL_WCL_KEY_V2} keys have been not found`,
-        );
+      const wclKey = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
+      if (!wclKey) {
+        this.logger.warn(`Clearance ${GLOBAL_WCL_KEY_V2} keys have been not found`);
+        return;
       }
       // --- A bit skeptical about taking the interval required semaphore --- //
       const characterRaidLog = await this.charactersRaidLogsRepository.find({
@@ -196,27 +195,39 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         take: 500,
       });
 
+      if (!characterRaidLog.length) {
+        this.logger.warn(`No logs to index`);
+        return;
+      }
+
       await lastValueFrom(
         from(characterRaidLog).pipe(
-          mergeMap(async (characterRaidLogEntity) => {
-            const raidCharacters = await this.getCharactersFromLogs(
-              key.token,
-              characterRaidLogEntity.logId,
-            );
-
-            await this.charactersRaidLogsRepository.update(
-              { logId: characterRaidLogEntity.logId },
-              { isIndexed: true },
-            );
-
-            this.logger.log(`Log: ${characterRaidLogEntity.logId}`);
-
-            await this.charactersToQueue(raidCharacters);
-          }, 5),
+          mergeMap(async (characterRaidLogEntity) =>
+            this.indexLogAndPushCharactersToQueue(characterRaidLogEntity, wclKey), 5),
         ),
       );
     } catch (errorOrException) {
       this.logger.error(`indexLogs: ${errorOrException}`);
+    }
+  }
+
+  async indexLogAndPushCharactersToQueue(characterRaidLogEntity: CharactersRaidLogsEntity, wclKey: KeysEntity) {
+    try {
+      const raidCharacters = await this.getCharactersFromLogs(
+        wclKey.token,
+        characterRaidLogEntity.logId,
+      );
+
+      await this.charactersRaidLogsRepository.update(
+        { logId: characterRaidLogEntity.logId },
+        { isIndexed: true },
+      );
+
+      this.logger.log(`Log: ${characterRaidLogEntity.logId}`);
+
+      await this.charactersToQueue(raidCharacters);
+    } catch (errorOrException) {
+      this.logger.error(`indexLogAndPushCharactersToQueue: ${errorOrException}`);
     }
   }
 

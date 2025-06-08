@@ -133,14 +133,15 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "@app/configuration/(.*)": "<rootDir>/libs/configuration/src/$1",
       "@app/configuration": "<rootDir>/libs/configuration/src",
-      "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
+      "@app/configuration/(.*)": "<rootDir>/libs/configuration/src/$1",
       "@app/core": "<rootDir>/libs/core/src",
-      "@app/pg/(.*)": "<rootDir>/libs/pg/src/$1",
-      "@app/pg": "<rootDir>/libs/pg/src",
+      "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
+      "@app/mongo": "<rootDir>/libs/mongo/src",
       "@app/mongo/(.*)": "<rootDir>/libs/mongo/src/$1",
-      "@app/mongo": "<rootDir>/libs/mongo/src"
+      "@app/pg": "<rootDir>/libs/pg/src",
+      "@app/pg/(.*)": "<rootDir>/libs/pg/src/$1",
+      "^@app/logger(|/.*)$": "<rootDir>/libs/logger/src/$1"
     }
   }
 }

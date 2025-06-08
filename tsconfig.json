@@ -29,17 +29,23 @@
       "@app/core/*": [
         "libs/core/src/*"
       ],
-      "@app/mongo": [
-        "libs/mongo/src"
-      ],
-      "@app/mongo/*": [
-        "libs/mongo/src/*"
-      ],
       "@app/e2e": [
         "libs/e2e/src"
       ],
       "@app/e2e/*": [
         "libs/e2e/src/*"
+      ],
+      "@app/logger": [
+        "libs/logger/src"
+      ],
+      "@app/logger/*": [
+        "libs/logger/src/*"
+      ],
+      "@app/mongo": [
+        "libs/mongo/src"
+      ],
+      "@app/mongo/*": [
+        "libs/mongo/src/*"
       ],
       "@app/pg": [
         "libs/pg/src"

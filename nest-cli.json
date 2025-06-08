@@ -6,70 +6,21 @@
   "compilerOptions": {
     "webpack": true,
     "tsConfigPath": "apps/conglomerat/tsconfig.app.json",
-    "assets": [{"include": "../config/*.yaml", "outDir": "./dist/config"}]
+    "assets": [
+      {
+        "include": "../config/*.yaml",
+        "outDir": "./dist/config"
+      }
+    ]
   },
   "projects": {
-    "conglomerat": {
+    "auctions": {
       "type": "application",
-      "root": "apps/conglomerat",
+      "root": "apps/auctions",
       "entryFile": "main",
-      "sourceRoot": "apps/conglomerat/src",
+      "sourceRoot": "apps/auctions/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
-      }
-    },
-    "configuration": {
-      "type": "library",
-      "root": "libs/configuration",
-      "entryFile": "index",
-      "sourceRoot": "libs/configuration/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/configuration/tsconfig.lib.json"
-      }
-    },
-    "core": {
-      "type": "library",
-      "root": "libs/core",
-      "entryFile": "index",
-      "sourceRoot": "libs/core/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/core/tsconfig.lib.json"
-      }
-    },
-    "realms": {
-      "type": "application",
-      "root": "apps/realms",
-      "entryFile": "main",
-      "sourceRoot": "apps/realms/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/realms/tsconfig.app.json"
-      }
-    },
-    "mongo": {
-      "type": "library",
-      "root": "libs/mongo",
-      "entryFile": "index",
-      "sourceRoot": "libs/mongo/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/mongo/tsconfig.lib.json"
-      }
-    },
-    "keys": {
-      "type": "application",
-      "root": "apps/keys",
-      "entryFile": "main",
-      "sourceRoot": "apps/keys/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/keys/tsconfig.app.json"
-      }
-    },
-    "discord": {
-      "type": "application",
-      "root": "apps/discord",
-      "entryFile": "main",
-      "sourceRoot": "apps/discord/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/discord/tsconfig.app.json"
+        "tsConfigPath": "apps/auctions/tsconfig.app.json"
       }
     },
     "characters": {
@@ -81,13 +32,85 @@
         "tsConfigPath": "apps/characters/tsconfig.app.json"
       }
     },
-    "auctions": {
-      "type": "application",
-      "root": "apps/auctions",
-      "entryFile": "main",
-      "sourceRoot": "apps/auctions/src",
+    "configuration": {
+      "type": "library",
+      "root": "libs/configuration",
+      "entryFile": "index",
+      "sourceRoot": "libs/configuration/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/auctions/tsconfig.app.json"
+        "tsConfigPath": "libs/configuration/tsconfig.lib.json"
+      }
+    },
+    "conglomerat": {
+      "type": "application",
+      "root": "apps/conglomerat",
+      "entryFile": "main",
+      "sourceRoot": "apps/conglomerat/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/conglomerat/tsconfig.app.json"
+      }
+    },
+    "contracts": {
+      "type": "application",
+      "root": "apps/contracts",
+      "entryFile": "main",
+      "sourceRoot": "apps/contracts/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/contracts/tsconfig.app.json"
+      }
+    },
+    "core": {
+      "type": "library",
+      "root": "libs/core",
+      "entryFile": "index",
+      "sourceRoot": "libs/core/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/core/tsconfig.lib.json"
+      }
+    },
+    "discord": {
+      "type": "application",
+      "root": "apps/discord",
+      "entryFile": "main",
+      "sourceRoot": "apps/discord/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/discord/tsconfig.app.json"
+      }
+    },
+    "dma": {
+      "type": "application",
+      "root": "apps/dma",
+      "entryFile": "main",
+      "sourceRoot": "apps/dma/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/dma/tsconfig.app.json"
+      }
+    },
+    "e2e": {
+      "type": "library",
+      "root": "libs/e2e",
+      "entryFile": "index",
+      "sourceRoot": "libs/e2e/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/e2e/tsconfig.lib.json"
+      }
+    },
+    "gold": {
+      "type": "application",
+      "root": "apps/gold",
+      "entryFile": "main",
+      "sourceRoot": "apps/gold/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/gold/tsconfig.app.json"
+      }
+    },
+    "guilds": {
+      "type": "application",
+      "root": "apps/guilds",
+      "entryFile": "main",
+      "sourceRoot": "apps/guilds/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/guilds/tsconfig.app.json"
       }
     },
     "items": {
@@ -99,13 +122,85 @@
         "tsConfigPath": "apps/items/tsconfig.app.json"
       }
     },
-    "guilds": {
+    "keys": {
       "type": "application",
-      "root": "apps/guilds",
+      "root": "apps/keys",
       "entryFile": "main",
-      "sourceRoot": "apps/guilds/src",
+      "sourceRoot": "apps/keys/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/guilds/tsconfig.app.json"
+        "tsConfigPath": "apps/keys/tsconfig.app.json"
+      }
+    },
+    "ladder": {
+      "type": "application",
+      "root": "apps/ladder",
+      "entryFile": "main",
+      "sourceRoot": "apps/ladder/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ladder/tsconfig.app.json"
+      }
+    },
+    "logger": {
+      "type": "library",
+      "root": "libs/logger",
+      "entryFile": "index",
+      "sourceRoot": "libs/logger/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/logger/tsconfig.lib.json"
+      }
+    },
+    "mongo": {
+      "type": "library",
+      "root": "libs/mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/mongo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mongo/tsconfig.lib.json"
+      }
+    },
+    "osint": {
+      "type": "application",
+      "root": "apps/osint",
+      "entryFile": "main",
+      "sourceRoot": "apps/osint/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/osint/tsconfig.app.json"
+      }
+    },
+    "pg": {
+      "type": "library",
+      "root": "libs/pg",
+      "entryFile": "index",
+      "sourceRoot": "libs/pg/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/pg/tsconfig.lib.json"
+      }
+    },
+    "realms": {
+      "type": "application",
+      "root": "apps/realms",
+      "entryFile": "main",
+      "sourceRoot": "apps/realms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/realms/tsconfig.app.json"
+      }
+    },
+    "tests": {
+      "type": "application",
+      "root": "apps/tests",
+      "entryFile": "main",
+      "sourceRoot": "apps/tests/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tests/tsconfig.app.json"
+      }
+    },
+    "valuations": {
+      "type": "application",
+      "root": "apps/valuations",
+      "entryFile": "main",
+      "sourceRoot": "apps/valuations/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/valuations/tsconfig.app.json"
       }
     },
     "warcraft-logs": {
@@ -124,87 +219,6 @@
       "sourceRoot": "apps/wowprogress/src",
       "compilerOptions": {
         "tsConfigPath": "apps/wowprogress/tsconfig.app.json"
-      }
-    },
-    "valuations": {
-      "type": "application",
-      "root": "apps/valuations",
-      "entryFile": "main",
-      "sourceRoot": "apps/valuations/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/valuations/tsconfig.app.json"
-      }
-    },
-    "gold": {
-      "type": "application",
-      "root": "apps/gold",
-      "entryFile": "main",
-      "sourceRoot": "apps/gold/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/gold/tsconfig.app.json"
-      }
-    },
-    "osint": {
-      "type": "application",
-      "root": "apps/osint",
-      "entryFile": "main",
-      "sourceRoot": "apps/osint/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/osint/tsconfig.app.json"
-      }
-    },
-    "dma": {
-      "type": "application",
-      "root": "apps/dma",
-      "entryFile": "main",
-      "sourceRoot": "apps/dma/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/dma/tsconfig.app.json"
-      }
-    },
-    "contracts": {
-      "type": "application",
-      "root": "apps/contracts",
-      "entryFile": "main",
-      "sourceRoot": "apps/contracts/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/contracts/tsconfig.app.json"
-      }
-    },
-    "ladder": {
-      "type": "application",
-      "root": "apps/ladder",
-      "entryFile": "main",
-      "sourceRoot": "apps/ladder/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/ladder/tsconfig.app.json"
-      }
-    },
-    "tests": {
-      "type": "application",
-      "root": "apps/tests",
-      "entryFile": "main",
-      "sourceRoot": "apps/tests/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/tests/tsconfig.app.json"
-      }
-    },
-    "e2e": {
-      "type": "library",
-      "root": "libs/e2e",
-      "entryFile": "index",
-      "sourceRoot": "libs/e2e/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/e2e/tsconfig.lib.json"
-      }
-    },
-    "pg": {
-      "type": "library",
-      "root": "libs/pg",
-      "entryFile": "index",
-      "sourceRoot": "libs/pg/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/pg/tsconfig.lib.json"
       }
     }
   }

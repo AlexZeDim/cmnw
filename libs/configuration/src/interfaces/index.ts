@@ -2,6 +2,7 @@ export { IMongo } from './mongo.interface';
 export { IRedis } from './redis.interface';
 export { ICmnw } from './cmnw.interface';
 export { IKey } from './key.interface';
+export { ILoki } from './loki.interface';
 export { IKeys } from './keys.interface';
 export { IItems } from './items.interface';
 export { IValuations } from './valuations.interface';

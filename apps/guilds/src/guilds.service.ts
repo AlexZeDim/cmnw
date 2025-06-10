@@ -53,7 +53,8 @@ export class GuildsService implements OnApplicationBootstrap {
     try {
       const jobs = await this.queueGuilds.count();
       if (jobs > 1_000) {
-        throw new Error(`${jobs} jobs found`);
+        this.logger.warn(`${jobs} jobs found`);
+        return;
       }
 
       let guildIteration = 0;

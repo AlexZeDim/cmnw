@@ -19,7 +19,8 @@ import {
   charactersQueue,
   EVENT_LOG,
   FACTION,
-  findRealm, getRandomProxy,
+  findRealm,
+  getRandomProxy,
   GuildExistsOrCreate,
   GuildJobQueue,
   guildsQueue,
@@ -29,7 +30,9 @@ import {
   incErrorCount,
   IRGuildRoster,
   isEuRegion,
-  isGuildRoster, OSINT_4_HOURS_MS, OSINT_GM_RANK,
+  isGuildRoster,
+  OSINT_4_HOURS_MS,
+  OSINT_GM_RANK,
   OSINT_SOURCE,
   PLAYABLE_CLASS,
   toGuid,
@@ -116,14 +119,14 @@ export class GuildsWorker extends WorkerHost {
 
       await job.updateProgress(5);
 
-      const httpsAgent = await getRandomProxy(this.keysRepository);
+      // const httpsAgent = await getRandomProxy(this.keysRepository);
 
       this.BNet = new BlizzAPI({
         region: args.region || 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
-        httpsAgent,
+        // httpsAgent,
       });
       /**
        * Inherit safe values
@@ -416,10 +419,10 @@ export class GuildsWorker extends WorkerHost {
         );
       }
     } catch (errorOrException) {
-      this.logger.error(errorOrException, {
+      this.logger.error({
         context: 'updateRoster',
         guildGuid: guildEntity.guid
-      });
+      }, `${errorOrException}`);
     }
   }
 
@@ -476,11 +479,11 @@ export class GuildsWorker extends WorkerHost {
         );
 
       this.logger.error(
-        errorOrException, {
+        {
           context: 'getSummary',
           guildGuid: `${guildNameSlug}@${realmSlug}`,
           statusCode: summary.statusCode
-        },
+        }, `${errorOrException}`
       );
 
       return summary;
@@ -594,11 +597,11 @@ export class GuildsWorker extends WorkerHost {
           BNet.accessTokenObject.access_token,
         );
 
-      this.logger.error(errorOrException, {
+      this.logger.error({
         context: 'getRoster',
         guildGuid: guildEntity.guid,
         statusCode: roster.statusCode
-      });
+      }, `${errorOrException}`);
 
       return roster;
     }
@@ -746,10 +749,10 @@ export class GuildsWorker extends WorkerHost {
       );
     } catch (errorOrException) {
       this.logger.error(
-        errorOrException, {
+        {
           context: 'updateGuildMaster',
           guildGuid: guildEntity.guid,
-        },
+        }, `${errorOrException}`,
       );
     }
   }
@@ -858,10 +861,10 @@ export class GuildsWorker extends WorkerHost {
 
       await this.logsRepository.save(logEntities);
     } catch (errorOrException) {
-      this.logger.error(errorOrException, {
+      this.logger.error({
         context: 'diffGuildEntity',
         guildGuid: original.guid
-      });
+      }, `${errorOrException}`);
     }
   }
 }

@@ -136,14 +136,14 @@ export class CharactersWorker extends WorkerHost {
 
       await job.updateProgress(10);
 
-      const httpsAgent = await getRandomProxy(this.keysRepository);
+      // const httpsAgent = await getRandomProxy(this.keysRepository);
 
       this.BNet = new BlizzAPI({
         region: args.region || 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
-        httpsAgent: httpsAgent,
+        // httpsAgent,
       });
 
       const status = await this.getStatus(
@@ -347,7 +347,7 @@ export class CharactersWorker extends WorkerHost {
 
       const { assets } = response;
 
-      assets.map(({ key, value }) => {
+      assets.forEach(({ key, value }) => {
         if (!CHARACTER_MEDIA_FIELD_MAPPING.has(key)) return;
         media[CHARACTER_MEDIA_FIELD_MAPPING.get(key)] = value;
       });
@@ -426,7 +426,7 @@ export class CharactersWorker extends WorkerHost {
 
       const isNewEntityPets = Boolean(isIndex && mountEntities.length);
       if (isNewEntityPets) {
-        await this.mountsRepository.save(mountEntities);
+        await this.indexMounts(mountEntities);
       }
 
       const removeMountIds = difference(
@@ -446,8 +446,19 @@ export class CharactersWorker extends WorkerHost {
       return mountsCollection;
     } catch (errorOrException) {
       const statusCode = get(errorOrException, 'response.status', 418);
-      this.logger.error(`getMounts: ${nameSlug}@${realmSlug}:${statusCode}`);
+      this.logger.error({ context: 'getMounts', guid: `${nameSlug}@${realmSlug}`, statusCode }, `${errorOrException}`);
       return mountsCollection;
+    }
+  }
+
+  private async indexMounts(mountEntities: MountsEntity[]) {
+    try {
+      const mounts = Array.from(mountEntities.values())
+        .map((pet) => this.mountsRepository.create(pet));
+
+      await this.mountsRepository.save(mounts, { chunk: 10 });
+    } catch (errorOrException) {
+      this.logger.error({ context: 'indexMounts' }, `${errorOrException}`);
     }
   }
 
@@ -519,7 +530,7 @@ export class CharactersWorker extends WorkerHost {
               );
 
               if (isIndexNotUnique) {
-                const isPetExists = await this.petsRepository.exist({
+                const isPetExists = await this.petsRepository.exists({
                   where: { id: creatureId },
                 });
 
@@ -558,7 +569,7 @@ export class CharactersWorker extends WorkerHost {
 
       const isNewEntityPets = Boolean(isIndex && petsEntities.size);
       if (isNewEntityPets) {
-        await this.petsRepository.save(Array.from(petsEntities.values()));
+        await this.indexPets(petsEntities);
       }
 
       const removePetIds = difference(
@@ -583,8 +594,19 @@ export class CharactersWorker extends WorkerHost {
       return petsCollection;
     } catch (errorOrException) {
       const statusCode = get(errorOrException, 'response.status', 418);
-      this.logger.error(`getPets: ${nameSlug}@${realmSlug}:${statusCode}`);
+      this.logger.error({ context: 'getPets', guid: `${nameSlug}@${realmSlug}`, statusCode }, `${errorOrException}`);
       return petsCollection;
+    }
+  }
+
+  private async indexPets(petEntities: Map<number, PetsEntity>) {
+    try {
+      const pets = Array.from(petEntities.values())
+        .map((pet) => this.petsRepository.create(pet));
+
+      await this.petsRepository.save(pets, { chunk: 10 });
+    } catch (errorOrException) {
+      this.logger.error({ context: 'indexPets' }, `${errorOrException}`);
     }
   }
 

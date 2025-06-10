@@ -1,27 +1,35 @@
-import { Injectable, ConsoleLogger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
+import { Injectable, ConsoleLogger, Scope } from '@nestjs/common';
+import { lokiConfig } from '@app/configuration';
+import axios from 'axios';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class LoggerService extends ConsoleLogger {
-  private static lokiUrl = process.env.LOKI_URL;
-  private static lokiToken = process.env.LOKI_TOKEN;
-  private static defaultLabels: Record<string, string> = {
-    app: process.env.APP_NAME || 'not-set',
-    env: process.env.NODE_ENV || 'development',
-  };
-  private static gzip = false;
-  private static onLokiError: (error: any) => void = () => {};
+  private lokiUrl = `http://${lokiConfig.lokiUrl}/loki/api/v1/push`;
+  private logsToLoki = lokiConfig.logToLoki;
+  private logsToConsole = lokiConfig.logToConsole;
+  private gzip = false;
 
-  constructor(
-    private readonly httpService: HttpService
-  ) {
+  private readonly onLokiError: (error: any) => void = () => {};
+  private readonly defaultLabels: Record<string, string> = {
+    app: process.env.APP_NAME || 'not-set',
+    env: process.env.NODE_ENV || 'dev',
+  };
+
+  constructor(appLabel?: string) {
     super();
+    if (appLabel) {
+      this.defaultLabels = {
+        app: appLabel,
+        env: process.env.NODE_ENV || 'dev',
+      };
+      this.setContext(appLabel);
+    }
   }
 
   private sendLokiRequest = (
     labels: Record<string, string>,
     message: string,
-  ): any => {
+  ): void => {
     const data = JSON.stringify({
       streams: [
         {
@@ -31,24 +39,24 @@ export class LoggerService extends ConsoleLogger {
       ],
     });
 
-    this.httpService.axiosRef.request({
+    axios.request({
       method: 'POST',
-      url: `${LoggerService.lokiUrl}/loki/api/v1/push`,
-      headers: LoggerService.gzip
+      url: this.lokiUrl,
+      headers: this.gzip
         ? {
           'Content-Type': 'application/json',
           'Content-Encoding': 'application/gzip',
         }
         : {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${LoggerService.lokiToken}`,
+          // Authorization: `Bearer ${this.lokiToken}`,
         },
       data: data,
     })
       .then()
       .catch((error) => {
-        if (LoggerService.onLokiError) {
-          LoggerService.onLokiError(error);
+        if (this.onLokiError) {
+          this.onLokiError(error);
         } else {
           console.error('error', error.message, error?.response?.data);
         }
@@ -61,16 +69,19 @@ export class LoggerService extends ConsoleLogger {
     context?: string,
     labels?: Record<string, string>,
   ): void {
-    this.sendLokiRequest(
-      {
-        ...LoggerService.defaultLabels,
-        ...labels,
-        context: context ?? this.context,
-        level: 'error',
-      },
-      message,
-    );
-    super.error(message, trace, context);
+    if (this.logsToLoki)
+      this.sendLokiRequest(
+        {
+          ...this.defaultLabels,
+          ...labels,
+          context: context ?? this.context,
+          level: 'error',
+        },
+        message,
+      );
+
+    if (this.logsToConsole)
+      super.error(message, trace, context);
   }
 
   log(
@@ -78,16 +89,19 @@ export class LoggerService extends ConsoleLogger {
     context?: string,
     labels?: Record<string, string>,
   ): void {
-    this.sendLokiRequest(
-      {
-        ...LoggerService.defaultLabels,
-        ...labels,
-        context: context ?? this.context,
-        level: 'info',
-      },
-      message,
-    );
-    super.log(message, context);
+    if (this.logsToLoki)
+      this.sendLokiRequest(
+        {
+          ...this.defaultLabels,
+          ...labels,
+          context: context ?? this.context,
+          level: 'info',
+        },
+        message,
+      );
+
+    if (this.logsToConsole)
+      super.log(message, context);
   }
 
   warn(
@@ -95,16 +109,19 @@ export class LoggerService extends ConsoleLogger {
     context?: string,
     labels?: Record<string, string>,
   ): void {
-    this.sendLokiRequest(
-      {
-        ...LoggerService.defaultLabels,
-        ...labels,
-        context: this.context,
-        level: 'warn',
-      },
-      message,
-    );
-    super.warn(message, context);
+    if (this.logsToLoki)
+      this.sendLokiRequest(
+        {
+          ...this.defaultLabels,
+          ...labels,
+          context: this.context,
+          level: 'warn',
+        },
+        message,
+      );
+
+    if (this.logsToConsole)
+      super.warn(message, context);
   }
 
   debug(
@@ -112,16 +129,19 @@ export class LoggerService extends ConsoleLogger {
     context?: string,
     labels?: Record<string, string>,
   ): void {
-    this.sendLokiRequest(
-      {
-        ...LoggerService.defaultLabels,
-        ...labels,
-        context: this.context,
-        level: 'debug',
-      },
-      message,
-    );
-    super.debug(message, context);
+    if (this.logsToLoki)
+      this.sendLokiRequest(
+        {
+          ...this.defaultLabels,
+          ...labels,
+          context: this.context,
+          level: 'debug',
+        },
+        message,
+      );
+
+    if (this.logsToConsole)
+      super.debug(message, context);
   }
 
   verbose(
@@ -129,15 +149,18 @@ export class LoggerService extends ConsoleLogger {
     context?: string,
     labels?: Record<string, string>,
   ): void {
-    this.sendLokiRequest(
-      {
-        ...LoggerService.defaultLabels,
-        ...labels,
-        context: this.context,
-        level: 'verbose',
-      },
-      message,
-    );
-    super.verbose(message, context);
+    if (this.logsToLoki)
+      this.sendLokiRequest(
+        {
+          ...this.defaultLabels,
+          ...labels,
+          context: this.context,
+          level: 'verbose',
+        },
+        message,
+      );
+
+    if (this.logsToConsole)
+      super.verbose(message, context);
   }
 }

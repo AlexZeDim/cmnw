@@ -21,9 +21,11 @@ export const getKey = async (
       };
 
   const keyEntity = await repository.findOneBy(findBy);
+
   if (!keyEntity) {
     throw new NotFoundException(`No ${clearance} keys found`);
   }
+
   return keyEntity;
 };
 
@@ -43,9 +45,11 @@ export const getKeys = async (
       };
 
   const keyEntities = await repository.findBy(findBy);
+
   if (!keyEntities.length) {
-    throw new NotFoundException(`${keyEntities.length} keys found`);
+    throw new NotFoundException(`No ${clearance} found | ${keyEntities.length} keys`);
   }
+
   return isRandom && keyEntities.length > 1
     ? [keyEntities[cryptoRandomIntBetween(0, keyEntities.length - 1)]]
     : keyEntities;

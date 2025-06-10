@@ -1,7 +1,6 @@
 import { IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  NOTIFICATIONS,
   SWAGGER_CHARACTER_DAYS_FROM,
   SWAGGER_CHARACTER_DAYS_TO,
   SWAGGER_CHARACTER_FACTION,
@@ -46,7 +45,7 @@ export class DiscordSubscriptionDto {
   readonly author_name: string;
 
   @ApiProperty(SWAGGER_DISCORD_TYPE)
-  readonly type: NOTIFICATIONS;
+  readonly type: string;
 
   @ApiProperty(SWAGGER_REALMS_LOCALE)
   @IsOptional()

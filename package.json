@@ -1,17 +1,14 @@
 {
   "name": "cmnw",
-  "version": "6.1.30",
+  "version": "6.2.0",
   "homepage": "https://cmnw.me",
   "description": "Intelligence always wins",
-  "private": true,
   "license": "MPL 2.0",
   "bugs": {
-    "url": "https://github.com/alexzedim/cmnw/issues",
-    "discord": "alexzedim"
+    "url": "https://github.com/alexzedim/cmnw/issues"
   },
   "author": {
     "name": "alexzedim",
-    "email": "alexzedim@gmail.com",
     "url": "https://cmnw.me"
   },
   "repository": {

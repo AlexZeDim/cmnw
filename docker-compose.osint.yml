@@ -5,7 +5,7 @@ services:
     restart: always
     command: [ 'node', 'dist/apps/osint/main.js' ]
     deploy:
-      replicas: 3
+      replicas: 5
     env_file:
       - stack.env
 

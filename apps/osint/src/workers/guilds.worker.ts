@@ -416,7 +416,10 @@ export class GuildsWorker extends WorkerHost {
         );
       }
     } catch (errorOrException) {
-      this.logger.error(`updateRoster: ${guildEntity.guid}:${errorOrException}`);
+      this.logger.error(errorOrException, {
+        context: 'updateRoster',
+        guildGuid: guildEntity.guid
+      });
     }
   }
 
@@ -473,8 +476,13 @@ export class GuildsWorker extends WorkerHost {
         );
 
       this.logger.error(
-        `getSummary: ${guildNameSlug}@${realmSlug}:${summary.statusCode}`,
+        errorOrException, {
+          context: 'getSummary',
+          guildGuid: `${guildNameSlug}@${realmSlug}`,
+          statusCode: summary.statusCode
+        },
       );
+
       return summary;
     }
   }
@@ -549,7 +557,7 @@ export class GuildsWorker extends WorkerHost {
                 id: member.character.id,
                 name: member.character.name,
                 guildNameSlug,
-                rank: member.rank,
+                rank: Number(member.rank),
                 level,
                 class: characterClass,
               };
@@ -578,7 +586,7 @@ export class GuildsWorker extends WorkerHost {
       return roster;
     } catch (errorOrException) {
       roster.statusCode = get(errorOrException, 'response.status', 418);
-      roster.statusCode = get(errorOrException, 'response.status', 418);
+
       const isTooManyRequests = roster.statusCode === 429;
       if (isTooManyRequests)
         await incErrorCount(
@@ -586,7 +594,12 @@ export class GuildsWorker extends WorkerHost {
           BNet.accessTokenObject.access_token,
         );
 
-      this.logger.error(`roster: ${guildEntity.guid}:${roster.statusCode}`);
+      this.logger.error(errorOrException, {
+        context: 'getRoster',
+        guildGuid: guildEntity.guid,
+        statusCode: roster.statusCode
+      });
+
       return roster;
     }
   }
@@ -596,139 +609,149 @@ export class GuildsWorker extends WorkerHost {
     guildEntity: GuildsEntity,
     updatedRoster: IGuildRoster,
   ) {
-    const guildMasterOriginal =
-      await this.characterGuildsMembersRepository.findOneBy({
-        guildGuid: guildEntity.guid,
-        rank: OSINT_GM_RANK,
-      });
+    try {
+      const guildMasterOriginal =
+        await this.characterGuildsMembersRepository.findOneBy({
+          guildGuid: guildEntity.guid,
+          rank: OSINT_GM_RANK,
+        });
 
-    if (!guildMasterOriginal) return;
+      if (!guildMasterOriginal) return;
 
-    const guildMasterUpdated = updatedRoster.members.find(
-      (guildMember) => guildMember.rank === OSINT_GM_RANK,
-    );
-
-    const isGuildMasterCharacterChanged =
-      guildMasterOriginal.characterId !== guildMasterUpdated.id;
-    if (!isGuildMasterCharacterChanged) {
-      this.logger.warn(
-        `Guild ${guildEntity.guid} doesn't change their Guild Master`,
+      const guildMasterUpdated = updatedRoster.members.find(
+        (guildMember) => guildMember.rank === OSINT_GM_RANK,
       );
-      return;
-    }
 
-    const [guildMasterCharacter, guildMasterUpdatedCharacter] = await Promise.all([
-      this.charactersRepository.findOneBy({
-        guid: guildMasterOriginal.characterGuid,
-        hashA: Not(IsNull()),
-      }),
-      this.charactersRepository.findOneBy({
-        guid: guildMasterUpdated.guid,
-        hashA: Not(IsNull()),
-      }),
-    ]);
+      const isGuildMasterCharacterChanged =
+        guildMasterOriginal.characterId !== guildMasterUpdated.id;
 
-    const isGuildMastersHaveCharacters =
-      !!guildMasterCharacter && !!guildMasterUpdatedCharacter;
-    const logEntityGuildMasterEvents: LogsEntity[] = [];
+      if (!isGuildMasterCharacterChanged) {
+        this.logger.warn(
+          `Guild ${guildEntity.guid} doesn't change their Guild Master | original: ${guildMasterOriginal.characterId} | updated: ${guildMasterUpdated.id}`,
+        );
+        return;
+      }
 
-    if (isGuildMastersHaveCharacters) {
-      const isGuildMasterCharactersFamily =
-        guildMasterCharacter.hashA === guildMasterUpdatedCharacter.hashA;
-
-      const logEntityInheritGuildMaster = [
-        this.logsRepository.create({
-          guid: guildEntity.guid,
-          original: guildMasterOriginal.characterGuid,
-          updated: guildMasterUpdated.guid,
-          event: EVENT_LOG.GUILD,
-          action: isGuildMasterCharactersFamily
-            ? ACTION_LOG.INHERIT
-            : ACTION_LOG.OWNERSHIP,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
-        }),
-        this.logsRepository.create({
-          guid: guildEntity.guid,
-          original: guildMasterOriginal.characterGuid,
-          updated: guildMasterUpdated.guid,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.TRANSIT,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
-        }),
-        this.logsRepository.create({
+      const [guildMasterCharacter, guildMasterUpdatedCharacter] = await Promise.all([
+        this.charactersRepository.findOneBy({
           guid: guildMasterOriginal.characterGuid,
-          original: guildEntity.guid,
-          updated: guildEntity.guid,
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TRANSIT,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
+          hashA: Not(IsNull()),
         }),
-        this.logsRepository.create({
+        this.charactersRepository.findOneBy({
           guid: guildMasterUpdated.guid,
-          original: guildEntity.guid,
-          updated: guildEntity.guid,
-          event: EVENT_LOG.CHARACTER,
-          action: isGuildMasterCharactersFamily
-            ? ACTION_LOG.INHERIT
-            : ACTION_LOG.OWNERSHIP,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
+          hashA: Not(IsNull()),
         }),
-      ];
+      ]);
 
-      logEntityGuildMasterEvents.push(...logEntityInheritGuildMaster);
-    } else {
-      const logEntityInheritGuildMaster = [
-        this.logsRepository.create({
-          guid: guildEntity.guid,
-          original: guildMasterOriginal.characterGuid,
-          updated: guildMasterUpdated.guid,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.TITLE,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
-        }),
-        this.logsRepository.create({
-          guid: guildEntity.guid,
-          original: guildMasterOriginal.characterGuid,
-          updated: guildMasterUpdated.guid,
-          event: EVENT_LOG.GUILD,
-          action: ACTION_LOG.TRANSIT,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
-        }),
-        this.logsRepository.create({
-          guid: guildMasterOriginal.characterGuid,
-          original: guildEntity.guid,
-          updated: guildEntity.guid,
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TRANSIT,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
-        }),
-        this.logsRepository.create({
-          guid: guildMasterUpdated.guid,
-          original: guildEntity.guid,
-          updated: guildEntity.guid,
-          event: EVENT_LOG.CHARACTER,
-          action: ACTION_LOG.TITLE,
-          originalAt: guildEntity.updatedAt,
-          updatedAt: updatedRoster.updatedAt,
-        }),
-      ];
+      const logEntityGuildMasterEvents: LogsEntity[] = [];
+      const isGuildMastersHaveCharacters =
+        Boolean(guildMasterCharacter) && Boolean(guildMasterUpdatedCharacter);
 
-      logEntityGuildMasterEvents.push(...logEntityInheritGuildMaster);
+      if (isGuildMastersHaveCharacters) {
+        const isGuildMasterCharactersFamily =
+          guildMasterCharacter.hashA === guildMasterUpdatedCharacter.hashA;
+
+        const logEntityInheritGuildMaster = [
+          this.logsRepository.create({
+            guid: guildEntity.guid,
+            original: guildMasterOriginal.characterGuid,
+            updated: guildMasterUpdated.guid,
+            event: EVENT_LOG.GUILD,
+            action: isGuildMasterCharactersFamily
+              ? ACTION_LOG.INHERIT
+              : ACTION_LOG.OWNERSHIP,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+          this.logsRepository.create({
+            guid: guildEntity.guid,
+            original: guildMasterOriginal.characterGuid,
+            updated: guildMasterUpdated.guid,
+            event: EVENT_LOG.GUILD,
+            action: ACTION_LOG.TRANSIT,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+          this.logsRepository.create({
+            guid: guildMasterOriginal.characterGuid,
+            original: guildEntity.guid,
+            updated: guildEntity.guid,
+            event: EVENT_LOG.CHARACTER,
+            action: ACTION_LOG.TRANSIT,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+          this.logsRepository.create({
+            guid: guildMasterUpdated.guid,
+            original: guildEntity.guid,
+            updated: guildEntity.guid,
+            event: EVENT_LOG.CHARACTER,
+            action: isGuildMasterCharactersFamily
+              ? ACTION_LOG.INHERIT
+              : ACTION_LOG.OWNERSHIP,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+        ];
+
+        logEntityGuildMasterEvents.push(...logEntityInheritGuildMaster);
+      } else {
+        const logEntityInheritGuildMaster = [
+          this.logsRepository.create({
+            guid: guildEntity.guid,
+            original: guildMasterOriginal.characterGuid,
+            updated: guildMasterUpdated.guid,
+            event: EVENT_LOG.GUILD,
+            action: ACTION_LOG.TITLE,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+          this.logsRepository.create({
+            guid: guildEntity.guid,
+            original: guildMasterOriginal.characterGuid,
+            updated: guildMasterUpdated.guid,
+            event: EVENT_LOG.GUILD,
+            action: ACTION_LOG.TRANSIT,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+          this.logsRepository.create({
+            guid: guildMasterOriginal.characterGuid,
+            original: guildEntity.guid,
+            updated: guildEntity.guid,
+            event: EVENT_LOG.CHARACTER,
+            action: ACTION_LOG.TRANSIT,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+          this.logsRepository.create({
+            guid: guildMasterUpdated.guid,
+            original: guildEntity.guid,
+            updated: guildEntity.guid,
+            event: EVENT_LOG.CHARACTER,
+            action: ACTION_LOG.TITLE,
+            originalAt: guildEntity.updatedAt,
+            updatedAt: updatedRoster.updatedAt,
+          }),
+        ];
+
+        logEntityGuildMasterEvents.push(...logEntityInheritGuildMaster);
+      }
+
+      await this.logsRepository.save(logEntityGuildMasterEvents);
+
+      const [logEvent] = logEntityGuildMasterEvents;
+      this.logger.warn(
+        `Guild ${guildEntity.guid} action event ${logEvent.action} has been logged`,
+      );
+    } catch (errorOrException) {
+      this.logger.error(
+        errorOrException, {
+          context: 'updateGuildMaster',
+          guildGuid: guildEntity.guid,
+        },
+      );
     }
-
-    await this.logsRepository.save(logEntityGuildMasterEvents);
-
-    const [logEvent] = logEntityGuildMasterEvents;
-    this.logger.warn(
-      `Guild ${guildEntity.guid} action event ${logEvent.action} has been logged`,
-    );
   }
 
   private async guildExistOrCreate(
@@ -786,52 +809,59 @@ export class GuildsWorker extends WorkerHost {
 
   // @todo check diff
   private async diffGuildEntity(original: GuildsEntity, updated: GuildsEntity) {
-    const logEntities: LogsEntity[] = [];
-    const isNameChanged = original.name !== updated.name;
-    const isFactionChanged = original.faction !== updated.faction;
+    try {
+      const logEntities: LogsEntity[] = [];
+      const isNameChanged = original.name !== updated.name;
+      const isFactionChanged = original.faction !== updated.faction;
 
-    if (!isNameChanged && !isFactionChanged) {
-      this.logger.warn(`Guild ${original.guid} diffs are not detected!`);
-      return;
-    }
+      if (!isNameChanged && !isFactionChanged) {
+        this.logger.warn(`Guild ${original.guid} diffs are not detected!`);
+        return;
+      }
 
-    if (isNameChanged) {
-      await this.logsRepository.update(
-        {
-          guid: original.guid,
-        },
-        {
+      if (isNameChanged) {
+        await this.logsRepository.update(
+          {
+            guid: original.guid,
+          },
+          {
+            guid: updated.guid,
+          },
+        );
+
+        const logEntityNameChanged = this.logsRepository.create({
           guid: updated.guid,
-        },
-      );
+          original: original.name,
+          updated: updated.name,
+          event: EVENT_LOG.GUILD,
+          action: ACTION_LOG.NAME,
+          originalAt: original.updatedAt,
+          updatedAt: updated.updatedAt,
+        });
 
-      const logEntityNameChanged = this.logsRepository.create({
-        guid: updated.guid,
-        original: original.name,
-        updated: updated.name,
-        event: EVENT_LOG.GUILD,
-        action: ACTION_LOG.NAME,
-        originalAt: original.updatedAt,
-        updatedAt: updated.updatedAt,
+        logEntities.push(logEntityNameChanged);
+      }
+
+      if (isFactionChanged) {
+        const logEntityFactionChanged = this.logsRepository.create({
+          guid: updated.guid,
+          original: original.name,
+          updated: updated.name,
+          event: EVENT_LOG.GUILD,
+          action: ACTION_LOG.FACTION,
+          originalAt: original.updatedAt,
+          updatedAt: updated.updatedAt,
+        });
+
+        logEntities.push(logEntityFactionChanged);
+      }
+
+      await this.logsRepository.save(logEntities);
+    } catch (errorOrException) {
+      this.logger.error(errorOrException, {
+        context: 'diffGuildEntity',
+        guildGuid: original.guid
       });
-
-      logEntities.push(logEntityNameChanged);
     }
-
-    if (isFactionChanged) {
-      const logEntityFactionChanged = this.logsRepository.create({
-        guid: updated.guid,
-        original: original.name,
-        updated: updated.name,
-        event: EVENT_LOG.GUILD,
-        action: ACTION_LOG.FACTION,
-        originalAt: original.updatedAt,
-        updatedAt: updated.updatedAt,
-      });
-
-      logEntities.push(logEntityFactionChanged);
-    }
-
-    await this.logsRepository.save(logEntities);
   }
 }

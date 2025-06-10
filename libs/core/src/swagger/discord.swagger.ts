@@ -1,5 +1,4 @@
 import { ApiPropertyOptions } from '@nestjs/swagger';
-import { NOTIFICATIONS } from '@app/core/constants';
 
 export const SWAGGER_DISCORD_ID: ApiPropertyOptions = {
   name: '_id',
@@ -78,5 +77,5 @@ export const SWAGGER_DISCORD_TYPE: ApiPropertyOptions = {
   description: 'Notifications type: recruiting, market or orders',
   type: String,
   required: false,
-  example: NOTIFICATIONS.CANDIDATES,
+  example: 'candidates',
 };

@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FACTION, NOTIFICATIONS } from '@app/core';
+import { FACTION } from '@app/core';
 import { Item } from '@app/mongo';
 
 @Schema()
@@ -58,8 +58,8 @@ export class Subscription extends Document {
   @Prop({ type: String, required: true })
     author_name: string;
 
-  @Prop({ type: String, required: true, enum: NOTIFICATIONS })
-    type: NOTIFICATIONS;
+  @Prop({ type: String, required: true })
+    type: string;
 
   @Prop({ type: Number, default: 0 })
     tolerance: number;

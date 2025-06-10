@@ -9,7 +9,7 @@ const options: JobsOptions = {
 export const guildsQueue: IQueue = {
   name: 'OSINT_Guilds',
   workerOptions: {
-    concurrency: 3,
+    concurrency: 10,
     limiter: {
       max: 5,
       duration: 1000,

@@ -59,13 +59,13 @@
         "tsConfigPath": "apps/contracts/tsconfig.app.json"
       }
     },
-    "core": {
+    "resources": {
       "type": "library",
-      "root": "libs/core",
+      "root": "libs/resources",
       "entryFile": "index",
-      "sourceRoot": "libs/core/src",
+      "sourceRoot": "libs/resources/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/core/tsconfig.lib.json"
+        "tsConfigPath": "libs/resources/tsconfig.lib.json"
       }
     },
     "discord": {

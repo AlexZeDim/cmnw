@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { WowprogressService } from './wowprogress.service';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
-import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
+import { charactersQueue, guildsQueue, profileQueue } from '@app/resources';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';

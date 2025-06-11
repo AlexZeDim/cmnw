@@ -19,7 +19,7 @@ import {
   ItemJobQueue,
   itemsQueue,
   toStringOrNumber,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class ItemsService implements OnApplicationBootstrap {

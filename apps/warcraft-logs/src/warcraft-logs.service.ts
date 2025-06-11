@@ -16,12 +16,12 @@ import {
   isCharacterRaidLogResponse,
   RaidCharacter,
   toGuid,
-} from '@app/core';
+} from '@app/resources';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { delay } from '@app/core';
+import { delay } from '@app/resources';
 import { warcraftLogsConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
 import { from, lastValueFrom } from 'rxjs';

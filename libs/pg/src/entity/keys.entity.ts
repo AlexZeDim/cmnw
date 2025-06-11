@@ -1,5 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg/enum';
-import { KEY_STATUS } from '@app/core';
+import { KEY_STATUS } from '@app/resources';
 import {
   Column,
   CreateDateColumn,

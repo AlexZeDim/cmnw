@@ -9,7 +9,7 @@ import {
   getRandomProxy,
   GLOBAL_PROXY_V4, GLOBAL_WCL_KEY_V1,
   GLOBAL_WCL_KEY_V2,
-} from '@app/core';
+} from '@app/resources';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity } from '@app/pg';
 import { Repository } from 'typeorm';

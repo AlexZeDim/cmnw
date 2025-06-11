@@ -1,5 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg/enum';
-import { LFG_STATUS, IRaiderIORaidProgress } from '@app/core';
+import { LFG_STATUS, IRaiderIORaidProgress } from '@app/resources';
 import {
   Column,
   CreateDateColumn,

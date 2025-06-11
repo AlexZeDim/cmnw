@@ -40,7 +40,7 @@ import {
   toDate,
   toGuid,
   toSlug,
-} from '@app/core';
+} from '@app/resources';
 
 import {
   CharactersEntity,

@@ -134,8 +134,8 @@
     "moduleNameMapper": {
       "@app/configuration": "<rootDir>/libs/configuration/src",
       "@app/configuration/(.*)": "<rootDir>/libs/configuration/src/$1",
-      "@app/core": "<rootDir>/libs/core/src",
-      "@app/core/(.*)": "<rootDir>/libs/core/src/$1",
+      "@app/resources": "<rootDir>/libs/resources/src",
+      "@app/resources/(.*)": "<rootDir>/libs/resources/src/$1",
       "@app/mongo": "<rootDir>/libs/mongo/src",
       "@app/mongo/(.*)": "<rootDir>/libs/mongo/src/$1",
       "@app/pg": "<rootDir>/libs/pg/src",

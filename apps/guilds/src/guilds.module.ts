@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { GuildsService } from './guilds.service';
 import { BullModule } from '@nestjs/bullmq';
-import { guildsQueue } from '@app/core/queues/guilds.queue';
+import { guildsQueue } from '@app/resources/queues/guilds.queue';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GuildsEntity, KeysEntity } from '@app/pg';

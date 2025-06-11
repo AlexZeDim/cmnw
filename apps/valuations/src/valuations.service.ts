@@ -7,7 +7,7 @@ import {
   IQItemValuation, IVARealm,
   VALUATION_TYPE,
   valuationsQueue,
-} from '@app/core';
+} from '@app/resources';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { valuationsConfig } from '@app/configuration';

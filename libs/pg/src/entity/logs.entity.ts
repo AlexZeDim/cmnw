@@ -1,5 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg/enum';
-import { ACTION_LOG, EVENT_LOG } from '@app/core';
+import { ACTION_LOG, EVENT_LOG } from '@app/resources';
 import {
   Column,
   CreateDateColumn,

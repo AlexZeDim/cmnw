@@ -26,7 +26,7 @@ import {
   REALM_ENTITY_ANY,
   toGold,
   transformPrice,
-} from '@app/core';
+} from '@app/resources';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 
 @Processor(auctionsQueue.name, auctionsQueue.workerOptions)

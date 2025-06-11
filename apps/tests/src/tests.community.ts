@@ -8,7 +8,7 @@ import {
   IWarcraftLogsConfig,
   RaidCharacter,
   toGuid,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class TestsCommunity {

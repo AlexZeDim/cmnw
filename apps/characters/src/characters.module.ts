@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { BullModule } from '@nestjs/bullmq';
-import { charactersQueue } from '@app/core';
+import { charactersQueue } from '@app/resources';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CharactersEntity, KeysEntity } from '@app/pg';

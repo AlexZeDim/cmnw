@@ -41,7 +41,7 @@ import {
   OSINT_SOURCE,
   RealmDto,
   toGuid,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class OsintService {

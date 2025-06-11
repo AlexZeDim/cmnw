@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { AuctionsService } from './auctions.service';
 import { BullModule } from '@nestjs/bullmq';
-import { auctionsQueue } from '@app/core';
+import { auctionsQueue } from '@app/resources';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { TypeOrmModule } from '@nestjs/typeorm';

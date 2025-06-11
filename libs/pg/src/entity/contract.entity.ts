@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn } from 'typeorm';
 import { CMNW_ENTITY_ENUM } from '@app/pg/enum';
-import { CONTRACT_TYPE } from '@app/core';
+import { CONTRACT_TYPE } from '@app/resources';
 
 @Entity({ name: CMNW_ENTITY_ENUM.CONTRACTS })
 export class ContractEntity {

@@ -1,5 +1,5 @@
 import { CMNW_ENTITY_ENUM } from '@app/pg';
-import { ItemNames } from '@app/core';
+import { ItemNames } from '@app/resources';
 import {
   Column,
   CreateDateColumn,

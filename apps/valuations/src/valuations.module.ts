@@ -3,7 +3,7 @@ import { ValuationsService } from './valuations.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongoConfig, mongoOptionsConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
-import { valuationsQueue } from '@app/core';
+import { valuationsQueue } from '@app/resources';
 import { ScheduleModule } from '@nestjs/schedule';
 import {
   Market,

@@ -24,7 +24,7 @@ import {
   toStringOrNumber,
   SKILL_LINE_KEY_MAPPING,
   SPELL_EFFECT_KEY_MAPPING,
-} from '@app/core';
+} from '@app/resources';
 import { itemsConfig } from '@app/configuration';
 
 @Injectable()

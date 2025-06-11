@@ -5,7 +5,7 @@ import {
   GLOBAL_OSINT_KEY,
   OSINT_CHARACTER_LIMIT,
   OSINT_SOURCE,
-} from '@app/core';
+} from '@app/resources';
 
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';

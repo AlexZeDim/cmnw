@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { postgresConfig, redisConfig } from '@app/configuration';
-import { charactersQueue, guildsQueue, profileQueue } from '@app/core';
+import { charactersQueue, guildsQueue, profileQueue } from '@app/resources';
 import { HttpModule } from '@nestjs/axios';
 import { CharactersWorker, GuildsWorker, ProfileWorker } from './workers';
 import { TypeOrmModule } from '@nestjs/typeorm';

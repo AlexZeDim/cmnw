@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
-import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/core';
+import { auctionsQueue, itemsQueue, pricingQueue, valuationsQueue } from '@app/resources';
 import { AuctionsWorker, ItemsWorker } from './workers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ItemsEntity, KeysEntity, MarketEntity, RealmsEntity } from '@app/pg';

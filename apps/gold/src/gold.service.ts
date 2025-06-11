@@ -16,7 +16,7 @@ import {
   isGold,
   MARKET_TYPE,
   round,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class GoldService {

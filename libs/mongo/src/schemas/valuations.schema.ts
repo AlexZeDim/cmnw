@@ -1,6 +1,6 @@
 import { Document, ObjectId, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FLAG_TYPE, VALUATION_TYPE } from '@app/core';
+import { FLAG_TYPE, VALUATION_TYPE } from '@app/resources';
 import { Item } from '@app/mongo/schemas/items.schema';
 
 @Schema()

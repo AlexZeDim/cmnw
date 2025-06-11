@@ -41,7 +41,7 @@ import {
   profileQueue,
   GLOBAL_OSINT_KEY,
   getRandomElement,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class WowprogressService implements OnApplicationBootstrap {

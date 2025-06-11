@@ -28,7 +28,7 @@ import {
   apiConstParams,
   API_HEADERS_ENUM,
   toGuid,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class LadderService implements OnApplicationBootstrap {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { cmnwConfig } from '@app/configuration';
 import { BlizzAPI } from '@alexzedim/blizzapi';
-import { API_HEADERS_ENUM, apiConstParams, TOLERANCE_ENUM } from '@app/core';
+import { API_HEADERS_ENUM, apiConstParams, TOLERANCE_ENUM } from '@app/resources';
 
 @Injectable()
 export class TestsDma {

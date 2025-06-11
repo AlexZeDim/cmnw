@@ -12,7 +12,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { AccountGetDto } from '@app/core/dto/account-get.dto';
+import { AccountGetDto } from '@app/resources/dto/account-get.dto';
 
 @ApiTags('auth')
 @Controller('auth')

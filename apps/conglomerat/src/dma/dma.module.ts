@@ -3,7 +3,7 @@ import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
 import { DmaController } from './dma.controller';
 import { DmaService } from './dma.service';
-import { valuationsQueue } from '@app/core';
+import { valuationsQueue } from '@app/resources';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MarketEntity } from '@app/pg';

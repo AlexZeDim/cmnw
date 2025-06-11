@@ -13,7 +13,7 @@ import {
   valuationsQueue,
   WOW_TOKEN_ITEM_ID,
   WowtokenDto,
-} from '@app/core';
+} from '@app/resources';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { InjectRedis } from '@nestjs-modules/ioredis';

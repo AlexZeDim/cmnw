@@ -3,7 +3,7 @@ import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
 import { OsintController } from './osint.controller';
 import { OsintService } from './osint.service';
-import { charactersQueue, guildsQueue } from '@app/core';
+import { charactersQueue, guildsQueue } from '@app/resources';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   CharactersEntity,

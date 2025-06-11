@@ -21,7 +21,7 @@ import {
   toGold,
   TOLERANCE_ENUM,
   VALUATION_TYPE,
-} from '@app/core';
+} from '@app/resources';
 
 
 @Processor(itemsQueue.name, itemsQueue.workerOptions)

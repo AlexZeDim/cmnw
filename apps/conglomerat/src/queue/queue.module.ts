@@ -12,7 +12,7 @@ import {
   pricingQueue,
   realmsQueue,
   valuationsQueue,
-} from '@app/core';
+} from '@app/resources';
 
 @Module({
   imports: [

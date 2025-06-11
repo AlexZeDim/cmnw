@@ -37,7 +37,7 @@ import {
   PLAYABLE_CLASS, STATUS_CODES,
   toGuid,
   toSlug,
-} from '@app/core';
+} from '@app/resources';
 
 import {
   CharactersEntity,

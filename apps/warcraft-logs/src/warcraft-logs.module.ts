@@ -3,7 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { WarcraftLogsService } from './warcraft-logs.service';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
-import { charactersQueue } from '@app/core';
+import { charactersQueue } from '@app/resources';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CharactersRaidLogsEntity, KeysEntity, RealmsEntity } from '@app/pg';

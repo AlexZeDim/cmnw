@@ -24,7 +24,7 @@ import {
   RaiderIoCharacterMappingKey,
   findRealm,
   capitalize,
-} from '@app/core';
+} from '@app/resources';
 
 @Processor(profileQueue.name, profileQueue.workerOptions)
 @Injectable()

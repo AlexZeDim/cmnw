@@ -29,7 +29,7 @@ import {
   ItemValuationsDto,
   ReqGetItemDto,
   WowtokenDto,
-} from '@app/core';
+} from '@app/resources';
 
 @ApiTags('dma')
 @Controller('dma')

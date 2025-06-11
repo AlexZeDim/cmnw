@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { MARKET_TYPE } from '@app/core';
+import { MARKET_TYPE } from '@app/resources';
 
 @Schema({ timestamps: true })
 export class Market extends Document {

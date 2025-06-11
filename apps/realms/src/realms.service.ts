@@ -19,7 +19,7 @@ import {
   REALM_ENTITY_ANY,
   RealmJobQueue,
   realmsQueue,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class RealmsService implements OnModuleInit {

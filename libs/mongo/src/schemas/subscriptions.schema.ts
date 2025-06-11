@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { FACTION } from '@app/core';
+import { FACTION } from '@app/resources';
 import { Item } from '@app/mongo';
 
 @Schema()

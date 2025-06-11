@@ -20,7 +20,7 @@ import {
   toLocale,
   transformConnectedRealmId,
   transformNamedField,
-} from '@app/core';
+} from '@app/resources';
 
 @Processor(realmsQueue.name, realmsQueue.workerOptions)
 @Injectable()

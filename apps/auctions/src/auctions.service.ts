@@ -24,7 +24,7 @@ import {
   MARKET_TYPE, REALM_ENTITY_ANY,
   toGold,
   TOLERANCE_ENUM, WOW_TOKEN_ITEM_ID,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {

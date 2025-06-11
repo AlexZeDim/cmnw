@@ -28,7 +28,7 @@ import {
   REALM_ENTITY_ANY,
   toSlug,
   VALUATION_TYPE,
-} from '@app/core';
+} from '@app/resources';
 import { mergeMap } from 'rxjs/operators';
 import * as cheerio from 'cheerio';
 import fs from 'fs-extra';

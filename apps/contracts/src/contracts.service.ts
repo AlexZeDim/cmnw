@@ -14,7 +14,7 @@ import {
   IItemPriceAndQuantity,
   isContractArraysEmpty,
   WOW_TOKEN_ITEM_ID,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class ContractsService implements OnApplicationBootstrap {

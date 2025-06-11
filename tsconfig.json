@@ -23,11 +23,11 @@
       "@app/configuration/*": [
         "libs/configuration/src/*"
       ],
-      "@app/core": [
-        "libs/core/src"
+      "@app/resources": [
+        "libs/resources/src"
       ],
-      "@app/core/*": [
-        "libs/core/src/*"
+      "@app/resources/*": [
+        "libs/resources/src/*"
       ],
       "@app/e2e": [
         "libs/e2e/src"

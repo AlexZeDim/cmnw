@@ -17,7 +17,7 @@ import {
   IWarcraftLogsToken,
   KEY_LOCK_ERRORS_NUM,
   KEY_STATUS,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class KeysService implements OnApplicationBootstrap {

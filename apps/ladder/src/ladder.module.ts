@@ -5,7 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { BullModule } from '@nestjs/bullmq';
-import { charactersQueue, guildsQueue } from '@app/core';
+import { charactersQueue, guildsQueue } from '@app/resources';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysEntity, RealmsEntity } from '@app/pg';
 

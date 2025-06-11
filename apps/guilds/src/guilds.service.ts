@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { guildsQueue } from '@app/core/queues/guilds.queue';
+import { guildsQueue } from '@app/resources/queues/guilds.queue';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GuildsEntity, KeysEntity } from '@app/pg';
@@ -26,7 +26,7 @@ import {
   RAID_FACTIONS,
   HALL_OF_FAME_RAIDS,
   toGuid,
-} from '@app/core';
+} from '@app/resources';
 
 @Injectable()
 export class GuildsService implements OnApplicationBootstrap {

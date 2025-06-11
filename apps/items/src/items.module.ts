@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ItemsService } from './items.service';
 import { PricingService } from './pricing.service';
 import { BullModule } from '@nestjs/bullmq';
-import { itemsQueue, pricingQueue } from '@app/core';
+import { itemsQueue, pricingQueue } from '@app/resources';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { postgresConfig, redisConfig } from '@app/configuration';

@@ -28,7 +28,7 @@ import {
   CharactersLfgDto,
   GuildIdDto,
   RealmDto,
-} from '@app/core';
+} from '@app/resources';
 
 @ApiTags('osint')
 @Controller('osint')

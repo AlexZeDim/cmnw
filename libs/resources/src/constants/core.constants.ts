@@ -16,3 +16,11 @@ export enum APP_LABELS {
   WCL = 'warcraft-logs',
   W = 'wowprogress',
 }
+
+export enum KEY_LOCK {
+  AUCTION = 'auction',
+  DMA = 'dma',
+  MARKET = 'market',
+  WARCRAFT_LOGS = 'warcraft-logs',
+  WOWPROGRESS = 'wowprogress',
+}

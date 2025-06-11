@@ -106,7 +106,12 @@ export class ProfileWorker extends WorkerHost {
       await this.charactersProfileRepository.save(profileEntity);
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(errorOrException);
+      this.logger.error({
+        context: 'ProfileWorker',
+        guid: job.data.guid,
+        error: JSON.stringify(errorOrException),
+      });
+
       return 500;
     }
   }
@@ -145,9 +150,15 @@ export class ProfileWorker extends WorkerHost {
       }
 
       warcraftLogsProfile.updatedByWarcraftLogs = new Date();
+
       return warcraftLogsProfile;
     } catch (errorOrException) {
-      this.logger.error(`getWarcraftLogs ${name}@${realmSlug}:${errorOrException}`);
+      this.logger.error({
+        context: 'getWarcraftLogs',
+        guid: `${name}@${realmSlug}`,
+        error: JSON.stringify(errorOrException),
+      });
+
       return warcraftLogsProfile;
     }
   }
@@ -202,21 +213,19 @@ export class ProfileWorker extends WorkerHost {
       );
 
       wowProgressProfile.updatedByWowProgress = new Date();
+
       return wowProgressProfile;
     } catch (errorOrException) {
-      this.logger.error(
-        `getWowProgressProfile ${name}@${realmSlug}:${errorOrException}`,
-      );
+      this.logger.error({
+        context: 'getWowProgressProfile',
+        guid: `${name}@${realmSlug}`,
+        error: JSON.stringify(errorOrException),
+      });
+
       return wowProgressProfile;
     }
   }
 
-  /**
-   * @description
-   * @param name
-   * @param realmSlug
-   * @private
-   */
   private async getRaiderIoProfile(name: string, realmSlug: string) {
     const rioProfileCharacter = this.charactersProfileRepository.create();
     try {
@@ -258,7 +267,12 @@ export class ProfileWorker extends WorkerHost {
 
       return rioProfileCharacter;
     } catch (errorOrException) {
-      this.logger.error(`getRaiderIO ${name}@${realmSlug}:${errorOrException}`);
+      this.logger.error({
+        context: 'getRaiderIO',
+        guid: `${name}@${realmSlug}`,
+        error: JSON.stringify(errorOrException),
+      });
+
       return rioProfileCharacter;
     }
   }

@@ -151,11 +151,12 @@ export class AuctionsWorker extends WorkerHost {
 
       if (responseError) {
         const statusCode = errorOrException.response.status;
-        this.logger.warn(`No new data available - ${errorOrException.response.statusText}`);
+        this.logger.warn(`realm ${job.data.connectedRealmId} | No new data available - ${errorOrException.response.statusText}`);
         return Promise.resolve(statusCode);
       } else {
         await job.log(errorOrException);
         this.logger.error({
+          connectedRealmId: job.data.connectedRealmId,
           context: 'AuctionsWorker',
           error: JSON.stringify(errorOrException)
         });

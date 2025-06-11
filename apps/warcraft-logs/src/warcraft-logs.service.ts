@@ -15,7 +15,7 @@ import {
   getKeys,
   isCharacterRaidLogResponse,
   RaidCharacter,
-  toGuid,
+  toGuid, KEY_LOCK,
 } from '@app/resources';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -57,12 +57,21 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
+    await this.indexLogs();
     await this.indexWarcraftLogs();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async indexWarcraftLogs(): Promise<void> {
     try {
+      const lock = Boolean(await this.redisService.exists(KEY_LOCK.WARCRAFT_LOGS));
+      if (lock) {
+        this.logger.warn(`indexWarcraftLogs is already running`);
+        return;
+      }
+
+      await this.redisService.set(KEY_LOCK.WARCRAFT_LOGS, '1', 'EX', 60 * 60 * 23);
+
       const realmsEntities = await this.realmsRepository.findBy({
         warcraftLogsId: Not(IsNull()),
       });
@@ -70,6 +79,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       for (const realmEntity of realmsEntities) {
         await this.indexCharacterRaidLogs(realmEntity);
       }
+
     } catch (errorOrException) {
       this.logger.error(
         {
@@ -77,6 +87,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           error: JSON.stringify(errorOrException),
         }
       );
+    } finally {
+      await this.redisService.del(KEY_LOCK.WARCRAFT_LOGS);
     }
   }
 
@@ -208,7 +220,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         return;
       }
 
-      await this.redisService.set(GLOBAL_WCL_KEY_V2, '1', 'EX', 60 * 60 * 6);
+      await this.redisService.set(GLOBAL_WCL_KEY_V2, '1', 'EX', 60 * 60 * 5);
 
       await delay(10);
       const wclKey = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
@@ -230,8 +242,6 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         ),
       );
 
-      await this.redisService.del(GLOBAL_WCL_KEY_V2);
-
       this.logger.log(`indexLogs: character raid logs | ${characterRaidLog.length}`);
     } catch (errorOrException) {
       this.logger.error(
@@ -240,6 +250,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
           error: JSON.stringify(errorOrException),
         }
       );
+    } finally {
+      await this.redisService.del(GLOBAL_WCL_KEY_V2);
     }
   }
 

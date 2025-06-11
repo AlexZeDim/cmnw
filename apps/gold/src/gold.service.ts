@@ -14,7 +14,7 @@ import {
   findRealm, GOLD_ITEM_ENTITY,
   IGold,
   isGold,
-  MARKET_TYPE,
+  MARKET_TYPE, REALM_ENTITY_ANY,
   round,
 } from '@app/resources';
 
@@ -75,7 +75,7 @@ export class GoldService {
 
               const connectedRealmId =
                 !realmEntity && order.realm === 'Любой'
-                  ? 1
+                  ? REALM_ENTITY_ANY.id
                   : realmEntity
                   ? realmEntity.connectedRealmId
                   : 0;
@@ -83,6 +83,7 @@ export class GoldService {
               const isValid = Boolean(
                 connectedRealmId && order.price && order.quantity,
               );
+
               if (!isValid) {
                 this.logger.log(order.realm);
                 return;
@@ -136,7 +137,12 @@ export class GoldService {
 
               marketOrders.push(marketEntity);
             } catch (error) {
-              this.logger.error(`indexGold ${error}`);
+              this.logger.error(
+                {
+                  context: 'goldOrders',
+                  error: JSON.stringify(error),
+                }
+              );
             }
           }, 5),
         ),
@@ -144,7 +150,7 @@ export class GoldService {
 
       const ordersCount = marketOrders.length;
       this.logger.log(
-        `indexGold: ${marketOrders.length} orders on timestamp: ${timestamp} successfully inserted`,
+        `indexGold: ${marketOrders.length} orders on timestamp: ${timestamp} inserted`,
       );
 
       if (!ordersCount) return;

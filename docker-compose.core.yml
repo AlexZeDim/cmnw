@@ -4,7 +4,7 @@ services:
     container_name: realms
     image: ghcr.io/alexzedim/core:latest
     restart: always
-    command: [ 'node', 'dist/apps/realms/main.js' ]
+    command: [ 'node', 'dist/apps/core/main.js' ]
     env_file:
       - stack.env
 
@@ -12,6 +12,6 @@ services:
     container_name: keys
     image: ghcr.io/alexzedim/core:latest
     restart: always
-    command: [ 'node', 'dist/apps/keys/main.js' ]
+    command: [ 'node', 'dist/apps/core/main.js' ]
     env_file:
       - stack.env

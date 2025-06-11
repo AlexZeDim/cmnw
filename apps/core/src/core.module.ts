@@ -3,7 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeysService, RealmsWorker, RealmsService } from './services';
-import { KeysEntity } from '@app/pg';
+import { KeysEntity, RealmsEntity } from '@app/pg';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
 import { realmsQueue } from '@app/resources';
@@ -15,7 +15,7 @@ import { realmsQueue } from '@app/resources';
     HttpModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
-    TypeOrmModule.forFeature([KeysEntity]),
+    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
     BullModule.forRoot({
       connection: {
         host: redisConfig.host,

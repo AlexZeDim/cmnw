@@ -8,8 +8,6 @@ import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
 import { realmsQueue } from '@app/resources';
 
-
-
 @Module({
   imports: [
     HttpModule,

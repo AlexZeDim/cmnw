@@ -39,7 +39,7 @@ export class CharactersService implements OnApplicationBootstrap {
     await this.indexCharacters(GLOBAL_OSINT_KEY);
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   private async indexCharacters(
     clearance: string = GLOBAL_OSINT_KEY,
   ): Promise<void> {
@@ -70,6 +70,7 @@ export class CharactersService implements OnApplicationBootstrap {
       this.offset = this.offset + OSINT_CHARACTER_LIMIT;
 
       if (this.offset >= charactersCount) {
+        this.logger.warn(`END_OF offset ${this.offset} >= charactersCount ${charactersCount}`);
         this.offset = 0;
       }
 

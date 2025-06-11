@@ -48,7 +48,7 @@ export class GuildsService implements OnApplicationBootstrap {
     await this.indexHallOfFame(GLOBAL_OSINT_KEY, false);
   }
 
-  @Cron(CronExpression.EVERY_4_HOURS)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {
       const jobs = await this.queueGuilds.count();

@@ -94,7 +94,7 @@ export class AuctionsWorker extends WorkerHost {
 
       await job.updateProgress(15);
 
-      const connectedRealmId = isCommodity ? 1 : args.connectedRealmId;
+      const connectedRealmId = isCommodity ? REALM_ENTITY_ANY.id : args.connectedRealmId;
       const timestamp = DateTime.fromRFC2822(
         marketResponse.lastModified,
       ).toMillis();
@@ -117,7 +117,7 @@ export class AuctionsWorker extends WorkerHost {
 
               await this.marketRepository.save(ordersBulkAuctions);
               iterator += ordersBulkAuctions.length;
-              this.logger.log(`${connectedRealmId} | ${iterator}`);
+              this.logger.log(`${connectedRealmId} | ${iterator} | ${timestamp}`);
             } catch (errorOrException) {
               this.logger.error({
                 context: 'ordersBatch',

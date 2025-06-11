@@ -328,10 +328,18 @@ export class CharactersWorker extends WorkerHost {
           BNet.accessTokenObject.access_token,
         );
 
-      if (status)
+      if (status) {
         this.logger.warn(
           `character: ${nameSlug}@${realmSlug} | status: ${characterStatus.statusCode}`,
         );
+      } else {
+        this.logger.error({
+          context: 'getStatus',
+          guid: `${nameSlug}@${realmSlug}`,
+          statusCode: characterStatus.statusCode,
+          error: JSON.stringify(errorOrException),
+        });
+      }
 
       return characterStatus;
     }

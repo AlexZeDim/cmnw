@@ -89,7 +89,12 @@ export class WowprogressService implements OnApplicationBootstrap {
       await fs.rm(dirPath, { recursive: true, force: true });
       this.logger.warn(`indexWowProgress: directory ${dirPath} has been removed!`);
     } catch (errorOrException) {
-      this.logger.error(`indexWowProgress: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: this.indexWowProgress.name,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -219,8 +224,13 @@ export class WowprogressService implements OnApplicationBootstrap {
 
               guildIteration = guildIteration + 1;
             }
-          } catch (error) {
-            this.logger.warn(`unzipWowProgress: ${error}`);
+          } catch (errorOrException) {
+            this.logger.error(
+              {
+                context: this.unzipWowProgress.name,
+                error: JSON.stringify(errorOrException),
+              }
+            );
           }
         }, 1),
       ),
@@ -349,7 +359,12 @@ export class WowprogressService implements OnApplicationBootstrap {
       );
       this.logger.log('————————————————————————————————————');
     } catch (errorOrException) {
-      this.logger.error(`indexWowProgressLfg: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: this.indexWowProgressLfg.name,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -416,7 +431,12 @@ export class WowprogressService implements OnApplicationBootstrap {
         `pushCharacterAndProfileToQueue: Added to character queue: ${characterQueue.guid}`,
       );
     } catch (errorOrException) {
-      this.logger.error(`pushCharacterAndProfileToQueue: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: this.pushCharacterAndProfileToQueue.name,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -461,7 +481,12 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       return wpCharactersQueue;
     } catch (errorOrException) {
-      this.logger.error(`getWowProgressLfg: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: this.getWowProgressLfg.name,
+          error: JSON.stringify(errorOrException),
+        }
+      );
       return wpCharactersQueue;
     }
   }

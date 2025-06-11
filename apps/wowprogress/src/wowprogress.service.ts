@@ -346,7 +346,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
       await lastValueFrom(
         from(charactersDiffNew).pipe(
-          mergeMap(async (characterGuid, i) =>
+          mergeMap(async (characterGuid) =>
             this.pushCharacterAndProfileToQueue(
               characterGuid,
               charactersLfg,
@@ -457,7 +457,7 @@ export class WowprogressService implements OnApplicationBootstrap {
           const name = wowProgressHTML(preName).text().trim();
           const guild = wowProgressHTML(preGuild).text();
           const raid = wowProgressHTML(preRaid).text();
-          const [region, rawRealm] = wowProgressHTML(preRealm).text().split('-');
+          const [, rawRealm] = wowProgressHTML(preRealm).text().split('-');
           const itemLevel = wowProgressHTML(preItemLevel).text();
           const timestamp = wowProgressHTML(preTimestamp).text();
 

@@ -17,9 +17,7 @@ import { AccountGetDto } from '@app/resources/dto/account-get.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  private readonly logger = new Logger(
-    AuthController.name, { timestamp: true },
-  );
+  // private readonly logger = new Logger(AuthController.name, { timestamp: true });
 
   constructor(
     private readonly authService: AuthService

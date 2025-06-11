@@ -5,7 +5,7 @@ import { API_HEADERS_ENUM, apiConstParams, TOLERANCE_ENUM } from '@app/resources
 
 @Injectable()
 export class TestsDma {
-  private readonly logger = new Logger(TestsDma.name, { timestamp: true });
+  // private readonly logger = new Logger(TestsDma.name, { timestamp: true });
 
   private BNet: BlizzAPI = new BlizzAPI({
     region: 'eu',

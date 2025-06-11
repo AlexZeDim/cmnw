@@ -59,13 +59,13 @@
         "tsConfigPath": "apps/contracts/tsconfig.app.json"
       }
     },
-    "resources": {
-      "type": "library",
-      "root": "libs/resources",
-      "entryFile": "index",
-      "sourceRoot": "libs/resources/src",
+    "core": {
+      "type": "application",
+      "root": "apps/core",
+      "entryFile": "main",
+      "sourceRoot": "apps/core/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/resources/tsconfig.lib.json"
+        "tsConfigPath": "apps/core/tsconfig.app.json"
       }
     },
     "discord": {
@@ -183,6 +183,15 @@
       "sourceRoot": "apps/realms/src",
       "compilerOptions": {
         "tsConfigPath": "apps/realms/tsconfig.app.json"
+      }
+    },
+    "resources": {
+      "type": "library",
+      "root": "libs/resources",
+      "entryFile": "index",
+      "sourceRoot": "libs/resources/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/resources/tsconfig.lib.json"
       }
     },
     "tests": {

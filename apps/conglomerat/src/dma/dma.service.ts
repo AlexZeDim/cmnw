@@ -6,7 +6,6 @@ import {
   ItemChartDto,
   ItemCrossRealmDto,
   ItemFeedDto,
-  ItemQuotesDto,
   MARKET_TYPE,
   REALM_ENTITY_ANY,
   ReqGetItemDto,

@@ -4,7 +4,7 @@ ARG CR_PAT
 ENV CR_PAT=$CR_PAT
 
 # Set image labels #
-LABEL org.opencontainers.image.title = "Keys"
+LABEL org.opencontainers.image.title = "Core"
 LABEL org.opencontainers.image.vendor = "alexzedim"
 LABEL org.opencontainers.image.url = "https://raw.githubusercontent.com/alexzedim/cmnw-next/master/public/static/cmnw.png"
 LABEL org.opencontainers.image.source = "https://github.com/AlexZeDim/cmnw"
@@ -30,9 +30,9 @@ RUN yarn install --network-timeout 1000000
 COPY . .
 
 RUN npm install -g @nestjs/cli
-RUN nest build keys
+RUN nest build core
 
-CMD ["node", "dist/apps/keys/main.js"]
+CMD ["node", "dist/apps/core/main.js"]
 
 
 

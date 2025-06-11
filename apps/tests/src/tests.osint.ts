@@ -5,7 +5,7 @@ import { cmnwConfig } from '@app/configuration';
 
 @Injectable()
 export class TestsOsint implements OnApplicationBootstrap {
-  private readonly logger = new Logger(TestsOsint.name, { timestamp: true });
+  // private readonly logger = new Logger(TestsOsint.name, { timestamp: true });
 
   private BNet: BlizzAPI = new BlizzAPI({
     region: 'eu',

@@ -23,12 +23,6 @@
       "@app/configuration/*": [
         "libs/configuration/src/*"
       ],
-      "@app/resources": [
-        "libs/resources/src"
-      ],
-      "@app/resources/*": [
-        "libs/resources/src/*"
-      ],
       "@app/e2e": [
         "libs/e2e/src"
       ],
@@ -52,6 +46,12 @@
       ],
       "@app/pg/*": [
         "libs/pg/src/*"
+      ],
+      "@app/resources": [
+        "libs/resources/src"
+      ],
+      "@app/resources/*": [
+        "libs/resources/src/*"
       ]
     }
   }

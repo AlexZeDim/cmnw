@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { RealmsModule } from './realms.module';
+import { CoreModule } from './core.module';
 import { LoggerService } from '@app/logger';
 import { APP_LABELS } from '@app/resources';
 
 async function bootstrap() {
-  const app = await NestFactory.create(RealmsModule);
-  app.useLogger(new LoggerService(APP_LABELS.R));
-  await app.listen(3003);
+  const app = await NestFactory.create(CoreModule);
+  app.useLogger(new LoggerService(APP_LABELS.C));
+  await app.listen(3000);
 }
 bootstrap();

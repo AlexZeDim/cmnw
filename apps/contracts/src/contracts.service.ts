@@ -51,7 +51,7 @@ export class ContractsService implements OnApplicationBootstrap {
       const commodityItemsIds = commodityItems.map((item) => item.itemId);
       const contractItems = commodityItemsIds.length;
 
-      let updateResult: number = 0;
+      let updateResult: number;
 
       const isItemsEmpty = await this.itemsRepository.count({
         where: {

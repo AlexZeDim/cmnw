@@ -1,20 +1,23 @@
 import { Module } from '@nestjs/common';
-import { postgresConfig, redisConfig } from '@app/configuration';
-import { RealmsService } from './realms.service';
-import { RealmsWorker } from './realms.worker';
-import { realmsQueue } from '@app/resources';
-import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bullmq';
 import { HttpModule } from '@nestjs/axios';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { KeysEntity, RealmsEntity } from '@app/pg';
+import { KeysService } from './services/keys.service';
+import { RealmsService } from './services/realms.service';
+import { RealmsWorker } from './services/realms.worker';
+import { KeysEntity } from '@app/pg';
+import { postgresConfig, redisConfig } from '@app/configuration';
+import { BullModule } from '@nestjs/bullmq';
+import { realmsQueue } from '@app/resources';
+
+
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
-    TypeOrmModule.forFeature([KeysEntity, RealmsEntity]),
+    TypeOrmModule.forFeature([KeysEntity]),
     BullModule.forRoot({
       connection: {
         host: redisConfig.host,
@@ -28,6 +31,6 @@ import { KeysEntity, RealmsEntity } from '@app/pg';
     }),
   ],
   controllers: [],
-  providers: [RealmsService, RealmsWorker],
+  providers: [KeysService, RealmsService, RealmsWorker],
 })
-export class RealmsModule {}
+export class CoreModule {}

@@ -5,7 +5,7 @@ import { APP_LABELS } from '@app/resources';
 
 async function bootstrap() {
   const app = await NestFactory.create(ContractsModule);
-  app.useLogger(new LoggerService(APP_LABELS.C));
+  app.useLogger(new LoggerService(APP_LABELS.CONTRACTS));
   await app.listen(3020);
 }
 bootstrap();

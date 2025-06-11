@@ -61,7 +61,7 @@ export class CharactersService implements OnApplicationBootstrap {
       let length = this.keyEntities.length;
 
       const characters = await this.charactersRepository.find({
-        order: { updatedAt: 'ASC' },
+        order: { hashA: 'ASC' },
         take: OSINT_CHARACTER_LIMIT,
         skip: this.offset,
       });

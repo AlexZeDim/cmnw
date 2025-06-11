@@ -8,6 +8,8 @@ const queueOptions: JobsOptions = {
 
 export const realmsQueue: IQueue = {
   name: 'OSINT_Realms',
-  workerOptions: { concurrency: 1 },
+  workerOptions: {
+    concurrency: 1
+  },
   defaultJobOptions: queueOptions,
 };

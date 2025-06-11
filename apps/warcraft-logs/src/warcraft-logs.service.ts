@@ -15,13 +15,16 @@ import {
   getKeys,
   isCharacterRaidLogResponse,
   RaidCharacter,
-  toGuid, KEY_LOCK,
+  toGuid,
+  KEY_LOCK,
+  CharacterJobQueue,
 } from '@app/resources';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/resources';
+import { RegionIdOrName } from 'blizzapi';
 import { warcraftLogsConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
 import { from, lastValueFrom } from 'rxjs';
@@ -34,6 +37,8 @@ import { DateTime } from 'luxon';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import * as cheerio from 'cheerio';
 import Redis from 'ioredis';
+import ms from 'ms';
+
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {
@@ -53,7 +58,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
     @InjectQueue(charactersQueue.name)
-    private readonly queue: Queue,
+    private readonly characterQueue: Queue<CharacterJobQueue, number>,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -376,16 +381,16 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
             guid: raidCharacter.guid,
             name: raidCharacter.name,
             realm: raidCharacter.realm,
-            updatedAt: raidCharacter.timestamp,
+            updatedAt: new Date(raidCharacter.timestamp),
             createdBy: OSINT_SOURCE.WARCRAFT_LOGS,
             updatedBy: OSINT_SOURCE.WARCRAFT_LOGS,
-            region: 'eu',
+            region: <RegionIdOrName>'eu',
             clientId: keys[itx].client,
             clientSecret: keys[itx].secret,
             accessToken: keys[itx].token,
-            guildRank: false,
-            createOnlyUnique: true,
-            forceUpdate: 0,
+            forceUpdate: ms('1m'),
+            requestGuildRank: false,
+            createOnlyUnique: false,
           },
           opts: {
             jobId: raidCharacter.guid,
@@ -394,7 +399,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         };
       });
 
-      await this.queue.addBulk(charactersToJobs);
+      await this.characterQueue.addBulk(charactersToJobs);
       this.logger.log(
         `addCharacterToQueue | ${charactersToJobs.length} characters to characterQueue`,
       );

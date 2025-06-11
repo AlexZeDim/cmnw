@@ -34,7 +34,7 @@ import {
   OSINT_4_HOURS_MS,
   OSINT_GM_RANK,
   OSINT_SOURCE,
-  PLAYABLE_CLASS,
+  PLAYABLE_CLASS, STATUS_CODES,
   toGuid,
   toSlug,
 } from '@app/core';
@@ -52,6 +52,7 @@ import {
   ProfessionsEntity,
   RealmsEntity,
 } from '@app/pg';
+import { keysConfig } from '@app/configuration';
 
 @Processor(guildsQueue.name, guildsQueue.workerOptions)
 @Injectable()
@@ -119,14 +120,12 @@ export class GuildsWorker extends WorkerHost {
 
       await job.updateProgress(5);
 
-      // const httpsAgent = await getRandomProxy(this.keysRepository);
-
       this.BNet = new BlizzAPI({
         region: args.region || 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
-        // httpsAgent,
+        httpsAgent: keysConfig.useProxy ? await getRandomProxy(this.keysRepository) : undefined,
       });
       /**
        * Inherit safe values
@@ -240,7 +239,7 @@ export class GuildsWorker extends WorkerHost {
                 const isNotGuildMaster =
                   guildMemberOriginal.rank !== OSINT_GM_RANK || guildMemberUpdated.rank !== OSINT_GM_RANK;
                 const isDemote = guildMemberUpdated.rank > guildMemberOriginal.rank;
-                const isPromote = guildMemberUpdated.rank < guildMemberOriginal.rank;
+                // const isPromote = guildMemberUpdated.rank < guildMemberOriginal.rank;
 
                 const eventAction = isDemote
                   ? ACTION_LOG.DEMOTE
@@ -496,7 +495,7 @@ export class GuildsWorker extends WorkerHost {
       summary.statusCode = 200;
       return summary;
     } catch (errorOrException) {
-      summary.statusCode = get(errorOrException, 'status', 418);
+      summary.statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_GUILD);
       const isTooManyRequests = summary.statusCode === 429;
       if (isTooManyRequests)
         await incErrorCount(
@@ -620,7 +619,7 @@ export class GuildsWorker extends WorkerHost {
 
       return roster;
     } catch (errorOrException) {
-      roster.statusCode = get(errorOrException, 'status', 418);
+      roster.statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_ROSTER);
 
       const isTooManyRequests = roster.statusCode === 429;
       if (isTooManyRequests)
@@ -841,7 +840,7 @@ export class GuildsWorker extends WorkerHost {
       return { guildEntity, isNew: false, isNotReadyToUpdate, isCreateOnlyUnique: guild.createOnlyUnique };
     }
 
-    guildEntity.statusCode = 100;
+    guildEntity.statusCode = STATUS_CODES.DEFAULT_STATUS;
 
     return { guildEntity, isNew: false, isNotReadyToUpdate, isCreateOnlyUnique: guild.createOnlyUnique };
   }

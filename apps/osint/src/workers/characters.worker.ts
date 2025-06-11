@@ -22,9 +22,10 @@ import {
   CharacterJobQueue,
   charactersQueue,
   CharacterStatus,
-  CharacterSummary,
+  CharacterSummary, STATUS_CODES,
   EVENT_LOG,
-  findRealm, getRandomProxy,
+  findRealm,
+  getRandomProxy,
   IMounts,
   incErrorCount,
   IPets,
@@ -54,6 +55,7 @@ import {
   ProfessionsEntity,
   RealmsEntity,
 } from '@app/pg';
+import { keysConfig } from '@app/configuration';
 
 @Processor(charactersQueue.name, charactersQueue.workerOptions)
 @Injectable()
@@ -136,14 +138,12 @@ export class CharactersWorker extends WorkerHost {
 
       await job.updateProgress(10);
 
-      // const httpsAgent = await getRandomProxy(this.keysRepository);
-
       this.BNet = new BlizzAPI({
         region: args.region || 'eu',
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
-        // httpsAgent,
+        httpsAgent: keysConfig.useProxy ? await getRandomProxy(this.keysRepository) : undefined,
       });
 
       const status = await this.getStatus(
@@ -250,7 +250,7 @@ export class CharactersWorker extends WorkerHost {
        * Assign values from the queue
        * only if they were passed
        */
-      characterNew.statusCode = 100;
+      characterNew.statusCode = STATUS_CODES.DEFAULT_STATUS;
       if (character.guild) characterNew.guild = character.guild;
       if (character.guildGuid) characterNew.guildGuid = character.guildGuid;
       if (character.guildId) characterNew.guildId = character.guildId;
@@ -316,11 +316,11 @@ export class CharactersWorker extends WorkerHost {
       if (statusResponse.last_modified)
         characterStatus.lastModified = toDate(statusResponse.last_modified);
 
-      characterStatus.statusCode = 200;
+      characterStatus.statusCode = STATUS_CODES.SUCCESS_STATUS;
 
       return characterStatus;
     } catch (errorOrException) {
-      characterStatus.statusCode = get(errorOrException, 'status', 418);
+      characterStatus.statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_STATUS);
       const isTooManyRequests = characterStatus.statusCode === 429;
       if (isTooManyRequests)
         await incErrorCount(
@@ -360,7 +360,7 @@ export class CharactersWorker extends WorkerHost {
 
       return media;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'status', 418);
+      const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_MEDIA);
 
       this.logger.error({
         context: 'getMedia',
@@ -454,11 +454,11 @@ export class CharactersWorker extends WorkerHost {
       });
 
       mountsCollection.mountsNumber = mounts.length;
-      mountsCollection.statusCode = 203;
+      mountsCollection.statusCode = STATUS_CODES.SUCCESS_MOUNTS;
 
       return mountsCollection;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'status', 418);
+      const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_MOUNTS);
       this.logger.error({
         context: 'getMounts',
         guid: `${nameSlug}@${realmSlug}`,
@@ -605,7 +605,7 @@ export class CharactersWorker extends WorkerHost {
       });
 
       petsCollection.petsNumber = pets.length;
-      petsCollection.statusCode = 202;
+      petsCollection.statusCode = STATUS_CODES.SUCCESS_PETS;
 
       if (hashB.length)
         petsCollection.hashB = BigInt(hash64(hashB.join('.'))).toString(16);
@@ -614,7 +614,7 @@ export class CharactersWorker extends WorkerHost {
 
       return petsCollection;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'status', 418);
+      const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_PETS);
       this.logger.error({ context: 'getPets', guid: `${nameSlug}@${realmSlug}`, statusCode, error: JSON.stringify(errorOrException) });
       return petsCollection;
     }
@@ -741,7 +741,7 @@ export class CharactersWorker extends WorkerHost {
 
       return professions;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'status', 418);
+      const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_PROFESSIONS);
       this.logger.error({
         context: 'getProfessions',
         guid: `${nameSlug}@${realmSlug}`,
@@ -785,11 +785,11 @@ export class CharactersWorker extends WorkerHost {
         summary.guildGuid = toGuid(summary.guild, summary.realm);
       }
 
-      summary.statusCode = 201;
+      summary.statusCode = STATUS_CODES.SUCCESS_SUMMARY;
 
       return summary;
     } catch (errorOrException) {
-      summary.statusCode = get(errorOrException, 'status', 418);
+      summary.statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_SUMMARY);
       const isTooManyRequests = summary.statusCode === 429;
       if (isTooManyRequests) {
         await incErrorCount(

@@ -119,15 +119,14 @@ export class CharactersWorker extends WorkerHost {
         this.charactersRepository.create(characterEntity);
 
       const nameSlug = toSlug(characterEntity.name);
-      const statusCheck =
-        characterEntity.updatedBy === OSINT_SOURCE.CHARACTER_REQUEST;
+      // const statusCheck = characterEntity.updatedBy === OSINT_SOURCE.CHARACTER_REQUEST;
 
       await job.updateProgress(5);
 
       /**
        * Inherit safe values
        * from args in any case
-       * summary overwrite later
+       * summary overwrites later
        */
       for (const key of CHARACTER_SUMMARY_FIELD_MAPPING.keys()) {
         const isInheritKeyValue = args[key] && !characterEntity[key];
@@ -149,7 +148,6 @@ export class CharactersWorker extends WorkerHost {
       const status = await this.getStatus(
         nameSlug,
         characterEntity.realm,
-        statusCheck,
         this.BNet,
       );
 
@@ -299,7 +297,6 @@ export class CharactersWorker extends WorkerHost {
   private async getStatus(
     nameSlug: string,
     realmSlug: string,
-    status: boolean,
     BNet: BlizzAPI,
   ): Promise<Partial<CharacterStatus>> {
     const characterStatus: Partial<CharacterStatus> = {};
@@ -322,13 +319,15 @@ export class CharactersWorker extends WorkerHost {
     } catch (errorOrException) {
       characterStatus.statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_STATUS);
       const isTooManyRequests = characterStatus.statusCode === 429;
-      if (isTooManyRequests)
+      if (isTooManyRequests) {
         await incErrorCount(
           this.keysRepository,
           BNet.accessTokenObject.access_token,
         );
+      }
 
-      if (status) {
+      const isStatusNotFound = characterStatus.statusCode === 404;
+      if (isStatusNotFound) {
         this.logger.warn(
           `character: ${nameSlug}@${realmSlug} | status: ${characterStatus.statusCode}`,
         );

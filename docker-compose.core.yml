@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   core:
-    container_name: realms
+    container_name: core
     image: ghcr.io/alexzedim/core:latest
     restart: always
     command: [ 'node', 'dist/apps/core/main.js' ]

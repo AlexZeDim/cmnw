@@ -1,9 +1,8 @@
 import { mquery } from 'mongoose';
 import { AuctionItemExtra, IItem, IItemFieldMap, IPetList } from '@app/core/types';
 import { SkillLineEntity, SpellEffectEntity } from '@app/pg';
-import { SpellEffect } from '@app/mongo';
 
-export const DMA_TIMEOUT_TOLERANCE = 30 * 1000;
+export const DMA_TIMEOUT_TOLERANCE = 60 * 1_000;
 
 export const DMA_SOURCE_GOLD = 'https://funpay.ru/chips/2/';
 

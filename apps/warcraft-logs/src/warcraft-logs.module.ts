@@ -7,11 +7,20 @@ import { charactersQueue } from '@app/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CharactersRaidLogsEntity, KeysEntity, RealmsEntity } from '@app/pg';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
+    RedisModule.forRoot({
+      type: 'single',
+      options: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+        password: redisConfig.password,
+      }
+    }),
     TypeOrmModule.forRoot(postgresConfig),
     TypeOrmModule.forFeature([KeysEntity, RealmsEntity, CharactersRaidLogsEntity]),
     BullModule.forRoot({

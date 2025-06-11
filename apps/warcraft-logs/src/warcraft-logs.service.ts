@@ -31,7 +31,9 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { get } from 'lodash';
 import { mergeMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import * as cheerio from 'cheerio';
+import Redis from 'ioredis';
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {
@@ -42,6 +44,8 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
 
   constructor(
     private httpService: HttpService,
+    @InjectRedis()
+    private readonly redisService: Redis,
     @InjectRepository(CharactersRaidLogsEntity)
     private readonly charactersRaidLogsRepository: Repository<CharactersRaidLogsEntity>,
     @InjectRepository(RealmsEntity)
@@ -67,7 +71,12 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         await this.indexCharacterRaidLogs(realmEntity);
       }
     } catch (errorOrException) {
-      this.logger.error(`${WarcraftLogsService.name},${errorOrException}`);
+      this.logger.error(
+        {
+          context: WarcraftLogsService.name,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -108,7 +117,12 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
 
       return Array.from(warcraftLogsMap.values());
     } catch (errorOrException) {
-      this.logger.error(`getLogsFromPage: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'getLogsFromPage',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -176,19 +190,28 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         }
       }
     } catch (errorOrException) {
-      this.logger.error(`indexLogs: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexCharacterRaidLogs',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
   @Cron(CronExpression.EVERY_6_HOURS)
   async indexLogs(): Promise<void> {
     try {
-      await delay(10);
-      const wclKey = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
-      if (!wclKey) {
-        this.logger.warn(`Clearance ${GLOBAL_WCL_KEY_V2} keys have been not found`);
+      const isJobLocked = Boolean(await this.redisService.exists(GLOBAL_WCL_KEY_V2));
+      if (isJobLocked) {
+        this.logger.warn(`indexLogs is already running`);
         return;
       }
+
+      await this.redisService.set(GLOBAL_WCL_KEY_V2, '1', 'EX', 60 * 60 * 6);
+
+      await delay(10);
+      const wclKey = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
       // --- A bit skeptical about taking the interval required semaphore --- //
       const characterRaidLog = await this.charactersRaidLogsRepository.find({
         where: { isIndexed: false },
@@ -202,12 +225,21 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
 
       await lastValueFrom(
         from(characterRaidLog).pipe(
-          mergeMap(async (characterRaidLogEntity) =>
+          mergeMap((characterRaidLogEntity) =>
             this.indexLogAndPushCharactersToQueue(characterRaidLogEntity, wclKey), 5),
         ),
       );
+
+      await this.redisService.del(GLOBAL_WCL_KEY_V2);
+
+      this.logger.log(`indexLogs: character raid logs | ${characterRaidLog.length}`);
     } catch (errorOrException) {
-      this.logger.error(`indexLogs: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexLogs',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -223,11 +255,16 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         { isIndexed: true },
       );
 
-      this.logger.log(`Log: ${characterRaidLogEntity.logId}`);
+      this.logger.log(`Log: ${characterRaidLogEntity.logId} | indexed: isIndexed: true`);
 
       await this.charactersToQueue(raidCharacters);
     } catch (errorOrException) {
-      this.logger.error(`indexLogAndPushCharactersToQueue: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexLogAndPushCharactersToQueue',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -351,7 +388,12 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       );
       return true;
     } catch (errorOrException) {
-      this.logger.error(`addCharacterToQueue: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'addCharacterToQueue',
+          error: JSON.stringify(errorOrException),
+        }
+      );
       return false;
     }
   }

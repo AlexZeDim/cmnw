@@ -108,7 +108,12 @@ export class KeysService implements OnApplicationBootstrap {
         await this.keysRepository.save(keyEntity);
       }
     } catch (errorOrException) {
-      this.logger.error(`indexBlizzardKeys: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexBlizzardKeys',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -141,7 +146,12 @@ export class KeysService implements OnApplicationBootstrap {
         this.logger.log(`Updated: key ${keyEntity.client}`);
       }
     } catch (errorOrException) {
-      this.logger.error(`indexWarcraftLogsKeys: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexWarcraftLogsKeys',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

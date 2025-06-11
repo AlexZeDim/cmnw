@@ -74,8 +74,6 @@ export class LadderService implements OnApplicationBootstrap {
         apiConstParams(API_HEADERS_ENUM.DYNAMIC),
       );
 
-      console.log(r);
-
       for (const season of r.seasons) {
         const isOnlyLast =
           onlyLast && season.id !== r.seasons[r.seasons.length - 1].id;
@@ -120,7 +118,12 @@ export class LadderService implements OnApplicationBootstrap {
         }
       }
     } catch (errorOrException) {
-      this.logger.error(`indexPvPLadder ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexPvPLadder',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -239,7 +242,12 @@ export class LadderService implements OnApplicationBootstrap {
 
       await this.redisService.set(`week:${w}`, w);
     } catch (errorOrException) {
-      this.logger.error(`indexMythicPlusLadder: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexMythicPlusLadder',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

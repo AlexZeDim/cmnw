@@ -165,10 +165,21 @@ export class GuildsWorker extends WorkerHost {
       await this.guildsRepository.save(guildEntity);
 
       await job.updateProgress(100);
+
+      this.logger.log(`${guildEntityOriginal.statusCode} >> guild: ${guildEntityOriginal.guid}`);
+
       return guildEntity.statusCode;
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(`${errorOrException}`);
+
+      this.logger.error(
+        {
+          context: 'GuildsWorker',
+          guid: `${job.data.name}@${job.data.realm}`,
+          error: JSON.stringify(errorOrException),
+        }
+      );
+
       return 500;
     }
   }
@@ -280,7 +291,11 @@ export class GuildsWorker extends WorkerHost {
                 }
               } catch (errorOrException) {
                 this.logger.error(
-                  `logs: error with ${guildEntity.guid} on intersection`,
+                  {
+                    context: 'membersIntersectIds',
+                    guildGuid: guildEntity.guid,
+                    error: JSON.stringify(errorOrException),
+                  }
                 );
               }
             }),
@@ -351,7 +366,11 @@ export class GuildsWorker extends WorkerHost {
                 ]);
               } catch (errorOrException) {
                 this.logger.error(
-                  `logs: error with ${guildEntity.guid} on intersection`,
+                  {
+                    context: 'membersJoinedIds',
+                    guildGuid: guildEntity.guid,
+                    error: JSON.stringify(errorOrException),
+                  }
                 );
               }
             }),
@@ -411,7 +430,11 @@ export class GuildsWorker extends WorkerHost {
                 ]);
               } catch (errorOrException) {
                 this.logger.error(
-                  `logs: error with ${guildEntity.guid} on intersection`,
+                  {
+                    context: 'membersLeaveIds',
+                    guildGuid: guildEntity.guid,
+                    error: JSON.stringify(errorOrException),
+                  }
                 );
               }
             }),
@@ -419,10 +442,13 @@ export class GuildsWorker extends WorkerHost {
         );
       }
     } catch (errorOrException) {
-      this.logger.error({
-        context: 'updateRoster',
-        guildGuid: guildEntity.guid
-      }, `${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'updateRoster',
+          guildGuid: guildEntity.guid,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -470,7 +496,7 @@ export class GuildsWorker extends WorkerHost {
       summary.statusCode = 200;
       return summary;
     } catch (errorOrException) {
-      summary.statusCode = get(errorOrException, 'response.status', 418);
+      summary.statusCode = get(errorOrException, 'status', 418);
       const isTooManyRequests = summary.statusCode === 429;
       if (isTooManyRequests)
         await incErrorCount(
@@ -482,8 +508,9 @@ export class GuildsWorker extends WorkerHost {
         {
           context: 'getSummary',
           guildGuid: `${guildNameSlug}@${realmSlug}`,
-          statusCode: summary.statusCode
-        }, `${errorOrException}`
+          statusCode: summary.statusCode,
+          error: JSON.stringify(errorOrException),
+        }
       );
 
       return summary;
@@ -579,7 +606,12 @@ export class GuildsWorker extends WorkerHost {
               });
             } catch (errorOrException) {
               this.logger.error(
-                `member: ${member.character.id} from ${guildEntity.guid}:${errorOrException}`,
+                {
+                  context: 'getRoster',
+                  member: member.character.id,
+                  guildGuid: guildEntity.guid,
+                  error: JSON.stringify(errorOrException),
+                }
               );
             }
           }, 20),
@@ -588,7 +620,7 @@ export class GuildsWorker extends WorkerHost {
 
       return roster;
     } catch (errorOrException) {
-      roster.statusCode = get(errorOrException, 'response.status', 418);
+      roster.statusCode = get(errorOrException, 'status', 418);
 
       const isTooManyRequests = roster.statusCode === 429;
       if (isTooManyRequests)
@@ -597,11 +629,14 @@ export class GuildsWorker extends WorkerHost {
           BNet.accessTokenObject.access_token,
         );
 
-      this.logger.error({
-        context: 'getRoster',
-        guildGuid: guildEntity.guid,
-        statusCode: roster.statusCode
-      }, `${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'getRoster',
+          guildGuid: guildEntity.guid,
+          statusCode: roster.statusCode,
+          error: JSON.stringify(errorOrException),
+        }
+      );
 
       return roster;
     }
@@ -752,7 +787,8 @@ export class GuildsWorker extends WorkerHost {
         {
           context: 'updateGuildMaster',
           guildGuid: guildEntity.guid,
-        }, `${errorOrException}`,
+          error: JSON.stringify(errorOrException),
+        }
       );
     }
   }
@@ -861,10 +897,13 @@ export class GuildsWorker extends WorkerHost {
 
       await this.logsRepository.save(logEntities);
     } catch (errorOrException) {
-      this.logger.error({
-        context: 'diffGuildEntity',
-        guildGuid: original.guid
-      }, `${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'diffGuildEntity',
+          guildGuid: original.guid,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

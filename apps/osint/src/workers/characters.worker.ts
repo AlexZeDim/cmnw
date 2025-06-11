@@ -100,7 +100,7 @@ export class CharactersWorker extends WorkerHost {
       if (isNotReadyToUpdate) {
         await job.updateProgress(100);
         this.logger.warn(
-          `isNotReadyToUpdate: ${characterEntity.guid} | ${characterEntity.updatedAt} | ${isNotReadyToUpdate}}`,
+          `isNotReadyToUpdate: ${characterEntity.guid} | ${characterEntity.updatedAt} | ${isNotReadyToUpdate}`,
         );
         return characterEntity.statusCode;
       }
@@ -203,10 +203,16 @@ export class CharactersWorker extends WorkerHost {
 
       await this.charactersRepository.save(characterEntity);
       await job.updateProgress(100);
+
+      this.logger.log(`${characterEntity.statusCode} >> character: ${characterEntity.guid}`);
+
       return characterEntity.statusCode;
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(errorOrException);
+      this.logger.error({
+        context: 'CharactersWorker',
+        error: JSON.stringify(errorOrException)
+      });
       return 500;
     }
   }
@@ -314,7 +320,7 @@ export class CharactersWorker extends WorkerHost {
 
       return characterStatus;
     } catch (errorOrException) {
-      characterStatus.statusCode = get(errorOrException, 'response.status', 418);
+      characterStatus.statusCode = get(errorOrException, 'status', 418);
       const isTooManyRequests = characterStatus.statusCode === 429;
       if (isTooManyRequests)
         await incErrorCount(
@@ -324,7 +330,7 @@ export class CharactersWorker extends WorkerHost {
 
       if (status)
         this.logger.warn(
-          `Character: ${nameSlug}@${realmSlug}, status: ${status}`,
+          `character: ${nameSlug}@${realmSlug} | status: ${characterStatus.statusCode}`,
         );
 
       return characterStatus;
@@ -354,8 +360,15 @@ export class CharactersWorker extends WorkerHost {
 
       return media;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'response.status', 418);
-      this.logger.error(`getMedia: ${nameSlug}@${realmSlug}:${statusCode}`);
+      const statusCode = get(errorOrException, 'status', 418);
+
+      this.logger.error({
+        context: 'getMedia',
+        guid: `${nameSlug}@${realmSlug}`,
+        statusCode,
+        error: JSON.stringify(errorOrException)
+      });
+
       return media;
     }
   }
@@ -445,8 +458,13 @@ export class CharactersWorker extends WorkerHost {
 
       return mountsCollection;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'response.status', 418);
-      this.logger.error({ context: 'getMounts', guid: `${nameSlug}@${realmSlug}`, statusCode }, `${errorOrException}`);
+      const statusCode = get(errorOrException, 'status', 418);
+      this.logger.error({
+        context: 'getMounts',
+        guid: `${nameSlug}@${realmSlug}`,
+        statusCode,
+        error: JSON.stringify(errorOrException)
+      });
       return mountsCollection;
     }
   }
@@ -458,7 +476,10 @@ export class CharactersWorker extends WorkerHost {
 
       await this.mountsRepository.save(mounts, { chunk: 10 });
     } catch (errorOrException) {
-      this.logger.error({ context: 'indexMounts' }, `${errorOrException}`);
+      this.logger.error({
+        context: 'indexMounts',
+        error: JSON.stringify(errorOrException)
+      });
     }
   }
 
@@ -561,7 +582,7 @@ export class CharactersWorker extends WorkerHost {
                 characterPetsEntities.push(characterPetEntity);
               }
             } catch (error) {
-              this.logger.error(error);
+              this.logger.error({ context: 'getPets|mergeMap', error: JSON.stringify(error) });
             }
           }, 5),
         ),
@@ -593,8 +614,8 @@ export class CharactersWorker extends WorkerHost {
 
       return petsCollection;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'response.status', 418);
-      this.logger.error({ context: 'getPets', guid: `${nameSlug}@${realmSlug}`, statusCode }, `${errorOrException}`);
+      const statusCode = get(errorOrException, 'status', 418);
+      this.logger.error({ context: 'getPets', guid: `${nameSlug}@${realmSlug}`, statusCode, error: JSON.stringify(errorOrException) });
       return petsCollection;
     }
   }
@@ -606,7 +627,7 @@ export class CharactersWorker extends WorkerHost {
 
       await this.petsRepository.save(pets, { chunk: 10 });
     } catch (errorOrException) {
-      this.logger.error({ context: 'indexPets' }, `${errorOrException}`);
+      this.logger.error({ context: 'indexPets', error: JSON.stringify(errorOrException) });
     }
   }
 
@@ -720,8 +741,13 @@ export class CharactersWorker extends WorkerHost {
 
       return professions;
     } catch (errorOrException) {
-      const statusCode = get(errorOrException, 'response.status', 418);
-      this.logger.error(`professions: ${nameSlug}@${realmSlug}:${statusCode}`);
+      const statusCode = get(errorOrException, 'status', 418);
+      this.logger.error({
+        context: 'getProfessions',
+        guid: `${nameSlug}@${realmSlug}`,
+        statusCode,
+        error: JSON.stringify(errorOrException)
+      });
       return professions;
     }
   }
@@ -763,16 +789,22 @@ export class CharactersWorker extends WorkerHost {
 
       return summary;
     } catch (errorOrException) {
-      summary.statusCode = get(errorOrException, 'response.status', 418);
+      summary.statusCode = get(errorOrException, 'status', 418);
       const isTooManyRequests = summary.statusCode === 429;
-      if (isTooManyRequests)
+      if (isTooManyRequests) {
         await incErrorCount(
           this.keysRepository,
           BNet.accessTokenObject.access_token,
         );
-      this.logger.error(
-        `getSummary: ${nameSlug}@${realmSlug}:${summary.statusCode}`,
-      );
+      }
+
+      this.logger.error({
+        context: 'getSummary',
+        guid: `${nameSlug}@${realmSlug}`,
+        statusCode: summary.statusCode,
+        error: JSON.stringify(errorOrException)
+      });
+
       return summary;
     }
   }
@@ -810,7 +842,11 @@ export class CharactersWorker extends WorkerHost {
         await this.logsRepository.save(logEntity);
       }
     } catch (errorOrException) {
-      this.logger.error(`diffCharacterEntity: ${original.guid}:${errorOrException}`);
+      this.logger.error({
+        context: 'diffCharacterEntity',
+        guid: original.guid,
+        error: JSON.stringify(errorOrException)
+      });
     }
   }
 }

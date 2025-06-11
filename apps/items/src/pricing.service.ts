@@ -141,7 +141,12 @@ export class PricingService implements OnApplicationBootstrap {
       }
 
     } catch (errorOrException) {
-      this.logger.error(`libPricing: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'libPricing',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -212,7 +217,12 @@ export class PricingService implements OnApplicationBootstrap {
       }
 
     } catch (errorOrException) {
-      this.logger.error(`indexPricing: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexPricing',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -281,7 +291,12 @@ export class PricingService implements OnApplicationBootstrap {
 
       this.logger.log(`${tag}:: ${skillLineMethodsCount} saved`);
     } catch (errorOrException) {
-      this.logger.error(`${tag}:: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: tag,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -343,7 +358,12 @@ export class PricingService implements OnApplicationBootstrap {
 
       this.logger.log(`${tag}:: ${spellEffectCount} saved`);
     } catch (errorOrException) {
-      this.logger.error(`${tag}:: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: tag,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -413,7 +433,12 @@ export class PricingService implements OnApplicationBootstrap {
 
       this.logger.log(`${tag}:: ${spellReagentsCount} saved`);
     } catch (errorOrException) {
-      this.logger.error(`${tag}:: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: tag,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

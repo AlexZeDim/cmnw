@@ -77,10 +77,10 @@ export class LoggerService extends ConsoleLogger {
           context: context ?? this.context,
           level: 'error',
         },
-        message,
+        JSON.stringify(message),
       );
 
-    if (this.logsToConsole)
+     if (this.logsToConsole)
       super.error(message, trace, context);
   }
 

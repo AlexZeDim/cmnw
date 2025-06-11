@@ -83,7 +83,12 @@ export class ContractsService implements OnApplicationBootstrap {
 
       return updateResult;
     } catch (errorOrException) {
-      this.logger.error(`setCommodityItemsAsContracts: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'setCommodityItemsAsContracts',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -171,7 +176,12 @@ export class ContractsService implements OnApplicationBootstrap {
       }
 
     } catch (errorOrException) {
-      this.logger.error(`buildGoldIntradayContracts ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'buildGoldIntradayContracts',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -271,7 +281,13 @@ export class ContractsService implements OnApplicationBootstrap {
       this.logger.log(`${contractId}`);
 
     } catch (errorOrException) {
-      this.logger.error(`${contractId}::${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'getItemContractIntradayData',
+          contractId,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

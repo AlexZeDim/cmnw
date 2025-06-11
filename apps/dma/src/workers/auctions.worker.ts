@@ -119,7 +119,10 @@ export class AuctionsWorker extends WorkerHost {
               iterator += ordersBulkAuctions.length;
               this.logger.log(`${connectedRealmId} | ${iterator}`);
             } catch (errorOrException) {
-              this.logger.error(`ordersBatch ${errorOrException}`);
+              this.logger.error({
+                context: 'ordersBatch',
+                error: JSON.stringify(errorOrException)
+              });
             }
           }),
         ),
@@ -152,7 +155,10 @@ export class AuctionsWorker extends WorkerHost {
         return Promise.resolve(statusCode);
       } else {
         await job.log(errorOrException);
-        this.logger.error(errorOrException);
+        this.logger.error({
+          context: 'AuctionsWorker',
+          error: JSON.stringify(errorOrException)
+        });
       }
 
       return 500;

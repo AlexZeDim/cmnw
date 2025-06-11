@@ -152,7 +152,12 @@ export class GoldService {
       await this.marketRepository.save(marketOrders);
       await this.realmsRepository.update({}, { goldTimestamp: timestamp });
     } catch (errorOrException) {
-      this.logger.error(`indexGold ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexGold',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

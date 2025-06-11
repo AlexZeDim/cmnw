@@ -12,6 +12,7 @@ export enum APP_LABELS {
   M = 'market',
   O = 'osint',
   R = 'realms',
+  T = 'test',
   V = 'valuations',
   WCL = 'warcraft-logs',
   W = 'wowprogress',

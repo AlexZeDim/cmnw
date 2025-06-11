@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { cmnwConfig } from '@app/configuration';
 import { BlizzAPI } from '@alexzedim/blizzapi';
 import {
@@ -15,7 +15,7 @@ import { KeysEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class TestsCore {
+export class TestsCore implements OnApplicationBootstrap {
   private readonly logger = new Logger(TestsCore.name, { timestamp: true });
 
   private BNet: BlizzAPI;
@@ -24,6 +24,30 @@ export class TestsCore {
     @InjectRepository(KeysEntity)
     private readonly keysRepository: Repository<KeysEntity>,
   ) { }
+
+  async onApplicationBootstrap() {
+    await this.logs('Aanzz', 'Aanzz');
+  }
+
+  async logs(nameSlug: string, realmSlug: string): Promise<any> {
+    try {
+      this.logger.log(`${nameSlug}:${realmSlug}`);
+
+      this.BNet = new BlizzAPI({
+        region: 'eu',
+        clientId: cmnwConfig.clientId,
+        clientSecret: cmnwConfig.clientSecret,
+      });
+
+      return await this.BNet.query(
+        `/profile/wow/character/${realmSlug}/${nameSlug}/logs`,
+        apiConstParams(API_HEADERS_ENUM.PROFILE),
+      );
+    } catch (errorOrException) {
+      this.logger.error({ context: 'logs', guid: 'guid', error: JSON.stringify(errorOrException) });
+      return errorOrException;
+    }
+  }
 
   async getRandomProxy(): Promise<any> {
     return await getKeys(this.keysRepository, GLOBAL_PROXY_V4, true, false);

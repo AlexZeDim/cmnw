@@ -105,7 +105,12 @@ export class CharactersService implements OnApplicationBootstrap {
 
       this.logger.log(`indexCharacters: offset ${this.offset} | ${characters.length} characters`);
     } catch (errorOrException) {
-      this.logger.error(`indexCharacters ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexCharacters',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

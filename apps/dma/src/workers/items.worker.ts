@@ -52,6 +52,7 @@ export class ItemsWorker extends WorkerHost {
       }
 
       await job.updateProgress(5);
+
       this.BNet = new BlizzAPI({
         region: args.region,
         clientId: args.clientId,
@@ -131,7 +132,11 @@ export class ItemsWorker extends WorkerHost {
       return 200;
     } catch (errorOrException) {
       await job.log(errorOrException);
-      this.logger.error(errorOrException);
+      this.logger.error({
+        context: 'ItemsWorker',
+        itemId: job.data.itemId,
+        error: JSON.stringify(errorOrException)
+      });
       return 500;
     }
   }

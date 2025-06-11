@@ -112,7 +112,12 @@ export class GuildsService implements OnApplicationBootstrap {
 
       this.logger.log(`indexGuilds: offset ${this.offset} | ${guilds.length} characters`);
     } catch (errorOrException) {
-      this.logger.error(`indexGuilds ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexGuilds',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 
@@ -192,7 +197,12 @@ export class GuildsService implements OnApplicationBootstrap {
         }
       }
     } catch (errorOrException) {
-      this.logger.error(`indexHallOfFame: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: 'indexHallOfFame',
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

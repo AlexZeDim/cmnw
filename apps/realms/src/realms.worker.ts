@@ -144,7 +144,12 @@ export class RealmsWorker extends WorkerHost {
       await this.realmsRepository.save(realmEntity);
       await job.updateProgress(100);
     } catch (errorOrException) {
-      this.logger.error(`${RealmsWorker.name}: ${errorOrException}`);
+      this.logger.error(
+        {
+          context: RealmsWorker.name,
+          error: JSON.stringify(errorOrException),
+        }
+      );
     }
   }
 }

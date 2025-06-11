@@ -126,7 +126,10 @@ export class AuctionsService implements OnApplicationBootstrap {
         `realm: ${realmEntity.connectedRealmId} | ts: ${realmEntity.commoditiesTimestamp}`,
       );
     } catch (errorOrException) {
-      this.logger.error(`indexCommodity ${errorOrException}`);
+      this.logger.error({
+        context: 'indexCommodity',
+        error: JSON.stringify(errorOrException)
+      });
     }
   }
 
@@ -221,8 +224,11 @@ export class AuctionsService implements OnApplicationBootstrap {
       this.logger.log('VACUUM ANALYZE completed for "market" table.');
     } catch (error) {
       this.logger.error(
-        `Error deleting expired market data: ${error.message}`,
-        error.stack,
+        {
+          context: 'deleteExpiredMarketData',
+          message: `Error deleting expired market data: ${error.message}`,
+          stack: error.stack,
+        }
       );
     }
   }

@@ -66,8 +66,9 @@ export class CharactersService implements OnApplicationBootstrap {
         skip: this.offset,
       });
 
+      const isRotate = true;
       const charactersCount = await this.charactersRepository.count();
-      this.offset = this.offset + OSINT_CHARACTER_LIMIT;
+      this.offset = this.offset + (isRotate ? OSINT_CHARACTER_LIMIT : 0);
 
       if (this.offset >= charactersCount) {
         this.logger.warn(`END_OF offset ${this.offset} >= charactersCount ${charactersCount}`);

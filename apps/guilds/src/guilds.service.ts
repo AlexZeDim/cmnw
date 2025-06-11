@@ -73,10 +73,12 @@ export class GuildsService implements OnApplicationBootstrap {
         skip: this.offset,
       });
 
+      const isRotate = false;
       const guildsCount = await this.guildsRepository.count();
-      this.offset = this.offset + OSINT_GUILD_LIMIT;
+      this.offset = this.offset + (isRotate ? OSINT_GUILD_LIMIT : 0);
 
       if (this.offset >= guildsCount) {
+        this.logger.warn(`END_OF offset ${this.offset} >= charactersCount ${guildsCount}`);
         this.offset = 0;
       }
 

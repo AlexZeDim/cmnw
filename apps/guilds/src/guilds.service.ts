@@ -57,6 +57,11 @@ export class GuildsService implements OnApplicationBootstrap {
         return;
       }
 
+      const globalConcurrency = await this.queueGuilds.getGlobalConcurrency();
+      const updatedConcurrency = await this.queueGuilds.setGlobalConcurrency(10);
+
+      this.logger.log(`${guildsQueue.name}: globalConcurrency: ${globalConcurrency} | updatedConcurrency: ${updatedConcurrency}`);
+
       let guildIteration = 0;
       this.keyEntities = await getKeys(this.keysRepository, clearance, false, true);
 

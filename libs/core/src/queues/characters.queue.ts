@@ -9,7 +9,7 @@ const options: JobsOptions = {
 export const charactersQueue: IQueue = {
   name: 'OSINT_Characters',
   workerOptions: {
-    concurrency: 10,
+    // concurrency: 10,
   },
   defaultJobOptions: options,
 };

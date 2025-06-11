@@ -50,6 +50,11 @@ export class CharactersService implements OnApplicationBootstrap {
         return;
       }
 
+      const globalConcurrency = await this.queue.getGlobalConcurrency();
+      const updatedConcurrency = await this.queue.setGlobalConcurrency(10);
+
+      this.logger.log(`${charactersQueue.name}: globalConcurrency: ${globalConcurrency} | updatedConcurrency: ${updatedConcurrency}`);
+
       let characterIteration = 0;
       this.keyEntities = await getKeys(this.keysRepository, clearance, false, true);
 

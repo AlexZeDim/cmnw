@@ -30,8 +30,7 @@ COPY .. .
 
 RUN npm install -g @nestjs/cli
 
-RUN nest build keys \
-  && nest build realms
+RUN nest build core
 
 CMD ["node"]
 

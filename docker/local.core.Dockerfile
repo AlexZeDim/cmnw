@@ -14,6 +14,6 @@ RUN yarn install
 
 COPY .. .
 
-RUN nest build keys
+RUN nest build core
 
-CMD ["node", "dist/apps/keys/main.js"]
+CMD ["node", "dist/apps/core/main.js"]

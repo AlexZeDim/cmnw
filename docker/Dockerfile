@@ -31,12 +31,11 @@ COPY .. .
 RUN nest build conglomerat \
   && nest build osint \
   && nest build dma \
-  && nest build keys \
+  && nest build core \
   && nest build gold \
   && nest build items \
   && nest build ladder \
   && nest build guilds \
-  && nest build realms \
   && nest build auctions \
   && nest build contracts \
   && nest build valuations \

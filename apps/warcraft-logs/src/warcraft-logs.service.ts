@@ -216,7 +216,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     }
   }
 
-  @Cron(CronExpression.EVERY_6_HOURS)
+  @Cron(CronExpression.EVERY_HOUR)
   async indexLogs(): Promise<void> {
     try {
       const isJobLocked = Boolean(await this.redisService.exists(GLOBAL_WCL_KEY_V2));
@@ -225,14 +225,14 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
         return;
       }
 
-      await this.redisService.set(GLOBAL_WCL_KEY_V2, '1', 'EX', 60 * 60 * 5);
+      await this.redisService.set(GLOBAL_WCL_KEY_V2, '1', 'EX', 60 * 59);
 
       await delay(10);
       const wclKey = await getKey(this.keysRepository, GLOBAL_WCL_KEY_V2);
       // --- A bit skeptical about taking the interval required semaphore --- //
       const characterRaidLog = await this.charactersRaidLogsRepository.find({
         where: { isIndexed: false },
-        take: 500,
+        take: 5_000,
       });
 
       if (!characterRaidLog.length) {

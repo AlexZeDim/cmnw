@@ -13,7 +13,7 @@ export type LogCharacter = {
 export type TransformCharacter = Partial<LogCharacter>;
 
 export type RaidCharacter = Partial<LogCharacter> &
-  Required<Pick<LogCharacter, 'guid' | 'name' | 'realmName' | 'timestamp'>>;
+  Required<Pick<LogCharacter, 'guid' | 'name' | 'realm' | 'timestamp'>>;
 
 export type Actors = {
   type: 'NPC' | 'Player' | 'Pet';

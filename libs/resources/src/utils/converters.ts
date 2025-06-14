@@ -7,7 +7,7 @@ import { DateTime } from 'luxon';
  */
 export const lowercase = (s: string): string => s.toLowerCase();
 
-export const toGuid = (name: string, realm: string) => `${lowercase(name)}@${realm}`;
+export const toGuid = (name: string, realm: string) => lowercase(`${name}@${realm}`);
 /**
  * @description Returns capitalized string
  * @param s {string}

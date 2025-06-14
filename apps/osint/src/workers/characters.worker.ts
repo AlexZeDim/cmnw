@@ -98,7 +98,6 @@ export class CharactersWorker extends WorkerHost {
       const { data: args } = job;
 
       const { characterEntity, isNew, isCreateOnlyUnique, isNotReadyToUpdate } = await this.characterExistOrCreate(args);
-
       if (isNotReadyToUpdate) {
         await job.updateProgress(100);
         this.logger.warn(
@@ -209,7 +208,7 @@ export class CharactersWorker extends WorkerHost {
       await job.log(errorOrException);
       this.logger.error({
         context: 'CharactersWorker',
-        error: JSON.stringify(errorOrException)
+        error: errorOrException,
       });
       return 500;
     }

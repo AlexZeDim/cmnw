@@ -331,7 +331,6 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       guid: toGuid(character.name, character.server.slug),
       id: character.id,
       name: character.name,
-      realmName: character.server.name,
       realm: character.server.slug,
       guildRank: character.guildRank,
       timestamp: timestamp,
@@ -346,7 +345,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       .map((character) => ({
         guid: toGuid(character.name, character.server),
         name: character.name,
-        realmName: character.server,
+        realm: character.server,
         timestamp: timestamp,
       }));
 

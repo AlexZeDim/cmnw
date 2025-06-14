@@ -35,6 +35,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import zlib from 'zlib';
 import { cmnwConfig } from '@app/configuration';
+import * as changeCase from 'change-case';
 
 @Injectable()
 export class TestsBench implements OnApplicationBootstrap {
@@ -58,6 +59,8 @@ export class TestsBench implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     try {
+      const a = changeCase.kebabCase('GrimBatol');
+      console.log(a);
       // await this.ipv6('рак-гейминг', 'soulflayer');
     } catch (error) {
       console.log(error);

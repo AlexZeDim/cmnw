@@ -37,6 +37,7 @@ import { InjectRedis } from '@nestjs-modules/ioredis';
 import * as cheerio from 'cheerio';
 import Redis from 'ioredis';
 import ms from 'ms';
+import * as changeCase from 'change-case';
 
 
 @Injectable()
@@ -331,7 +332,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       guid: toGuid(character.name, character.server.slug),
       id: character.id,
       name: character.name,
-      realm: character.server.slug,
+      realm: changeCase.kebabCase(character.server.slug),
       guildRank: character.guildRank,
       timestamp: timestamp,
     }));
@@ -343,9 +344,9 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     )
       .filter((character) => character.type === 'Player')
       .map((character) => ({
-        guid: toGuid(character.name, character.server),
+        guid: changeCase.kebabCase(`${character.name}@${character.server}`),
         name: character.name,
-        realm: character.server,
+        realm: changeCase.kebabCase(character.server),
         timestamp: timestamp,
       }));
 

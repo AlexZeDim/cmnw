@@ -153,7 +153,7 @@ export class ProfileWorker extends WorkerHost {
       this.logger.error({
         context: 'getWarcraftLogs',
         guid: `${name}@${realmSlug}`,
-        error: JSON.stringify(errorOrException),
+        error: errorOrException,
       });
 
       return warcraftLogsProfile;

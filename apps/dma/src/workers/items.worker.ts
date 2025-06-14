@@ -135,7 +135,7 @@ export class ItemsWorker extends WorkerHost {
       this.logger.error({
         context: 'ItemsWorker',
         itemId: job.data.itemId,
-        error: JSON.stringify(errorOrException)
+        error: errorOrException
       });
       return 500;
     }

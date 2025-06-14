@@ -175,7 +175,7 @@ export class GuildsWorker extends WorkerHost {
         {
           context: 'GuildsWorker',
           guid: `${job.data.name}@${job.data.realm}`,
-          error: JSON.stringify(errorOrException),
+          error: errorOrException,
         }
       );
 

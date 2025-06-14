@@ -16,6 +16,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegionIdOrName } from 'blizzapi';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import ms from 'ms';
 
 @Injectable()
@@ -36,6 +38,7 @@ export class CharactersService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
+    await this.indexFromFile();
     await this.indexCharacters(GLOBAL_OSINT_KEY);
   }
 
@@ -115,6 +118,55 @@ export class CharactersService implements OnApplicationBootstrap {
       this.logger.error(
         {
           context: 'indexCharacters',
+          error: JSON.stringify(errorOrException),
+        }
+      );
+    }
+  }
+
+
+  private async indexFromFile() {
+    try {
+      const charactersJson = readFileSync(
+        join(__dirname, '..', '..', '..', './files/characters.json'),
+        'utf8',
+      );
+      const characters: Array<Pick<CharactersEntity, 'guid'>> = JSON.parse(charactersJson);
+
+      this.keyEntities = await getKeys(this.keysRepository, GLOBAL_OSINT_KEY, false);
+
+      let characterIteration = 0;
+      let length = this.keyEntities.length;
+
+      for (const character of characters) {
+        const [nameSlug, realmSlug] = character.guid.split('@');
+
+        const { client, secret, token } =
+          this.keyEntities[characterIteration % length];
+
+        await this.queue.add(character.guid, {
+          guid: character.guid,
+          name: nameSlug,
+          realm: realmSlug,
+          region: <RegionIdOrName>'eu',
+          clientId: client,
+          clientSecret: secret,
+          accessToken: token,
+          createdBy: OSINT_SOURCE.OSINT_MIGRATION,
+          updatedBy: OSINT_SOURCE.OSINT_MIGRATION,
+          requestGuildRank: false,
+          createOnlyUnique: true,
+          forceUpdate: ms('12h'),
+        });
+
+        characterIteration = characterIteration + 1;
+      }
+
+      this.logger.log(`indexFromFile: found ${characters.length} | inserted ${characterIteration} characters`);
+    } catch (errorOrException) {
+      this.logger.error(
+        {
+          context: 'indexFromFile',
           error: JSON.stringify(errorOrException),
         }
       );

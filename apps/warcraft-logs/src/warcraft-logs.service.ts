@@ -1,7 +1,6 @@
 import {
   Injectable,
   Logger,
-  NotFoundException,
   OnApplicationBootstrap,
 } from '@nestjs/common';
 
@@ -367,9 +366,6 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     try {
       let itx = 0;
       const keys = await getKeys(this.keysRepository, GLOBAL_OSINT_KEY, false);
-      if (!keys.length) {
-        throw new NotFoundException(`Clearance ${GLOBAL_OSINT_KEY} have been found`);
-      }
 
       const charactersToJobs = raidCharacters.map((raidCharacter) => {
         itx++;

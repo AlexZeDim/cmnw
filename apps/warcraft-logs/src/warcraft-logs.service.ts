@@ -35,10 +35,9 @@ import { mergeMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import * as cheerio from 'cheerio';
+import * as changeCase from 'change-case';
 import Redis from 'ioredis';
 import ms from 'ms';
-import * as changeCase from 'change-case';
-
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {

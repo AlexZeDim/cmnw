@@ -52,11 +52,8 @@ export class ProfileWorker extends WorkerHost {
     const isBrowserSession = Boolean(this.browser && this.browserContext);
     if (!isBrowserSession) return;
 
-    const jobsNumber = await this.queue.count();
-    if (!jobsNumber) {
-      await this.browserContext.close();
-      await this.browser.close();
-    }
+    await this.browserContext.close();
+    await this.browser.close();
   }
 
   public async process(job: Job<ProfileJobQueue, number>) {
@@ -160,6 +157,8 @@ export class ProfileWorker extends WorkerHost {
       });
 
       return warcraftLogsProfile;
+    } finally {
+      await this.browserControl();
     }
   }
 

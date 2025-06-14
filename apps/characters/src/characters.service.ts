@@ -138,6 +138,10 @@ export class CharactersService implements OnApplicationBootstrap {
       let characterIteration = 0;
       let length = this.keyEntities.length;
 
+      const charactersCount = characters.length;
+
+      this.logger.log(`indexFromFile: file has been found | ${charactersCount} characters`);
+
       for (const character of characters) {
         const [nameSlug, realmSlug] = character.guid.split('@');
 
@@ -162,7 +166,7 @@ export class CharactersService implements OnApplicationBootstrap {
         characterIteration = characterIteration + 1;
       }
 
-      this.logger.log(`indexFromFile: found ${characters.length} | inserted ${characterIteration} characters`);
+      this.logger.log(`indexFromFile: found ${charactersCount} | inserted ${characterIteration} characters`);
     } catch (errorOrException) {
       this.logger.error(
         {

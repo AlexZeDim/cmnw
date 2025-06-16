@@ -20,6 +20,44 @@ services:
     networks:
       - loki
 
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    restart: always
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - loki
+
+  postgres_exporter:
+    container_name: postgres_exporter
+    image: prometheuscommunity/postgres-exporter:latest
+    restart: always
+    ports:
+      - '9187:9187'
+    environment:
+      DATA_SOURCE_NAME: ${DATA_SOURCE_NAME}
+      PG_EXPORTER_WEB_LISTEN_ADDRESS: ":9187"
+      PG_EXPORTER_WEB_TELEMETRY_PATH: "/metrics"
+      PG_EXPORTER_DISABLE_SETTINGS_METRICS: false
+    networks:
+      - loki
+    # If you want to use a custom queries file:
+    # volumes:
+    #   - ./queries.yaml:/etc/postgres_exporter/queries.yaml
+    # command:
+    #   - --extend.query-path=/etc/postgres_exporter/queries.yaml
+
   grafana:
     container_name: grafana
     image: grafana/grafana:latest
@@ -47,3 +85,4 @@ networks:
 
 volumes:
   grafana:
+  prometheus_data:

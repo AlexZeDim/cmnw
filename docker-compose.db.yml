@@ -35,5 +35,4 @@ networks:
 
 volumes:
   postgres:
-  mongo:
   redis:

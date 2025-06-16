@@ -17,7 +17,6 @@ import { Repository } from 'typeorm';
 import { RegionIdOrName } from 'blizzapi';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { readFileSync } from 'fs';
-import { join } from 'path';
 import ms from 'ms';
 
 @Injectable()
@@ -128,7 +127,7 @@ export class CharactersService implements OnApplicationBootstrap {
   private async indexFromFile() {
     try {
       const charactersJson = readFileSync(
-        join(__dirname, '..', '..', '..', './files/characters.json'),
+        './files/characters.json',
         'utf8',
       );
       const characters: Array<Pick<CharactersEntity, 'guid'>> = JSON.parse(charactersJson);

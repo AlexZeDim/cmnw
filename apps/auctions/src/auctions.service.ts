@@ -89,7 +89,10 @@ export class AuctionsService implements OnApplicationBootstrap {
         ),
       );
     } catch (errorOrException) {
-      this.logger.error(`indexAuctions ${errorOrException}`);
+      this.logger.error({
+        context: 'indexAuctions',
+        error: JSON.stringify(errorOrException)
+      });
     }
   }
 
@@ -156,7 +159,7 @@ export class AuctionsService implements OnApplicationBootstrap {
 
       const isWowTokenValid = isWowToken(response);
       if (!isWowTokenValid) {
-        this.logger.error(`Token response not valid`);
+        this.logger.warn(`Token response not valid`);
         return;
       }
 

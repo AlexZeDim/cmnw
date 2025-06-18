@@ -88,12 +88,4 @@ export class CharactersPetsEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt?: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp with time zone',
-    name: 'updated_at',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt?: Date;
 }

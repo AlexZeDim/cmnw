@@ -94,8 +94,9 @@ export class ContractsService implements OnApplicationBootstrap {
 
   @Cron('00 10,18 * * *')
   private async buildCommodityTimestampContracts() {
+    const tag = 'commodity-contracts'
     try {
-      this.logger.log('buildCommodityTimestampContracts started');
+      this.logger.log(`${tag} started`);
 
       const commodityItems = await this.itemsRepository
         .createQueryBuilder('items')
@@ -121,11 +122,11 @@ export class ContractsService implements OnApplicationBootstrap {
       const commodityItemsIds = commodityItems.map((item) => item.id);
       const commodityTimestamps = timestamps.map((t) => t.timestamp);
 
-      this.logger.log(`buildCommodityTimestampContracts: items ${commodityItemsIds.length} || timestamps ${commodityTimestamps.length} || today ${today.toISO()} || ytd ${ytd}`);
+      this.logger.log(`${tag}: items ${commodityItemsIds.length} || timestamps ${commodityTimestamps.length} || today ${today.toISO()} || ytd ${ytd}`);
 
       const isGuard = isContractArraysEmpty(commodityTimestamps, commodityItemsIds);
       if (isGuard) {
-        this.logger.warn('No items or timestamps provided empty');
+        this.logger.warn(`${tag}: No items or timestamps provided empty`);
         return;
       }
 
@@ -139,14 +140,20 @@ export class ContractsService implements OnApplicationBootstrap {
       }
 
     } catch (errorOrException) {
-      this.logger.error(`buildCommodityTimestampContracts ${errorOrException}`);
+      this.logger.error(
+        {
+          context: tag,
+          error: errorOrException,
+        }
+      );
     }
   }
 
   @Cron('00 10,18 * * *')
   private async buildGoldIntradayContracts() {
+    const tag = 'gold-contracts';
     try {
-      this.logger.log('buildGoldIntradayContracts started');
+      this.logger.log(`${tag} started`);
 
       const today = DateTime.now();
       const ytd = today.minus({ days: 1 }).toMillis();
@@ -178,8 +185,8 @@ export class ContractsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'buildGoldIntradayContracts',
-          error: JSON.stringify(errorOrException),
+          context: tag,
+          error: errorOrException,
         }
       );
     }
@@ -191,6 +198,7 @@ export class ContractsService implements OnApplicationBootstrap {
     today: DateTime,
     connectedRealmId?: number,
   ) {
+    const tag = 'contracts'
     const isGold = itemId === GOLD_ITEM_ENTITY.id;
     const contractId = `${itemId}-${today.day}.${today.month}@${timestamp}`;
 
@@ -202,7 +210,7 @@ export class ContractsService implements OnApplicationBootstrap {
       });
 
       if (isContractExists) {
-        this.logger.debug(`${contractId} exists`);
+        this.logger.debug(`${tag}: ${contractId} exists`);
         return;
       }
 
@@ -228,7 +236,7 @@ export class ContractsService implements OnApplicationBootstrap {
       const ordersNotEnough = orders < 10
 
       if (ordersNotEnough) {
-        this.logger.debug(`${contractId} not enough orders for contract representation`);
+        this.logger.debug(`${tag}: ${contractId} not enough orders for contract representation`);
         return;
       }
 
@@ -278,12 +286,12 @@ export class ContractsService implements OnApplicationBootstrap {
 
       await this.contractRepository.save(contractEntity);
 
-      this.logger.log(`${contractId}`);
+      this.logger.log(`${tag}: ${contractId}`);
 
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'getItemContractIntradayData',
+          context: tag,
           contractId,
           error: JSON.stringify(errorOrException),
         }

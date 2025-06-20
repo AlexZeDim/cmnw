@@ -71,8 +71,6 @@ export class GoldService implements OnApplicationBootstrap {
         }),
       );
 
-      console.log(goldOrders);
-
       const goldMarketEntities = await lastValueFrom(
         from(goldOrders).pipe(
           mergeMap((order) =>

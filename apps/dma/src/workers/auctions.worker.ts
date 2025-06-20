@@ -206,6 +206,7 @@ export class AuctionsWorker extends WorkerHost {
       const quantity = 'quantity' in order ? (order as ICommodityOrder).quantity : 1;
 
       marketEntity.type = isCommodity ? MARKET_TYPE.C : MARKET_TYPE.A;
+
       if (bid) marketEntity.bid = bid;
       if (price) marketEntity.price = price;
       if (quantity) marketEntity.quantity = quantity;

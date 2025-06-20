@@ -16,7 +16,7 @@ import {
   RaidCharacter,
   toGuid,
   KEY_LOCK,
-  CharacterJobQueue,
+  CharacterJobQueue, toSlug,
 } from '@app/resources';
 
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -35,7 +35,6 @@ import { mergeMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import * as cheerio from 'cheerio';
-import * as changeCase from 'change-case';
 import Redis from 'ioredis';
 import ms from 'ms';
 
@@ -331,7 +330,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
       guid: toGuid(character.name, character.server.slug),
       id: character.id,
       name: character.name,
-      realm: changeCase.kebabCase(character.server.slug),
+      realm: toSlug(character.server.slug),
       guildRank: character.guildRank,
       timestamp: timestamp,
     }));
@@ -343,9 +342,9 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     )
       .filter((character) => character.type === 'Player')
       .map((character) => ({
-        guid: changeCase.kebabCase(`${character.name}@${character.server}`),
+        guid: toSlug(`${character.name}@${character.server}`),
         name: character.name,
-        realm: changeCase.kebabCase(character.server),
+        realm: toSlug(character.server),
         timestamp: timestamp,
       }));
 

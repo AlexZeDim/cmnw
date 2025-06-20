@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RealmsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
 import { get } from 'lodash';
-import * as changeCase from 'change-case';
 import {
   API_HEADERS_ENUM,
   apiConstParams,
@@ -17,7 +16,7 @@ import {
   REALM_TICKER,
   RealmJobQueue,
   realmsQueue,
-  toLocale,
+  toLocale, toSlug,
   transformConnectedRealmId,
   transformNamedField,
 } from '@app/resources';
@@ -101,13 +100,13 @@ export class RealmsWorker extends WorkerHost {
         const localeName = get(realmLocale, `name.${locale}`, null);
         if (localeName) {
           realmEntity.localeName = localeName;
-          realmEntity.localeSlug = changeCase.kebabCase(localeName);
+          realmEntity.localeSlug = toSlug(localeName);
         }
       } else {
         const localeNameSlug = get(response, 'name', null);
         if (localeNameSlug) {
           realmEntity.localeName = localeNameSlug;
-          realmEntity.localeSlug = changeCase.kebabCase(localeNameSlug);
+          realmEntity.localeSlug = toSlug(localeNameSlug);
         }
         await job.updateProgress(45);
       }

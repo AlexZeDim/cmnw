@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import * as changeCase from 'change-case';
 
 /**
  * @description Returns lowercase string
@@ -24,12 +25,6 @@ export const capitalize = (s: string): string =>
 export const fromSlug = (s: string): string =>
   s.toString().charAt(0).toUpperCase() + s.slice(1).replace(/-+/g, ' ');
 
-/**
- * @description return number with precision .00
- * @param n {number}
- * @param digits {number}
- * @return {string}
- */
 export const round = (n: number, digits = 2) => parseFloat(n.toFixed(digits));
 
 export const toGold = (n: number, digits = 2) =>
@@ -41,7 +36,7 @@ export const toGold = (n: number, digits = 2) =>
  * @return {string}
  */
 export const toSlug = (s: string): string =>
-  s.replace(/\s+/g, '-').replace(/'+/g, '').toLowerCase();
+  changeCase.kebabCase(s);
 
 /**
  * @description Return force lowercase with underscore format string

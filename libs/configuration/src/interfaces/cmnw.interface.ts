@@ -1,4 +1,4 @@
-export interface ICmnw {
+export interface ICmnwConfig {
   readonly clientId: string;
   readonly clientSecret: string;
   readonly redirectUri: string;

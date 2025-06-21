@@ -1,4 +1,4 @@
-export interface IDmaMarket {
+export interface IDmaConfig {
   readonly isIndexAuctions: boolean;
   readonly isIndexCommodity: boolean;
 

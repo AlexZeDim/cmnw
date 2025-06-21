@@ -56,7 +56,7 @@ import {
   RealmsEntity,
 } from '@app/pg';
 
-import { keysConfig } from '@app/configuration';
+import { coreConfig } from '@app/configuration';
 
 @Processor(charactersQueue.name, charactersQueue.workerOptions)
 @Injectable()
@@ -142,7 +142,7 @@ export class CharactersWorker extends WorkerHost {
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
-        httpsAgent: keysConfig.useProxy ? await getRandomProxy(this.keysRepository) : undefined,
+        httpsAgent: coreConfig.useProxy ? await getRandomProxy(this.keysRepository) : undefined,
       });
 
       const status = await this.getStatus(

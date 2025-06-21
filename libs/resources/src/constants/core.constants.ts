@@ -14,7 +14,7 @@ export enum APP_LABELS {
   T = 'test',
   V = 'valuations',
   WCL = 'warcraft-logs',
-  W = 'wowprogress',
+  W = 'wow-progress',
 }
 
 export enum KEY_LOCK {
@@ -22,5 +22,5 @@ export enum KEY_LOCK {
   DMA = 'dma',
   MARKET = 'market',
   WARCRAFT_LOGS = 'warcraft-logs',
-  WOWPROGRESS = 'wowprogress',
+  WOW_PROGRESS = 'wow-progress',
 }

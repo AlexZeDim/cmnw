@@ -12,7 +12,7 @@ import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeysEntity, PricingEntity, SkillLineEntity, SpellEffectEntity, SpellReagentsEntity } from '@app/pg';
 import { Repository } from 'typeorm';
-import { dmaMarketConfig } from '@app/configuration';
+import { dmaConfig } from '@app/configuration';
 import {
   DMA_SOURCE,
   EXPANSION_TICKER,
@@ -52,13 +52,13 @@ export class PricingService implements OnApplicationBootstrap {
   ) { }
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexPricing(GLOBAL_DMA_KEY, dmaMarketConfig.isItemsPricingInit);
+    await this.indexPricing(GLOBAL_DMA_KEY, dmaConfig.isItemsPricingInit);
 
-    await this.libPricing(dmaMarketConfig.isItemsPricingLab, true, true, true);
+    await this.libPricing(dmaConfig.isItemsPricingLab, true, true, true);
 
-    await this.buildSkillLine(dmaMarketConfig.isItemsPricingBuild);
-    await this.buildSpellEffect(dmaMarketConfig.isItemsPricingBuild);
-    await this.buildSpellReagents(dmaMarketConfig.isItemsPricingBuild);
+    await this.buildSkillLine(dmaConfig.isItemsPricingBuild);
+    await this.buildSpellEffect(dmaConfig.isItemsPricingBuild);
+    await this.buildSpellReagents(dmaConfig.isItemsPricingBuild);
   }
 
   async libPricing(

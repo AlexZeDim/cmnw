@@ -24,7 +24,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { delay } from '@app/resources';
 import { RegionIdOrName } from 'blizzapi';
-import { warcraftLogsConfig } from '@app/configuration';
+import { osintConfig } from '@app/configuration';
 import { HttpService } from '@nestjs/axios';
 import { from, lastValueFrom } from 'rxjs';
 import { RealmsEntity, CharactersRaidLogsEntity, KeysEntity } from '@app/pg';
@@ -40,7 +40,7 @@ import ms from 'ms';
 
 @Injectable()
 export class WarcraftLogsService implements OnApplicationBootstrap {
-  private config = warcraftLogsConfig;
+  private config = osintConfig;
   private readonly logger = new Logger(WarcraftLogsService.name, {
     timestamp: true,
   });
@@ -145,7 +145,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     try {
       let logsAlreadyExists = 0;
 
-      for (let page = this.config.fromPage; page < this.config.toPage; page++) {
+      for (let page = this.config.wclFromPage; page < this.config.wclToPage; page++) {
         const random = randomInt(1, 5);
         await delay(random);
 
@@ -159,12 +159,12 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
          */
         const [isPageEmpty, isLogsMoreThen] = [
           !wclLogsFromPage.length,
-          logsAlreadyExists > this.config.logs,
+          logsAlreadyExists > this.config.wclLogs,
         ];
 
         if (isLogsMoreThen) {
           this.logger.log(
-            `BREAK | ${realmEntity.name} | Logs: ${logsAlreadyExists} > ${this.config.logs}`,
+            `BREAK | ${realmEntity.name} | Logs: ${logsAlreadyExists} > ${this.config.wclLogs}`,
           );
           break;
         }

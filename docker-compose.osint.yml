@@ -23,10 +23,10 @@ services:
     env_file:
       - stack.env
 
-  wowprogress:
+  wow-progress:
     image: ghcr.io/alexzedim/osint:latest
     restart: always
-    command: [ 'node', 'dist/apps/wowprogress/main.js' ]
+    command: [ 'node', 'dist/apps/wow-progress/main.js' ]
     env_file:
       - stack.env
 

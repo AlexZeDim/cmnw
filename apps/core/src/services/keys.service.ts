@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { keysConfig } from '@app/configuration';
+import { coreConfig } from '@app/configuration';
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import { IKey } from '@app/configuration/interfaces/key.interface';
+import { IKeyConfig } from '@app/configuration/interfaces/key.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DateTime } from 'luxon';
 import { HttpService } from '@nestjs/axios';
@@ -37,14 +37,14 @@ export class KeysService implements OnApplicationBootstrap {
 
   private async initKeys(): Promise<void> {
     const keysJson = readFileSync(
-      join(__dirname, '..', '..', '..', keysConfig.path),
+      join(__dirname, '..', '..', '..', coreConfig.path),
       'utf8',
     );
     const { keys } = JSON.parse(keysJson);
 
     await lastValueFrom(
       from(keys).pipe(
-        mergeMap(async (key: IKey) => {
+        mergeMap(async (key: IKeyConfig) => {
           let keyEntity = await this.keysRepository.findOneBy({
             client: key.client,
           });

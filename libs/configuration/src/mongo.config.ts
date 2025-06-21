@@ -1,5 +1,5 @@
-import { IMongo } from '@app/configuration/interfaces';
+import { IMongoConfig } from '@app/configuration/interfaces';
 
-export const mongoConfig: IMongo = {
+export const mongoConfig: IMongoConfig = {
   connectionString: process.env.connectionString,
 };

@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { TestsCommunity } from '../src/tests.community';
-import { warcraftLogsConfig } from '@app/configuration';
+import { osintConfig } from '@app/configuration';
 import { HttpModule } from '@nestjs/axios';
 import { raidCharacter } from '../mocks';
 
@@ -23,7 +23,7 @@ describe('COMMUNITY', () => {
   describe('WCL-PAGE-LOGS', () => {
     it('page response', async () => {
       const response = await testsService.getLogsFromPage(
-        warcraftLogsConfig,
+        osintConfig,
         417,
         1,
       );

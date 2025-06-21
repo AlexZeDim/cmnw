@@ -1,12 +1,11 @@
-export { IMongo } from './mongo.interface';
-export { IRedis } from './redis.interface';
-export { ICmnw } from './cmnw.interface';
-export { IKey } from './key.interface';
-export { ILoki } from './loki.interface';
-export { IKeys } from './keys.interface';
-export { IDmaMarket } from './dma-market.interface';
+export { IMongoConfig } from './mongo.interface';
+export { IRedisConfig } from './redis.interface';
+export { ICmnwConfig } from './cmnw.interface';
+export { IKeyConfig } from './key.interface';
+export { ILokiConfig } from './loki.interface';
+export { ICoreConfig } from './core.interface';
+export { IDmaConfig } from './dma.interface';
+export { IOsintConfig } from './osint.interface';
 export { IValuations } from './valuations.interface';
-export { IWowProgress } from './wowprogress.interface';
-export { IWarcraftLogs } from './warcraft-logs.interface';
 export { IPostgres, IPostgresConfig } from './postgres.interface';
 

@@ -1,3 +1,3 @@
-export interface IMongo {
+export interface IMongoConfig {
   readonly connectionString: string;
 }

@@ -221,13 +221,13 @@
         "tsConfigPath": "apps/warcraft-logs/tsconfig.app.json"
       }
     },
-    "wowprogress": {
+    "wow-progress": {
       "type": "application",
-      "root": "apps/wowprogress",
+      "root": "apps/wow-progress",
       "entryFile": "main",
-      "sourceRoot": "apps/wowprogress/src",
+      "sourceRoot": "apps/wow-progress/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/wowprogress/tsconfig.app.json"
+        "tsConfigPath": "apps/wow-progress/tsconfig.app.json"
       }
     }
   }

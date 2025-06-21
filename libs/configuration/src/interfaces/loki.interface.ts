@@ -1,4 +1,4 @@
-export interface ILoki {
+export interface ILokiConfig {
   readonly lokiUrl: string;
   readonly logToLoki: boolean;
   readonly logToConsole: boolean;

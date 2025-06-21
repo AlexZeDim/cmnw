@@ -40,7 +40,7 @@ RUN nest build conglomerat \
   && nest build contracts \
   && nest build valuations \
   && nest build characters \
-  && nest build wowprogress \
+  && nest build wow-progress \
   && nest build warcraft-logs
 
 CMD wait && ["node"]

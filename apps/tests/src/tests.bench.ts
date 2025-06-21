@@ -467,7 +467,7 @@ export class TestsBench implements OnApplicationBootstrap {
       OSINT_SOURCE_WOW_PROGRESS_RANKS,
     );
 
-    const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+    const dirPath = path.join(__dirname, '..', '..', 'files', 'wow-progress');
     await fs.ensureDir(dirPath);
 
     const page = cheerio.load(response.data);
@@ -538,7 +538,7 @@ export class TestsBench implements OnApplicationBootstrap {
   }
 
   async unpackWowProgress(files: string[]) {
-    const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+    const dirPath = path.join(__dirname, '..', '..', 'files', 'wow-progress');
 
     await lastValueFrom(
       from(files).pipe(

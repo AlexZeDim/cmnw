@@ -9,7 +9,7 @@ on:
       - 'apps/characters/**'
       - 'apps/guilds/**'
       - 'apps/osint/**'
-      - 'apps/wowprogress/**'
+      - 'apps/wow-progress/**'
       - 'libs/**'
       - 'docker/arm64.osint.Dockerfile'
       - 'docker/x64.osint.Dockerfile'

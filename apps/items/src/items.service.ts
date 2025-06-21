@@ -2,7 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { dmaMarketConfig } from '@app/configuration';
+import { dmaConfig } from '@app/configuration';
 import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
@@ -39,11 +39,11 @@ export class ItemsService implements OnApplicationBootstrap {
       GLOBAL_KEY,
       1,
       250_000,
-      dmaMarketConfig.isItemsForceUpdate,
-      dmaMarketConfig.isItemsIndex,
+      dmaConfig.isItemsForceUpdate,
+      dmaConfig.isItemsIndex,
     );
 
-    await this.buildItems(dmaMarketConfig.isItemsBuild);
+    await this.buildItems(dmaConfig.isItemsBuild);
   }
 
   @Cron(CronExpression.EVERY_WEEK)

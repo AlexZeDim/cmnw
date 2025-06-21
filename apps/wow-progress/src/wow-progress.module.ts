@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { WowprogressService } from './wowprogress.service';
+import { WowProgressService } from './wow-progress.service';
 import { postgresConfig, redisConfig } from '@app/configuration';
 import { BullModule } from '@nestjs/bullmq';
 import { charactersQueue, guildsQueue, profileQueue } from '@app/resources';
@@ -35,6 +35,6 @@ import { CharactersProfileEntity, KeysEntity, RealmsEntity } from '@app/pg';
     }),
   ],
   controllers: [],
-  providers: [WowprogressService],
+  providers: [WowProgressService],
 })
-export class WowprogressModule {}
+export class WowProgressModule {}

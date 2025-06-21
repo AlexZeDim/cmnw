@@ -7,7 +7,7 @@ import * as cheerio from 'cheerio';
 import { InjectQueue } from '@nestjs/bullmq';
 import { difference, union } from 'lodash';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { wowProgressConfig } from '@app/configuration';
+import { osintConfig } from '@app/configuration';
 import { from, lastValueFrom } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
@@ -44,8 +44,8 @@ import {
 } from '@app/resources';
 
 @Injectable()
-export class WowprogressService implements OnApplicationBootstrap {
-  private readonly logger = new Logger(WowprogressService.name, {
+export class WowProgressService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(WowProgressService.name, {
     timestamp: true,
   });
 
@@ -66,7 +66,7 @@ export class WowprogressService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.indexWowProgress(GLOBAL_OSINT_KEY, wowProgressConfig.init);
+    await this.indexWowProgress(GLOBAL_OSINT_KEY, osintConfig.isIndexWowProgress);
   }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
@@ -80,7 +80,7 @@ export class WowprogressService implements OnApplicationBootstrap {
         return;
       }
 
-      const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+      const dirPath = path.join(__dirname, '..', '..', 'files', 'wow-progress');
       await fs.ensureDir(dirPath);
 
       const files = await this.getWowProgress(dirPath);
@@ -148,7 +148,7 @@ export class WowprogressService implements OnApplicationBootstrap {
 
     const keysEntities = await getKeys(this.keysRepository, clearance);
     const keysLength = keysEntities.length;
-    const dirPath = path.join(__dirname, '..', '..', 'files', 'wowprogress');
+    const dirPath = path.join(__dirname, '..', '..', 'files', 'wow-progress');
 
     await lastValueFrom(
       from(files).pipe(

@@ -47,7 +47,7 @@ import {
   RealmsEntity,
 } from '@app/pg';
 
-import { keysConfig } from '@app/configuration';
+import { coreConfig } from '@app/configuration';
 
 @Processor(guildsQueue.name, guildsQueue.workerOptions)
 @Injectable()
@@ -110,7 +110,7 @@ export class GuildsWorker extends WorkerHost {
         clientId: args.clientId,
         clientSecret: args.clientSecret,
         accessToken: args.accessToken,
-        httpsAgent: keysConfig.useProxy ? await getRandomProxy(this.keysRepository) : undefined,
+        httpsAgent: coreConfig.useProxy ? await getRandomProxy(this.keysRepository) : undefined,
       });
       /**
        * Inherit safe values
@@ -423,6 +423,7 @@ export class GuildsWorker extends WorkerHost {
 
       Object.entries(response).map(([key, value]) => {
         if (keys.includes(key) && value !== null) summary[changeCase.camelCase(key)] = value;
+
         if (key === 'faction' && typeof value === 'object' && value !== null) {
           if (value.type && value.name === null) {
             if (value.type.toString().startsWith('A')) summary.faction = FACTION.A;
@@ -431,6 +432,7 @@ export class GuildsWorker extends WorkerHost {
             summary.faction = value.name;
           }
         }
+
         if (key === 'realm' && typeof value === 'object' && value !== null) {
           if (value.id && value.name && value.slug) {
             summary.realmId = value.id;
@@ -438,6 +440,7 @@ export class GuildsWorker extends WorkerHost {
             summary.realm = value.slug;
           }
         }
+
         if (key === 'member_count') {
           summary.membersCount = value;
         }

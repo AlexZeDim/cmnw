@@ -1,6 +1,6 @@
-import { IDmaMarket } from '@app/configuration/interfaces';
+import { IDmaConfig } from '@app/configuration/interfaces';
 
-export const dmaMarketConfig: IDmaMarket = {
+export const dmaConfig: IDmaConfig = {
   isIndexAuctions: process.env.DMA_INDEX_AUCTIONS === 'true',
   isIndexCommodity: process.env.DMA_INDEX_COMMODITY === 'true',
 

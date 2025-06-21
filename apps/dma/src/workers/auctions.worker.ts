@@ -157,7 +157,7 @@ export class AuctionsWorker extends WorkerHost {
         await job.log(errorOrException);
         this.logger.error({
           connectedRealmId: job.data.connectedRealmId,
-          context: 'AuctionsWorker',
+          logTag: 'AuctionsWorker',
           error: errorOrException
         });
       }

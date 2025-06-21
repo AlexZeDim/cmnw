@@ -95,7 +95,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       );
     } catch (errorOrException) {
       this.logger.error({
-        context: 'indexAuctions',
+        logTag: 'indexAuctions',
         error: JSON.stringify(errorOrException)
       });
     }
@@ -139,7 +139,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       );
     } catch (errorOrException) {
       this.logger.error({
-        context: 'indexCommodity',
+        logTag: 'indexCommodity',
         error: JSON.stringify(errorOrException)
       });
     }

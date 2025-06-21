@@ -208,7 +208,7 @@ export class CharactersWorker extends WorkerHost {
     } catch (errorOrException) {
       await job.log(errorOrException);
       this.logger.error({
-        context: 'CharactersWorker',
+        logTag: 'CharactersWorker',
         error: errorOrException,
       });
       return 500;
@@ -370,7 +370,7 @@ export class CharactersWorker extends WorkerHost {
       const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_MEDIA);
 
       this.logger.error({
-        context: 'getMedia',
+        logTag: 'getMedia',
         guid: `${nameSlug}@${realmSlug}`,
         statusCode,
         error: JSON.stringify(errorOrException)
@@ -467,7 +467,7 @@ export class CharactersWorker extends WorkerHost {
     } catch (errorOrException) {
       const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_MOUNTS);
       this.logger.error({
-        context: 'getMounts',
+        logTag: 'getMounts',
         guid: `${nameSlug}@${realmSlug}`,
         statusCode,
         error: JSON.stringify(errorOrException)
@@ -484,7 +484,7 @@ export class CharactersWorker extends WorkerHost {
       await this.mountsRepository.save(mounts, { chunk: 10 });
     } catch (errorOrException) {
       this.logger.error({
-        context: 'indexMounts',
+        logTag: 'indexMounts',
         error: JSON.stringify(errorOrException)
       });
     }
@@ -589,7 +589,7 @@ export class CharactersWorker extends WorkerHost {
                 characterPetsEntities.push(characterPetEntity);
               }
             } catch (error) {
-              this.logger.error({ context: 'getPets|mergeMap', error: JSON.stringify(error) });
+              this.logger.error({ logTag: 'getPets|mergeMap', error: JSON.stringify(error) });
             }
           }, 5),
         ),
@@ -622,7 +622,7 @@ export class CharactersWorker extends WorkerHost {
       return petsCollection;
     } catch (errorOrException) {
       const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_PETS);
-      this.logger.error({ context: 'getPets', guid: `${nameSlug}@${realmSlug}`, statusCode, error: JSON.stringify(errorOrException) });
+      this.logger.error({ logTag: 'getPets', guid: `${nameSlug}@${realmSlug}`, statusCode, error: JSON.stringify(errorOrException) });
       return petsCollection;
     }
   }
@@ -634,7 +634,7 @@ export class CharactersWorker extends WorkerHost {
 
       await this.petsRepository.save(pets, { chunk: 10 });
     } catch (errorOrException) {
-      this.logger.error({ context: 'indexPets', error: JSON.stringify(errorOrException) });
+      this.logger.error({ logTag: 'indexPets', error: JSON.stringify(errorOrException) });
     }
   }
 
@@ -750,7 +750,7 @@ export class CharactersWorker extends WorkerHost {
     } catch (errorOrException) {
       const statusCode = get(errorOrException, 'status', STATUS_CODES.ERROR_PROFESSIONS);
       this.logger.error({
-        context: 'getProfessions',
+        logTag: 'getProfessions',
         guid: `${nameSlug}@${realmSlug}`,
         statusCode,
         error: JSON.stringify(errorOrException)
@@ -806,7 +806,7 @@ export class CharactersWorker extends WorkerHost {
       }
 
       this.logger.error({
-        context: 'getSummary',
+        logTag: 'getSummary',
         guid: `${nameSlug}@${realmSlug}`,
         statusCode: summary.statusCode,
         error: JSON.stringify(errorOrException)
@@ -851,7 +851,7 @@ export class CharactersWorker extends WorkerHost {
       }
     } catch (errorOrException) {
       this.logger.error({
-        context: 'diffCharacterEntity',
+        logTag: 'diffCharacterEntity',
         guid: original.guid,
         error: JSON.stringify(errorOrException)
       });

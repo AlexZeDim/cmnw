@@ -266,7 +266,7 @@ export class GuildsWorker extends WorkerHost {
               } catch (errorOrException) {
                 this.logger.error(
                   {
-                    context: 'membersIntersectIds',
+                    logTag: 'membersIntersectIds',
                     guildGuid: guildEntity.guid,
                     error: JSON.stringify(errorOrException),
                   }
@@ -331,7 +331,7 @@ export class GuildsWorker extends WorkerHost {
               } catch (errorOrException) {
                 this.logger.error(
                   {
-                    context: 'membersJoinedIds',
+                    logTag: 'membersJoinedIds',
                     guildGuid: guildEntity.guid,
                     error: JSON.stringify(errorOrException),
                   }
@@ -384,7 +384,7 @@ export class GuildsWorker extends WorkerHost {
               } catch (errorOrException) {
                 this.logger.error(
                   {
-                    context: 'membersLeaveIds',
+                    logTag: 'membersLeaveIds',
                     guildGuid: guildEntity.guid,
                     error: JSON.stringify(errorOrException),
                   }
@@ -562,7 +562,7 @@ export class GuildsWorker extends WorkerHost {
             } catch (errorOrException) {
               this.logger.error(
                 {
-                  context: 'getRoster',
+                  logTag: 'getRoster',
                   member: member.character.id,
                   guildGuid: guildEntity.guid,
                   error: JSON.stringify(errorOrException),

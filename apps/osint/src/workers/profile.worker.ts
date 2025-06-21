@@ -104,7 +104,7 @@ export class ProfileWorker extends WorkerHost {
     } catch (errorOrException) {
       await job.log(errorOrException);
       this.logger.error({
-        context: 'ProfileWorker',
+        logTag: 'ProfileWorker',
         guid: job.data.guid,
         error: JSON.stringify(errorOrException),
       });
@@ -118,6 +118,7 @@ export class ProfileWorker extends WorkerHost {
     realmSlug: string,
     raidDifficulty: 'heroic' | 'mythic' = 'mythic',
   ): Promise<WarcraftLogsProfile> {
+    const logTag = this.getWarcraftLogsProfile.name;
     const warcraftLogsProfile = this.charactersProfileRepository.create();
     try {
       const isBrowserLaunched = Boolean(this.browser);
@@ -151,7 +152,7 @@ export class ProfileWorker extends WorkerHost {
       return warcraftLogsProfile;
     } catch (errorOrException) {
       this.logger.error({
-        context: 'getWarcraftLogs',
+        logTag,
         guid: `${name}@${realmSlug}`,
         error: errorOrException,
       });
@@ -166,6 +167,7 @@ export class ProfileWorker extends WorkerHost {
     name: string,
     realmSlug: string,
   ): Promise<WowProgressProfile> {
+    const logTag = this.getWowProgressProfile.name;
     const wowProgressProfile = this.charactersProfileRepository.create();
     try {
       const { data } = await this.httpService.axiosRef.get<string>(
@@ -216,7 +218,7 @@ export class ProfileWorker extends WorkerHost {
       return wowProgressProfile;
     } catch (errorOrException) {
       this.logger.error({
-        context: 'getWowProgressProfile',
+        logTag,
         guid: `${name}@${realmSlug}`,
         error: JSON.stringify(errorOrException),
       });
@@ -226,6 +228,7 @@ export class ProfileWorker extends WorkerHost {
   }
 
   private async getRaiderIoProfile(name: string, realmSlug: string) {
+    const logTag = this.getRaiderIoProfile.name;
     const rioProfileCharacter = this.charactersProfileRepository.create();
     try {
       const { data: raiderIoProfile } =
@@ -267,7 +270,7 @@ export class ProfileWorker extends WorkerHost {
       return rioProfileCharacter;
     } catch (errorOrException) {
       this.logger.error({
-        context: 'getRaiderIO',
+        logTag,
         guid: `${name}@${realmSlug}`,
         error: JSON.stringify(errorOrException),
       });

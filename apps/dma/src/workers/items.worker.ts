@@ -133,7 +133,7 @@ export class ItemsWorker extends WorkerHost {
     } catch (errorOrException) {
       await job.log(errorOrException);
       this.logger.error({
-        context: 'ItemsWorker',
+        logTag: 'ItemsWorker',
         itemId: job.data.itemId,
         error: errorOrException
       });

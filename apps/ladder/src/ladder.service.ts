@@ -101,7 +101,6 @@ export class LadderService implements OnApplicationBootstrap {
               updatedBy: OSINT_SOURCE.PVP_LADDER,
               faction: player.faction.type === 'HORDE' ? FACTION.H : FACTION.A,
               iteration: player.rank,
-              requestGuildRank: true,
               createOnlyUnique: false,
             },
             opts: {
@@ -221,7 +220,6 @@ export class LadderService implements OnApplicationBootstrap {
                   createdBy: OSINT_SOURCE.MYTHIC_PLUS,
                   updatedBy: OSINT_SOURCE.MYTHIC_PLUS,
                   faction: member.faction.type === 'HORDE' ? FACTION.H : FACTION.A,
-                  requestGuildRank: true,
                   createOnlyUnique: false,
                 },
                 opts: {

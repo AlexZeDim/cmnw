@@ -93,7 +93,6 @@ export class CharactersService implements OnApplicationBootstrap {
               accessToken: token,
               createdBy: OSINT_SOURCE.CHARACTER_INDEX,
               updatedBy: OSINT_SOURCE.CHARACTER_INDEX,
-              requestGuildRank: false,
               createOnlyUnique: false,
               forceUpdate: ms('12h'),
               iteration: characterIteration,
@@ -165,7 +164,6 @@ export class CharactersService implements OnApplicationBootstrap {
           accessToken: token,
           createdBy: OSINT_SOURCE.OSINT_MIGRATION,
           updatedBy: OSINT_SOURCE.OSINT_MIGRATION,
-          requestGuildRank: false,
           createOnlyUnique: true,
           forceUpdate: ms('12h'),
         });

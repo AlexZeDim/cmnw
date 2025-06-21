@@ -102,7 +102,6 @@ export class GuildsService implements OnApplicationBootstrap {
             region: <RegionIdOrName>'eu',
             forceUpdate: ms('4h'),
             guildIteration: guildJobsItx,
-            requestGuildRank: true,
             createOnlyUnique: false,
           },
           opts: {
@@ -204,7 +203,6 @@ export class GuildsService implements OnApplicationBootstrap {
               accessToken: token,
               createdBy: OSINT_SOURCE.GUILD_INDEX,
               updatedBy: OSINT_SOURCE.GUILD_INDEX,
-              requestGuildRank: true,
               createOnlyUnique: false,
               forceUpdate: ms('4h'),
               iteration: guildIteration,
@@ -298,7 +296,6 @@ export class GuildsService implements OnApplicationBootstrap {
                 region: <RegionIdOrName>guildEntry.region,
                 forceUpdate: ms('1h'),
                 iteration: guildEntry.rank,
-                requestGuildRank: true,
                 createOnlyUnique: false,
               },
               opts: {

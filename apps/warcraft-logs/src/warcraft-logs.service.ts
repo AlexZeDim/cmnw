@@ -383,7 +383,6 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
             clientSecret: keys[itx].secret,
             accessToken: keys[itx].token,
             forceUpdate: ms('1m'),
-            requestGuildRank: false,
             createOnlyUnique: false,
           },
           opts: {

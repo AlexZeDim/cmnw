@@ -216,7 +216,6 @@ export class WowProgressService implements OnApplicationBootstrap {
                   clientSecret: secret,
                   accessToken: token,
                   createOnlyUnique: true,
-                  requestGuildRank: true,
                 },
                 {
                   jobId: guildGuid,
@@ -421,7 +420,6 @@ export class WowProgressService implements OnApplicationBootstrap {
             accessToken: key.token,
             createdBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
             updatedBy: OSINT_SOURCE.WOW_PROGRESS_LFG,
-            requestGuildRank: false,
             createOnlyUnique: false,
             forceUpdate: 1000 * 60 * 30,
           },

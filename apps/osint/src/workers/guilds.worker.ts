@@ -528,7 +528,6 @@ export class GuildsWorker extends WorkerHost {
                     createOnlyUnique: false,
                     forceUpdate: 1,
                     guildRank: 0,
-                    requestGuildRank: true,
                     region: 'eu',
                   },
                   {

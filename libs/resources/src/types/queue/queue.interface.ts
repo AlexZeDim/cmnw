@@ -11,14 +11,12 @@ export interface IQGuildOptions {
   forceUpdate: number;
   createOnlyUnique: boolean;
   iteration?: number;
-  requestGuildRank: boolean;
 }
 
 export interface IQCharacterOptions {
   forceUpdate: number;
   createOnlyUnique: boolean;
   iteration?: number;
-  requestGuildRank: boolean;
   createdBy?: OSINT_SOURCE;
   updatedBy: OSINT_SOURCE;
 }

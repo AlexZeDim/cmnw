@@ -62,19 +62,20 @@ export class PricingService implements OnApplicationBootstrap {
   }
 
   async libPricing(
-    init: boolean = true,
+    isItemsPricingLab: boolean = true,
     isProspect: boolean = false,
     isDisenchant: boolean = false,
     isMilling: boolean = false,
   ): Promise<void> {
+    const logTag = this.libPricing.name;
     try {
-      if (!init) {
-        this.logger.debug(`libPricing: ${init}`);
+      if (!isItemsPricingLab) {
+        this.logger.debug(`${logTag}: isItemsPricingLab: ${isItemsPricingLab}`);
         return;
       }
 
       const deletePricing = await this.pricingRepository.delete({ createdBy: DMA_SOURCE.LAB });
-      this.logger.log(`libPricing: ${DMA_SOURCE.LAB} | deleted ${deletePricing.affected}`);
+      this.logger.log(`${logTag}: ${DMA_SOURCE.LAB} | deleted ${deletePricing.affected}`);
 
       const reversePricingMethod = this.pricingRepository.create({
         media: 'MEDIA',
@@ -143,7 +144,7 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: 'libPricing',
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -151,10 +152,11 @@ export class PricingService implements OnApplicationBootstrap {
   }
 
   @Cron(CronExpression.MONDAY_TO_FRIDAY_AT_10AM)
-  async indexPricing(clearance: string = GLOBAL_DMA_KEY, init: boolean = true): Promise<void> {
+  async indexPricing(clearance: string = GLOBAL_DMA_KEY, isItemsPricingInit: boolean = true): Promise<void> {
+    const logTag = this.indexPricing.name;
     try {
-      if (!init) {
-        this.logger.log(`indexPricing: init: ${init}`);
+      if (!isItemsPricingInit) {
+        this.logger.log(`${logTag}: isItemsPricingInit: ${isItemsPricingInit}`);
         return;
       }
 
@@ -219,17 +221,17 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: 'indexPricing',
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
     }
   }
 
-  async buildSkillLine(init: boolean = true): Promise<void> {
-    const tag = this.buildSkillLine.name;
-    if (!init) {
-      this.logger.log(`${tag}:: init: ${init}`);
+  async buildSkillLine(buildSkillLine: boolean = true): Promise<void> {
+    const logTag = this.buildSkillLine.name;
+    if (!buildSkillLine) {
+      this.logger.log(`${logTag}: buildSkillLine: ${buildSkillLine}`);
       return;
     }
 
@@ -285,25 +287,25 @@ export class PricingService implements OnApplicationBootstrap {
 
       const skillLineMethodsCount = skillLineEntities.length;
 
-      this.logger.log(`${tag}:: ${skillLineMethodsCount} created`);
+      this.logger.log(`${logTag}: ${skillLineMethodsCount} created`);
 
       await this.skillLineRepository.save(skillLineEntities, { chunk: 500 });
 
-      this.logger.log(`${tag}:: ${skillLineMethodsCount} saved`);
+      this.logger.log(`${logTag}: ${skillLineMethodsCount} saved`);
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: tag,
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
     }
   }
 
-  async buildSpellEffect(init: boolean = true): Promise<void> {
-    const tag = this.buildSpellEffect.name;
-    if (!init) {
-      this.logger.log(`${tag}:: init: ${init}`);
+  async buildSpellEffect(isItemsPricingBuild: boolean = true): Promise<void> {
+    const logTag = this.buildSpellEffect.name;
+    if (!isItemsPricingBuild) {
+      this.logger.log(`${logTag}: isItemsPricingBuild: ${isItemsPricingBuild}`);
       return;
     }
 
@@ -354,23 +356,23 @@ export class PricingService implements OnApplicationBootstrap {
         spellEffectCount = spellEffectCount + 1;
       }
 
-      this.logger.log(`${tag}:: ${spellEffectCount} created`);
+      this.logger.log(`${logTag}:: ${spellEffectCount} created`);
 
-      this.logger.log(`${tag}:: ${spellEffectCount} saved`);
+      this.logger.log(`${logTag}:: ${spellEffectCount} saved`);
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: tag,
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
     }
   }
 
-  async buildSpellReagents(init: boolean = true): Promise<void> {
-    const tag = this.buildSpellReagents.name;
-    if (!init) {
-      this.logger.log(`${tag}:: init: ${init}`);
+  async buildSpellReagents(isItemsPricingBuild: boolean = true): Promise<void> {
+    const logTag = this.buildSpellReagents.name;
+    if (!isItemsPricingBuild) {
+      this.logger.log(`${logTag}: isItemsPricingBuild: ${isItemsPricingBuild}`);
       return;
     }
 
@@ -427,15 +429,15 @@ export class PricingService implements OnApplicationBootstrap {
 
       const spellReagentsCount = spellReagentsEntities.length;
 
-      this.logger.log(`${tag}:: ${spellReagentsCount} created`);
+      this.logger.log(`${logTag}: ${spellReagentsCount} created`);
 
       await this.spellReagentsRepository.save(spellReagentsEntities, { chunk: 500 });
 
-      this.logger.log(`${tag}:: ${spellReagentsCount} saved`);
+      this.logger.log(`${logTag}: ${spellReagentsCount} saved`);
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: tag,
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );

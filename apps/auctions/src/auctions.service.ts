@@ -25,6 +25,7 @@ import {
   toGold,
   TOLERANCE_ENUM, WOW_TOKEN_ITEM_ID,
 } from '@app/resources';
+import { dmaMarketConfig } from '@app/configuration';
 
 @Injectable()
 export class AuctionsService implements OnApplicationBootstrap {
@@ -54,6 +55,10 @@ export class AuctionsService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_10_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
     try {
+      const { isIndexAuctions } = dmaMarketConfig;
+      this.logger.log(`isIndexAuctions: ${isIndexAuctions}`);
+      if (!isIndexAuctions) return;
+
       await delay(30);
       await this.queue.drain(true);
 
@@ -99,6 +104,10 @@ export class AuctionsService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async indexCommodity(clearance: string = GLOBAL_DMA_KEY) {
     try {
+      const { isIndexCommodity } = dmaMarketConfig;
+      this.logger.log(`isIndexCommodity: ${isIndexCommodity}`);
+      if (!isIndexCommodity) return;
+
       const [keyEntity] = await getKeys(this.keysRepository, clearance, true);
 
       const realmEntity = await this.realmsRepository.findOneBy({

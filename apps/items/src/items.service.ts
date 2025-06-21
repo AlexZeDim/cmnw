@@ -2,7 +2,7 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { itemsConfig } from '@app/configuration';
+import { dmaMarketConfig } from '@app/configuration';
 import fs from 'fs-extra';
 import path from 'path';
 import csv from 'async-csv';
@@ -39,11 +39,11 @@ export class ItemsService implements OnApplicationBootstrap {
       GLOBAL_KEY,
       1,
       250_000,
-      itemsConfig.itemsForceUpdate,
-      itemsConfig.itemsIndex,
+      dmaMarketConfig.isItemsForceUpdate,
+      dmaMarketConfig.isItemsIndex,
     );
 
-    await this.buildItems(itemsConfig.itemsBuild);
+    await this.buildItems(dmaMarketConfig.isItemsBuild);
   }
 
   @Cron(CronExpression.EVERY_WEEK)
@@ -51,12 +51,12 @@ export class ItemsService implements OnApplicationBootstrap {
     clearance: string = GLOBAL_KEY,
     from = 0,
     to = 250_000,
-    forceUpdate = true,
-    init = true,
+    isItemsForceUpdate = true,
+    isItemsIndex = true,
   ): Promise<void> {
     try {
-      this.logger.log(`indexItems: init: ${init}, updateForce: ${forceUpdate}`);
-      if (!init) return;
+      this.logger.log(`indexItems: init: ${isItemsIndex}, updateForce: ${isItemsForceUpdate}`);
+      if (!isItemsIndex) return;
 
       const count = Math.abs(from - to);
       const key = await getKey(this.keysRepository, clearance);
@@ -67,7 +67,7 @@ export class ItemsService implements OnApplicationBootstrap {
       await lastValueFrom(
         range(from, count).pipe(
           mergeMap(async (itemId) => {
-            if (!forceUpdate) {
+            if (!isItemsForceUpdate) {
               const isItemExists = await this.itemsRepository.exists({
                 where: { id: itemId },
               });
@@ -103,10 +103,10 @@ export class ItemsService implements OnApplicationBootstrap {
     }
   }
 
-  async buildItems(init = false): Promise<void> {
+  async buildItems(isItemsBuild = false): Promise<void> {
     try {
-      this.logger.log(`buildItems: init: ${init}`);
-      if (!init) return;
+      this.logger.log(`buildItems: init: ${isItemsBuild}`);
+      if (!isItemsBuild) return;
 
       const filesPath = path.join(__dirname, '..', '..', '..', 'files');
       await fs.ensureDir(filesPath);

@@ -4,8 +4,9 @@ export { ICmnw } from './cmnw.interface';
 export { IKey } from './key.interface';
 export { ILoki } from './loki.interface';
 export { IKeys } from './keys.interface';
-export { IItems } from './items.interface';
+export { IDmaMarket } from './dma-market.interface';
 export { IValuations } from './valuations.interface';
 export { IWowProgress } from './wowprogress.interface';
 export { IWarcraftLogs } from './warcraft-logs.interface';
 export { IPostgres, IPostgresConfig } from './postgres.interface';
+

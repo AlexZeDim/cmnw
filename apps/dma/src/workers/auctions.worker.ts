@@ -120,7 +120,7 @@ export class AuctionsWorker extends WorkerHost {
               this.logger.log(`${connectedRealmId} | ${iterator} | ${timestamp}`);
             } catch (errorOrException) {
               this.logger.error({
-                context: 'ordersBatch',
+                logTag: 'ordersBatch',
                 error: JSON.stringify(errorOrException)
               });
             }

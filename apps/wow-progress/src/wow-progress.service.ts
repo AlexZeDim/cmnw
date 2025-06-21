@@ -72,11 +72,12 @@ export class WowProgressService implements OnApplicationBootstrap {
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
   async indexWowProgress(
     clearance: string = GLOBAL_OSINT_KEY,
-    init = true,
+    isIndexWowProgress = true,
   ): Promise<void> {
+    const logTag = this.indexWowProgress.name;
     try {
-      this.logger.warn(`indexWowProgress: init ${init}`);
-      if (!init) {
+      this.logger.log(`${logTag}: isIndexWowProgress ${isIndexWowProgress}`);
+      if (!isIndexWowProgress) {
         return;
       }
 
@@ -87,7 +88,7 @@ export class WowProgressService implements OnApplicationBootstrap {
       await this.unzipWowProgress(clearance, files);
 
       await fs.rm(dirPath, { recursive: true, force: true });
-      this.logger.warn(`indexWowProgress: directory ${dirPath} has been removed!`);
+      this.logger.warn(`${logTag}: directory ${dirPath} has been removed!`);
     } catch (errorOrException) {
       this.logger.error(
         {
@@ -145,6 +146,7 @@ export class WowProgressService implements OnApplicationBootstrap {
 
   private async unzipWowProgress(clearance = GLOBAL_OSINT_KEY, files: string[]) {
     let guildIteration = 0;
+    const logTag = this.unzipWowProgress.name;
 
     const keysEntities = await getKeys(this.keysRepository, clearance);
     const keysLength = keysEntities.length;
@@ -190,7 +192,7 @@ export class WowProgressService implements OnApplicationBootstrap {
               const isGuildValid = guild.name && !guild.name.includes('[Raid]');
               if (!isGuildValid) {
                 this.logger.log(
-                  `indexWowProgress: guild ${guild.name} have negative [Raid] pattern, skipping...`,
+                  `${logTag}: guild ${guild.name} have negative [Raid] pattern, skipping...`,
                 );
                 continue;
               }
@@ -227,7 +229,7 @@ export class WowProgressService implements OnApplicationBootstrap {
           } catch (errorOrException) {
             this.logger.error(
               {
-                context: this.unzipWowProgress.name,
+                logTag: logTag,
                 error: JSON.stringify(errorOrException),
               }
             );
@@ -239,6 +241,7 @@ export class WowProgressService implements OnApplicationBootstrap {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async indexWowProgressLfg(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
+    const logTag = this.indexWowProgressLfg.name;
     try {
       this.logger.log('————————————————————————————————————');
       /**
@@ -361,7 +364,7 @@ export class WowProgressService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: this.indexWowProgressLfg.name,
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -375,6 +378,8 @@ export class WowProgressService implements OnApplicationBootstrap {
     keysEntity: KeysEntity[],
     lookingForGuild: LFG_STATUS
   ): Promise<void> {
+    const logTag = this.pushCharacterAndProfileToQueue.name;
+
     try {
       const characterQueue = charactersLfg.get(characterGuid);
       const isRealmInStore = realmsEntity.has(characterQueue.realm);
@@ -428,12 +433,12 @@ export class WowProgressService implements OnApplicationBootstrap {
       ]);
 
       this.logger.log(
-        `pushCharacterAndProfileToQueue: Added to character queue: ${characterQueue.guid}`,
+        `${logTag}: Added to character queue: ${characterQueue.guid}`,
       );
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: this.pushCharacterAndProfileToQueue.name,
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -442,6 +447,7 @@ export class WowProgressService implements OnApplicationBootstrap {
 
   private async getWowProgressLfg(url: string) {
     const wpCharactersQueue = new Map<string, ICharacterQueueWP>([]);
+    const logTag = this.getWowProgressLfg.name;
     try {
       const response = await this.httpService.axiosRef.get(url);
 
@@ -483,7 +489,7 @@ export class WowProgressService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          logTag: this.getWowProgressLfg.name,
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );

@@ -54,9 +54,10 @@ export class AuctionsService implements OnApplicationBootstrap {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   private async indexAuctions(clearance: string = GLOBAL_DMA_KEY): Promise<void> {
+    const logTag = this.indexAuctions.name;
     try {
       const { isIndexAuctions } = dmaConfig;
-      this.logger.log(`isIndexAuctions: ${isIndexAuctions}`);
+      this.logger.log(`${logTag}: ${isIndexAuctions}`);
       if (!isIndexAuctions) return;
 
       await delay(30);
@@ -95,7 +96,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       );
     } catch (errorOrException) {
       this.logger.error({
-        logTag: 'indexAuctions',
+        logTag,
         error: JSON.stringify(errorOrException)
       });
     }
@@ -103,6 +104,7 @@ export class AuctionsService implements OnApplicationBootstrap {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async indexCommodity(clearance: string = GLOBAL_DMA_KEY) {
+    const logTag = this.indexCommodity.name;
     try {
       const { isIndexCommodity } = dmaConfig;
       this.logger.log(`isIndexCommodity: ${isIndexCommodity}`);
@@ -139,7 +141,7 @@ export class AuctionsService implements OnApplicationBootstrap {
       );
     } catch (errorOrException) {
       this.logger.error({
-        logTag: 'indexCommodity',
+        logTag,
         error: JSON.stringify(errorOrException)
       });
     }
@@ -209,6 +211,7 @@ export class AuctionsService implements OnApplicationBootstrap {
   // --- TTL Logic --- //
   @Cron(CronExpression.EVERY_12_HOURS)
   async deleteExpiredMarketData(): Promise<void> {
+    const logTag = this.deleteExpiredMarketData.name;
     this.logger.log('Starting deletion of expired market data...');
 
     try {
@@ -237,7 +240,7 @@ export class AuctionsService implements OnApplicationBootstrap {
     } catch (error) {
       this.logger.error(
         {
-          logTag: 'deleteExpiredMarketData',
+          logTag,
           message: `Error deleting expired market data: ${error.message}`,
           stack: error.stack,
         }

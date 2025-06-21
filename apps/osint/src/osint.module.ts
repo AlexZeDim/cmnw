@@ -15,7 +15,7 @@ import {
   CharactersProfileEntity,
   GuildsEntity,
   KeysEntity,
-  LogsEntity,
+  CharactersGuildsLogsEntity,
   MountsEntity,
   PetsEntity,
   ProfessionsEntity,
@@ -39,7 +39,7 @@ import {
       PetsEntity,
       ProfessionsEntity,
       RealmsEntity,
-      LogsEntity,
+      CharactersGuildsLogsEntity,
     ]),
     RedisModule.forRoot({
       type: 'single',

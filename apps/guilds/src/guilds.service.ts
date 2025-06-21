@@ -48,6 +48,8 @@ export class GuildsService implements OnApplicationBootstrap {
     await this.indexHallOfFame(GLOBAL_OSINT_KEY, false);
   }
 
+  // @todo from characters?
+
   @Cron(CronExpression.EVERY_10_MINUTES)
   async indexGuilds(clearance: string = GLOBAL_OSINT_KEY): Promise<void> {
     try {

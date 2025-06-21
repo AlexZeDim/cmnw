@@ -23,7 +23,6 @@ import {
   charactersQueue,
   CharacterStatus,
   CharacterSummary, STATUS_CODES,
-  EVENT_LOG,
   findRealm,
   getRandomProxy,
   IMounts,
@@ -35,7 +34,8 @@ import {
   isCharacterSummary,
   isMountCollection,
   isPetsCollection,
-  Media, OSINT_1_DAY_MS,
+  Media,
+  OSINT_1_DAY_MS,
   OSINT_SOURCE,
   toDate,
   toGuid,
@@ -49,12 +49,13 @@ import {
   CharactersPetsEntity,
   GuildsEntity,
   KeysEntity,
-  LogsEntity,
+  CharactersGuildsLogsEntity,
   MountsEntity,
   PetsEntity,
   ProfessionsEntity,
   RealmsEntity,
 } from '@app/pg';
+
 import { keysConfig } from '@app/configuration';
 
 @Processor(charactersQueue.name, charactersQueue.workerOptions)
@@ -87,8 +88,8 @@ export class CharactersWorker extends WorkerHost {
     private readonly charactersPetsRepository: Repository<CharactersPetsEntity>,
     @InjectRepository(CharactersMountsEntity)
     private readonly charactersMountsRepository: Repository<CharactersMountsEntity>,
-    @InjectRepository(LogsEntity)
-    private readonly logsRepository: Repository<LogsEntity>,
+    @InjectRepository(CharactersGuildsLogsEntity)
+    private readonly charactersGuildsLogsRepository: Repository<CharactersGuildsLogsEntity>,
   ) {
     super();
   }
@@ -822,30 +823,31 @@ export class CharactersWorker extends WorkerHost {
     try {
       const actionLogFields = [
         ACTION_LOG.NAME,
-        // TODO ACTION_LOG.REALM,
+        // @todo transfer ACTION_LOG.REALM,
         ACTION_LOG.RACE,
         ACTION_LOG.GENDER,
         ACTION_LOG.FACTION,
       ];
 
       for (const actionLogField of actionLogFields) {
-        const hasField = !!original[actionLogField] && !!updated[actionLogField];
+        const key = actionLogField.toLowerCase();
+
+        const hasField = Boolean(original[key]) && Boolean(updated[key]);
         if (!hasField) continue;
 
-        const isFieldChanged = original[actionLogField] !== updated[actionLogField];
+        const isFieldChanged = original[key] !== updated[key];
         if (!isFieldChanged) continue;
 
-        const logEntity = this.logsRepository.create({
-          guid: updated.guid,
-          original: original[actionLogField],
-          updated: updated[actionLogField],
+        const logEntity = this.charactersGuildsLogsRepository.create({
+          characterGuid: updated.guid,
+          original: original[key],
+          updated: updated[key],
           action: actionLogField,
-          event: EVENT_LOG.CHARACTER,
-          originalAt: toDate(original.lastModified || original.updatedAt),
-          updatedAt: toDate(updated.lastModified || updated.updatedAt),
+          scannedAt: toDate(original.lastModified || original.updatedAt),
+          createdAt: toDate(updated.lastModified || updated.updatedAt),
         });
 
-        await this.logsRepository.save(logEntity);
+        await this.charactersGuildsLogsRepository.save(logEntity);
       }
     } catch (errorOrException) {
       this.logger.error({

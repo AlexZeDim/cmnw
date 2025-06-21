@@ -6,13 +6,13 @@ export * from './characters-professions.entity';
 export * from './characters-guilds-members.entity';
 export * from './characters-mounts.entity';
 export * from './characters-raid-logs.entity';
+export * from './characters-guilds-logs.entity';
 
 export * from './guilds.entity';
 
 export * from './pets.entity';
 export * from './mounts.entity';
 export * from './professions.entity';
-export * from './logs.entity';
 /** CORE ENTITY */
 export * from './keys.entity';
 export * from './realms.entity';

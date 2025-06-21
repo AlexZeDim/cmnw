@@ -16,7 +16,7 @@ import {
   CharactersProfileEntity,
   GuildsEntity,
   KeysEntity,
-  LogsEntity,
+  CharactersGuildsLogsEntity,
   RealmsEntity,
 } from '@app/pg';
 
@@ -60,8 +60,8 @@ export class OsintService {
     private readonly charactersProfileRepository: Repository<CharactersProfileEntity>,
     @InjectRepository(RealmsEntity)
     private readonly realmsRepository: Repository<RealmsEntity>,
-    @InjectRepository(LogsEntity)
-    private readonly logsRepository: Repository<LogsEntity>,
+    @InjectRepository(CharactersGuildsLogsEntity)
+    private readonly logsRepository: Repository<CharactersGuildsLogsEntity>,
     @InjectQueue(charactersQueue.name)
     private readonly queueCharacter: Queue<CharacterJobQueue, number>,
     @InjectQueue(guildsQueue.name)
@@ -210,8 +210,7 @@ export class OsintService {
   async getCharacterLogs(input: CharacterIdDto) {
     return await this.logsRepository.find({
       where: {
-        guid: input.guid,
-        event: EVENT_LOG.CHARACTER,
+        characterGuid: input.guid,
       },
       take: 250,
     });
@@ -220,8 +219,7 @@ export class OsintService {
   async getGuildLogs(input: GuildIdDto) {
     return await this.logsRepository.find({
       where: {
-        guid: input.guid,
-        event: EVENT_LOG.CHARACTER,
+        guildGuid: input.guid,
       },
       take: 250,
     });

@@ -3,43 +3,43 @@ import { ACTION_LOG, EVENT_LOG } from '@app/resources';
 import {
   Column,
   CreateDateColumn,
-  Entity,
+  Entity, Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: CMNW_ENTITY_ENUM.LOGS })
-export class LogsEntity {
+@Index('ix__characters_guilds_logs__character_guid', ['characterGuid'], {})
+@Index('ix__characters_guilds_logs__guild_guid', ['guildGuid'], {})
+@Entity({ name: CMNW_ENTITY_ENUM.CHARACTERS_GUILDS_LOGS })
+export class CharactersGuildsLogsEntity {
   @PrimaryGeneratedColumn('uuid')
   readonly uuid: string;
 
   @Column({
-    // TODO default value function,
-    nullable: false,
+    nullable: true,
     type: 'varchar',
   })
-  guid: string;
+  characterGuid?: string;
+
+  @Column({
+    nullable: true,
+    type: 'varchar',
+  })
+  guildGuid?: string;
 
   @Column({
     default: null,
     nullable: true,
     type: 'varchar',
   })
-  original: string;
+  original?: string;
 
   @Column({
     default: null,
     nullable: true,
     type: 'varchar',
   })
-  updated: string;
-
-  @Column({
-    default: null,
-    nullable: true,
-    type: 'varchar',
-  })
-  event!: EVENT_LOG;
+  updated?: string;
 
   @Column({
     default: null,
@@ -48,19 +48,19 @@ export class LogsEntity {
   })
   action!: ACTION_LOG;
 
+  @Column({
+    type: 'timestamp with time zone',
+    name: 'scanned_at',
+    nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  scannedAt?: Date;
+
   @CreateDateColumn({
     type: 'timestamp with time zone',
-    name: 'original_at',
+    name: 'created_at',
     nullable: true,
     default: () => 'CURRENT_TIMESTAMP',
   })
-  originalAt?: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp with time zone',
-    name: 'updated_at',
-    nullable: true,
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt?: Date;
+  createdAt?: Date;
 }

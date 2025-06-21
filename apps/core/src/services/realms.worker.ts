@@ -145,7 +145,7 @@ export class RealmsWorker extends WorkerHost {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: RealmsWorker.name,
+          logTag: RealmsWorker.name,
           error: JSON.stringify(errorOrException),
         }
       );

@@ -143,7 +143,7 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'libPricing',
+          logTag: 'libPricing',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -219,7 +219,7 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexPricing',
+          logTag: 'indexPricing',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -293,7 +293,7 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: tag,
+          logTag: tag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -360,7 +360,7 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: tag,
+          logTag: tag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -435,7 +435,7 @@ export class PricingService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: tag,
+          logTag: tag,
           error: JSON.stringify(errorOrException),
         }
       );

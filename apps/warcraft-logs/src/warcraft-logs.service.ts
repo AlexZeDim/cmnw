@@ -86,7 +86,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: WarcraftLogsService.name,
+          logTag: WarcraftLogsService.name,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -134,7 +134,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'getLogsFromPage',
+          logTag: 'getLogsFromPage',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -207,7 +207,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexCharacterRaidLogs',
+          logTag: 'indexCharacterRaidLogs',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -249,7 +249,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexLogs',
+          logTag: 'indexLogs',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -276,7 +276,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexLogAndPushCharactersToQueue',
+          logTag: 'indexLogAndPushCharactersToQueue',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -401,7 +401,7 @@ export class WarcraftLogsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'addCharacterToQueue',
+          logTag: 'addCharacterToQueue',
           error: JSON.stringify(errorOrException),
         }
       );

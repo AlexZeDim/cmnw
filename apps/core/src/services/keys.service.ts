@@ -110,7 +110,7 @@ export class KeysService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexBlizzardKeys',
+          logTag: 'indexBlizzardKeys',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -148,7 +148,7 @@ export class KeysService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexWarcraftLogsKeys',
+          logTag: 'indexWarcraftLogsKeys',
           error: JSON.stringify(errorOrException),
         }
       );

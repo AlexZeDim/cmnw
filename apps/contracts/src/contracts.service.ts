@@ -85,7 +85,7 @@ export class ContractsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'setCommodityItemsAsContracts',
+          logTag: 'setCommodityItemsAsContracts',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -142,7 +142,7 @@ export class ContractsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: tag,
+          logTag: tag,
           error: errorOrException,
         }
       );
@@ -185,7 +185,7 @@ export class ContractsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: tag,
+          logTag: tag,
           error: errorOrException,
         }
       );
@@ -291,7 +291,7 @@ export class ContractsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: tag,
+          logTag: tag,
           contractId,
           error: JSON.stringify(errorOrException),
         }

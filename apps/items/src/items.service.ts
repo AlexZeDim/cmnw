@@ -54,8 +54,9 @@ export class ItemsService implements OnApplicationBootstrap {
     isItemsForceUpdate = true,
     isItemsIndex = true,
   ): Promise<void> {
+    const logTag = this.buildItems.name;
     try {
-      this.logger.log(`indexItems: init: ${isItemsIndex}, updateForce: ${isItemsForceUpdate}`);
+      this.logger.log(`${logTag}: isItemsIndex: ${isItemsIndex}, isItemsForceUpdate: ${isItemsForceUpdate}`);
       if (!isItemsIndex) return;
 
       const count = Math.abs(from - to);
@@ -89,14 +90,14 @@ export class ItemsService implements OnApplicationBootstrap {
               },
             );
 
-            this.logger.log(`indexItems: item ${itemId} placed in queue`);
+            this.logger.log(`${logTag}: item ${itemId} placed in queue`);
           }),
         ),
       );
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexItems',
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -104,8 +105,9 @@ export class ItemsService implements OnApplicationBootstrap {
   }
 
   async buildItems(isItemsBuild = false): Promise<void> {
+    const logTag = this.buildItems.name;
     try {
-      this.logger.log(`buildItems: init: ${isItemsBuild}`);
+      this.logger.log(`${logTag}: isItemsBuild ${isItemsBuild}`);
       if (!isItemsBuild) return;
 
       const filesPath = path.join(__dirname, '..', '..', '..', 'files');
@@ -122,7 +124,7 @@ export class ItemsService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'buildItems',
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );

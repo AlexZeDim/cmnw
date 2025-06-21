@@ -120,7 +120,7 @@ export class LadderService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexPvPLadder',
+          logTag: 'indexPvPLadder',
           error: JSON.stringify(errorOrException),
         }
       );
@@ -244,7 +244,7 @@ export class LadderService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexMythicPlusLadder',
+          logTag: 'indexMythicPlusLadder',
           error: JSON.stringify(errorOrException),
         }
       );

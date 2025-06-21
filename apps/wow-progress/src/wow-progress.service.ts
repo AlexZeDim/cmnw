@@ -91,7 +91,7 @@ export class WowProgressService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: this.indexWowProgress.name,
+          logTag: this.indexWowProgress.name,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -361,7 +361,7 @@ export class WowProgressService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: this.indexWowProgressLfg.name,
+          logTag: this.indexWowProgressLfg.name,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -433,7 +433,7 @@ export class WowProgressService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: this.pushCharacterAndProfileToQueue.name,
+          logTag: this.pushCharacterAndProfileToQueue.name,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -483,7 +483,7 @@ export class WowProgressService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: this.getWowProgressLfg.name,
+          logTag: this.getWowProgressLfg.name,
           error: JSON.stringify(errorOrException),
         }
       );

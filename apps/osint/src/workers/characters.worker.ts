@@ -250,7 +250,7 @@ export class CharactersWorker extends WorkerHost {
        */
       characterNew.statusCode = STATUS_CODES.DEFAULT_STATUS;
       if (character.guild) characterNew.guild = character.guild;
-      if (character.guildGuid) characterNew.guildGuid = character.guildGuid;
+      if (character.guildGuid) characterNew.guildGuid = toSlug(character.guildGuid);
       if (character.guildId) characterNew.guildId = character.guildId;
       characterNew.createdBy = character.createdBy
         ? character.createdBy
@@ -333,7 +333,7 @@ export class CharactersWorker extends WorkerHost {
         );
       } else {
         this.logger.error({
-          context: 'getStatus',
+          logTag: 'getStatus',
           guid: `${nameSlug}@${realmSlug}`,
           statusCode: characterStatus.statusCode,
           error: JSON.stringify(errorOrException),

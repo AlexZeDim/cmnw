@@ -18,6 +18,7 @@ import { RegionIdOrName } from 'blizzapi';
 import { from, lastValueFrom, mergeMap } from 'rxjs';
 import { readFileSync } from 'fs';
 import ms from 'ms';
+import { osintConfig } from '@app/configuration';
 
 @Injectable()
 export class CharactersService implements OnApplicationBootstrap {
@@ -37,7 +38,7 @@ export class CharactersService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.indexFromFile();
+    await this.indexFromFile(osintConfig.isIndexCharactersFromFile);
     await this.indexCharacters(GLOBAL_OSINT_KEY);
   }
 
@@ -45,10 +46,11 @@ export class CharactersService implements OnApplicationBootstrap {
   private async indexCharacters(
     clearance: string = GLOBAL_OSINT_KEY,
   ): Promise<void> {
+    const logTag = this.indexCharacters.name;
     try {
       const jobs = await this.queue.count();
       if (jobs > 10_000) {
-        this.logger.warn(`${jobs} jobs found`);
+        this.logger.warn(`${logTag}: ${jobs} jobs found`);
         return;
       }
 
@@ -73,7 +75,7 @@ export class CharactersService implements OnApplicationBootstrap {
       this.offset = this.offset + (isRotate ? OSINT_CHARACTER_LIMIT : 0);
 
       if (this.offset >= charactersCount) {
-        this.logger.warn(`END_OF offset ${this.offset} >= charactersCount ${charactersCount}`);
+        this.logger.warn(`${logTag}: END_OF offset ${this.offset} >= charactersCount ${charactersCount}`);
         this.offset = 0;
       }
 
@@ -112,11 +114,11 @@ export class CharactersService implements OnApplicationBootstrap {
         ),
       );
 
-      this.logger.log(`indexCharacters: offset ${this.offset} | ${characters.length} characters`);
+      this.logger.log(`${logTag}: offset ${this.offset} | ${characters.length} characters`);
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexCharacters',
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );
@@ -124,8 +126,14 @@ export class CharactersService implements OnApplicationBootstrap {
   }
 
 
-  private async indexFromFile() {
+  private async indexFromFile(
+    isIndexCharactersFromFile: boolean = osintConfig.isIndexCharactersFromFile,
+  ) {
+    const logTag = this.indexFromFile.name;
     try {
+      this.logger.log(`${logTag}: isIndexCharactersFromFile: ${isIndexCharactersFromFile}`);
+      if (!isIndexCharactersFromFile) return;
+
       const charactersJson = readFileSync(
         './files/characters.json',
         'utf8',
@@ -139,7 +147,7 @@ export class CharactersService implements OnApplicationBootstrap {
 
       const charactersCount = characters.length;
 
-      this.logger.log(`indexFromFile: file has been found | ${charactersCount} characters`);
+      this.logger.log(`${logTag}: file has been found | ${charactersCount} characters`);
 
       for (const character of characters) {
         const [nameSlug, realmSlug] = character.guid.split('@');
@@ -165,11 +173,11 @@ export class CharactersService implements OnApplicationBootstrap {
         characterIteration = characterIteration + 1;
       }
 
-      this.logger.log(`indexFromFile: found ${charactersCount} | inserted ${characterIteration} characters`);
+      this.logger.log(`${logTag}: found ${charactersCount} | inserted ${characterIteration} characters`);
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexFromFile',
+          logTag: logTag,
           error: JSON.stringify(errorOrException),
         }
       );

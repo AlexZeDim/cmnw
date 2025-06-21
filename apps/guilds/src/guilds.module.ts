@@ -5,13 +5,13 @@ import { BullModule } from '@nestjs/bullmq';
 import { guildsQueue } from '@app/resources/queues/guilds.queue';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { GuildsEntity, KeysEntity } from '@app/pg';
+import { CharactersEntity, GuildsEntity, KeysEntity } from '@app/pg';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot(postgresConfig),
-    TypeOrmModule.forFeature([KeysEntity, GuildsEntity]),
+    TypeOrmModule.forFeature([KeysEntity, GuildsEntity, CharactersEntity]),
     BullModule.forRoot({
       connection: {
         host: redisConfig.host,

@@ -96,7 +96,7 @@ export class GoldService implements OnApplicationBootstrap {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'indexGold',
+          logTag: 'indexGold',
           error: errorOrException,
         }
       );
@@ -178,7 +178,7 @@ export class GoldService implements OnApplicationBootstrap {
     } catch (error) {
       this.logger.error(
         {
-          context: 'createMarketEntity',
+          logTag: 'createMarketEntity',
           error: error,
         }
       );

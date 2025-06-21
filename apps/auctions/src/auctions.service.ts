@@ -237,7 +237,7 @@ export class AuctionsService implements OnApplicationBootstrap {
     } catch (error) {
       this.logger.error(
         {
-          context: 'deleteExpiredMarketData',
+          logTag: 'deleteExpiredMarketData',
           message: `Error deleting expired market data: ${error.message}`,
           stack: error.stack,
         }

@@ -158,7 +158,7 @@ export class GuildsWorker extends WorkerHost {
 
       this.logger.error(
         {
-          context: 'GuildsWorker',
+          logTag: 'GuildsWorker',
           guid: `${job.data.name}@${job.data.realm}`,
           error: errorOrException,
         }
@@ -247,7 +247,7 @@ export class GuildsWorker extends WorkerHost {
                     this.charactersRepository.update(
                       { guid: guildMemberUpdated.guid, id: guildMemberUpdated.id },
                       {
-                        guildRank: guildMemberUpdated.rank,
+                        guildRank : guildMemberUpdated.rank,
                         updatedBy: OSINT_SOURCE.GUILD_ROSTER,
                       },
                     ),
@@ -397,7 +397,7 @@ export class GuildsWorker extends WorkerHost {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'updateRoster',
+          logTag: 'updateRoster',
           guildGuid: guildEntity.guid,
           error: JSON.stringify(errorOrException),
         }
@@ -462,7 +462,7 @@ export class GuildsWorker extends WorkerHost {
 
       this.logger.error(
         {
-          context: 'getSummary',
+          logTag: 'getSummary',
           guildGuid: `${guildNameSlug}@${realmSlug}`,
           statusCode: summary.statusCode,
           error: JSON.stringify(errorOrException),
@@ -587,7 +587,7 @@ export class GuildsWorker extends WorkerHost {
 
       this.logger.error(
         {
-          context: 'getRoster',
+          logTag: 'getRoster',
           guildGuid: guildEntity.guid,
           statusCode: roster.statusCode,
           error: JSON.stringify(errorOrException),
@@ -705,7 +705,7 @@ export class GuildsWorker extends WorkerHost {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'updateGuildMaster',
+          logTag: 'updateGuildMaster',
           guildGuid: guildEntity.guid,
           error: JSON.stringify(errorOrException),
         }
@@ -817,7 +817,7 @@ export class GuildsWorker extends WorkerHost {
     } catch (errorOrException) {
       this.logger.error(
         {
-          context: 'diffGuildEntity',
+          logTag: 'diffGuildEntity',
           guildGuid: original.guid,
           error: JSON.stringify(errorOrException),
         }
